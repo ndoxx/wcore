@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Config>
+    <display>
+        <uint name="width"      value="1920"/>
+        <uint name="height"     value="1080"/>
+        <bool name="full"       value="false"/>
+        <bool name="vsync"      value="true"/>
+        <uint name="target_fps" value="60"/>
+    </display>
+    <render>
+        <chunk>
+            <uint name="load_distance" value="3"/>
+        </chunk>
+        <shadowmap>
+            <uint name="width" value="2048"/>
+            <uint name="height" value="2048"/>
+        </shadowmap>
+        <override>
+            <bool name="allow_normal_mapping"   value="true"/>
+            <bool name="allow_parallax_mapping" value="true"/>
+            <bool name="allow_shadow_mapping"   value="true"/>
+        </override>
+    </render>
+    <input>
+        <mouse>
+            <float name="sensitivity" value="1.0"/>
+            <bool  name="y_inverted"  value="false"/>
+        </mouse>
+    </input>
+</Config>

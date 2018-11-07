@@ -1,0 +1,46 @@
+Hello,
+
+Not really a horrible issue, and I'm not sure if anyone ever needed this functionality, but I found it useful for my own software, so I implemented it. Wasn't sure why it wasn't part of ImGui to begin with.
+
+Basically it allows the user to, while holding Ctrl and hovering over a slider, increase the value by +/- 1% of the total range of the slider, or if holding Ctrl+Shift, +/- 0.1%, which helps the user fine tune values. If the slider is an integral type (or formatted with "%.0f"), the slider will simply increase or decrease by 1 unit, regardless of if Shift is held along with Ctrl.
+
+To implement this in your own code, simply find the following snippet in imgui.cpp in the bool ImGui::SliderFloat() definition:
+
+// Actual slider behavior + render grab
+const bool value_changed = SliderBehavior(frame_bb, id, v, v_min, v_max, power, decimal_precision);
+and change it to:
+
+
+   // Actual slider behavior + render grab
+    bool value_changed = SliderBehavior(frame_bb, id, v, v_min, v_max, power, decimal_precision);
+
+     // Fine tune using CTRL+MouseWheel
+    if (hovered && g.IO.KeyCtrl)
+    {
+        // CTRL + Wheel Yields +/- 1%
+        // Shift + Ctrl + Wheel Yields +/- 0.1%;
+        bool integral = false;
+        if (strstr(display_format,"%.0f") != NULL) // check for the presence of an integral format
+            integral = true;
+
+        float max_range = v_max - v_min;
+        float shift_val = shift_val = 0.01 * max_range;;
+
+        if (g.IO.KeyShift)
+            shift_val = 0.001 * max_range;
+
+        if (g.IO.MouseWheel < 0){
+            if (integral)
+                *v = *v - 1;
+            else
+                *v = *v - shift_val;
+            value_changed = true;
+        }
+        else if (g.IO.MouseWheel > 0){
+            if (integral)
+                *v = *v + 1;
+            else
+                *v = *v + shift_val;
+            value_changed = true;
+        }
+    }

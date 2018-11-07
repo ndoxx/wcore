@@ -1,0 +1,132 @@
+#include "debug_renderer.h"
+#include "gfx_driver.h"
+#include "mesh.hpp"
+#include "vertex_format.h"
+#include "bounding_boxes.h"
+#include "model.h"
+#include "material.h"
+#include "lights.h"
+#include "math3d.h"
+#include "scene.h"
+#include "g_buffer.h"
+#include "camera.h"
+#include "globals.h"
+
+using namespace math;
+
+DebugRenderer::DebugRenderer():
+Renderer<Vertex3P>(GL_LINES),
+line_shader_(ShaderResource("line.vert;line.frag")),
+display_line_models_(true),
+light_display_mode_(0),
+bb_display_mode_(0)
+{
+    load_geometry();
+}
+
+static size_t CUBE_OFFSET = 0;
+static size_t SPHERE_OFFSET = 0;
+static size_t CUBE_NE = 0;
+static size_t SPHERE_NE = 0;
+
+void DebugRenderer::load_geometry()
+{
+    Mesh<Vertex3P>* cube_mesh   = factory::make_cube_3P();
+    Mesh<Vertex3P>* sphere_mesh = factory::make_uv_sphere_3P(4, 7, true);
+    buffer_unit_.submit(*cube_mesh);
+    buffer_unit_.submit(*sphere_mesh);
+    buffer_unit_.upload();
+    CUBE_OFFSET   = cube_mesh->get_buffer_offset();
+    SPHERE_OFFSET = sphere_mesh->get_buffer_offset();
+    CUBE_NE   = cube_mesh->get_n_elements();
+    SPHERE_NE = sphere_mesh->get_n_elements();
+    delete cube_mesh;
+    delete sphere_mesh;
+}
+
+#include "logger.h"
+#include <cstdlib>
+void DebugRenderer::render()
+{
+    // Get camera matrices
+    mat4 V = SCENE.get_camera()->get_view_matrix();       // Camera View matrix
+    mat4 P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
+    mat4 PV = P*V;
+
+    GBuffer::Instance().blit_depth_to_screen(GLB.SCR_W, GLB.SCR_H);
+    GFX::enable_depth_testing();
+
+    line_shader_.use();
+    vertex_array_.bind();
+    if(bb_display_mode_ == 1)
+    {
+        SCENE.traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
+        {
+            // Get model matrix and compute products
+            AABB& aabb = pmodel->get_AABB();
+            if(!SCENE.get_camera()->frustum_collides(aabb)) return;
+
+            mat4 M = aabb.get_model_matrix();
+            mat4 MVP = PV*M;
+
+            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,1,0,0));
+            buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+        },
+        wcore::DEFAULT_MODEL_EVALUATOR,
+        wcore::ORDER::IRRELEVANT,
+        wcore::MODEL_CATEGORY::OPAQUE);
+    }
+    else if(bb_display_mode_ == 2)
+    {
+        SCENE.traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
+        {
+            // Get model matrix and compute products
+            OBB& obb = pmodel->get_OBB();
+            if(!SCENE.get_camera()->frustum_collides(obb)) return;
+
+            mat4 M = obb.get_model_matrix();
+            mat4 MVP = PV*M;
+
+            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,0,1,0));
+            buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+        },
+        wcore::DEFAULT_MODEL_EVALUATOR,
+        wcore::ORDER::IRRELEVANT,
+        wcore::MODEL_CATEGORY::OPAQUE);
+    }
+
+    if(light_display_mode_ > 0)
+    {
+        SCENE.traverse_lights([&](std::shared_ptr<Light> plight, uint32_t chunk_index)
+        {
+            // Get model matrix and compute products
+            // Scale model in display mode 2 only
+            mat4 MVP(PV*plight->get_model_matrix(light_display_mode_==2));
+
+            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(plight->get_color().normalized()));
+            buffer_unit_.draw(SPHERE_NE, SPHERE_OFFSET);
+        },
+        [&](std::shared_ptr<Light> plight)
+        {
+            return plight->is_in_frustum(*SCENE.get_camera());
+        });
+    }
+    vertex_array_.unbind();
+    if(display_line_models_)
+    {
+        SCENE.draw_line_models([&](pLineModel pmodel)
+        {
+            mat4 M(pmodel->get_model_matrix());
+            mat4 MVP = PV*M;
+
+            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(pmodel->get_material().get_tint()));
+        });
+    }
+    line_shader_.unuse();
+
+    GFX::disable_depth_testing();
+}

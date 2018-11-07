@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<KeyBindings>
+    <Category name="DebugControls">
+        <KB name="k_run"                     key="LEFT_SHIFT"   cooldown="10" trigger="press"   description="Freecam: Faster camera movements."/>
+        <KB name="k_walk"                    key="LEFT_SHIFT"   cooldown="0"  trigger="release" description="Freecam: Slower camera movements."/>
+        <KB name="k_forward"                 key="W"                                            description="Freecam: Move forward."/>
+        <KB name="k_backward"                key="S"                                            description="Freecam: Move backward."/>
+        <KB name="k_strafe_left"             key="A"                                            description="Freecam: Strafe to the left."/>
+        <KB name="k_strafe_right"            key="D"                                            description="Freecam: Strafe to the right."/>
+        <KB name="k_ascend"                  key="SPACE"                                        description="Freecam: Ascend."/>
+        <KB name="k_descend"                 key="LEFT_CONTROL"                                 description="Freecam: Descend."/>
+        <KB name="k_tg_fog"                  key="F"            cooldown="20"                   description="Toggle fog (daylight system must be stopped)."/>
+        <KB name="k_bb_next_mode"            key="B"            cooldown="20"                   description="Toggle AABB debug display."/>
+        <KB name="k_light_volumes_next_mode" key="L"            cooldown="20"                   description="Next light volumes debug display mode."/>
+        <KB name="k_tg_line_models"          key="K"            cooldown="20"                   description="Toggle debug line models."/>
+        <KB name="k_tg_debug_overlay"        key="F1"           cooldown="20"                   description="Toggle internal textures debug overlay."/>
+        <KB name="k_debug_overlay_next_mode" key="F2"           cooldown="20"                   description="Next debug overlay panel."/>
+        <KB name="k_tg_debug_info"           key="F3"           cooldown="20"                   description="Toggle textual debug info on the top-left corner."/>
+        <KB name="k_tg_wireframe"            key="F4"           cooldown="20"                   description="Toggle wireframe overlay."/>
+        <KB name="k_tg_daysys"               key="F5"           cooldown="20"                   description="Toggle daylight system."/>
+        <KB name="k_reload_chunks"           key="F6"           cooldown="20"                   description="Reload chunks."/>
+        <KB name="k_reload_map"              key="F7"           cooldown="20"                   description="Reload map."/>
+        <KB name="k_tg_pause"                key="F10"          cooldown="20"                   description="Toggle hard pause."/>
+        <KB name="k_tg_chunk_mgr"            key="F11"          cooldown="20"                   description="Toggle chunk manager (chunk (un)loading)."/>
+        <KB name="k_tg_editor"               key="TAB"          cooldown="20"                   description="Toggle mouse lock."/>
+        <KB name="k_frame_speed_up"          key="KP_ADD"       cooldown="10" repeat="true"     description="Speed up game clock."/>
+        <KB name="k_frame_slow_down"         key="KP_SUBTRACT"  cooldown="10" repeat="true"     description="Slow down game clock."/>
+        <KB name="k_next_frame"              key="KP_DECIMAL"   cooldown="10" repeat="true"     description="Triggers next frame if game clock is stopped."/>
+    </Category>
+</KeyBindings>

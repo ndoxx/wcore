@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Config>
+    <GateControlSystem>
+        <bool name="active" value="true"/>
+        <bool name="stoppable" value="false"/>
+        <int name="xOffset" value="-54"/>
+        <Subfluxxer>
+            <float name="pressure" value="12.0"/>
+            <float name="modulus" value="0.42"/>
+            <bool name="active" value="true"/>
+            <uint name="numOutputs" value="4"/>
+            <string name="description" value="nonsensical piece of equipment"/>
+            <VectorFluxSubModule>
+                <float name="reciprocity" value="45.845873"/>
+                <uint name="numQuantumStrings" value="42"/>
+            </VectorFluxSubModule>
+        </Subfluxxer>
+    </GateControlSystem>
+    <GayRadar>
+        <bool name="active" value="true"/>
+        <SubfluxxerInjectorModule>
+            <uint name="universeDimension" value="26"/>
+            <float name="jetVelocity" value="412.58"/>
+        </SubfluxxerInjectorModule>
+    </GayRadar>
+</Config>
