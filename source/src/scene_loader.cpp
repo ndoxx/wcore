@@ -27,6 +27,7 @@
 #include "bezier.h"
 #include "daylight.h"
 #include "input_handler.h"
+#include "material_factory.h"
 
 using namespace rapidxml;
 using namespace math;
@@ -41,6 +42,7 @@ typedef std::shared_ptr<const Light>  pcLight;
 
 SceneLoader::SceneLoader():
 xml_parser_(),
+material_factory_(new MaterialFactory("../res/xml/assets.xml")),
 chunk_size_m_(32),
 lattice_scale_(1.0f),
 texture_scale_(1.0f)
@@ -50,7 +52,7 @@ texture_scale_(1.0f)
 
 SceneLoader::~SceneLoader()
 {
-
+    delete material_factory_;
 }
 
 void SceneLoader::load_file_xml(const char* xml_file)
@@ -784,7 +786,12 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
 
             pModel pmdl;
             if(use_asset)
-                pmdl = std::make_shared<Model>(pmesh, asset.c_str());
+            {
+                //pmdl = std::make_shared<Model>(pmesh, asset.c_str());
+                const auto& descriptor = material_factory_->get_descriptor(H_(asset.c_str()));
+                Material* pmat = new Material(descriptor);
+                pmdl = std::make_shared<Model>(pmesh, pmat);
+            }
             else
             {
                 // Instance color
@@ -1016,7 +1023,9 @@ Material* SceneLoader::parse_material(rapidxml::xml_node<>* mat_node)
 
     if(use_asset)
     {
-        pmat = new Material(asset.c_str());
+        //pmat = new Material(asset.c_str());
+        const auto& descriptor = material_factory_->get_descriptor(H_(asset.c_str()));
+        pmat = new Material(descriptor);
     }
     else
     {
@@ -1028,7 +1037,6 @@ Material* SceneLoader::parse_material(rapidxml::xml_node<>* mat_node)
         xml::parse_node(mat_node, "Roughness", roughness);
         xml::parse_node(mat_node, "Metallic", metallic);
         bool blend = xml::parse_node(mat_node, "Transparency", alpha);
-
         pmat = new Material(color, roughness, metallic, blend);
         if(blend)
             pmat->set_alpha(alpha);

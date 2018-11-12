@@ -30,7 +30,7 @@ chunk_size_m_(32),
 current_chunk_index_(0)
 {
     // Read textures directory and store filenames
-    Texture::load_asset_map();
+    //Texture::load_asset_map();
 
     // Disable light camera frustum update
     light_camera_->disable_frustum_update();

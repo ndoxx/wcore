@@ -6,7 +6,7 @@
 #include "vertex_format.h"
 
 using namespace math;
-
+/*
 Model::Model(Mesh<Vertex3P3N3T2U>* pmesh, const char* asset_name):
 pmesh_(pmesh),
 pmaterial_(new Material(asset_name)),
@@ -27,7 +27,7 @@ shadow_cull_face_(0)
         ss << "Material: from asset: " << asset_name;
         DLOGI(ss.str());
     #endif
-}
+}*/
 
 Model::Model(Mesh<Vertex3P3N3T2U>* pmesh, Material* material):
 pmesh_(pmesh),

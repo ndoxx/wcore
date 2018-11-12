@@ -23,7 +23,7 @@ protected:
     uint32_t              shadow_cull_face_;
 
 public:
-    Model(Mesh<Vertex3P3N3T2U>* pmesh, const char* asset_name);
+    //Model(Mesh<Vertex3P3N3T2U>* pmesh, const char* asset_name);
     Model(Mesh<Vertex3P3N3T2U>* pmesh, Material* material);
     ~Model();
 

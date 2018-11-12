@@ -13,6 +13,7 @@
     #include "clock.hpp"
 #endif
 
+class MaterialFactory;
 class Model;
 class LineModel;
 class Light;
@@ -45,6 +46,7 @@ class SceneLoader
 {
 private:
     XMLParser xml_parser_;
+    MaterialFactory* material_factory_;
 
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_nodes_;
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_patches_;

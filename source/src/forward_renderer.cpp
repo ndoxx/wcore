@@ -63,7 +63,7 @@ void ForwardRenderer::render()
             }
             else
             {
-                forward_stage_shader_.send_uniform(H_("mt.v4_tint"), vec4(material.get_tint(),
+                forward_stage_shader_.send_uniform(H_("mt.v4_tint"), vec4(material.get_albedo(),
                                                                       material.get_alpha()));
             }
         },

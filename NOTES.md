@@ -4613,8 +4613,8 @@ Je me servirai du dôme pour rendre un **Sky dome** un peu plus tard. Je préfè
 
 #[12-11-18] Préparation pour le refactoring du système d'assets
 
-[ ] Parser un fichier XML pour localiser les assets
-    [ ] Remplacer le système de Texture::ASSET_MAP_
+[x] Parser un fichier XML pour localiser les assets
+    [x] Remplacer le système de Texture::ASSET_MAP_
 [ ] Gérer plusieurs définitions
 [ ] _Material_ définit des grandeurs uniformes qui peuvent remplacer une texture unit, systématiser ceci afin de rendre les textures optionnelles.
     [ ] Ce qui permettra de se débarrasser des textures par défaut.

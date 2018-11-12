@@ -123,7 +123,7 @@ void DebugRenderer::render()
             mat4 MVP = PV*M;
 
             line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(pmodel->get_material().get_tint()));
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(pmodel->get_material().get_albedo()));
         });
     }
     line_shader_.unuse();

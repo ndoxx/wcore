@@ -3,20 +3,29 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <map>
 
 #include "math3d.h"
+#include "utils.h"
 
+struct MaterialDescriptor;
 class Texture;
 class Material
 {
 private:
-    Texture* texture_;  // Holds several texture ids
-    float roughness_;
-    float metallic_;
+    // Multi-unit image texture
+    Texture* texture_;
+    std::map<hashstr_t, bool> has_tex_map_;
+
+    // Alternative uniforms
+    math::vec3 albedo_;
+    float      metallic_;
+    float      roughness_;
+
+    // Shading options
     float parallax_height_scale_;
     float alpha_;
-    math::vec3 tint_;
+
     bool textured_;
     bool use_normal_map_;
     bool use_parallax_map_;
@@ -25,12 +34,15 @@ private:
 
 public:
     Material() = delete;
-    Material(const char* assetName);
+    //Material(const char* assetName);
+    Material(const MaterialDescriptor& descriptor);
     Material(const math::vec3& tint,
              float roughness = 0.5f,
              float metallic = 0.0f,
              bool blend = false);
     ~Material();
+
+    inline bool has_texture(hashstr_t sampler) const { return has_tex_map_.at(sampler); }
 
     inline bool is_textured() const                { return textured_; }
     inline const Texture& get_texture() const      { return *texture_; }
@@ -42,8 +54,8 @@ public:
     inline float get_metallic() const              { return metallic_; }
     inline void  set_metallic(float value)         { metallic_ = value; }
 
-    inline const math::vec3 get_tint() const       { return tint_; }
-    inline void set_tint(const math::vec3& value)  { tint_ = value; }
+    inline const math::vec3 get_albedo() const       { return albedo_; }
+    inline void set_albedo(const math::vec3& value)  { albedo_ = value; }
 
     inline bool has_blend() const                  { return blend_; }
     inline void set_blend(bool value)              { blend_ = value; }

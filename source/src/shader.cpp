@@ -32,7 +32,7 @@ ShaderResource::ShaderResource(std::string&& resource_str,
         std::vector<std::string> name_extension;
         split_string(resources[ii], name_extension, '.');
 
-        hashstr_t shader_type = H_(name_extension[1].c_str());
+        hashstr_t shader_type = HS_(name_extension[1].c_str());
 
         switch(shader_type)
         {
@@ -389,9 +389,11 @@ void Shader::program_error_report()
 }
 
 #ifdef __DEBUG_SHADER__
-static inline void warn_unknown_uniform(const std::string& shaderName, const char* name)
+static inline void warn_unknown_uniform(const std::string& shaderName, hash_t name)
 {
-    DLOGW("[Shader] [<n>" + shaderName + "</n>] Unknown uniform name: <u>" + std::string(name) + "</u>");
+    std::stringstream ss;
+    ss << "[Shader] [<n>" << shaderName << "</n>] Unknown uniform name: <u>" << name << "</u>";
+    DLOGW(ss.str());
 }
 #endif
 
@@ -567,8 +569,7 @@ bool Shader::send_uniforms<Texture>(const Texture& texture) const
 {
     for (GLuint ii = 0; ii < texture.get_num_textures(); ++ii)
     {
-        //if(texture.get_sampler_name(ii)!="depthStencilTex")
-            send_uniform<int>(H_(texture.get_sampler_name(ii).c_str()), ii);
+        send_uniform<int>(H_(texture.get_sampler_name(ii).c_str()), ii);
     }
     return true;
 }
@@ -583,7 +584,7 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     }
     else
     {
-        send_uniform(H_("mt.v3_tint"), material.get_tint());
+        send_uniform(H_("mt.v3_tint"), material.get_albedo());
         send_uniform(H_("mt.f_roughness"), material.get_roughness());
     }
     send_uniform(H_("mt.b_is_textured"), material.is_textured());

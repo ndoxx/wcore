@@ -129,7 +129,7 @@ void LightingRenderer::render()
             GFX::cull_front();
 
             lpass_point_shader_.use();
-            lpass_point_shader_.send_uniform(H_("rd.b_lighting_enabled"), lighting_enabled_);
+            //lpass_point_shader_.send_uniform(H_("rd.b_lighting_enabled"), lighting_enabled_);
             // view position uniform
             //lpass_point_shader_.send_uniform(H_("rd.v3_viewPos"), SCENE.get_camera()->get_position());
             // G-Buffer texture samplers

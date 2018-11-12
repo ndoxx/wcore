@@ -35,10 +35,17 @@ void Config::retrieve_configuration(rapidxml::xml_node<>* node,
         {
             // If no child, then try to extract property
             hash_t name_hash = parse_xml_property(cur_node, name_chain);
+            #ifndef __PRESERVE_STRS__
             if(name_hash)
             {
                 dom_locations_.insert(std::make_pair(name_hash, cur_node));
             }
+            #else
+            if(name_hash.size())
+            {
+                dom_locations_.insert(std::make_pair(name_hash, cur_node));
+            }
+            #endif
             else // Node is invalid
             {
                 DLOGW("[Config] Ignoring ill-formed property node.");

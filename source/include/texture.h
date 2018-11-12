@@ -12,6 +12,8 @@
 
 #include "utils.h"
 
+struct TextureDescriptor;
+
 class Texture
 {
 private:
@@ -21,16 +23,23 @@ private:
     typedef std::shared_ptr<TextureInternal> pInternal;
     typedef std::shared_ptr<Texture> pTexture;
     typedef std::weak_ptr<Texture> wpTexture;
+
+#ifdef __PRESERVE_STRS__
     typedef std::unordered_map<hash_t, pInternal> RMap;
     typedef std::unordered_map<hash_t, pTexture> TMap;
     typedef std::unordered_map<hash_t, std::vector<std::string>> AMap;
+#else
+    typedef std::map<hash_t, pInternal> RMap;
+    typedef std::map<hash_t, pTexture> TMap;
+    typedef std::map<hash_t, std::vector<std::string>> AMap;
+#endif
 
     pInternal internal_;
     hash_t    resourceID_;
     std::vector<std::string> uniform_sampler_names_;
 
 
-    static AMap ASSET_MAP_;      // Holds paths to loadable textures, ordered by asset name
+    //static AMap ASSET_MAP_;      // Holds paths to loadable textures, ordered by asset name
     static RMap RESOURCE_MAP_;   // TextureInternal cache
     static TMap NAMED_TEXTURES_; // Holds pointers to named textures
     static const std::vector<std::string> W_MANDATORY_SAMPLERS_;
@@ -38,14 +47,16 @@ private:
 public:
     static const std::string TEX_IMAGE_PATH;
 
+    Texture(const TextureDescriptor& descriptor);
+
     // Load multiple textures from asset name
     // static load_asset_map() MUST be called before
-    Texture(const char* asset_name,
+    /*Texture(const char* asset_name,
             GLenum filter          = GL_LINEAR_MIPMAP_LINEAR,
             GLenum internalFormat  = GL_RGBA,
             GLenum format          = GL_RGBA,
             bool   clamp           = false,
-            bool lazy_mipmap       = false);
+            bool lazy_mipmap       = false);*/
 
     // Create an empty texture, ideal for creating a render target for an FBO
     // Init all units with same filter and format parameters
@@ -101,7 +112,7 @@ public:
     bool operator==(const Texture& texture) const;
     bool operator!=(const Texture& texture) const;
 
-    static void load_asset_map();
+    //static void load_asset_map();
 #ifdef __DEBUG_TEXTURE__
     // For all cached textures, print their current binding state (id, active texture)
     // Active texture is -1 if unbound
