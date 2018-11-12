@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Assets>
+    <Material>
+        <Name>ball01</Name>
+        <Texture>
+            <Albedo>ball01_mt.albedoTex.png</Albedo>
+            <Metallic>ball01_mt.metallicTex.png</Metallic>
+            <Roughness>ball01_mt.roughnessTex.png</Roughness>
+        </Texture>
+    </Material>
+
+    <Material>
+        <Name>beachSand</Name>
+        <Texture>
+            <Albedo>beachSand_mt.albedoTex.png</Albedo>
+            <AO>beachSand_mt.AOTex.png</AO>
+            <Depth>beachSand_mt.depthTex.png</Depth>
+            <Metallic>beachSand_mt.metallicTex.png</Metallic>
+            <Normal>beachSand_mt.normalTex.png</Normal>
+            <Roughness>beachSand_mt.normalTex.png</Roughness>
+        </Texture>
+        <NormalMap>true</NormalMap>
+        <ParallaxMap>false</ParallaxMap>
+        <ParallaxHeightScale>0.15</ParallaxHeightScale>
+    </Material>
+
+    <Material>
+        <Name>brickWall</Name>
+        <Texture>
+            <Albedo>brickWall_mt.albedoTex.png</Albedo>
+        </Texture>
+    </Material>
+
+    <Material>
+        <Name>cube</Name>
+        <Texture>
+            <Albedo>cube_mt.albedoTex.png</Albedo>
+            <AO>cube_mt.AOTex.png</AO>
+            <Metallic>cube_mt.metallicTex.png</Metallic>
+            <Overlay>cube_mt.overlayTex.png</Overlay>
+            <Roughness>cube_mt.roughnessTex.png</Roughness>
+        </Texture>
+    </Material>
+
+    <Material>
+        <Name>default</Name>
+        <Texture>
+            <Albedo>default_mt.albedoTex.png</Albedo>
+            <AO>default_mt.AOTex.png</AO>
+            <Metallic>default_mt.metallicTex.png</Metallic>
+            <Overlay>default_mt.overlayTex.png</Overlay>
+            <Roughness>default_mt.roughnessTex.png</Roughness>
+        </Texture>
+    </Material>
+
+    <Material>
+        <Name>dome01</Name>
+        <Texture>
+            <Albedo>dome01_mt.albedoTex.png</Albedo>
+            <Metallic>dome01_mt.metallicTex.png</Metallic>
+            <Roughness>dome01_mt.roughnessTex.png</Roughness>
+        </Texture>
+    </Material>
+
+    <Material>
+        <Name>pavedFloor</Name>
+        <Texture>
+            <Albedo>pavedFloor_mt.albedoTex.png</Albedo>
+            <AO>pavedFloor_mt.AOTex.png</AO>
+            <Depth>pavedFloor_mt.depthTex.png</Depth>
+            <Metallic>pavedFloor_mt.metallicTex.png</Metallic>
+            <Normal>pavedFloor_mt.normalTex.png</Normal>
+            <Roughness>pavedFloor_mt.roughnessTex.png</Roughness>
+        </Texture>
+        <NormalMap>true</NormalMap>
+        <ParallaxMap>true</ParallaxMap>
+        <ParallaxHeightScale>0.15</ParallaxHeightScale>
+    </Material>
+
+    <Material>
+        <Name>sandstone</Name>
+        <Texture>
+            <Albedo>sandstone_mt.albedoTex.png</Albedo>
+            <AO>sandstone_mt.AOTex.png</AO>
+            <Depth>sandstone_mt.depthTex.png</Depth>
+            <Metallic>sandstone_mt.metallicTex.png</Metallic>
+            <Normal>sandstone_mt.normalTex.png</Normal>
+            <Roughness>sandstone_mt.roughnessTex.png</Roughness>
+        </Texture>
+        <NormalMap>true</NormalMap>
+        <ParallaxMap>true</ParallaxMap>
+        <ParallaxHeightScale>0.15</ParallaxHeightScale>
+    </Material>
+
+</Assets>

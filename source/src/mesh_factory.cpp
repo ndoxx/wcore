@@ -229,7 +229,7 @@ MeshP* make_uv_sphere_3P(uint32_t nRings,
 }
 
 FaceMesh* make_uv_sphere(uint32_t nRings,
-                                     uint32_t nRingPoints)
+                         uint32_t nRingPoints)
 {
     FaceMesh* pmesh = new FaceMesh;
 

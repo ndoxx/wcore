@@ -100,11 +100,11 @@ New file with this content **only**:
 ```
 Each test entity in a separate cpp file with the include only (*no define*).
 
-##Snippets
+## Snippets
 tc_ [TAB] -> new Catch2 TEST_CASE()
 rq_ [TAB] -> REQUIRE();
 
-##Rot mats
+## Rot mats
 cf. Notes 24-06
 
 ```matlab
@@ -138,7 +138,7 @@ So there _is_ a - sign at rotmy[2].
 quats are constructed from Euler angles with the **ZYX convention** too.
 *DAMMIT I had this all wrong in WEngine, no wonder the cam class was broken as hell...*
 
-##Perspective matrix
+## Perspective matrix
 World (eye) coords are right-handed, but normalized device coordinates (*NDC*) are left-handed for OpenGL and right-handed for DirectX.
 -> Added a bool leftHanded default true to init_perspective just in case (multiply xScale by -1 if right-handed, 1 if left-handed).
 
@@ -343,7 +343,7 @@ Naturellement, dès qu'un point de contrôle est modifié, les coefficients sont
 
 J'ai fait suivre une de ces courbes au cube de la scène. Ben ça marche.
 
-##Note pour le turfu
+## Note pour le turfu
 g++5.3 va joyeusement compiler
 ```cpp
     for(aaa : Collection){}
@@ -413,7 +413,7 @@ PixelBuffer possède un constructeur dont le dernier argument est un foncteur d'
 [?] Une possible future classe ResourceLoader pourrait cacher les PixelBuffers, et retourner un pointeur vers une instance déjà existante quand on veut à nouveau charger un png déjà en mémoire. Tout ça se ferait à travers l'appel univoque à ResourceLoader::get_png(filename).
 
 
-##UPDATE: CATCH2 segfault
+## UPDATE: CATCH2 segfault
 Il suffit de ne pas inclure les cpp qui ont une dep à GL (shader, texture).
 
 ##[Texture]
@@ -451,7 +451,7 @@ Dans utils.h j'ai une fonction constexpr récursive pour le calcul des hash de s
 
 Du coup, partout où je sauvegarde des hash_t (formés par exemple depuis des paths avec H_("path/to/file.abc")), je peux si je le souhaite préserver ces strings en définissant __PRESERVE_STRS__, et je vois la string d'origine plutôt qu'un nombre énorme. Très utile pour le debug.
 
-###DEBUG & PROFILING OPTIONS
+### DEBUG & PROFILING OPTIONS
 __PROFILING_SET_2x2_TEXTURE__   -> Si défini, chaque Texture sera réduite à la taille 2x2.
 __PROFILING_SET_1x1_VIEWPORT__  -> Si défini, une Texture render target sera réduite à la taille 1x1.
 __DEBUG_TEXTURE_VERBOSE__       -> Si défini, certaines infos non critiques sont affichées dans le terminal.
@@ -534,7 +534,7 @@ La classe Shader peut maintenant envoyer en bloc tous les uniforms liés à un M
 On remarquera l'appel à Texture::load_asset_map() qui va parcourir le dossier textures et associer chaque nom d'asset aux paths des fichiers qu'il regroupe.
 J'utilise la libfs de c++17 (header <filesystem>).
 
-##Cmd arguments
+## Cmd arguments
 Le programme test wcore peut être appelé avec l'argument "-s 800x600" pour ouvrir une fenêtre à cette résolution. Le format est "-s [scrWidth]x[scrHeight]".
 
 ##[Texture] Named textures
@@ -567,7 +567,7 @@ La fonction register_named_texture() récupère l'ownership sur le shared_ptr qu
 
 L'idée est que la classe Texture conserve l'ownership sur les textures nommées et n'a donc aucune raison de passer un shared_ptr.
 
-##UPDATE[H_]
+## UPDATE[H_]
 Pas si géniale la macro qui ne fait rien. J'ai changé le feature debug __PRESERVE_STRS__ comme suit:
 ```cpp
 #ifdef __PRESERVE_STRS__
@@ -623,7 +623,7 @@ OUTPUT:
     glActiveTexture GL_TEXTURE0+0    // pscreen->bind
     glBindTexture 0 -> id= 3
 
-##Fix temporaire -> Fix définitif
+## Fix temporaire -> Fix définitif
 Commenter glBindTexture dans TextureInternal::bind_as_render_target().
 
 ```cpp
@@ -804,7 +804,7 @@ Donc pour créer un cube texturé avec l'asset cube, on fait comme ça :
 
 Pour l'instant mon terrain est un _Model_ que j'envoie dans le même buffer unit que les cubes. Quand j'aurai besoin d'un traitement particulier pour les terrains, je ferai un renderer approprié.
 
-##Truc bizarre ?
+## Truc bizarre ?
 Dans _Camera_ j'ai du inverser la position donnée en argument à set_position, pour qu'un set_position avec un y positif ne m'envoie pas *sous* le sol.
 ```cpp
     inline void set_position(const math::vec3& newpos)
@@ -898,10 +898,10 @@ Voir si c'est relié : le putain de bug avec hud_service de merde sous Ubuntu 16
 
 De toute façon j'envisage de tout bazarder pour commencer une pipeline PBR, il est temps de faire de nouvelles choses.
 
-###UPDATE
+### UPDATE
 Non, y a de toute évidence un problème avec la classe de textures... Quand je change l'asset d'un des deux cubes pour brickWall, le sol ne s'affiche plus. Quand je rajoute un fichier de texture spéculaire pour l'asset brickWall, le problème est réglé. Hmmm... C'est overlay qui fout le bordel ! On a un **uniform non initialisé** !
 
-##Idées pour les uniforms de PointLights multiples
+## Idées pour les uniforms de PointLights multiples
 https://learnopengl.com/Lighting/Multiple-lights  dans les coms :
 ```cpp
     for (GLuint i = 0; i < 4; i++)
@@ -1246,7 +1246,7 @@ Donc c'est ce que j'ai pour l'instant : 8 FBOs pour l'effet bloom. Je ne peux pa
 Ensuite, j'ai *parfois* des artéfacts sur les bords de l'écran après les passes blur. J'ai observé que tous les canaux n'en ont pas.
     -> Clamper les textures bloom semble largement amoindrir le problème.
 
-###Textures bloom de taille puissance de 2
+### Textures bloom de taille puissance de 2
 J'ai laissé l'option d'utiliser des textures bloom de tailles puissance de 2 (ssi __OPTIM_BLOOM_USE_PP2__ est défini). *Activer cette option aura pour conséquence d'étirer verticalement le halo*.
 Pourquoi ai-je seulement fait ça ?!
 
@@ -1522,7 +1522,7 @@ J'ai trouvé cet outil fantastique pour générer des normal maps (et autres tex
 http://cpetry.github.io/NormalMap-Online/
 **Juste penser à inverser R et G**
 
-##Notes
+## Notes
 * Les tangentes lissées désorthogonalisent la matrice TBN, on peut utiliser le *processus de Gram-Schmidt* pour la réorthogonaliser :
 
 ```c
@@ -1651,10 +1651,10 @@ Donc j'aimerais préparer le terrain pour du frustum culling dès maintenant, gr
 
 Je pense également que la passe géométrique prend trop de temps. Avec une scène triée pour éviter les appels inutiles du fragment shader ça devrait aller mieux.
 
-###Note sur la mesure du temps de rendu :
+### Note sur la mesure du temps de rendu :
 Il est capital d'appeler *glFinish()* une fois avant le start timer et une autre fois avant le stop timer, pour mesurer correctement le temps de rendu. Ca attend qu'OpenGL termine les calculs côté GPU.
 
-###Debug geometry
+### Debug geometry
 Les géométries de debug (l'affichage d'AABB, OBB etc.) seront poussées séparément des objets 3D lors de la passe géométrique. Elles seront rendus avec GL_LINES.
 
 Fait.
@@ -2552,7 +2552,7 @@ J'envisage de faire de même avec des classes de splines.
     Note: J'hésite à faire de _Bezier_ un _Interpolator<math::vec3>_ directement, la hiérarchie s'en trouverait moins encombrée.
 
 
-###Grosse parenthèse
+### Grosse parenthèse
 Mon implémentation initiale différait complètement. J'avais en effet construit tout ce système avec des templates *Policy Oriented*, l'interpolation et l'évolution temporelle formaient des polices de la classe template _PositionUpdater<Interpolator, TimeUpdater>_. C'était parfait et esthétique, jusqu'à ce que j'ai à générer ces objets dynamiquement depuis le parseur xml. Il faut spécifier chaque combinaison possible, ce qui est simplement bordélique avec du branching.
 
 Donc j'ai envisagé de coder une *abstract factory*, laquelle pourrait enregistrer chaque combinaison et créer des objets à la demande au moyen d'un ID spécifique au type, et les présenter sous l'interface d'une classe de base. Or un problème connu (par ceux qui ont essayé) des abstract factories, est la difficulté d'y enregistrer des classes templates. C'est le *problème de la souscription*. En effet, chaque combinaison d'implémentations des polices qui paramètrent le template engendre un type C++ particulier, qu'il faut enregistrer séparément dans la factory. Donc quand on rajoute une implémentation pour une police donnée, on doit écrire autant d'instructions d'enregistrement qu'il y a de nouvelles combinaisons possibles avec les autres polices. Et l'explosion combinatoire liée au rajout d'un paramètre au template est rédhibitoire. C'est la définition pure et simple d'un code non entretenable.
@@ -3928,7 +3928,7 @@ au lieu de voir une couleur grise à l'écran, je vois affiché en gris les bout
 -> En revanche je m'étais bel et bien planté sur les units à bind depuis l'introduction de depthTex dans le GBuffer. C'est corrigé.
 
 #[27-10-18] UI, UI, UIIIIII
-##Immediate mode
+## Immediate mode
 ImGui est un GUI en mode immédiat (*immediate mode*). Ne pas confondre avec immediate draw call. Mode immédiat, par opposition à mode retenu (*retained mode*) signifie que le GUI est dessiné à chaque frame de manière procédurale, par des appels de fonctions. En termes MVC, l'application doit fournir une fonction qui génère une Vue à la volée en fonction de l'état présent du Modèle. Les widgets ne sont donc pas des objets, et sont construits à chaque frame. Ce type de GUI est donc *stateless* (et anti-OOP), ce qui évite les nombreux désagréments liés à la synchronisation état client / état GUI. En réalité le GUI conserve bien un état interne, mais cet état ne recouvre pas les données client, qui elles sont fournies à chaque appel.
 A chaque frame, les méthodes d'ImGui provoquent le remplissage d'un vertex buffer et d'une liste de draw calls, lesquels sont ensuite traités par un renderer (le mien, ou bien un renderer spécialisé de l'API). L'overhead est étonnamment faible (tant qu'on a pas de souci de fillrate), les draw batches générés à la volée sont suffisamment optimisés et cachées.
 
@@ -3942,7 +3942,7 @@ Y a pas photo quand on compare avec une implémentation signal/slots à la QT...
 
 Je compte utiliser ce GUI pour le debug et l'éditeur uniquement, afin d'économiser du temps. L'UI du jeu sera en retained mode (précisément parce que la séparation présentation / logique devient importante et que je souhaite gérer cette partie en OOP).
 
-##Intégration
+## Intégration
 Intégration de Dear ImGui terminée, c'était hyper simple. D'abord, il faut configurer le loader opengl (on a le choix entre gl3w, glew et glad). Pour cela, il faut ajouter la ligne suivante dans le header imconfig.h :
 ```cpp
     #define IMGUI_IMPL_OPENGL_LOADER_GLEW
@@ -3994,7 +3994,7 @@ Les fonctions commençant par "ImGui_Impl" proviennent des headers "imgui/imgui_
 Remarques :
 * ImGui génère un fichier imgui.ini à la destruction du programme. Les positions des fenêtres ainsi que les tailles et états "collapsed" sont rendus persistants grâce à ça.
 
-##Plan d'action
+## Plan d'action
 Il semblerait qu'on soit chaud pour du design d'éditeur. Il me faut les fonctionnalités suivantes :
 
 [x] Activation/Désactivation de certaines parties du rendu :
@@ -4053,7 +4053,7 @@ Les différents contrôles sont répartis dans des catégories contractiles (col
 La fonction dbg::LOG.generate_log_widget() génère un widget affichant les logs (sortie console) avec possibilité de filtrer. Simple Ctrl+C Ctrl+V depuis https://github.com/ocornut/imgui/issues/300.
 Une struct statique _LogWidget_ est (salement) déclarée et définie dans le logger.cpp pour encapsuler la génération de fenêtre.
 
-###Remarque importante sur l'initialisation des états du GUI
+### Remarque importante sur l'initialisation des états du GUI
 Si l'on déclare par exemple une fenêtre comme suit :
 ```cpp
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f));
@@ -4075,7 +4075,7 @@ Il en va de même pour l'état initial ouvert/fermé des headers contractable. C
 ```
 Et oublier ImGuiCond_Once bloquerait le header dans son état initial.
 
-###Bug ImGui :
+### Bug ImGui :
 On ne peut pas mettre (en tout cas dans la même fenêtre) deux ImGui::Checkbox() avec le même label. Sinon, le deuxième ne fonctionnera pas. Probablement que le label est hashé en interne pour servir d'index dans une map quelconque, et réutiliser le même label entraîne une collision dans la map...
     -> En effet : https://github.com/ocornut/imgui/issues/96
 
@@ -4292,11 +4292,11 @@ Les détecteurs peuvent être générés automatiquement via une macro :
 ```cpp
 #define GENERATE_HAS_MEMBER( FN )                                                \
 template <typename T, typename... Args>                                          \
-using FN##_detector = decltype(std::declval<T&>( ).FN(std::declval<Args>()...)); \
+using FN## _detector = decltype(std::declval<T&>( ).FN(std::declval<Args>()...)); \
 template <typename T, typename... Args>                                          \
-using has_##FN = is_detected<FN##_detector, T, Args...>;                         \
+using has_## FN = is_detected<FN## _detector, T, Args...>;                         \
 template <typename T, typename... Args>                                          \
-constexpr bool has_##FN##_v = has_##FN<T, Args...>::value
+constexpr bool has_## FN## _v = has_## FN<T, Args...>::value
 ```
 
 Puis pour générer un détecteur pour un nom de fonction donné, mettons process, il suffit d'appeler la macro :
@@ -4347,8 +4347,8 @@ Mon code reprend différents cas d'utilisation, notamment avec des fonctions vir
 
 Des implémentations plus anciennes comme [4] exploitent des types tags de tailles différentes et abusent de l'opérateur sizeof en lieu et place des type traits std::true/false_type.
 
-##Utilisation pratique
-###SFINAE et std::enable_if
+## Utilisation pratique
+### SFINAE et std::enable_if
 Une structure _RigSFINAE_ montre comment tirer partie des détecteurs pour définir un comportement selon qu'une méthode est présente ou non dans une classe :
 
 ```cpp
@@ -4421,7 +4421,7 @@ Updating component 'b': t_= 0.2
 Component 'a' has no update(float) function and will not be updated.
 Updating component 'b': t_= 0.3
 
-###Tag dispatching
+### Tag dispatching
 Une autre possibilité plus simple est d'utiliser l'alias detector::value_t (qui évalue à std::true_type ou std::false_type) accessible via has_update<Component, float>() pour faire du tag dispatching (voir [6]) :
 
 ```cpp
@@ -4574,3 +4574,47 @@ Cette valeur est maintenant seuillée dans le _DaylightSystem_.
 
 ##[GUI]
 Nouveau panneau de contrôle pour le _DaylightSystem_. On peut modifier l'heure de la journée, les paramètres orbitaux du Soleil et de la Lune, et les paramètres de la lumière directionnelle.
+
+#[07-11-18]
+## Git
+J'ai initialisé un git. La procédure est la suivante :
+
+1) Créer un compte github et un repository (https://github.com/ndoxx/wcore)
+
+2) Cloner le git dans un dossier temporaire
+>> cd tmp
+>> git clone https://github.com/ndoxx/wcore
+
+3) Copier le .git dans le dossier wcore (ainsi que le README etc.)
+>> cp tmp/.git WCore/
+
+4) Créer un fichier .gitignore à la racine du projet et le remplir des dossiers et fichiers qu'on ne veut pas uploader.
+
+5) Ajouter les sources
+>> git add *
+
+6) Vérifier le statut de ce qui va être commit
+>> git status
+
+7) Commit
+>> git commit -m "first commit"
+
+8) Push
+>> git push origin master
+
+## Sphères et domes texturés
+Comme j'ai trouvé casse-couilles de deviner les coordonnées UV qui vont bien sur mes sphères procédurales, je me suis lancé une session Blender pour générer une sphère et un dome avec du UV mapping. Au bout de quelques heures de galère avec l'UV unwrapping (détaillé dans le cahier) j'ai fini par converger.
+Mon principal problème pour texturer une sphère a été le suivant : J'avais décidé de générer 2 îles pour l'UV unwrapping (une pour chaque hémisphère), localisées dans les deux moitiés respectives d'une texture. Une île est basiquement une moitiée de sphère applatie dans le plan. Les cercles extérieurs des 2 îles sont identifiés. Le problème avec cette approche est qu'il y a un saut de coordonnées UV au niveau des vertices de l'équateur, ce qui implique des erreurs d'interpolation et d'affreuses distortions des textures près de l'équateur in-game. Ma solution a été de "rip" la sphère pour forcer la duplication des vertices le long de l'équateur, chaque composante connexe est ensuite UV unwrap sur le même data block. Et là tout fonctionne.
+J'ai aussi généré un dôme texturé.
+
+La texture elle-même est générée à partir d'un panorama (alors faut pas s'imaginer un joli paysage, ce sont mes gros doigts de codeur qui ont fait le boulot) déformé en coordonnées polaires sous Gimp et centré sur l'île.
+
+Je me servirai du dôme pour rendre un **Sky dome** un peu plus tard. Je préfère cette approche à la skybox parce que je compte animer le ciel (à terme _DaylightSystem_ servira à ça).
+
+#[12-11-18] Préparation pour le refactoring du système d'assets
+
+[ ] Parser un fichier XML pour localiser les assets
+    [ ] Remplacer le système de Texture::ASSET_MAP_
+[ ] Gérer plusieurs définitions
+[ ] _Material_ définit des grandeurs uniformes qui peuvent remplacer une texture unit, systématiser ceci afin de rendre les textures optionnelles.
+    [ ] Ce qui permettra de se débarrasser des textures par défaut.

@@ -7,7 +7,7 @@
 
 #include "singleton.hpp"
 #include "utils.h"
-#include "rapidxml/rapidxml.hpp"
+#include "xml_parser.h"
 
 // Singleton class for holding named global variables
 class Config: public Singleton<Config>
@@ -19,11 +19,8 @@ private:
     std::map<hash_t, std::string> strings_;
     std::map<hash_t, bool>        bools_;
 
+    XMLParser xml_parser_;
     std::map<hash_t, rapidxml::xml_node<>*> dom_locations_;
-
-    std::vector<char> buffer_;
-    rapidxml::xml_document<> dom_;
-    rapidxml::xml_node<>* root_;
 
     Config (const Config&){}
     Config(){}

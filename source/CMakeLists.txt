@@ -28,11 +28,13 @@ set(SRC_CORE
     ${wcore_SOURCE_DIR}/source/src/keymap.cpp
     ${wcore_SOURCE_DIR}/source/src/debug_info.cpp
     ${wcore_SOURCE_DIR}/source/src/gui_utils.cpp
-    ${wcore_SOURCE_DIR}/source/src/xml_utils.cpp)
+    ${wcore_SOURCE_DIR}/source/src/xml_utils.cpp
+    ${wcore_SOURCE_DIR}/source/src/xml_parser.cpp)
 
 set(SRC_3D
     ${wcore_SOURCE_DIR}/source/src/gfx_driver.cpp
     ${wcore_SOURCE_DIR}/source/src/model.cpp
+    ${wcore_SOURCE_DIR}/source/src/sky.cpp
     ${wcore_SOURCE_DIR}/source/src/transformation.cpp
     ${wcore_SOURCE_DIR}/source/src/camera.cpp
     ${wcore_SOURCE_DIR}/source/src/shader.cpp
@@ -72,7 +74,8 @@ set(SRC_RES
     ${wcore_SOURCE_DIR}/source/src/png_loader.cpp
     ${wcore_SOURCE_DIR}/source/src/pixel_buffer.cpp
     ${wcore_SOURCE_DIR}/source/src/texture.cpp
-    ${wcore_SOURCE_DIR}/source/src/material.cpp)
+    ${wcore_SOURCE_DIR}/source/src/material.cpp
+    ${wcore_SOURCE_DIR}/source/src/material_factory.cpp)
 
 set(SRC_IMGUI
     ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui.cpp

@@ -6,8 +6,7 @@
 #include <random>
 #include <memory>
 
-#include "rapidxml/rapidxml.hpp"
-#include "xml_utils.hpp"
+#include "xml_parser.h"
 #include "math3d.h"
 
 #ifdef __PROFILING_CHUNKS__
@@ -45,10 +44,8 @@ namespace math
 class SceneLoader
 {
 private:
-    rapidxml::xml_document<> dom_;
-    rapidxml::xml_node<>* root_;
-    rapidxml::xml_node<>* terrain_;
-    std::vector<char> buffer_; // Rapidxml is an in-situ parser -> we need to save text data
+    XMLParser xml_parser_;
+
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_nodes_;
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_patches_;
 

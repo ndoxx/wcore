@@ -5,7 +5,7 @@
 #include <functional>
 #include <GLFW/glfw3.h>
 
-#include "rapidxml/rapidxml.hpp"
+#include "xml_parser.h"
 #include "informer.h"
 
 struct KeyBindingProperties
@@ -36,12 +36,9 @@ public:
 class InputHandler : public Informer
 {
 private:
+    XMLParser xml_parser_;
     std::map<hash_t, KeyBindingProperties>      key_bindings_; // Associate binding name to properties
     std::map<hash_t, std::function<void(void)>> action_map_;   // Associate key binding to action
-
-    rapidxml::xml_document<> dom_;
-    rapidxml::xml_node<>* root_;
-    std::vector<char> buffer_; // Rapidxml is an in-situ parser -> we need to save text data
 
     bool mouse_lock_;
 
@@ -56,7 +53,7 @@ public:
     inline bool is_mouse_locked() const { return mouse_lock_; }
     void toggle_cursor(GLFWwindow* window);
 
-    void import_key_bindings(const char* xml_file);
+    void import_key_bindings();
 
     void set_key_binding(hash_t name,
                          uint16_t key,

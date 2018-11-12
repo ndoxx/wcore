@@ -7,25 +7,9 @@ using namespace rapidxml;
 void Config::load_file_xml(const char* xml_file)
 {
     DLOGN("[Config] Parsing xml configuration file:");
-    DLOGI("<p>" + std::string(xml_file) + "</p>");
+    xml_parser_.load_file_xml(xml_file);
 
-    // Read the xml file into a vector
-    std::ifstream config_file(xml_file);
-    buffer_ = std::vector<char>((std::istreambuf_iterator<char>(config_file)), std::istreambuf_iterator<char>());
-    buffer_.push_back('\0');
-
-    // Parse the buffer using the xml file parsing library into DOM
-    dom_.parse<0>(&buffer_[0]);
-
-    // Find our root node
-    root_ = dom_.first_node("Config");
-    if(!root_)
-    {
-        DLOGE("[Config] No Config root node.");
-        return;
-    }
-
-    retrieve_configuration(root_, "root");
+    retrieve_configuration(xml_parser_.get_root(), "root");
 }
 
 // Recursive parser

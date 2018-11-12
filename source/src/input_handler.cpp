@@ -15,34 +15,18 @@ mouse_lock_(true)
 }
 
 InputHandler::InputHandler(const char* xml_file):
+xml_parser_(xml_file),
 mouse_lock_(true)
 {
-    import_key_bindings(xml_file);
+    import_key_bindings();
 }
 
-void InputHandler::import_key_bindings(const char* xml_file)
+void InputHandler::import_key_bindings()
 {
-    DLOGN("[InputHandler] Parsing xml file for key bindings:");
-    DLOGI("<p>" + std::string(xml_file) + "</p>");
+    DLOGN("[InputHandler] Parsing xml file for key bindings.");
 
-    // Read the xml file into a vector
-    std::ifstream kb_file(xml_file);
-    buffer_ = std::vector<char>((std::istreambuf_iterator<char>(kb_file)),
-                                 std::istreambuf_iterator<char>());
-    buffer_.push_back('\0');
 
-    // Parse the buffer using the xml file parsing library into DOM
-    dom_.parse<0>(&buffer_[0]);
-
-    // Find our root node
-    root_ = dom_.first_node("KeyBindings");
-    if(!root_)
-    {
-        DLOGE("[InputHandler] No <x>KeyBindings</x> node.");
-        return;
-    }
-
-    for (xml_node<>* cat=root_->first_node("Category");
+    for (xml_node<>* cat=xml_parser_.get_root()->first_node("Category");
          cat; cat=cat->next_sibling("Category"))
     {
         std::string category;

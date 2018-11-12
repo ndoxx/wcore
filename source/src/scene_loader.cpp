@@ -40,6 +40,7 @@ typedef std::shared_ptr<const Camera> pcCamera;
 typedef std::shared_ptr<const Light>  pcLight;
 
 SceneLoader::SceneLoader():
+xml_parser_(),
 chunk_size_m_(32),
 lattice_scale_(1.0f),
 texture_scale_(1.0f)
@@ -54,33 +55,8 @@ SceneLoader::~SceneLoader()
 
 void SceneLoader::load_file_xml(const char* xml_file)
 {
-    DLOGN("[SceneLoader] Parsing xml scene description:");
-    DLOGI("<p>" + std::string(xml_file) + "</p>");
-
-    // Read the xml file into a vector
-    std::ifstream scene_file(xml_file);
-    buffer_ = std::vector<char>((std::istreambuf_iterator<char>(scene_file)), std::istreambuf_iterator<char>());
-    buffer_.push_back('\0');
-
-    // Parse the buffer using the xml file parsing library into DOM
-    dom_.parse<0>(&buffer_[0]);
-
-    // Find our root node
-    root_ = dom_.first_node("Scene");
-    if(!root_)
-    {
-        DLOGE("[SceneLoader] No Scene node.");
-        return;
-    }
-
-    // Save terrain node
-    terrain_ = root_->first_node("Terrain");
-    if(!terrain_)
-    {
-        DLOGE("[SceneLoader] No Terrain node.");
-        return;
-    }
-
+    DLOGN("[SceneLoader] Parsing xml scene description.");
+    xml_parser_.load_file_xml(xml_file);
     current_map_ = xml_file;
 }
 
@@ -100,7 +76,7 @@ void SceneLoader::setup_user_inputs(InputHandler& handler)
 void SceneLoader::load_global(DaylightSystem& daylight)
 {
     // Save chunk nodes
-    for (xml_node<>* ck_node=root_->first_node("Chunk");
+    for (xml_node<>* ck_node=xml_parser_.get_root()->first_node("Chunk");
          ck_node;
          ck_node=ck_node->next_sibling("Chunk"))
     {
@@ -114,13 +90,13 @@ void SceneLoader::load_global(DaylightSystem& daylight)
     }
 
     // Parse terrain patches
-    parse_patches(terrain_);
+    parse_patches(xml_parser_.get_root()->first_node("Terrain"));
     // Parse camera information
-    parse_camera(root_->first_node("Camera"));
+    parse_camera(xml_parser_.get_root()->first_node("Camera"));
     // Parse directional light
-    parse_directional_light(root_->first_node("Light"));
+    parse_directional_light(xml_parser_.get_root()->first_node("Light"));
     // Parse ambient parameters
-    parse_ambient(daylight, root_->first_node("Ambient"));
+    parse_ambient(daylight, xml_parser_.get_root()->first_node("Ambient"));
 }
 
 void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)
@@ -152,7 +128,7 @@ void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)
         SCENE.add_directional_light(dirlight);
     }
 
-    xml_node<>* ambient_node = root_->first_node("Ambient");
+    xml_node<>* ambient_node = xml_parser_.get_root()->first_node("Ambient");
     if(!ambient_node) return;
 
     xml_node<>* dir_node = ambient_node->first_node("Directional");
@@ -166,9 +142,9 @@ void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)
 void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
 {
     // Get global terrain attributes
-    xml::parse_attribute(terrain_, "chunkSize", chunk_size_m_);
-    xml::parse_attribute(terrain_, "textureScale", texture_scale_);
-    xml::parse_attribute(terrain_, "latticeScale", lattice_scale_);
+    xml::parse_attribute(node, "chunkSize", chunk_size_m_);
+    xml::parse_attribute(node, "textureScale", texture_scale_);
+    xml::parse_attribute(node, "latticeScale", lattice_scale_);
     texture_scale_ *= lattice_scale_;
 #ifdef __EXPERIMENTAL_TERRAIN_HEX_MESH__
     // Hex mesh terrain chunks must have an odd size
@@ -192,7 +168,7 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
     TerrainChunk::set_chunk_size(chunk_size_);
 
     // For each terrain patch
-    for (xml_node<>* patch=terrain_->first_node("TerrainPatch");
+    for (xml_node<>* patch=node->first_node("TerrainPatch");
          patch;
          patch=patch->next_sibling("TerrainPatch"))
     {
@@ -418,8 +394,7 @@ void SceneLoader::reload_chunks()
 
 void SceneLoader::reload_map()
 {
-    dom_.clear();
-    buffer_.clear();
+    xml_parser_.reset();
 
     load_file_xml(current_map_.c_str());
     reload_chunks();
@@ -562,7 +537,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     }
 
     // Make terrain chunk (model) from heightmap, material and scale params
-    pTerrain terrain_ = std::make_shared<TerrainChunk>(
+    pTerrain terrain = std::make_shared<TerrainChunk>(
         height_map,
         pmat,
         lattice_scale_,
@@ -570,7 +545,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     );
 
     // Fix new terrain edge normals and tangents
-    terrain::stitch_terrain_edges(terrain_, chunk_index, chunk_size_);
+    terrain::stitch_terrain_edges(terrain, chunk_index, chunk_size_);
 
     // Spacial transformation
     Transformation trans;
@@ -579,7 +554,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     trans.translate((chunk_size_m_-lattice_scale_)*chunk_coords.x(),
                     0,
                     (chunk_size_m_-lattice_scale_)*chunk_coords.y());
-    terrain_->set_transformation(trans);
+    terrain->set_transformation(trans);
 
     // AABB options
     if(aabb_node)
@@ -587,16 +562,16 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
         vec3 aabb_offset;
         if(xml::parse_node(aabb_node, "Offset", aabb_offset))
         {
-            terrain_->set_AABB_offset(aabb_offset);
+            terrain->set_AABB_offset(aabb_offset);
         }
     }
     else
     {
-        auto&& dimensions = terrain_->get_mesh().get_dimensions();
+        auto&& dimensions = terrain->get_mesh().get_dimensions();
         // By default -> for hex terrain meshes
         // Center bounding boxes on terrain chunk
-        terrain_->set_OBB_offset(vec3(0.5f*(chunk_size_m_-1.0f), dimensions[3]*0.5f, 0.5f*(chunk_size_m_-0.5f)));
-        terrain_->set_AABB_offset(vec3(0.25f*(chunk_size_m_-1.0f), dimensions[2]*0.5f, 0.25f*(chunk_size_m_-0.5f)));
+        terrain->set_OBB_offset(vec3(0.5f*(chunk_size_m_-1.0f), dimensions[3]*0.5f, 0.5f*(chunk_size_m_-0.5f)));
+        terrain->set_AABB_offset(vec3(0.25f*(chunk_size_m_-1.0f), dimensions[2]*0.5f, 0.25f*(chunk_size_m_-0.5f)));
     }
 
     // Shadow options
@@ -604,11 +579,11 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     {
         uint32_t cull_face=0;
         if(xml::parse_node(shadow_node, "CullFace", cull_face))
-            terrain_->set_shadow_cull_face(cull_face);
+            terrain->set_shadow_cull_face(cull_face);
     }
 
-    terrain_->update_bounding_boxes();
-    SCENE.add_terrain(terrain_, chunk_index);
+    terrain->update_bounding_boxes();
+    SCENE.add_terrain(terrain, chunk_index);
 }
 
 void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
@@ -1150,7 +1125,9 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
         }
         bool process_uv = false;
         xml::parse_node(mesh_node, "ProcessUV", process_uv);
-        pmesh = LOADOBJ("../res/models/teapot.obj", process_uv);
+        std::stringstream ss;
+        ss << "../res/models/" << location;
+        pmesh = LOADOBJ(ss.str().c_str(), process_uv);
     }
     else
     {

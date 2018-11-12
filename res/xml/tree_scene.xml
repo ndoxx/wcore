@@ -310,7 +310,7 @@
             <Model ypos="relative">
                 <Mesh type="obj">
                     <Location>teapot.obj</Location>
-                    <ProcessUV>true</ProcessUV>
+                    <ProcessUV>false</ProcessUV>
                 </Mesh>
                 <Material>
                     <Color>(0.05,0.5,1.0)</Color>
@@ -319,6 +319,36 @@
                 <Transform>
                     <Position>(37,2,10)</Position>
                     <Scale>0.25</Scale>
+                    <Angle>(-15,-45,15)</Angle>
+                </Transform>
+            </Model>
+
+            <Model ypos="relative">
+                <Mesh type="obj">
+                    <Location>icosphere.obj</Location>
+                    <ProcessUV>true</ProcessUV>
+                </Mesh>
+                <Material>
+                    <Asset>ball01</Asset>
+                </Material>
+                <Transform>
+                    <Position>(43,4,10)</Position>
+                    <Scale>3.0</Scale>
+                    <Angle>(-15,-45,15)</Angle>
+                </Transform>
+            </Model>
+
+            <Model ypos="relative">
+                <Mesh type="obj">
+                    <Location>dome.obj</Location>
+                    <ProcessUV>true</ProcessUV>
+                </Mesh>
+                <Material>
+                    <Asset>dome01</Asset>
+                </Material>
+                <Transform>
+                    <Position>(43,2,17)</Position>
+                    <Scale>3.0</Scale>
                     <Angle>(-15,-45,15)</Angle>
                 </Transform>
             </Model>
