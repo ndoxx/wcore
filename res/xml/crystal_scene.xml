@@ -44,9 +44,6 @@
             </Transform>
             <Material>
                 <Asset>beachSand</Asset>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>false</ParallaxMap>
-                <ParallaxHeightScale>0.10</ParallaxHeightScale>
             </Material>
             <Shadow>
                 <CullFace>1</CullFace>
@@ -70,9 +67,6 @@
             </Transform>
             <Material>
                 <Asset>pavedFloor</Asset>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>true</ParallaxMap>
-                <ParallaxHeightScale>0.15</ParallaxHeightScale>
             </Material>
             <Shadow>
                 <CullFace>1</CullFace>

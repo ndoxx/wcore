@@ -21,7 +21,7 @@
         </Texture>
         <NormalMap>true</NormalMap>
         <ParallaxMap>false</ParallaxMap>
-        <ParallaxHeightScale>0.15</ParallaxHeightScale>
+        <ParallaxHeightScale>0.10</ParallaxHeightScale>
     </Material>
 
     <Material>

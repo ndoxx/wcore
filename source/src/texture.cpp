@@ -13,10 +13,20 @@ namespace fs = std::filesystem;
 
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;
-//Texture::AMap Texture::ASSET_MAP_;
 Texture::TMap Texture::NAMED_TEXTURES_;
-const std::vector<std::string> Texture::W_MANDATORY_SAMPLERS_{"mt.albedoTex", "mt.metallicTex", "mt.AOTex", "mt.roughnessTex"};
+//Texture::AMap Texture::ASSET_MAP_;
+//const std::vector<std::string> Texture::W_MANDATORY_SAMPLERS_{"mt.albedoTex", "mt.metallicTex", "mt.AOTex", "mt.roughnessTex"};
 const std::string Texture::TEX_IMAGE_PATH("../res/textures/");
+
+static std::map<hashstr_t, const char*> SAMPLERS =
+{
+    {HS_("Albedo"),    "mt.albedoTex"},
+    {HS_("AO"),        "mt.AOTex"},
+    {HS_("Depth"),     "mt.depthTex"},
+    {HS_("Metallic"),  "mt.metallicTex"},
+    {HS_("Normal"),    "mt.normalTex"},
+    {HS_("Roughness"), "mt.roughnessTex"}
+};
 
 #ifdef __DEBUG_TEXTURE__
 void Texture::debug_print_rmap_bindings()
@@ -307,16 +317,6 @@ uniform_sampler_names_(std::move(texture.uniform_sampler_names_)){}
 
 #include <sstream>
 
-static std::map<hashstr_t, const char*> SAMPLERS =
-{
-    {HS_("Albedo"),    "mt.albedoTex"},
-    {HS_("AO"),        "mt.AOTex"},
-    {HS_("Depth"),     "mt.depthTex"},
-    {HS_("Metallic"),  "mt.metallicTex"},
-    {HS_("Normal"),    "mt.normalTex"},
-    {HS_("Roughness"), "mt.roughnessTex"}
-};
-
 Texture::Texture(const TextureDescriptor& descriptor):
 resourceID_(descriptor.resource_id)
 {
@@ -336,6 +336,7 @@ resourceID_(descriptor.resource_id)
     auto it = RESOURCE_MAP_.find(resourceID_);
     bool cache_exists = (it != RESOURCE_MAP_.end());
 
+    // Register a sampler name for each unit
     for(auto&& [key, sampler_name]: SAMPLERS)
     {
         if(descriptor.has_unit.at(key))
@@ -391,7 +392,7 @@ resourceID_(descriptor.resource_id)
 
             try
             {
-                px_bufs[ii] = PngLoader::Instance().load_png(("../res/textures/" + fileNames.at(key)).c_str());
+                px_bufs[ii] = PngLoader::Instance().load_png((TEX_IMAGE_PATH + fileNames.at(key)).c_str());
                 data[ii] = px_bufs[ii]->get_data_pointer();
                 #if __DEBUG_TEXTURE_VERBOSE__
                     DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>");
@@ -440,172 +441,6 @@ resourceID_(descriptor.resource_id)
         RESOURCE_MAP_.insert(std::make_pair(resourceID_, internal_));
     }
 }
-
-/* [FUTURE]
-    If ever in need to specify different filters / formats
-    / attachments, this constructor will need some modification.
-    There could be another file somewhere named
-    assetName_descriptor.xml that would contain the specific
-    information required to build the textures for the asset
-    named assetName. If such a file were found, there would
-    be a first initialization step with the data extracted
-    from the file put into arrays later addressed to the
-    TextureInternal constructor via make_shared().
-*/
-/*
-Texture::Texture(const char* asset_name,
-                 GLenum filter,
-                 GLenum internalFormat,
-                 GLenum format,
-                 bool clamp,
-                 bool lazy_mipmap):
-resourceID_(H_(asset_name))
-{
-    // Find asset files
-    AMap::iterator it = ASSET_MAP_.find(resourceID_);
-    if(it == ASSET_MAP_.end())
-    {
-        std::stringstream ss;
-        ss << "[Texture] Unable to find asset name: <n>" << asset_name << "</n>";
-        DLOGF(ss.str());
-        //std::cout << asset_name << std::endl;
-        throw std::runtime_error("Unable to find asset by name.");
-    }
-
-    // Get file names for all texture file related to asset name
-    auto& fileNames = it->second;
-    uint32_t numTextures = fileNames.size();
-
-    #if __DEBUG_TEXTURE_VERBOSE__
-    {
-        std::stringstream ss;
-        ss << "[Texture] New texture from asset name: <n>" << asset_name << "</n>";
-        DLOGN(ss.str());
-    }
-    #endif
-
-    // Try to find a cached version first
-    auto it2 = RESOURCE_MAP_.find(resourceID_);
-
-    // Push uniform sampler names
-    for(uint32_t ii = 0; ii < numTextures; ++ii)
-    {
-        auto samplerName = extract_texture_sampler_name(fileNames[ii]);
-        uniform_sampler_names_.push_back(samplerName);
-        #if __DEBUG_TEXTURE_VERBOSE__
-            if(it2 == RESOURCE_MAP_.end())
-            {
-                std::stringstream ss;
-                ss << "<v>" << samplerName << "</v> [" << ii << "] <- <p>"
-                   << fileNames[ii] << "</p>";
-                DLOGI(ss.str());
-            }
-        #endif
-    }
-
-    // If cached version exists, use it.
-    if(it2 != RESOURCE_MAP_.end())
-    {
-        internal_ = it2->second;
-#if __DEBUG_TEXTURE_VERBOSE__
-        DLOGI("<i>Using cache.</i>");
-#endif
-        return;
-    }
-
-    // Load default textures if needed
-    for(const std::string& samplerName : W_MANDATORY_SAMPLERS_)
-    {
-        if(std::find(uniform_sampler_names_.begin(),
-                     uniform_sampler_names_.end(),
-                     samplerName) == uniform_sampler_names_.end())
-        {
-            uniform_sampler_names_.push_back(samplerName);
-            std::string path(TEX_IMAGE_PATH);
-            path += "default_";
-            path += samplerName;
-            path += ".png";
-            fileNames.push_back(path);
-            ++numTextures;
-#if __DEBUG_TEXTURE_VERBOSE__
-            std::stringstream ss;
-            ss << "<v>" << samplerName << "</v> [" << numTextures-1
-               << "] <- <d>DEFAULT</d>";
-            DLOGI(ss.str());
-#endif
-        }
-    }
-
-    // Did not find a cached version, load files
-    unsigned char** data    = new unsigned char*[numTextures];
-    PixelBuffer** px_bufs   = new PixelBuffer*[numTextures];
-    GLenum* filters         = new GLenum[numTextures];
-    GLenum* internalFormats = new GLenum[numTextures];
-    GLenum* formats         = new GLenum[numTextures];
-
-    for (uint32_t ii=0; ii<numTextures; ++ii)
-    {
-        filters[ii]         = filter;
-        if(uniform_sampler_names_[ii]==std::string("mt.diffuseTex"))
-        {
-            // Load Albedo / Diffuse textures as sRGB to avoid
-            // double gamma-correction.
-            internalFormats[ii] = GL_SRGB_ALPHA;
-        }
-        else
-        {
-            internalFormats[ii] = internalFormat;
-        }
-        formats[ii]         = format;
-        try
-        {
-            px_bufs[ii] = PngLoader::Instance().load_png(fileNames[ii].c_str());
-            data[ii] = px_bufs[ii]->get_data_pointer();
-#if __DEBUG_TEXTURE_VERBOSE__
-            DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>");
-            std::cout << *px_bufs[ii] << std::endl;
-#endif
-        }
-        catch(const std::exception& e)
-        {
-            DLOGF("[Texture] Unable to load Texture.");
-            for (uint32_t jj=0; jj<=ii; ++jj)
-                if(px_bufs[jj])
-                    delete px_bufs[jj];
-            delete [] formats;
-            delete [] internalFormats;
-            delete [] filters;
-            delete [] data;
-            delete [] px_bufs;
-            throw;
-        }
-    }
-
-    // Create new texture internal
-    internal_ = std::make_shared<TextureInternal>(GL_TEXTURE_2D,
-                                                  numTextures,
-                                                  px_bufs[0]->get_width(),
-                                                  px_bufs[0]->get_height(),
-                                                  data,
-                                                  filters,
-                                                  internalFormats,
-                                                  formats,
-                                                  clamp,
-                                                  lazy_mipmap);
-
-    // Free pixel buffers
-    for (uint32_t jj=0; jj<numTextures; ++jj)
-        if(px_bufs[jj])
-            delete px_bufs[jj];
-    delete [] formats;
-    delete [] internalFormats;
-    delete [] filters;
-    delete [] data;
-    delete [] px_bufs;
-
-    // Cache resource for later
-    RESOURCE_MAP_.insert(std::make_pair(resourceID_, internal_));
-}*/
 
 Texture::~Texture()
 {

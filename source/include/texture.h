@@ -47,16 +47,9 @@ private:
 public:
     static const std::string TEX_IMAGE_PATH;
 
+    // Load texture from TextureDescriptor structure
+    // Can be obtained from MaterialFactory
     Texture(const TextureDescriptor& descriptor);
-
-    // Load multiple textures from asset name
-    // static load_asset_map() MUST be called before
-    /*Texture(const char* asset_name,
-            GLenum filter          = GL_LINEAR_MIPMAP_LINEAR,
-            GLenum internalFormat  = GL_RGBA,
-            GLenum format          = GL_RGBA,
-            bool   clamp           = false,
-            bool lazy_mipmap       = false);*/
 
     // Create an empty texture, ideal for creating a render target for an FBO
     // Init all units with same filter and format parameters

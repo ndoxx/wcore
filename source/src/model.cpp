@@ -6,28 +6,6 @@
 #include "vertex_format.h"
 
 using namespace math;
-/*
-Model::Model(Mesh<Vertex3P3N3T2U>* pmesh, const char* asset_name):
-pmesh_(pmesh),
-pmaterial_(new Material(asset_name)),
-trans_(),
-obb_(*this),
-aabb_(*this),
-frustum_cull_(true),
-is_dynamic_(false),
-shadow_cull_face_(0)
-{
-    #ifdef __DEBUG_MODEL_VERBOSE__
-        DLOGN("[MODEL] New model.");
-        std::stringstream ss;
-        ss << "Mesh: n_indices=" << pmesh->get_ni() << " n_vertices="
-           << pmesh->get_nv();
-        DLOGI(ss.str());
-        ss.str("");
-        ss << "Material: from asset: " << asset_name;
-        DLOGI(ss.str());
-    #endif
-}*/
 
 Model::Model(Mesh<Vertex3P3N3T2U>* pmesh, Material* material):
 pmesh_(pmesh),

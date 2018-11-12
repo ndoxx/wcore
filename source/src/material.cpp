@@ -23,23 +23,6 @@ blend_(false)
 
 }
 
-/*
-Material::Material(const char* assetName):
-texture_(new Texture(assetName)),
-albedo_(0.0,0.0,0.0),
-metallic_(0.0f),
-roughness_(0.5f),
-parallax_height_scale_(0.0f),
-alpha_(1.0f),
-textured_(true),
-use_normal_map_(false),
-use_parallax_map_(false),
-use_overlay_(false),
-blend_(false)
-{
-
-}*/
-
 Material::Material(const math::vec3& tint,
                    float roughness,
                    float metallic,

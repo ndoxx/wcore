@@ -4618,3 +4618,6 @@ Je me servirai du dôme pour rendre un **Sky dome** un peu plus tard. Je préfè
 [ ] Gérer plusieurs définitions
 [ ] _Material_ définit des grandeurs uniformes qui peuvent remplacer une texture unit, systématiser ceci afin de rendre les textures optionnelles.
     [ ] Ce qui permettra de se débarrasser des textures par défaut.
+
+##[TODO]
+[ ] Le jeu DOIT être exécuté depuis le dossier build sinon ça ne fonctionne pas. C'est dû aux nombreux paths hardcodés. Corriger ça.

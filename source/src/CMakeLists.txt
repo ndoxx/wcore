@@ -77,6 +77,8 @@ add_definitions(-D__PROFILING_RENDERERS__)
 add_definitions(-D__EXPERIMENTAL_POS_RECONSTRUCTION__)
 add_definitions(-D__EXPERIMENTAL_TERRAIN_HEX_MESH__)
 
+add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
+
 target_link_libraries(wcore
                       m
                       stdc++fs
