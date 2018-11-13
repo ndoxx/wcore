@@ -6,6 +6,7 @@
 #include "material.h"
 #include "texture.h"
 #include "logger.h"
+#include "material_factory.h"
 
 std::vector<std::string> Shader::global_defines_ =
 {
@@ -577,20 +578,62 @@ bool Shader::send_uniforms<Texture>(const Texture& texture) const
 template <>
 bool Shader::send_uniforms<Material>(const Material& material) const
 {
-    if(material.is_textured())
+    bool has_map = false;
+
+    if((has_map = material.has_texture(TextureUnit::ALBEDO)))
     {
-        // Send material's texture uniforms
-        send_uniforms(material.get_texture());
+        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::ALBEDO),
+                          material.get_texture().get_unit_index(TextureUnit::ALBEDO));
     }
     else
     {
-        send_uniform(H_("mt.v3_tint"), material.get_albedo());
+        send_uniform(H_("mt.v3_albedo"), material.get_albedo());
+    }
+    send_uniform(H_("mt.b_has_albedo"), has_map);
+
+    if((has_map = material.has_texture(TextureUnit::AO)))
+    {
+        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::AO),
+                          material.get_texture().get_unit_index(TextureUnit::AO));
+    }
+    send_uniform(H_("mt.b_has_ao"), has_map);
+
+    if(material.has_texture(TextureUnit::DEPTH))
+    {
+        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::DEPTH),
+                          material.get_texture().get_unit_index(TextureUnit::DEPTH));
+    }
+    send_uniform(H_("mt.b_use_parallax_map"), material.has_parallax_map());
+
+    if((has_map = material.has_texture(TextureUnit::METALLIC)))
+    {
+        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::METALLIC),
+                          material.get_texture().get_unit_index(TextureUnit::METALLIC));
+    }
+    else
+    {
+        send_uniform(H_("mt.f_metallic"), material.get_metallic());
+    }
+    send_uniform(H_("mt.b_has_metallic"), has_map);
+
+
+    if(material.has_texture(TextureUnit::NORMAL))
+    {
+        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::NORMAL),
+                          material.get_texture().get_unit_index(TextureUnit::NORMAL));
+    }
+    send_uniform(H_("mt.b_use_normal_map"), material.has_normal_map());
+
+    if((has_map = material.has_texture(TextureUnit::ROUGHNESS)))
+    {
+        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::ROUGHNESS),
+                          material.get_texture().get_unit_index(TextureUnit::ROUGHNESS));
+    }
+    else
+    {
         send_uniform(H_("mt.f_roughness"), material.get_roughness());
     }
-    send_uniform(H_("mt.b_is_textured"), material.is_textured());
-    send_uniform(H_("mt.b_use_normal_map"), material.has_normal_map());
-    send_uniform(H_("mt.b_use_parallax_map"), material.has_parallax_map());
-    send_uniform(H_("mt.b_has_overlay"), material.has_overlay());
+    send_uniform(H_("mt.b_has_roughness"), has_map);
 
     // Parallax mapping
     if(material.has_parallax_map())

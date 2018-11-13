@@ -17,7 +17,7 @@ height_(ptexture->get_height())
 BufferModule::BufferModule(unsigned int width,
                            unsigned int height):
 BufferModule("unused",
-             std::make_shared<Texture>(std::vector<std::string>{"unused"},
+             std::make_shared<Texture>(std::vector<hash_t>{H_("unused")},
                                        width,
                                        height),
              std::vector<GLenum>{GL_NONE})

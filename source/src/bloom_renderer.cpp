@@ -18,7 +18,7 @@ blur_pass_shader_(ShaderResource("blurpass.vert;blurpass.frag"))
     for(int ii=0; ii<3; ++ii)
     {
         bloom_h_tex_.push_back(std::make_shared<Texture>(
-                std::vector<std::string>{"brightTex"},
+                std::vector<hash_t>{H_("brightTex")},
 #ifdef __OPTIM_BLOOM_USE_PP2__
                     math::pp2(GLB.SCR_W/pow(2,ii+1)),
                     math::pp2(GLB.SCR_H/pow(2,ii+1)),
@@ -36,7 +36,7 @@ blur_pass_shader_(ShaderResource("blurpass.vert;blurpass.frag"))
     }
 
     auto bloom_tex = std::make_shared<Texture>(
-                            std::vector<std::string>{"bloomTex"},
+                            std::vector<hash_t>{H_("bloomTex")},
                             GLB.SCR_W/2,
                             GLB.SCR_H/2,
                             GL_TEXTURE_2D,

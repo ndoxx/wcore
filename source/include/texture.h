@@ -39,6 +39,7 @@ private:
     hash_t    resourceID_;
     uint16_t  units_;
     std::vector<hash_t> uniform_sampler_names_;
+    std::map<TextureUnit, uint32_t> unit_indices_;
 
     static RMap RESOURCE_MAP_;   // TextureInternal cache
     static TMap NAMED_TEXTURES_; // Holds pointers to named textures
@@ -53,7 +54,7 @@ public:
 
     // Create an empty texture, ideal for creating a render target for an FBO
     // Init all units with same filter and format parameters
-    Texture(const std::vector<std::string>& sampler_names,
+    Texture(const std::vector<hash_t>& sampler_names,
             uint32_t width         = 0,
             uint32_t height        = 0,
             GLenum textureTarget   = GL_TEXTURE_2D,
@@ -63,7 +64,7 @@ public:
             bool clamp             = false,
             bool lazy_mipmap       = true);
 
-    Texture(const std::vector<std::string>& sampler_names,
+    Texture(const std::vector<hash_t>& sampler_names,
             const std::vector<GLenum>& filters,
             const std::vector<GLenum>& internalFormats,
             const std::vector<GLenum>& formats,
@@ -104,6 +105,10 @@ public:
 
     // Check if texture has a given unit (like albedo, normal map...)
     inline bool has_unit(TextureUnit unit) const { return (units_&(uint16_t)unit); }
+
+    inline uint32_t get_unit_index(TextureUnit unit) const { return unit_indices_.at(unit); }
+    static inline hash_t unit_to_sampler_name(TextureUnit unit) { return SAMPLER_NAMES_.at(unit); }
+
 
     bool operator==(const Texture& texture) const;
     bool operator!=(const Texture& texture) const;

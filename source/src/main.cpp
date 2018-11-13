@@ -56,8 +56,8 @@ int main(int argc, char const *argv[])
     // LOADING
     context._setup([&](GLFWwindow* window)
     {
-        scene_loader.load_file_xml("../res/xml/crystal_scene.xml");
-        // scene_loader.load_file_xml("../res/xml/tree_scene.xml");
+        // scene_loader.load_file_xml("../res/xml/crystal_scene.xml");
+        scene_loader.load_file_xml("../res/xml/tree_scene.xml");
         scene_loader.load_global(daylight);
         chunk_manager.init();
         // Map key bindings

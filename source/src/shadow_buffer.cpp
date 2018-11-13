@@ -6,7 +6,7 @@ ShadowBuffer::ShadowBuffer(unsigned int width,
                            unsigned int height):
 BufferModule("shadowmap",
 std::make_shared<Texture>(
-    std::vector<std::string>{"shadowTex"},
+    std::vector<hash_t>{H_("shadowTex")},
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
     std::vector<GLenum>     {GL_LINEAR},
     std::vector<GLenum>     {GL_RGBA32F},

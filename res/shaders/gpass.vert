@@ -44,6 +44,7 @@ void main()
 
     vertex_normal = N;
     tangent_viewDir = normalize(TBN_inv * vertex_pos);
+    tangent_viewDir.y = -tangent_viewDir.y; // WTF? else parallax mapping would give wrong perspective along world z axis
 
     gl_Position = tr.m4_ModelViewProjection * vec4(in_position,1.0);
 }

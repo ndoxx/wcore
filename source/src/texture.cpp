@@ -40,20 +40,6 @@ void Texture::debug_print_rmap_bindings()
 }
 #endif
 
-static std::string extract_texture_sampler_name(const std::string& fileName)
-{
-    auto const pos_dot = fileName.find_last_of('.');
-    auto const pos_und = fileName.find_last_of('_');
-    return fileName.substr(pos_und+1, pos_dot-pos_und-1);
-}
-
-static std::string extract_texture_asset_name(const std::string& fileName)
-{
-    auto const pos_und = fileName.find_last_of('_');
-    auto const pos_slh = fileName.find_last_of('/');
-    return fileName.substr(pos_slh+1, pos_und-pos_slh-1);
-}
-
 void Texture::register_named_texture(hash_t name, pTexture ptex)
 {
     #if __DEBUG_TEXTURE_VERBOSE__
@@ -222,7 +208,7 @@ void Texture::TextureInternal::bind(GLuint textureNum) const
     glBindTexture(textureTarget_, textureID_[textureNum]);
 }
 
-Texture::Texture(const std::vector<std::string>& sampler_names,
+Texture::Texture(const std::vector<hash_t>& sampler_names,
                  uint32_t width,
                  uint32_t height,
                  GLenum textureTarget,
@@ -232,13 +218,9 @@ Texture::Texture(const std::vector<std::string>& sampler_names,
                  bool clamp,
                  bool lazy_mipmap):
 resourceID_(H_("")),
-units_(0)
+units_(0),
+uniform_sampler_names_(sampler_names)
 {
-    for(const std::string& sampler_name: sampler_names)
-    {
-        uniform_sampler_names_.push_back(H_(sampler_name.c_str()));
-    }
-
     GLenum* filters         = new GLenum[sampler_names.size()];
     GLenum* internalFormats = new GLenum[sampler_names.size()];
     GLenum* formats         = new GLenum[sampler_names.size()];
@@ -264,7 +246,7 @@ units_(0)
     delete [] formats;
 }
 
-Texture::Texture(const std::vector<std::string>& sampler_names,
+Texture::Texture(const std::vector<hash_t>& sampler_names,
                  const std::vector<GLenum>& filters,
                  const std::vector<GLenum>& internalFormats,
                  const std::vector<GLenum>& formats,
@@ -284,25 +266,22 @@ internal_(new TextureInternal(textureTarget,
                               clamp,
                               lazy_mipmap)),
 resourceID_(H_("")),
-units_(0)
-{
-    for(const std::string& sampler_name: sampler_names)
-    {
-        uniform_sampler_names_.push_back(H_(sampler_name.c_str()));
-    }
-}
+units_(0),
+uniform_sampler_names_(sampler_names){}
 
 Texture::Texture(const Texture& texture) :
 internal_(texture.internal_),
 resourceID_(texture.resourceID_),
 units_(texture.units_),
-uniform_sampler_names_(texture.uniform_sampler_names_){}
+uniform_sampler_names_(texture.uniform_sampler_names_),
+unit_indices_(texture.unit_indices_){}
 
 Texture::Texture(Texture&& texture):
 internal_(std::move(texture.internal_)),
 resourceID_(std::move(texture.resourceID_)),
 units_(std::move(texture.units_)),
-uniform_sampler_names_(std::move(texture.uniform_sampler_names_)){}
+uniform_sampler_names_(std::move(texture.uniform_sampler_names_)),
+unit_indices_(std::move(texture.unit_indices_)){}
 
 #include <sstream>
 
@@ -331,7 +310,9 @@ units_(descriptor.units)
     {
         if(descriptor.has_unit(key))
         {
+            unit_indices_[key] = uniform_sampler_names_.size();
             uniform_sampler_names_.push_back(sampler_name);
+
             #if __DEBUG_TEXTURE_VERBOSE__
                 if(!cache_exists)
                 {

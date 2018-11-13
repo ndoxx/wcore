@@ -9,15 +9,21 @@ struct material
     sampler2D normalTex;
     sampler2D depthTex;
     sampler2D overlayTex;
-
     sampler2D AOTex;
     sampler2D metallicTex;
     sampler2D roughnessTex;
 
-    float f_roughness;
     float f_parallax_height_scale;
-    vec3 v3_tint;
-    bool b_is_textured;
+
+    vec3  v3_albedo;
+    float f_roughness;
+    float f_metallic;
+
+    bool b_has_albedo;
+    bool b_has_ao;
+    bool b_has_metallic;
+    bool b_has_roughness;
+
     bool b_use_normal_map;
     bool b_use_parallax_map;
     bool b_has_overlay;
@@ -60,7 +66,6 @@ void main()
     if(mt.b_use_normal_map)
     {
         vec3 viewDir = frag_tangent_viewDir;//normalize(frag_tangent_fragPos-frag_tangent_viewPos);
-        viewDir.y = -viewDir.y; // WTF? else parallax mapping would give wrong perspective along world z axis
         if(mt.b_use_parallax_map)
             texCoords = parallax_map(frag_texCoord, viewDir, -mt.f_parallax_height_scale, mt.depthTex);
             // WTF minus mt.f_parallax_height_scale? else inverted depth
@@ -77,33 +82,23 @@ void main()
     }
 
     vec2 normal_cmp = compress_normal(normal);
+
+    vec3  albedo    = mt.b_has_albedo?    texture(mt.albedoTex, texCoords).rgb:  mt.v3_albedo;
+    float roughness = mt.b_has_roughness? texture(mt.roughnessTex, texCoords).r: mt.f_roughness;
+    float metallic  = mt.b_has_metallic?  texture(mt.metallicTex, texCoords).r:  mt.f_metallic;
+    float ao        = mt.b_has_ao?        texture(mt.AOTex, texCoords).r:        1.0f;
+
     // DEBUG wireframe color
     float wireframe = edge_factor() * rd.f_wireframe_mix;
 
-    if(mt.b_is_textured)
-    {
 #ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
-        vec3 albedo  = mix(texture(mt.albedoTex, texCoords).rgb, vec3(0.5f), wireframe);
-        out_albedo   = vec4(albedo, texture(mt.roughnessTex, texCoords).r);
+    albedo = mix(albedo, vec3(0.5f), wireframe);
+    out_albedo = vec4(albedo, roughness);
 #else
-        out_albedo   = vec4(texture(mt.albedoTex, texCoords).rgb, wireframe);
-        out_position = vec4(frag_pos, texture(mt.roughnessTex, texCoords).r);
+    out_albedo   = vec4(albedo, wireframe);
+    out_position = vec4(frag_pos, roughness);
 #endif
-        out_normal   = vec4(normal_cmp,
-                            texture(mt.metallicTex, texCoords).r,
-                            texture(mt.AOTex, texCoords).r);
-    }
-    else
-    {
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
-        vec3 albedo  = mix(mt.v3_tint, vec3(0.5f), wireframe);
-        out_albedo   = vec4(albedo, mt.f_roughness);
-#else
-        out_albedo   = vec4(mt.v3_tint, wireframe);
-        out_position = vec4(frag_pos, mt.f_roughness);
-#endif
-        out_normal   = vec4(normal_cmp, 0.0, 1.0);
-    }
+    out_normal = vec4(normal_cmp, metallic, ao);
 
 /*
     // Display LoD as green tint
@@ -112,9 +107,11 @@ void main()
         out_albedo.g = 1.0;
 */
 
+#ifndef __EXPERIMENTAL_POS_RECONSTRUCTION__
     // DEBUG Overlay mask
     if(mt.b_has_overlay)
         out_albedo.a += step(0.5, texture(mt.overlayTex, texCoords).g);
+#endif
 }
 
 // Function to compute fragment distance to edges

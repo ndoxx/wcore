@@ -53,7 +53,10 @@ void Material::bind_texture() const
     texture_->bind_all();
 }
 
-bool Material::has_texture(TextureUnit unit)
+bool Material::has_texture(TextureUnit unit) const
 {
-    return texture_->has_unit(unit);
+    if(texture_)
+        return texture_->has_unit(unit);
+    else
+        return false;
 }

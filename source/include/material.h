@@ -40,7 +40,7 @@ public:
              bool blend = false);
     ~Material();
 
-    bool has_texture(TextureUnit unit);
+    bool has_texture(TextureUnit unit) const;
 
     inline bool is_textured() const                { return textured_; }
     inline const Texture& get_texture() const      { return *texture_; }
