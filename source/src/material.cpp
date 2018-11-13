@@ -15,8 +15,8 @@ roughness_(descriptor.roughness),
 parallax_height_scale_(descriptor.parallax_height_scale),
 alpha_(descriptor.transparency),
 textured_(true),
-use_normal_map_(descriptor.texture_descriptor.has_unit.at(HS_("Normal"))),
-use_parallax_map_(descriptor.texture_descriptor.has_unit.at(HS_("Depth"))),
+use_normal_map_(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL)),
+use_parallax_map_(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH)),
 use_overlay_(false),
 blend_(false)
 {
@@ -51,4 +51,9 @@ Material::~Material()
 void Material::bind_texture() const
 {
     texture_->bind_all();
+}
+
+bool Material::has_texture(TextureUnit unit)
+{
+    return texture_->has_unit(unit);
 }

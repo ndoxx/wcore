@@ -1,9 +1,30 @@
 #include <GL/glew.h>
 
 #include "material_factory.h"
+#include "material.h"
 #include "logger.h"
 
 using namespace rapidxml;
+
+std::map<hashstr_t, TextureUnit> MaterialFactory::NAME_TO_TEXTURE_SAMPLER =
+{
+    {HS_("Albedo"),    TextureUnit::ALBEDO},
+    {HS_("AO"),        TextureUnit::AO},
+    {HS_("Depth"),     TextureUnit::DEPTH},
+    {HS_("Metallic"),  TextureUnit::METALLIC},
+    {HS_("Normal"),    TextureUnit::NORMAL},
+    {HS_("Roughness"), TextureUnit::ROUGHNESS}
+};
+
+std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
+{
+    {TextureUnit::ALBEDO,    "Albedo"},
+    {TextureUnit::AO,        "AO"},
+    {TextureUnit::DEPTH,     "Depth"},
+    {TextureUnit::METALLIC,  "Metallic"},
+    {TextureUnit::NORMAL,    "Normal"},
+    {TextureUnit::ROUGHNESS, "Roughness"}
+};
 
 TextureParameters::TextureParameters():
 filter(GL_LINEAR_MIPMAP_LINEAR),
@@ -33,36 +54,36 @@ std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc)
     TextureDescriptor::TexMap::const_iterator it;
 
     stream << "Albedo: ";
-    if((it = desc.texture_descriptor.locations.find(HS_("Albedo"))) != desc.texture_descriptor.locations.end())
+    if((it = desc.texture_descriptor.locations.find(TextureUnit::ALBEDO)) != desc.texture_descriptor.locations.end())
         stream << it->second << std::endl;
     else
         stream <<  desc.albedo << std::endl;
 
     stream << "Metallic: ";
-    if((it = desc.texture_descriptor.locations.find(HS_("Metallic"))) != desc.texture_descriptor.locations.end())
+    if((it = desc.texture_descriptor.locations.find(TextureUnit::METALLIC)) != desc.texture_descriptor.locations.end())
         stream << it->second << std::endl;
     else
         stream <<  desc.metallic << std::endl;
 
     stream << "Roughness: ";
-    if((it = desc.texture_descriptor.locations.find(HS_("Roughness"))) != desc.texture_descriptor.locations.end())
+    if((it = desc.texture_descriptor.locations.find(TextureUnit::ROUGHNESS)) != desc.texture_descriptor.locations.end())
         stream << it->second << std::endl;
     else
         stream <<  desc.roughness << std::endl;
 
-    if((it = desc.texture_descriptor.locations.find(HS_("AO"))) != desc.texture_descriptor.locations.end())
+    if((it = desc.texture_descriptor.locations.find(TextureUnit::AO)) != desc.texture_descriptor.locations.end())
     {
         stream << "Ambient Occlusion: " << it->second << std::endl;
     }
 
-    if((it = desc.texture_descriptor.locations.find(HS_("Normal"))) != desc.texture_descriptor.locations.end())
+    if((it = desc.texture_descriptor.locations.find(TextureUnit::NORMAL)) != desc.texture_descriptor.locations.end())
     {
         stream << "Normal map: " << it->second << std::endl;
         if(!desc.enable_normal_mapping)
             stream << "Normal map disabled." << std::endl;
     }
 
-    if((it = desc.texture_descriptor.locations.find(HS_("Depth"))) != desc.texture_descriptor.locations.end())
+    if((it = desc.texture_descriptor.locations.find(TextureUnit::DEPTH)) != desc.texture_descriptor.locations.end())
     {
         stream << "Depth: " << it->second << " & Parallax height scale: " << desc.parallax_height_scale << std::endl;
         if(!desc.enable_parallax_mapping)
@@ -102,15 +123,10 @@ void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* root)
     }
 }
 
-static std::map<hashstr_t, const char*> TEX_UNITS =
+Material* MaterialFactory::make_material(hash_t asset_name)
 {
-    {HS_("Albedo"),    "Albedo"},
-    {HS_("AO"),        "AO"},
-    {HS_("Depth"),     "Depth"},
-    {HS_("Metallic"),  "Metallic"},
-    {HS_("Normal"),    "Normal"},
-    {HS_("Roughness"), "Roughness"}
-};
+    return new Material(get_descriptor(asset_name));
+}
 
 void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, MaterialDescriptor& descriptor)
 {
@@ -119,12 +135,12 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, Mate
     if(tex_node)
     {
         std::string texture_map;
-        for(auto&& [key, node_name]: TEX_UNITS)
+        for(auto&& [key, node_name]: TEX_SAMPLERS_NODES)
         {
-            if((descriptor.texture_descriptor.has_unit[key] = xml::parse_node(tex_node, node_name, texture_map)))
+            if(xml::parse_node(tex_node, node_name, texture_map))
             {
                 descriptor.texture_descriptor.locations[key] = texture_map;
-                //descriptor.texture_descriptor.parameters[key] = TextureParameters();
+                descriptor.texture_descriptor.add_unit(key);
             }
         }
     }
@@ -133,20 +149,20 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, Mate
     xml_node<>* uni_node = node->first_node("Uniforms");
     if(uni_node)
     {
-        if(!descriptor.texture_descriptor.has_unit[HS_("Albedo")])
+        if(!descriptor.texture_descriptor.has_unit(TextureUnit::ALBEDO))
             xml::parse_node(uni_node, "Albedo", descriptor.albedo);
-        if(!descriptor.texture_descriptor.has_unit[HS_("Metallic")])
+        if(!descriptor.texture_descriptor.has_unit(TextureUnit::METALLIC))
             xml::parse_node(uni_node, "Metallic", descriptor.metallic);
-        if(!descriptor.texture_descriptor.has_unit[HS_("Roughness")])
+        if(!descriptor.texture_descriptor.has_unit(TextureUnit::ROUGHNESS))
             xml::parse_node(uni_node, "Roughness", descriptor.roughness);
 
         descriptor.has_transparency = xml::parse_node(uni_node, "Transparency", descriptor.transparency);
     }
 
     // Override
-    if(descriptor.texture_descriptor.has_unit[HS_("Normal")])
+    if(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL))
         xml::parse_node(node, "NormalMap", descriptor.enable_normal_mapping);
-    if(descriptor.texture_descriptor.has_unit[HS_("Depth")])
+    if(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH))
         xml::parse_node(node, "ParallaxMap", descriptor.enable_parallax_mapping);
 
     // Shading options

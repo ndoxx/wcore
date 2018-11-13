@@ -14,18 +14,16 @@ namespace fs = std::filesystem;
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;
 Texture::TMap Texture::NAMED_TEXTURES_;
-//Texture::AMap Texture::ASSET_MAP_;
-//const std::vector<std::string> Texture::W_MANDATORY_SAMPLERS_{"mt.albedoTex", "mt.metallicTex", "mt.AOTex", "mt.roughnessTex"};
 const std::string Texture::TEX_IMAGE_PATH("../res/textures/");
 
-static std::map<hashstr_t, const char*> SAMPLERS =
+static std::map<TextureUnit, const char*> SAMPLERS =
 {
-    {HS_("Albedo"),    "mt.albedoTex"},
-    {HS_("AO"),        "mt.AOTex"},
-    {HS_("Depth"),     "mt.depthTex"},
-    {HS_("Metallic"),  "mt.metallicTex"},
-    {HS_("Normal"),    "mt.normalTex"},
-    {HS_("Roughness"), "mt.roughnessTex"}
+    {TextureUnit::ALBEDO,    "mt.albedoTex"},
+    {TextureUnit::AO,        "mt.AOTex"},
+    {TextureUnit::DEPTH,     "mt.depthTex"},
+    {TextureUnit::METALLIC,  "mt.metallicTex"},
+    {TextureUnit::NORMAL,    "mt.normalTex"},
+    {TextureUnit::ROUGHNESS, "mt.roughnessTex"}
 };
 
 #ifdef __DEBUG_TEXTURE__
@@ -55,28 +53,6 @@ static std::string extract_texture_asset_name(const std::string& fileName)
     auto const pos_slh = fileName.find_last_of('/');
     return fileName.substr(pos_slh+1, pos_und-pos_slh-1);
 }
-/*
-void Texture::load_asset_map()
-{
-    DLOGN("[Texture] Loading texture paths.");
-    // Iterate over files in texture directory, find files containing
-    // the asset name
-    for (auto & p : fs::directory_iterator(TEX_IMAGE_PATH))
-    {
-        if(!is_directory(p))
-        {
-            std::string fileName(p.path().c_str());
-            std::string assetName = extract_texture_asset_name(fileName);
-
-            hash_t hashname = H_(assetName.c_str());
-            AMap::iterator it = ASSET_MAP_.find(hashname);
-            if(it != ASSET_MAP_.end())
-                it->second.push_back(fileName);
-            else
-                ASSET_MAP_.insert(std::make_pair(hashname,std::vector<std::string>{fileName}));
-        }
-    }
-}*/
 
 void Texture::register_named_texture(hash_t name, pTexture ptex)
 {
@@ -256,6 +232,7 @@ Texture::Texture(const std::vector<std::string>& sampler_names,
                  bool clamp,
                  bool lazy_mipmap):
 resourceID_(H_("")),
+units_(0),
 uniform_sampler_names_(sampler_names)
 {
     GLenum* filters         = new GLenum[sampler_names.size()];
@@ -303,22 +280,26 @@ internal_(new TextureInternal(textureTarget,
                               clamp,
                               lazy_mipmap)),
 resourceID_(H_("")),
+units_(0),
 uniform_sampler_names_(sampler_names){}
 
 Texture::Texture(const Texture& texture) :
 internal_(texture.internal_),
 resourceID_(texture.resourceID_),
+units_(texture.units_),
 uniform_sampler_names_(texture.uniform_sampler_names_){}
 
 Texture::Texture(Texture&& texture):
 internal_(std::move(texture.internal_)),
 resourceID_(std::move(texture.resourceID_)),
+units_(std::move(texture.units_)),
 uniform_sampler_names_(std::move(texture.uniform_sampler_names_)){}
 
 #include <sstream>
 
 Texture::Texture(const TextureDescriptor& descriptor):
-resourceID_(descriptor.resource_id)
+resourceID_(descriptor.resource_id),
+units_(descriptor.units)
 {
     auto& fileNames = descriptor.locations;
     uint32_t numTextures = fileNames.size();
@@ -339,7 +320,7 @@ resourceID_(descriptor.resource_id)
     // Register a sampler name for each unit
     for(auto&& [key, sampler_name]: SAMPLERS)
     {
-        if(descriptor.has_unit.at(key))
+        if(descriptor.has_unit(key))
         {
             uniform_sampler_names_.push_back(sampler_name);
             #if __DEBUG_TEXTURE_VERBOSE__
@@ -374,7 +355,7 @@ resourceID_(descriptor.resource_id)
         uint32_t ii=0;
         for(auto&& [key, sampler_name]: SAMPLERS)
         {
-            if(!descriptor.has_unit.at(key))
+            if(!descriptor.has_unit(key))
                 continue;
 
             filters[ii] = descriptor.parameters.filter;

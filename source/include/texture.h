@@ -12,6 +12,7 @@
 
 #include "utils.h"
 
+enum class TextureUnit: uint16_t;
 struct TextureDescriptor;
 
 class Texture
@@ -36,10 +37,9 @@ private:
 
     pInternal internal_;
     hash_t    resourceID_;
+    uint16_t  units_;
     std::vector<std::string> uniform_sampler_names_;
 
-
-    //static AMap ASSET_MAP_;      // Holds paths to loadable textures, ordered by asset name
     static RMap RESOURCE_MAP_;   // TextureInternal cache
     static TMap NAMED_TEXTURES_; // Holds pointers to named textures
     static const std::vector<std::string> W_MANDATORY_SAMPLERS_;
@@ -102,10 +102,12 @@ public:
     inline GLuint get_texture_id(uint32_t index) const;
     inline GLuint operator[](uint32_t index) const;
 
+    // Check if texture has a given unit (like albedo, normal map...)
+    inline bool has_unit(TextureUnit unit) const { return (units_&(uint16_t)unit); }
+
     bool operator==(const Texture& texture) const;
     bool operator!=(const Texture& texture) const;
 
-    //static void load_asset_map();
 #ifdef __DEBUG_TEXTURE__
     // For all cached textures, print their current binding state (id, active texture)
     // Active texture is -1 if unbound

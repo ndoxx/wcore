@@ -787,9 +787,7 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
             pModel pmdl;
             if(use_asset)
             {
-                //pmdl = std::make_shared<Model>(pmesh, asset.c_str());
-                const auto& descriptor = material_factory_->get_descriptor(H_(asset.c_str()));
-                Material* pmat = new Material(descriptor);
+                Material* pmat = material_factory_->make_material(H_(asset.c_str()));
                 pmdl = std::make_shared<Model>(pmesh, pmat);
             }
             else
@@ -1023,9 +1021,7 @@ Material* SceneLoader::parse_material(rapidxml::xml_node<>* mat_node)
 
     if(use_asset)
     {
-        //pmat = new Material(asset.c_str());
-        const auto& descriptor = material_factory_->get_descriptor(H_(asset.c_str()));
-        pmat = new Material(descriptor);
+        pmat = material_factory_->make_material(H_(asset.c_str()));
     }
     else
     {

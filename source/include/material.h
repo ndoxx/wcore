@@ -3,11 +3,11 @@
 
 #include <string>
 #include <vector>
-#include <map>
 
 #include "math3d.h"
 #include "utils.h"
 
+enum class TextureUnit: uint16_t;
 struct MaterialDescriptor;
 class Texture;
 class Material
@@ -15,7 +15,6 @@ class Material
 private:
     // Multi-unit image texture
     Texture* texture_;
-    std::map<hashstr_t, bool> has_tex_map_;
 
     // Alternative uniforms
     math::vec3 albedo_;
@@ -41,7 +40,7 @@ public:
              bool blend = false);
     ~Material();
 
-    inline bool has_texture(hashstr_t sampler) const { return has_tex_map_.at(sampler); }
+    bool has_texture(TextureUnit unit);
 
     inline bool is_textured() const                { return textured_; }
     inline const Texture& get_texture() const      { return *texture_; }
