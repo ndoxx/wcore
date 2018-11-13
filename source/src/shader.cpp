@@ -569,7 +569,7 @@ bool Shader::send_uniforms<Texture>(const Texture& texture) const
 {
     for (GLuint ii = 0; ii < texture.get_num_textures(); ++ii)
     {
-        send_uniform<int>(H_(texture.get_sampler_name(ii).c_str()), ii);
+        send_uniform<int>(texture.get_sampler_name(ii), ii);
     }
     return true;
 }

@@ -16,14 +16,14 @@ Texture::RMap Texture::RESOURCE_MAP_;
 Texture::TMap Texture::NAMED_TEXTURES_;
 const std::string Texture::TEX_IMAGE_PATH("../res/textures/");
 
-static std::map<TextureUnit, const char*> SAMPLERS =
+std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
 {
-    {TextureUnit::ALBEDO,    "mt.albedoTex"},
-    {TextureUnit::AO,        "mt.AOTex"},
-    {TextureUnit::DEPTH,     "mt.depthTex"},
-    {TextureUnit::METALLIC,  "mt.metallicTex"},
-    {TextureUnit::NORMAL,    "mt.normalTex"},
-    {TextureUnit::ROUGHNESS, "mt.roughnessTex"}
+    {TextureUnit::ALBEDO,    H_("mt.albedoTex")},
+    {TextureUnit::AO,        H_("mt.AOTex")},
+    {TextureUnit::DEPTH,     H_("mt.depthTex")},
+    {TextureUnit::METALLIC,  H_("mt.metallicTex")},
+    {TextureUnit::NORMAL,    H_("mt.normalTex")},
+    {TextureUnit::ROUGHNESS, H_("mt.roughnessTex")}
 };
 
 #ifdef __DEBUG_TEXTURE__
@@ -232,9 +232,13 @@ Texture::Texture(const std::vector<std::string>& sampler_names,
                  bool clamp,
                  bool lazy_mipmap):
 resourceID_(H_("")),
-units_(0),
-uniform_sampler_names_(sampler_names)
+units_(0)
 {
+    for(const std::string& sampler_name: sampler_names)
+    {
+        uniform_sampler_names_.push_back(H_(sampler_name.c_str()));
+    }
+
     GLenum* filters         = new GLenum[sampler_names.size()];
     GLenum* internalFormats = new GLenum[sampler_names.size()];
     GLenum* formats         = new GLenum[sampler_names.size()];
@@ -280,8 +284,13 @@ internal_(new TextureInternal(textureTarget,
                               clamp,
                               lazy_mipmap)),
 resourceID_(H_("")),
-units_(0),
-uniform_sampler_names_(sampler_names){}
+units_(0)
+{
+    for(const std::string& sampler_name: sampler_names)
+    {
+        uniform_sampler_names_.push_back(H_(sampler_name.c_str()));
+    }
+}
 
 Texture::Texture(const Texture& texture) :
 internal_(texture.internal_),
@@ -318,7 +327,7 @@ units_(descriptor.units)
     bool cache_exists = (it != RESOURCE_MAP_.end());
 
     // Register a sampler name for each unit
-    for(auto&& [key, sampler_name]: SAMPLERS)
+    for(auto&& [key, sampler_name]: SAMPLER_NAMES_)
     {
         if(descriptor.has_unit(key))
         {
@@ -353,13 +362,13 @@ units_(descriptor.units)
         GLenum* formats         = new GLenum[numTextures];
 
         uint32_t ii=0;
-        for(auto&& [key, sampler_name]: SAMPLERS)
+        for(auto&& [key, sampler_name]: SAMPLER_NAMES_)
         {
             if(!descriptor.has_unit(key))
                 continue;
 
             filters[ii] = descriptor.parameters.filter;
-            if(!strcmp(sampler_name, "mt.diffuseTex"))
+            if(sampler_name == H_("mt.diffuseTex"))
             {
                 // Load Albedo / Diffuse textures as sRGB to avoid
                 // double gamma-correction.

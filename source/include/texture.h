@@ -38,11 +38,11 @@ private:
     pInternal internal_;
     hash_t    resourceID_;
     uint16_t  units_;
-    std::vector<std::string> uniform_sampler_names_;
+    std::vector<hash_t> uniform_sampler_names_;
 
     static RMap RESOURCE_MAP_;   // TextureInternal cache
     static TMap NAMED_TEXTURES_; // Holds pointers to named textures
-    static const std::vector<std::string> W_MANDATORY_SAMPLERS_;
+    static std::map<TextureUnit, hash_t> SAMPLER_NAMES_;
 
 public:
     static const std::string TEX_IMAGE_PATH;
@@ -97,7 +97,7 @@ public:
     inline uint32_t get_height() const;
     inline uint32_t get_num_textures() const;
     inline GLenum get_texture_target() const;
-    inline const std::string& get_sampler_name(uint32_t index) const;
+    inline hash_t get_sampler_name(uint32_t index) const { return uniform_sampler_names_.at(index); }
     inline bool is_depth(uint32_t ii) const;
     inline GLuint get_texture_id(uint32_t index) const;
     inline GLuint operator[](uint32_t index) const;
@@ -181,10 +181,6 @@ inline uint32_t Texture::get_width()  const { return internal_->get_width(); }
 inline uint32_t Texture::get_height() const { return internal_->get_height(); }
 inline uint32_t Texture::get_num_textures() const { return internal_->get_num_textures(); }
 inline GLenum Texture::get_texture_target() const { return internal_->get_texture_target(); }
-inline const std::string& Texture::get_sampler_name(uint32_t index) const
-{
-    return uniform_sampler_names_.at(index);
-}
 inline bool Texture::is_depth(uint32_t ii) const
 {
     return internal_->is_depth(ii);

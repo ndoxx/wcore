@@ -34,7 +34,7 @@ text_renderer_(text_renderer)
     register_debug_pane(GBuffer::Instance());
 
     register_debug_pane({(*psbuffer)[0]},
-                        {psbuffer->get_sampler_name(0)},
+                        {"shadowTex"},
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
                         {false}
 #else
@@ -46,8 +46,8 @@ text_renderer_(text_renderer)
     register_debug_pane(SSAOBuffer::Instance());
 
     register_debug_pane({(*plbuffer)[1],(*pbloom)[0]},
-                        {plbuffer->get_sampler_name(1),
-                         pbloom->get_sampler_name(0)},
+                        {"screenTex",
+                         "bloomTex"},
                         {false,false});
 }
 
@@ -80,7 +80,7 @@ void DebugOverlayRenderer::register_debug_pane(BufferModule& buffer_module)
     for(uint32_t ii=0; ii< n_tex; ++ii)
     {
         dbg_pane.push_back(dbg::DebugTextureProperties(buffer_module[ii],
-                           buffer_module.get_texture()->get_sampler_name(ii),
+                           std::to_string(buffer_module.get_texture()->get_sampler_name(ii)),
                            buffer_module.get_texture()->is_depth(ii)));
     }
     debug_panes_.push_back(dbg_pane);
