@@ -4652,3 +4652,26 @@ Les structures du fichier assets.xml sont parsées par _MaterialFactory_. Pour c
 
 ##[TODO]
 [ ] Le jeu DOIT être exécuté depuis le dossier build sinon ça ne fonctionne pas. C'est dû aux nombreux paths hardcodés. Corriger ça.
+[x] Réparer la SSAO sous __EXPERIMENTAL_POS_RECONSTRUCTION__.
+    -> Par ailleurs, j'en ai eu marre de la lenteur de cet algo supposé rapide alors j'ai investigué. Si dans le shader SSAO.frag on remplace dans la boucle :
+
+```c
+    //vec2 coord1 = reflect(SAMPLES[jj],randomVec)*rad;
+    vec2 coord1 = SAMPLES[jj]*rad;
+```
+En éliminant le reflect, donc, eh bien c'est foutrement plus rapide (bien que ça introduise des artéfacts visibles de près). Ceci est dû (vérifié) à la ligne
+```c
+    vec2 randomVec = normalize(texture(noiseTex, texCoord*rd.v2_noiseScale).xy);
+```
+un peu plus haut qui se trouve optimisée à la compilation. En particulier, la multiplication par rd.v2_noiseScale. Quelques tests me montrent que plus rd.v2_noiseScale est grand ((15, 8.4375) pour mon ratio) et plus la SSAO prend du temps. Malheureusement, diminuer cette valeur supprime son utilité.
+La texture bruit tessèle l'écran, et le noiseScale est l'échelle de tesselation. Plus il est grand, et plus la maille est fine (et plus le bruit est haute fréquence). Cet accès texture fonctionne parce que la texture noiseTex est répétée :
+```c
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+```
+Normalement le coût devrait être nul, car OpenGL se contente d'ignorer la partie entière des coordonnées UV en mode GL_REPEAT.
+
+Le problème est peut être lié à l'accès texture random (voir [1]) qui diminie la cohérence spatiale et augmente les cache misses. Le problème peut être circonscrit en diminuant le rayon de la SSAO. En effet, je reviens à des temps honnêtes pour un rayon de 0.25 (plus bas et on a du banding).
+
+* sources:
+[1] https://stackoverflow.com/questions/38953632/slow-texture-fetch-in-fragment-shader-using-vulkan

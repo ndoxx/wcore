@@ -14,7 +14,7 @@
 
 using namespace math;
 
-uint32_t SSAORenderer::NOISE_SQRSIZE_ = 64;
+uint32_t SSAORenderer::NOISE_SQRSIZE_ = 16;
 uint32_t SSAORenderer::KERNEL_SQRSIZE_ = 8;
 uint32_t SSAORenderer::KERNEL_SIZE_ = pow(SSAORenderer::KERNEL_SQRSIZE_,2);
 uint32_t SSAORenderer::NOISE_SIZE_ = pow(SSAORenderer::NOISE_SQRSIZE_,2);
@@ -25,10 +25,10 @@ Renderer<Vertex3P>(),
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
 out_size_(SSAOBuffer::Instance().get_width(),
           SSAOBuffer::Instance().get_height()),
-noise_scale_(out_size_/float(NOISE_SQRSIZE_)),
-SSAO_radius_(1.0),
+noise_scale_(out_size_/(float(NOISE_SQRSIZE_))),
+SSAO_radius_(0.25),
 SSAO_bias_(0.025),
-SSAO_intensity_(1.5),
+SSAO_intensity_(1.0),
 SSAO_scale_(0.4),
 active_(false)
 {

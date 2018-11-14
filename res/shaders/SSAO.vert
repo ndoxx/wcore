@@ -29,8 +29,7 @@ void main()
 {
     vec4 clip_pos = vec4(in_position, 1.0);
     #ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
-        frag_ray = clip_pos.xy / clip_pos.w;
-        frag_ray *= rd.v4_proj_params.xy;
+        frag_ray = clip_pos.xy*rd.v4_proj_params.xy;
     #endif
     gl_Position = clip_pos;
 }
