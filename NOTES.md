@@ -4616,8 +4616,9 @@ Je me servirai du dôme pour rendre un **Sky dome** un peu plus tard. Je préfè
 [x] Parser un fichier XML pour localiser les assets
     [x] Remplacer le système de Texture::ASSET_MAP_
 [ ] Gérer plusieurs définitions
-[ ] _Material_ définit des grandeurs uniformes qui peuvent remplacer une texture unit, systématiser ceci afin de rendre les textures optionnelles.
-    [ ] Ce qui permettra de se débarrasser des textures par défaut.
+[x] _Material_ définit des grandeurs uniformes qui peuvent remplacer une texture unit, systématiser ceci afin de rendre les textures optionnelles.
+    [x] Ce qui permettra de se débarrasser des textures par défaut.
+    -> Toutes les textures PBR sont optionnelles. Si un _Material_ ne possède pas l'une d'entre elles, un uniform est envoyé à la place.
 
 ##[TODO]
 [ ] Le jeu DOIT être exécuté depuis le dossier build sinon ça ne fonctionne pas. C'est dû aux nombreux paths hardcodés. Corriger ça.

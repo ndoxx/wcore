@@ -6,12 +6,12 @@
 struct material
 {
     sampler2D albedoTex;
-    sampler2D normalTex;
-    sampler2D depthTex;
-    sampler2D overlayTex;
     sampler2D AOTex;
     sampler2D metallicTex;
     sampler2D roughnessTex;
+    sampler2D normalTex;
+    sampler2D depthTex;
+    sampler2D overlayTex;
 
     float f_parallax_height_scale;
 

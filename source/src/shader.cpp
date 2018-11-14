@@ -6,7 +6,7 @@
 #include "material.h"
 #include "texture.h"
 #include "logger.h"
-#include "material_factory.h"
+#include "material_common.h"
 
 std::vector<std::string> Shader::global_defines_ =
 {
@@ -598,13 +598,6 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     }
     send_uniform(H_("mt.b_has_ao"), has_map);
 
-    if(material.has_texture(TextureUnit::DEPTH))
-    {
-        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::DEPTH),
-                          material.get_texture().get_unit_index(TextureUnit::DEPTH));
-    }
-    send_uniform(H_("mt.b_use_parallax_map"), material.has_parallax_map());
-
     if((has_map = material.has_texture(TextureUnit::METALLIC)))
     {
         send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::METALLIC),
@@ -615,14 +608,6 @@ bool Shader::send_uniforms<Material>(const Material& material) const
         send_uniform(H_("mt.f_metallic"), material.get_metallic());
     }
     send_uniform(H_("mt.b_has_metallic"), has_map);
-
-
-    if(material.has_texture(TextureUnit::NORMAL))
-    {
-        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::NORMAL),
-                          material.get_texture().get_unit_index(TextureUnit::NORMAL));
-    }
-    send_uniform(H_("mt.b_use_normal_map"), material.has_normal_map());
 
     if((has_map = material.has_texture(TextureUnit::ROUGHNESS)))
     {
@@ -635,11 +620,21 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     }
     send_uniform(H_("mt.b_has_roughness"), has_map);
 
-    // Parallax mapping
+    if(material.has_normal_map())
+    {
+        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::NORMAL),
+                          material.get_texture().get_unit_index(TextureUnit::NORMAL));
+    }
+    send_uniform(H_("mt.b_use_normal_map"), material.has_normal_map());
+
     if(material.has_parallax_map())
     {
+        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::DEPTH),
+                          material.get_texture().get_unit_index(TextureUnit::DEPTH));
         send_uniform(H_("mt.f_parallax_height_scale"), material.get_parallax_height_scale());
     }
+    send_uniform(H_("mt.b_use_parallax_map"), material.has_parallax_map());
+
     return true;
 }
 

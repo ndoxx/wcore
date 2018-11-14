@@ -75,6 +75,7 @@ set(SRC_RES
     ${wcore_SOURCE_DIR}/source/src/pixel_buffer.cpp
     ${wcore_SOURCE_DIR}/source/src/texture.cpp
     ${wcore_SOURCE_DIR}/source/src/material.cpp
+    ${wcore_SOURCE_DIR}/source/src/material_common.cpp
     ${wcore_SOURCE_DIR}/source/src/material_factory.cpp)
 
 set(SRC_IMGUI

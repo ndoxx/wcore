@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 #include "pixel_buffer.h"
 #include "logger.h"
 #include "algorithms.h"
-#include "material_factory.h"
+#include "material_common.h"
 
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;

@@ -1,20 +1,8 @@
-#include <GL/glew.h>
-
 #include "material_factory.h"
 #include "material.h"
 #include "logger.h"
 
 using namespace rapidxml;
-
-std::map<hashstr_t, TextureUnit> MaterialFactory::NAME_TO_TEXTURE_SAMPLER =
-{
-    {HS_("Albedo"),    TextureUnit::ALBEDO},
-    {HS_("AO"),        TextureUnit::AO},
-    {HS_("Depth"),     TextureUnit::DEPTH},
-    {HS_("Metallic"),  TextureUnit::METALLIC},
-    {HS_("Normal"),    TextureUnit::NORMAL},
-    {HS_("Roughness"), TextureUnit::ROUGHNESS}
-};
 
 std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
 {
@@ -25,17 +13,6 @@ std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
     {TextureUnit::NORMAL,    "Normal"},
     {TextureUnit::ROUGHNESS, "Roughness"}
 };
-
-TextureParameters::TextureParameters():
-filter(GL_LINEAR_MIPMAP_LINEAR),
-internal_format(GL_RGBA),
-format(GL_RGBA),
-clamp(false),
-lazy_mipmap(false)
-{
-
-}
-
 
 MaterialFactory::MaterialFactory(const char* filename)
 {
@@ -135,18 +112,18 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, Mate
     if(tex_node)
     {
         std::string texture_map;
-        for(auto&& [key, node_name]: TEX_SAMPLERS_NODES)
+        for(auto&& [unit, node_name]: TEX_SAMPLERS_NODES)
         {
             if(xml::parse_node(tex_node, node_name, texture_map))
             {
-                descriptor.texture_descriptor.locations[key] = texture_map;
-                descriptor.texture_descriptor.add_unit(key);
+                descriptor.texture_descriptor.locations[unit] = texture_map;
+                descriptor.texture_descriptor.add_unit(unit);
             }
         }
     }
 
     // Uniform alternatives
-    xml_node<>* uni_node = node->first_node("Uniforms");
+    xml_node<>* uni_node = node->first_node("Uniform");
     if(uni_node)
     {
         if(!descriptor.texture_descriptor.has_unit(TextureUnit::ALBEDO))
@@ -157,14 +134,18 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, Mate
             xml::parse_node(uni_node, "Roughness", descriptor.roughness);
 
         descriptor.has_transparency = xml::parse_node(uni_node, "Transparency", descriptor.transparency);
+
+        // Shading options
+        xml::parse_node(node, "ParallaxHeightScale", descriptor.parallax_height_scale);
     }
 
     // Override
-    if(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL))
-        xml::parse_node(node, "NormalMap", descriptor.enable_normal_mapping);
-    if(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH))
-        xml::parse_node(node, "ParallaxMap", descriptor.enable_parallax_mapping);
-
-    // Shading options
-    xml::parse_node(node, "ParallaxHeightScale", descriptor.parallax_height_scale);
+    xml_node<>* ovd_node = node->first_node("Override");
+    if(ovd_node)
+    {
+        if(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL))
+            xml::parse_node(ovd_node, "NormalMap", descriptor.enable_normal_mapping);
+        if(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH))
+            xml::parse_node(ovd_node, "ParallaxMap", descriptor.enable_parallax_mapping);
+    }
 }

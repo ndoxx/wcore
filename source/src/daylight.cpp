@@ -24,7 +24,7 @@ static float MOON_INCLINATION = 70.0f * M_PI/180.0f;
 DaylightSystem::DaylightSystem(RenderPipeline& pipeline):
 pipeline_(pipeline),
 active_(true),
-daytime_(20.0),
+daytime_(10.0),
 sun_angle_(0),
 sun_pos_(0),
 color_interpolator_(nullptr),
