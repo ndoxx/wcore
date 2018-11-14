@@ -1,6 +1,7 @@
 #version 400 core
 
 #include "normal_compression.glsl"
+#include "position.glsl"
 
 struct render_data
 {
@@ -14,7 +15,13 @@ struct render_data
     float f_bias;
 
     bool b_invert_normals;
+#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
+    // Position reconstruction
+    vec4 v4_proj_params;
+#endif
 };
+
+in vec2 frag_ray;
 
 layout(location = 0) out vec3 out_occlusion;
 
@@ -22,6 +29,7 @@ uniform render_data rd;
 uniform sampler2D positionTex;
 uniform sampler2D normalTex;
 uniform sampler2D noiseTex;
+uniform sampler2D depthTex;
 //uniform sampler1D randomFieldTex;
 //uniform vec3 v3_samples[64];
 //const int KERNEL_SIZE = 64;
@@ -33,10 +41,18 @@ const float FAR = 100.0;
 const float invFAR = 0.01;
 const float f_occlusion_threshold = 0.5;
 
+#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
+vec3 get_position(vec2 uv)
+{
+    float depth  = texture(depthTex, uv).r;
+    return reconstruct_position(depth, frag_ray, rd.v4_proj_params);
+}
+#else
 vec3 get_position(vec2 uv)
 {
     return texture(positionTex, uv).xyz;
 }
+#endif
 
 float ambiant_occlusion(vec2 texCoord, vec2 uv, vec3 p, vec3 cnorm)
 {
@@ -51,14 +67,11 @@ void main()
     vec2 texCoord = gl_FragCoord.xy / rd.v2_screenSize;
 
     // View space
-    vec3 fragPos = texture(positionTex, texCoord).xyz;
+    vec3 fragPos = get_position(texCoord);
     vec3 fragNormal = decompress_normal(texture(normalTex, texCoord).xy);
 
     // Tangent space
     vec2 randomVec = normalize(texture(noiseTex, texCoord*rd.v2_noiseScale).xy);
-
-    // Light direction factor
-    float directionFactor = max(dot(rd.v3_lightDir, fragNormal), 0.7);
 
     float occlusion = 0.0;
     float rad = rd.f_radius/fragPos.z;
@@ -71,12 +84,12 @@ void main()
         vec2 coord2 = vec2(coord1.x*0.707 - coord1.y*0.707, coord1.x*0.707 + coord1.y*0.707);
 
         occlusion += ambiant_occlusion(texCoord, coord1*0.25, fragPos, fragNormal);
-        occlusion += ambiant_occlusion(texCoord, coord2*0.5, fragPos, fragNormal);
+        occlusion += ambiant_occlusion(texCoord, coord2*0.5,  fragPos, fragNormal);
         occlusion += ambiant_occlusion(texCoord, coord1*0.75, fragPos, fragNormal);
-        occlusion += ambiant_occlusion(texCoord, coord2, fragPos, fragNormal);
+        occlusion += ambiant_occlusion(texCoord, coord2,      fragPos, fragNormal);
     }
     occlusion /= (iterations*4);
-    occlusion = max(1.0-(directionFactor*rd.f_intensity*occlusion), 0.0);
+    occlusion = max(1.0-(rd.f_intensity*occlusion), 0.0);
 
     out_occlusion.r = occlusion;
 }

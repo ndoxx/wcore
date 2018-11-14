@@ -81,7 +81,6 @@
                 <Mesh type="cube"></Mesh>
                 <Material>
                     <Asset>cube</Asset>
-                    <Overlay>true</Overlay>
                 </Material>
                 <Transform>
                     <Position>(16.0,0.0,14.0)</Position>
@@ -112,7 +111,6 @@
                 <Mesh type="cube"></Mesh>
                 <Material>
                     <Asset>cube</Asset>
-                    <Overlay>true</Overlay>
                 </Material>
                 <Transform>
                     <Position>(16.0,0.0,18.0)</Position>

@@ -4599,8 +4599,13 @@ J'ai initialisé un git. La procédure est la suivante :
 7) Commit
 >> git commit -m "first commit"
 
-8) Push
+8) (Optionnel) Conserver le mot de passe (à faire seulement la première fois) :
+>> git config credential.helper store
+
+9) Push
 >> git push origin master
+
+Si l'étape 8 est effectuée, git ne demandera l'authentification que la première fois.
 
 ## Sphères et domes texturés
 Comme j'ai trouvé casse-couilles de deviner les coordonnées UV qui vont bien sur mes sphères procédurales, je me suis lancé une session Blender pour générer une sphère et un dome avec du UV mapping. Au bout de quelques heures de galère avec l'UV unwrapping (détaillé dans le cahier) j'ai fini par converger.
@@ -4611,7 +4616,7 @@ La texture elle-même est générée à partir d'un panorama (alors faut pas s'i
 
 Je me servirai du dôme pour rendre un **Sky dome** un peu plus tard. Je préfère cette approche à la skybox parce que je compte animer le ciel (à terme _DaylightSystem_ servira à ça).
 
-#[12-11-18] Préparation pour le refactoring du système d'assets
+#[12-11-18] Refactoring du système d'assets
 
 [x] Parser un fichier XML pour localiser les assets
     [x] Remplacer le système de Texture::ASSET_MAP_
@@ -4619,6 +4624,31 @@ Je me servirai du dôme pour rendre un **Sky dome** un peu plus tard. Je préfè
 [x] _Material_ définit des grandeurs uniformes qui peuvent remplacer une texture unit, systématiser ceci afin de rendre les textures optionnelles.
     [x] Ce qui permettra de se débarrasser des textures par défaut.
     -> Toutes les textures PBR sont optionnelles. Si un _Material_ ne possède pas l'une d'entre elles, un uniform est envoyé à la place.
+
+Voici comment on déclare un asset dans assets.xml :
+```xml
+    <Material>
+        <Name>plop</Name>
+        <Texture>
+            <Albedo>plop_albedo.png</Albedo>
+            <AO>plop_ao.png</AO>
+            <Depth>plop_depth.png</Depth>
+            <Metallic>plop_metal.png</Metallic>
+            <Normal>plop_norm.png</Normal>
+        </Texture>
+        <Uniform>
+            <Roughness>0.3</Roughness>
+            <ParallaxHeightScale>0.15</ParallaxHeightScale>
+        </Uniform>
+        <Override>
+            <NormalMap>true</NormalMap>
+            <ParallaxMap>true</ParallaxMap>
+        </Override>
+    </Material>
+```
+Essentiellement, il faut donner un nom au material (qui sera hashé et servira de resource ID, donc ce nom *doit* être unique), puis définir la source des données pour chaque grandeur de la pipeline PBR. La source peut être une image, alors on doit donner le nom de cette image dans le noeud *Texture*, ou bien une grandeur uniforme, auquel cas une valeur peut être précisée dans le noeud *Uniform*. D'autres options de shading sont transmissibles via le noeud *Uniform*, comme *ParallaxHeightScale* ou *Transperency*. Enfin, le normal mapping et le parallax mapping peuvent être désactivés via le noeud *Override*.
+
+Les structures du fichier assets.xml sont parsées par _MaterialFactory_. Pour chaque material, un descripteur (struct _MaterialDescriptor_) est sauvegardé dans une hashmap, en association avec le resource id du material (hash du nom). Un descripteur contient toutes les données nécessaires à la construction online d'un _Material_. _MaterialDescriptor_ est déclaré dans material_common.h. Une sous-structure de _MaterialDescriptor_ est _TextureDescriptor_ qui stock les données relatives au texturing uniquement. En particulier, j'ai prévu une structure _TextureParameters_ qui fixe les options OpenGL (filter, format, clamp...).
 
 ##[TODO]
 [ ] Le jeu DOIT être exécuté depuis le dossier build sinon ça ne fonctionne pas. C'est dû aux nombreux paths hardcodés. Corriger ça.

@@ -35,7 +35,7 @@ public:
     typedef std::map<TextureUnit, std::string> TexMap;
 
     // Image texture file names by map type
-    TexMap    locations;
+    TexMap locations;
     // Flags for each unit
     uint16_t units = 0;
     // OpenGL texture parameters

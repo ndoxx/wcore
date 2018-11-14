@@ -10,6 +10,7 @@
 #include "logger.h"
 #include "camera.h"
 #include "lights.h"
+#include "texture.h"
 
 using namespace math;
 
@@ -43,11 +44,13 @@ SSAORenderer::~SSAORenderer()
 
 void SSAORenderer::render()
 {
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
-    // SSAO broken under this option
-    return;
-#endif
     if(!active_) return;
+
+#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
+    const math::mat4& P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
+    math::vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
+    auto pgbuffer = Texture::get_named_texture(H_("gbuffer")).lock();
+#endif
 
     GBuffer& gbuffer = GBuffer::Instance();
     SSAOBuffer& ssaobuffer = SSAOBuffer::Instance();
@@ -57,6 +60,17 @@ void SSAORenderer::render()
     // Render textured quad to screen
     glViewport(0,0,out_size_.x(),out_size_.y());
 
+#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
+    // Bind textures
+    gbuffer.bind_as_source(0,0);  // normal
+    GFX::bind_texture2D(1, noise_texture_); // random rotations
+    gbuffer.bind_as_source(2,2);  // depth
+    //GFX::bind_texture2D(3, kernel_texture_); // random field (kernel)
+
+    SSAO_shader_.send_uniform<int>(H_("normalTex"), 0);
+    SSAO_shader_.send_uniform<int>(H_("noiseTex"), 1);
+    SSAO_shader_.send_uniform<int>(H_("depthTex"), 2);
+#else
     // Bind textures
     gbuffer.bind_as_source(0,0);  // position
     gbuffer.bind_as_source(1,1);  // normal
@@ -67,6 +81,7 @@ void SSAORenderer::render()
     SSAO_shader_.send_uniform<int>(H_("normalTex"), 1);
     SSAO_shader_.send_uniform<int>(H_("noiseTex"), 2);
     //SSAO_shader_.send_uniform_int("randomFieldTex", 3);
+#endif
 
     // Render SSAO texture
     ssaobuffer.bind_as_target();
@@ -88,6 +103,10 @@ void SSAORenderer::render()
     SSAO_shader_.send_uniform(H_("rd.f_intensity"), SSAO_intensity_);
     SSAO_shader_.send_uniform(H_("rd.f_scale"), SSAO_scale_);
     //SSAO_shader_.send_uniform(H_("rd.b_invert_normals"), false);
+#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
+    // For position reconstruction
+    SSAO_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
+#endif
 
     vertex_array_.bind();
     buffer_unit_.draw(2, 0);

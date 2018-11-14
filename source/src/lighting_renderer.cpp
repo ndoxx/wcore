@@ -149,18 +149,14 @@ void LightingRenderer::render()
             lpass_point_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
 #endif
 
-#ifndef __EXPERIMENTAL_POS_RECONSTRUCTION__ // SSAO broken under this option
-        // SSAO
-        if(SSAO_enabled_)
-        {
-            auto pssao = Texture::get_named_texture(H_("SSAObuffer")).lock();
-            pssao->bind(SSAO_TEX,0); // Bind ssao[0] to texture unit SSAO_TEX
-            lpass_point_shader_.send_uniform<int>(H_("SSAOTex"), SSAO_TEX);
-        }
-        lpass_point_shader_.send_uniform(H_("rd.b_enableSSAO"), SSAO_enabled_);
-#else
-        lpass_point_shader_.send_uniform(H_("rd.b_enableSSAO"), false);
-#endif
+            // SSAO
+            if(SSAO_enabled_)
+            {
+                auto pssao = Texture::get_named_texture(H_("SSAObuffer")).lock();
+                pssao->bind(SSAO_TEX,0); // Bind ssao[0] to texture unit SSAO_TEX
+                lpass_point_shader_.send_uniform<int>(H_("SSAOTex"), SSAO_TEX);
+            }
+            lpass_point_shader_.send_uniform(H_("rd.b_enableSSAO"), SSAO_enabled_);
 
             buffer_unit_.draw(SPHERE_NE(), SPHERE_OFFSET());
             lpass_point_shader_.unuse();
@@ -236,7 +232,6 @@ void LightingRenderer::render()
 #endif
         }
 
-#ifndef __EXPERIMENTAL_POS_RECONSTRUCTION__ // SSAO broken under this option
         // SSAO
         if(SSAO_enabled_)
         {
@@ -245,9 +240,7 @@ void LightingRenderer::render()
             lpass_dir_shader_.send_uniform<int>(H_("SSAOTex"), SSAO_TEX);
         }
         lpass_dir_shader_.send_uniform(H_("rd.b_enableSSAO"), SSAO_enabled_);
-#else
-        lpass_dir_shader_.send_uniform(H_("rd.b_enableSSAO"), false);
-#endif
+
         buffer_unit_.draw(QUAD_NE(), QUAD_OFFSET());
         lpass_dir_shader_.unuse();
 

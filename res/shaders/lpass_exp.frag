@@ -3,6 +3,7 @@
 #include "normal_compression.glsl"
 #include "shadow.glsl"
 #include "cook_torrance.glsl"
+#include "position.glsl"
 
 struct render_data
 {
@@ -66,13 +67,6 @@ float attenuate(float distance, float radius, float compression=1.0f)
     //return clamp((1.0 -distance2/radius2),0.0,1.0)/(1.0 + distance2);
     //return clamp((-distance2*(1.0f/radius2) + 1.0f),0.0f,1.0f)/(1.0f + distance2);
     return pow(smoothstep(radius, 0, distance), compression);
-}
-
-vec3 reconstruct_position(in float depth, in vec2 ray, in vec4 projParams)
-{
-    float depth_ndc_offset = depth * 2.0f + projParams.z;
-    float depth_view = projParams.w / depth_ndc_offset;
-    return depth_view * vec3(ray, -1.0f);
 }
 
 void main()
