@@ -74,7 +74,6 @@ add_definitions(-D__DEBUG__)
 # add_definitions(-D__EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__)
 # add_definitions(-D__EXPERIMENTAL_VSM_BLUR__)
 # add_definitions(-D__OPTIM_LIGHT_VOLUMES_STENCIL_INVERT__)
-add_definitions(-D__EXPERIMENTAL_TERRAIN_HEX_MESH__)
 
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
 

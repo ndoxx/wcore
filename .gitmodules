@@ -1,3 +1,6 @@
 [submodule "source/vendor/imgui"]
 	path = source/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "source/vendor/delaunator"]
+	path = source/vendor/delaunator
+	url = https://github.com/delfrrr/delaunator-cpp.git

@@ -148,7 +148,6 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
     xml::parse_attribute(node, "textureScale", texture_scale_);
     xml::parse_attribute(node, "latticeScale", lattice_scale_);
     texture_scale_ *= lattice_scale_;
-#ifdef __EXPERIMENTAL_TERRAIN_HEX_MESH__
     // Hex mesh terrain chunks must have an odd size
     if(chunk_size_m_%2==0)
     {
@@ -156,15 +155,6 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
         DLOGW("[SceneLoader] Chunk size must be <v>odd</v> for hex terrain meshes.");
         DLOGI("Corrected: Chunk Size is now " + std::to_string(chunk_size_m_));
     }
-#else
-    // Square mesh terrain chunks must have an even size
-    if(chunk_size_m_%2)
-    {
-        ++chunk_size_m_;
-        DLOGW("[SceneLoader] Chunk size must be <v>even</v> for square terrain meshes.");
-        DLOGI("Corrected: Chunk Size is now " + std::to_string(chunk_size_m_));
-    }
-#endif
     chunk_size_ = uint32_t(floor(chunk_size_m_/lattice_scale_));
     SCENE.set_chunk_size_meters(chunk_size_m_);
     TerrainChunk::set_chunk_size(chunk_size_);
@@ -433,12 +423,8 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
 
     // Generate material and height map
     Material* pmat = parse_material(mat_node);
-#ifdef __EXPERIMENTAL_TERRAIN_HEX_MESH__
     // Add 1 to heightmap length for seamless terrain with hex terrain triangle mesh
     HeightMap* height_map = new HeightMap(chunk_size_, chunk_size_+1, height);
-#else
-    HeightMap* height_map = new HeightMap(chunk_size_, chunk_size_, height);
-#endif
     height_map->set_scale(lattice_scale_);
 
     // TODO

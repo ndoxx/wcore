@@ -536,7 +536,6 @@ TriangularMesh* make_terrain_tri_mesh(const HeightMap& hm,
     {
         for(uint32_t jj=0; jj<length; ++jj)
         {
-#ifdef __EXPERIMENTAL_TERRAIN_HEX_MESH__
             // Get height
             float h1 = hm.get_height(ii, jj);
             if(ii%2)
@@ -551,13 +550,6 @@ TriangularMesh* make_terrain_tri_mesh(const HeightMap& hm,
                 pmesh->emplace_vertex(latScale*vec3(ii, 0.5f*(h1+h2), jj+0.5f),
                                       texScale*vec2(ii, jj+0.5f));
             }
-#else //__EXPERIMENTAL_TERRAIN_HEX_MESH__
-            // Get height
-            float h = hm.get_height(ii, jj);
-            // Set vertex. Index will be ii*length+jj
-            pmesh->emplace_vertex(latScale*vec3(ii, h, jj),
-                                  texScale*vec2(ii, jj));
-#endif //__EXPERIMENTAL_TERRAIN_HEX_MESH__
         }
     }
     // For each oblique quad
