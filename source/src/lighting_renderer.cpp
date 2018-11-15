@@ -57,13 +57,8 @@ static const math::mat4 biasMatrix
     0.0, 0.0, 0.0, 1.0
 );
 
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
-        static uint32_t SHADOW_TEX = 3;
-        static uint32_t SSAO_TEX = 4;
-#else
-        static uint32_t SHADOW_TEX = 4;
-        static uint32_t SSAO_TEX = 5;
-#endif
+static uint32_t SHADOW_TEX = 3;
+static uint32_t SSAO_TEX = 4;
 
 void LightingRenderer::render()
 {
@@ -144,10 +139,8 @@ void LightingRenderer::render()
             lpass_point_shader_.send_uniforms(plight);
             lpass_point_shader_.send_uniform(H_("m4_ModelViewProjection"), PV*M);
             //lpass_point_shader_.send_uniform(H_("m4_ModelView"), V*M);
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
             // For position reconstruction
             lpass_point_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
-#endif
 
             // SSAO
             if(SSAO_enabled_)
@@ -203,10 +196,8 @@ void LightingRenderer::render()
         //lpass_dir_shader_.send_uniform(H_("rd.v3_viewPos"), SCENE.get_camera()->get_position());
         // G-Buffer texture samplers
         lpass_dir_shader_.send_uniforms(*pgbuffer);
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
         // For position reconstruction
         lpass_dir_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
-#endif
         // Bright pass threshold
         lpass_dir_shader_.send_uniform(H_("rd.f_bright_threshold"), 1.0f);
         // Screen size

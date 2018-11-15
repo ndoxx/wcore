@@ -14,7 +14,7 @@
 
 using namespace math;
 
-uint32_t SSAORenderer::NOISE_SQRSIZE_ = 16;
+uint32_t SSAORenderer::NOISE_SQRSIZE_ = 8;
 uint32_t SSAORenderer::KERNEL_SQRSIZE_ = 8;
 uint32_t SSAORenderer::KERNEL_SIZE_ = pow(SSAORenderer::KERNEL_SQRSIZE_,2);
 uint32_t SSAORenderer::NOISE_SIZE_ = pow(SSAORenderer::NOISE_SQRSIZE_,2);
@@ -46,11 +46,10 @@ void SSAORenderer::render()
 {
     if(!active_) return;
 
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
+    // For position reconstruction
     const math::mat4& P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
     math::vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
     auto pgbuffer = Texture::get_named_texture(H_("gbuffer")).lock();
-#endif
 
     GBuffer& gbuffer = GBuffer::Instance();
     SSAOBuffer& ssaobuffer = SSAOBuffer::Instance();
@@ -60,7 +59,6 @@ void SSAORenderer::render()
     // Render textured quad to screen
     glViewport(0,0,out_size_.x(),out_size_.y());
 
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
     // Bind textures
     gbuffer.bind_as_source(0,0);  // normal
     GFX::bind_texture2D(1, noise_texture_); // random rotations
@@ -70,18 +68,6 @@ void SSAORenderer::render()
     SSAO_shader_.send_uniform<int>(H_("normalTex"), 0);
     SSAO_shader_.send_uniform<int>(H_("noiseTex"), 1);
     SSAO_shader_.send_uniform<int>(H_("depthTex"), 2);
-#else
-    // Bind textures
-    gbuffer.bind_as_source(0,0);  // position
-    gbuffer.bind_as_source(1,1);  // normal
-    GFX::bind_texture2D(2, noise_texture_); // random rotations
-    //GFX::bind_texture2D(3, kernel_texture_); // random field (kernel)
-
-    SSAO_shader_.send_uniform<int>(H_("positionTex"), 0);
-    SSAO_shader_.send_uniform<int>(H_("normalTex"), 1);
-    SSAO_shader_.send_uniform<int>(H_("noiseTex"), 2);
-    //SSAO_shader_.send_uniform_int("randomFieldTex", 3);
-#endif
 
     // Render SSAO texture
     ssaobuffer.bind_as_target();
@@ -103,10 +89,8 @@ void SSAORenderer::render()
     SSAO_shader_.send_uniform(H_("rd.f_intensity"), SSAO_intensity_);
     SSAO_shader_.send_uniform(H_("rd.f_scale"), SSAO_scale_);
     //SSAO_shader_.send_uniform(H_("rd.b_invert_normals"), false);
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
     // For position reconstruction
     SSAO_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
-#endif
 
     vertex_array_.bind();
     buffer_unit_.draw(2, 0);
@@ -118,15 +102,15 @@ void SSAORenderer::render()
 
 void SSAORenderer::generate_random_kernel()
 {
-    std::uniform_real_distribution<float> rnd_f(0.0, 1.0);
+    std::uniform_real_distribution<float> rnd_f(0.0f, 1.0f);
     std::default_random_engine rng;
 
     // Generate a random hemispherical distribution of vectors in tangent space
     for (uint32_t ii=0; ii<KERNEL_SIZE_; ++ii)
     {
         // Random vector in tangent space, z is always positive (hemispherical constraint)
-        vec3 sample(rnd_f(rng) * 2.0 - 1.0,
-                    rnd_f(rng) * 2.0 - 1.0,
+        vec3 sample(rnd_f(rng) * 2.0f - 1.0f,
+                    rnd_f(rng) * 2.0f - 1.0f,
                     rnd_f(rng));
         sample.normalize();
         sample *= rnd_f(rng);
@@ -144,8 +128,8 @@ void SSAORenderer::generate_random_kernel()
     std::vector<vec3> ssao_noise;
     for (uint32_t ii=0; ii<NOISE_SIZE_; ++ii)
     {
-        vec3 noise(rnd_f(rng) * 2.0 - 1.0,
-                   rnd_f(rng) * 2.0 - 1.0,
+        vec3 noise(rnd_f(rng) * 2.0f - 1.0f,
+                   rnd_f(rng) * 2.0f - 1.0f,
                    0.0f);
         ssao_noise.push_back(noise);
     }
@@ -160,7 +144,7 @@ void SSAORenderer::generate_random_kernel()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);*/
 
-    // Push noise to a 4x4 GL texture that tiles the screen (GL_REPEAT)
+    // Push noise to a GL texture that tiles the screen (GL_REPEAT)
     glGenTextures(1, &noise_texture_);
     glBindTexture(GL_TEXTURE_2D, noise_texture_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, NOISE_SQRSIZE_, NOISE_SQRSIZE_, 0, GL_RGB, GL_FLOAT, &ssao_noise[0]);

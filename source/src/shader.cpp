@@ -13,9 +13,6 @@ std::vector<std::string> Shader::global_defines_ =
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
     "__EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__",
 #endif
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
-    "__EXPERIMENTAL_POS_RECONSTRUCTION__",
-#endif
 };
 
 const std::string ShaderResource::SHADER_PATH("../res/shaders/");

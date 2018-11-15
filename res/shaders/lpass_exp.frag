@@ -19,10 +19,8 @@ struct render_data
     bool b_enableSSAO;
     // Lighting
     bool b_lighting_enabled;
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
     // Position reconstruction
     vec4 v4_proj_params;
-#endif
 };
 
 struct light
@@ -42,9 +40,6 @@ layout(location = 0) out vec3 out_color;
 layout(location = 1) out vec3 out_bright_color;
 
 // G-Buffer samplers
-#ifndef __EXPERIMENTAL_POS_RECONSTRUCTION__
-uniform sampler2D positionTex;
-#endif
 uniform sampler2D normalTex;
 uniform sampler2D albedoTex;
 uniform sampler2D depthTex;
@@ -78,28 +73,18 @@ void main()
     float fragMetallic = fNormMetAO.b;
     float fragAO = fNormMetAO.a;
 
-    #ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
-        // Works, but introduces a little "black rectangle" glitch in the sky sometimes
-        float depth     = texture(depthTex, texCoord).r;
-        vec4 fAlbRough  = texture(albedoTex, texCoord);
-        #ifdef VARIANT_DIRECTIONAL
-            vec3 fragPos = reconstruct_position(depth, frag_ray, rd.v4_proj_params);
-        #else
-            vec2 ray = texCoord.xy*2.0f - 1.0f;
-            ray *= rd.v4_proj_params.xy;
-            vec3 fragPos = reconstruct_position(depth, ray, rd.v4_proj_params);
-        #endif
-        vec3 fragAlbedo = fAlbRough.rgb;
-        float fragRoughness = fAlbRough.a;
+    // Reconstruct position from depth buffer
+    float depth     = texture(depthTex, texCoord).r;
+    vec4 fAlbRough  = texture(albedoTex, texCoord);
+    #ifdef VARIANT_DIRECTIONAL
+        vec3 fragPos = reconstruct_position(depth, frag_ray, rd.v4_proj_params);
     #else
-        vec4 fPosRough  = texture(positionTex, texCoord);
-        vec4 fAlbOv     = texture(albedoTex, texCoord);
-
-        vec3 fragPos = fPosRough.xyz;
-        float fragRoughness = fPosRough.a;
-        float fragOverlay = fAlbOv.a;
-        vec3 fragAlbedo = fAlbOv.rgb;
+        vec2 ray = texCoord.xy*2.0f - 1.0f;
+        ray *= rd.v4_proj_params.xy;
+        vec3 fragPos = reconstruct_position(depth, ray, rd.v4_proj_params);
     #endif
+    vec3 fragAlbedo = fAlbRough.rgb;
+    float fragRoughness = fAlbRough.a;
 
     // View direction as a vector from fragment position to camera position
     vec3 viewDir = normalize(-fragPos);
@@ -141,10 +126,6 @@ void main()
         {
             total_light = fragAlbedo*visibility;
         }
-        #ifndef __EXPERIMENTAL_POS_RECONSTRUCTION__
-            // Debug overlay & wireframe
-            total_light = mix(total_light, vec3(0.5f), fragOverlay);
-        #endif
     #endif
 
     // Point light

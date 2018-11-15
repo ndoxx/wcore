@@ -15,10 +15,8 @@ struct render_data
     float f_bias;
 
     bool b_invert_normals;
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
     // Position reconstruction
     vec4 v4_proj_params;
-#endif
 };
 
 in vec2 frag_ray;
@@ -41,25 +39,18 @@ const float FAR = 100.0;
 const float invFAR = 0.01;
 const float f_occlusion_threshold = 0.5;
 
-#ifdef __EXPERIMENTAL_POS_RECONSTRUCTION__
 vec3 get_position(vec2 uv)
 {
     float depth  = texture(depthTex, uv).r;
     return reconstruct_position(depth, frag_ray, rd.v4_proj_params);
 }
-#else
-vec3 get_position(vec2 uv)
-{
-    return texture(positionTex, uv).xyz;
-}
-#endif
 
 float ambiant_occlusion(vec2 texCoord, vec2 uv, vec3 p, vec3 cnorm)
 {
     vec3 diff = get_position(texCoord + uv) - p;
     vec3 v = normalize(diff);
     float d2 = dot(diff,diff)*rd.f_scale;
-    return max(0.0, dot(cnorm,v)-rd.f_bias)*(1.0/(1.0+d2));
+    return max(0.0f, dot(cnorm,v)-rd.f_bias)*(1.0f/(1.0f+d2));
 }
 
 void main()
@@ -76,7 +67,7 @@ void main()
     float occlusion = 0.0;
     float rad = rd.f_radius/fragPos.z;
     //int iterations = 4;
-    int iterations = int(mix(6.0,2.0,fragPos.z*invFAR));
+    int iterations = int(mix(6.0,1.0,fragPos.z*invFAR));
     for (int jj=0; jj<iterations; ++jj)
     {
         vec2 coord1 = reflect(SAMPLES[jj],randomVec)*rad;
