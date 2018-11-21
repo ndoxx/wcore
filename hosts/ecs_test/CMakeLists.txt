@@ -1,3 +1,10 @@
+# Defines an application for Entity Component System testing.
+# Parent directory contains prototypes for game specific classes.
+# The goal of the application is to:
+#   - prototype some game logic relative to epsilon-core project
+#   - develop an architecture for game object management the ECS way
+#   - provide a set of components that will be usable by epsilon-core
+
 SET (CMAKE_C_COMPILER             "/usr/bin/clang-6.0")
 SET (CMAKE_C_FLAGS                "-Wall -std=c99")
 SET (CMAKE_C_FLAGS_DEBUG          "-g")
@@ -30,3 +37,36 @@ set(CMAKE_BUILD_TYPE Release)
 include_directories(${wcore_SOURCE_DIR}/source/include)
 include_directories(${wcore_SOURCE_DIR}/source/vendor)
 
+add_executable(ecs
+               ${SRC_MATHS}
+               ${SRC_CORE}
+               ${SRC_CONTEXT}
+               ${SRC_3D}
+               ${SRC_RES}
+               ${SRC_IMGUI}
+               main.cpp)
+
+set_target_properties(ecs
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+)
+
+link_directories(${CMAKE_SOURCE_DIR}/lib)
+
+add_definitions(-D__DEBUG__)
+
+
+add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
+
+target_link_libraries(ecs
+                      m
+                      stdc++fs
+                      GL
+                      glfw
+                      GLEW
+                      png
+                      z
+                      freetype
+                      pthread)

@@ -20,6 +20,12 @@
             <Metallic>beachSand_metal.png</Metallic>
             <Normal>beachSand_norm.png</Normal>
             <Roughness>beachSand_rough.png</Roughness>
+            <Parameters>
+                <MinFilter>nearest_mipmap_linear</MinFilter>
+                <MagFilter>linear</MagFilter>
+                <AddressU>wrap</AddressU>
+                <AddressV>wrap</AddressV>
+            </Parameters>
         </Texture>
         <Uniform>
             <ParallaxHeightScale>0.10</ParallaxHeightScale>

@@ -26,6 +26,73 @@ std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
     {TextureUnit::ROUGHNESS, H_("mt.roughnessTex")}
 };
 
+static std::map<GLenum, GLenum> DATA_TYPES =
+{
+    {GL_SRGB_ALPHA, GL_FLOAT},
+    {GL_RGB16F, GL_FLOAT},
+    {GL_RGBA16F, GL_FLOAT},
+    {GL_RG16_SNORM, GL_UNSIGNED_BYTE},
+    {GL_RGB16_SNORM, GL_UNSIGNED_BYTE},
+    {GL_DEPTH32F_STENCIL8, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
+    {GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8},
+};
+
+static GLenum internal_format_to_data_type(GLenum iformat)
+{
+    auto it = DATA_TYPES.find(iformat);
+    if(it!=DATA_TYPES.end())
+        return it->second;
+    return GL_UNSIGNED_BYTE;
+}
+
+static bool handle_filter(GLenum filter, GLenum target)
+{
+    bool has_mipmap = (filter == GL_NEAREST_MIPMAP_NEAREST ||
+                       filter == GL_NEAREST_MIPMAP_LINEAR ||
+                       filter == GL_LINEAR_MIPMAP_NEAREST ||
+                       filter == GL_LINEAR_MIPMAP_LINEAR);
+
+    // Set filter
+    if(filter != GL_NONE)
+    {
+        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, filter);
+        if(!has_mipmap)
+            glTexParameterf(target, GL_TEXTURE_MAG_FILTER, filter);
+        else
+            glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+
+    return has_mipmap;
+}
+
+// TMP
+static void handle_addressUV(bool clamp, GLenum target)
+{
+    if(clamp)
+    {
+        glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+}
+
+static void handle_mipmap(bool bound_tex_has_mipmap, GLenum target)
+{
+    if(bound_tex_has_mipmap)
+    {
+        glGenerateMipmap(target);
+        GLfloat maxAnisotropy;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+        glTexParameterf(target,
+                        GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                        math::clamp(0.0f, 8.0f, maxAnisotropy));
+    }
+    else
+    {
+        glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
+    }
+}
+
 #ifdef __DEBUG_TEXTURE__
 void Texture::debug_print_rmap_bindings()
 {
@@ -83,6 +150,116 @@ Texture::wpTexture Texture::get_named_texture(hash_t name)
         return wpTexture(it->second);
 }
 
+Texture::TextureInternal::TextureInternal(const TextureDescriptor& descriptor):
+textureTarget_(GL_TEXTURE_2D),
+numTextures_(descriptor.locations.size()),
+ID_(++Ninst)
+{
+    unsigned char** data    = new unsigned char*[numTextures_];
+    PixelBuffer** px_bufs   = new PixelBuffer*[numTextures_];
+    GLenum* filters         = new GLenum[numTextures_];
+    GLenum* internalFormats = new GLenum[numTextures_];
+    GLenum* formats         = new GLenum[numTextures_];
+
+    uint32_t ii=0;
+    for(auto&& [key, sampler_name]: SAMPLER_NAMES_)
+    {
+        if(!descriptor.has_unit(key))
+            continue;
+
+        filters[ii] = descriptor.parameters.filter;
+        if(sampler_name == H_("mt.diffuseTex"))
+        {
+            // Load Albedo / Diffuse textures as sRGB to avoid
+            // double gamma-correction.
+            internalFormats[ii] = GL_SRGB_ALPHA;
+        }
+        else
+        {
+            internalFormats[ii] = descriptor.parameters.internal_format;
+        }
+        formats[ii] = descriptor.parameters.format;
+
+        try
+        {
+            px_bufs[ii] = PngLoader::Instance().load_png((TEX_IMAGE_PATH + descriptor.locations.at(key)).c_str());
+            data[ii] = px_bufs[ii]->get_data_pointer();
+            #if __DEBUG_TEXTURE_VERBOSE__
+                DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>");
+                std::cout << *px_bufs[ii] << std::endl;
+            #endif
+        }
+        catch(const std::exception& e)
+        {
+            DLOGF("[Texture] Unable to load Texture.");
+            for (uint32_t jj=0; jj<=ii; ++jj)
+                if(px_bufs[jj])
+                    delete px_bufs[jj];
+            delete [] formats;
+            delete [] internalFormats;
+            delete [] filters;
+            delete [] data;
+            delete [] px_bufs;
+            throw;
+        }
+        ++ii;
+    }
+
+    // Get texture size
+#ifdef __PROFILING_SET_2x2_TEXTURE__
+    width_  = 2;
+    height_ = 2;
+#else
+    width_  = px_bufs[0]->get_width();
+    height_ = px_bufs[0]->get_height();
+#endif
+
+    // * GL calls
+    // Generate the right amount of textures
+    textureID_ = new GLuint[numTextures_];
+    is_depth_  = new bool[numTextures_];
+    glGenTextures(numTextures_, textureID_);
+    // For each texture in there
+    for(uint32_t ii = 0; ii < numTextures_; ++ii)
+    {
+        bind(ii);
+        // Generate filter and check whether this unit has mipmaps
+        bool has_mipmap = handle_filter(filters[ii], textureTarget_);
+        // Set clamp/wrap parameters
+        handle_addressUV(descriptor.parameters.clamp, textureTarget_);
+        // Check whether this unit has depth information
+        is_depth_[ii] = (formats[ii] == GL_DEPTH_COMPONENT ||
+                         formats[ii] == GL_DEPTH_STENCIL);
+        // Get data type relative to internal format
+        GLenum dataType = internal_format_to_data_type(internalFormats[ii]);
+
+        // Specify OpenGL texture
+        glTexImage2D(textureTarget_,
+                     0,
+                     internalFormats[ii],
+                     width_,
+                     height_,
+                     0,
+                     formats[ii],
+                     dataType,
+                     (data)?data[ii]:nullptr);
+
+        // Handle mipmap if specified
+        handle_mipmap(has_mipmap, textureTarget_);
+    }
+
+    // Free allocations
+    for (uint32_t jj=0; jj<numTextures_; ++jj)
+        if(px_bufs[jj])
+            delete px_bufs[jj];
+    delete [] formats;
+    delete [] internalFormats;
+    delete [] filters;
+    delete [] data;
+    delete [] px_bufs;
+}
+
+
 Texture::TextureInternal::TextureInternal(GLenum textureTarget,
                                           uint32_t numTextures,
                                           uint32_t width,
@@ -107,61 +284,22 @@ ID_(++Ninst)
     textureID_ = new GLuint[numTextures_];
     is_depth_  = new bool[numTextures_];
 
-    // Generate the right amount of textures
+    // Generate the right amount of texture units
     glGenTextures(numTextures_, textureID_);
-    // For each texture in there
+    // For each unit
     for(uint32_t ii = 0; ii < numTextures_; ++ii)
     {
+        // Bind unit
         bind(ii);
-        bool has_mipmap = (filters[ii] == GL_NEAREST_MIPMAP_NEAREST ||
-                           filters[ii] == GL_NEAREST_MIPMAP_LINEAR ||
-                           filters[ii] == GL_LINEAR_MIPMAP_NEAREST ||
-                           filters[ii] == GL_LINEAR_MIPMAP_LINEAR);
-
-        // Set filter
-        if(filters[ii] != GL_NONE)
-        {
-            glTexParameterf(textureTarget_, GL_TEXTURE_MIN_FILTER, filters[ii]);
-            if(!has_mipmap)
-                glTexParameterf(textureTarget_, GL_TEXTURE_MAG_FILTER, filters[ii]);
-            else
-                glTexParameterf(textureTarget_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        }
-
-        // Set clamp parameters if needed
-        if(clamp)
-        {
-            glTexParameterf(textureTarget_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameterf(textureTarget_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        }
-
+        // Generate filter and check whether this unit has mipmaps
+        bool has_mipmap = handle_filter(filters[ii], textureTarget_);
+        // Set clamp/wrap parameters
+        handle_addressUV(clamp, textureTarget_);
+        // Check whether this unit has depth information
         is_depth_[ii] = (formats[ii] == GL_DEPTH_COMPONENT ||
                          formats[ii] == GL_DEPTH_STENCIL);
-
-
-        GLenum dataType;
-        if(internalFormats[ii] == GL_RGB16F ||
-           internalFormats[ii] == GL_RGBA16F)
-        {
-            dataType = GL_FLOAT;
-        }
-        else if(internalFormats[ii] == GL_RG16_SNORM ||
-                internalFormats[ii] == GL_RGB16_SNORM)
-        {
-            dataType = GL_UNSIGNED_BYTE;
-        }
-        else if(internalFormats[ii] == GL_DEPTH32F_STENCIL8)
-        {
-            dataType = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
-        }
-        else if(internalFormats[ii] == GL_DEPTH24_STENCIL8)
-        {
-            dataType = GL_UNSIGNED_INT_24_8;
-        }
-        else
-        {
-            dataType = GL_UNSIGNED_BYTE;
-        }
+        // Get data type relative to internal format
+        GLenum dataType = internal_format_to_data_type(internalFormats[ii]);
 
         // Specify OpenGL texture
         glTexImage2D(textureTarget_,
@@ -174,24 +312,8 @@ ID_(++Ninst)
                      dataType,
                      (data)?data[ii]:nullptr);
 
-        // Handle mipmaps if specified
-        if(has_mipmap && !lazy_mipmap)
-        {
-            glGenerateMipmap(textureTarget_);
-            GLfloat maxAnisotropy;
-            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-            glTexParameterf(textureTarget_,
-                            GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                            math::clamp(0.0f, 8.0f, maxAnisotropy));
-        }
-        else
-        {
-            glTexParameteri(textureTarget_, GL_TEXTURE_BASE_LEVEL, 0);
-            glTexParameteri(textureTarget_, GL_TEXTURE_MAX_LEVEL, 0);
-        }
-#if __DEBUG_TEXTURE__
-        std::cout << std::endl;
-#endif
+        // Handle mipmap if specified
+        handle_mipmap(has_mipmap && !lazy_mipmap, textureTarget_);
     }
 }
 
@@ -289,9 +411,6 @@ Texture::Texture(const TextureDescriptor& descriptor):
 resourceID_(descriptor.resource_id),
 units_(descriptor.units)
 {
-    auto& fileNames = descriptor.locations;
-    uint32_t numTextures = fileNames.size();
-
     #if __DEBUG_TEXTURE_VERBOSE__
     {
         std::stringstream ss;
@@ -336,77 +455,7 @@ units_(descriptor.units)
     // Else, create new texture internal using parameters
     else
     {
-        unsigned char** data    = new unsigned char*[numTextures];
-        PixelBuffer** px_bufs   = new PixelBuffer*[numTextures];
-        GLenum* filters         = new GLenum[numTextures];
-        GLenum* internalFormats = new GLenum[numTextures];
-        GLenum* formats         = new GLenum[numTextures];
-
-        uint32_t ii=0;
-        for(auto&& [key, sampler_name]: SAMPLER_NAMES_)
-        {
-            if(!descriptor.has_unit(key))
-                continue;
-
-            filters[ii] = descriptor.parameters.filter;
-            if(sampler_name == H_("mt.diffuseTex"))
-            {
-                // Load Albedo / Diffuse textures as sRGB to avoid
-                // double gamma-correction.
-                internalFormats[ii] = GL_SRGB_ALPHA;
-            }
-            else
-            {
-                internalFormats[ii] = descriptor.parameters.internal_format;
-            }
-            formats[ii] = descriptor.parameters.format;
-
-            try
-            {
-                px_bufs[ii] = PngLoader::Instance().load_png((TEX_IMAGE_PATH + fileNames.at(key)).c_str());
-                data[ii] = px_bufs[ii]->get_data_pointer();
-                #if __DEBUG_TEXTURE_VERBOSE__
-                    DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>");
-                    std::cout << *px_bufs[ii] << std::endl;
-                #endif
-            }
-            catch(const std::exception& e)
-            {
-                DLOGF("[Texture] Unable to load Texture.");
-                for (uint32_t jj=0; jj<=ii; ++jj)
-                    if(px_bufs[jj])
-                        delete px_bufs[jj];
-                delete [] formats;
-                delete [] internalFormats;
-                delete [] filters;
-                delete [] data;
-                delete [] px_bufs;
-                throw;
-            }
-            ++ii;
-        }
-
-        // Create new texture internal
-        internal_ = std::make_shared<TextureInternal>(GL_TEXTURE_2D,
-                                                      numTextures,
-                                                      px_bufs[0]->get_width(),
-                                                      px_bufs[0]->get_height(),
-                                                      data,
-                                                      filters,
-                                                      internalFormats,
-                                                      formats,
-                                                      descriptor.parameters.clamp,
-                                                      descriptor.parameters.lazy_mipmap);
-
-        // Free pixel buffers
-        for (uint32_t jj=0; jj<numTextures; ++jj)
-            if(px_bufs[jj])
-                delete px_bufs[jj];
-        delete [] formats;
-        delete [] internalFormats;
-        delete [] filters;
-        delete [] data;
-        delete [] px_bufs;
+        internal_ = std::make_shared<TextureInternal>(descriptor);
 
         // Cache resource for later
         RESOURCE_MAP_.insert(std::make_pair(resourceID_, internal_));

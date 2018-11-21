@@ -123,6 +123,8 @@ public:
 class Texture::TextureInternal
 {
 public:
+    TextureInternal(const TextureDescriptor& descriptor);
+
     TextureInternal(GLenum textureTarget,
                     uint32_t numTextures,
                     uint32_t width,

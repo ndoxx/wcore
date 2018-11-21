@@ -4669,3 +4669,10 @@ La texture bruit tessèle l'écran, et le noiseScale est l'échelle de tesselati
 
 * sources:
 [1] https://stackoverflow.com/questions/38953632/slow-texture-fetch-in-fragment-shader-using-vulkan
+
+#[15-11-18] Better terrain
+Le système de terrain sera amené à être complexifié par la suite (Delaunay triangulation + curvature based importance sampling, progressive mesh si nécessaire). Pour ça, je pense qu'il vaut mieux porter la génération de terrain dans une passe offline séparée, comme ça, les terrains feront partie intégrante de la content pipeline (possibilité de modifier sous blender...).
+Je pourrai donc réserver un gros système pour générer les différents chunks, appliquer des modifiers (érosion...) et faire le stitching en avance, avant d'exporter des mesh au format obj (et flat buffer plus tard) qui seront importées par le jeu.
+On pourrait imaginer un éditeur graphique standalone pour le terrain, capable d'exporter les mesh rapidement, de sorte que l'éditeur de jeu qui tourne séparément (genre sur mon deuxième écran que j'aurai un jour) puisse simplement recharger la map afin de visualiser rapidement les changements.
+    -> Chaque chunk possèderait sa splat map et on pourrait la dessiner depuis l'éditeur de terrain.
+    -> On pourrait aussi modifier la géométrie avec différents outils.

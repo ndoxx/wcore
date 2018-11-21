@@ -1,3 +1,89 @@
 cmake_minimum_required(VERSION 3.0)
 project(wcore)
 subdirs(source)
+subdirs(hosts)
+
+set(SRC_MATHS
+    ${wcore_SOURCE_DIR}/source/src/quaternion.cpp
+    ${wcore_SOURCE_DIR}/source/src/math3d.cpp
+    ${wcore_SOURCE_DIR}/source/src/bezier.cpp
+    ${wcore_SOURCE_DIR}/source/src/cspline.cpp
+    ${wcore_SOURCE_DIR}/source/src/algorithms.cpp
+    ${wcore_SOURCE_DIR}/source/src/moving_average.cpp
+    ${wcore_SOURCE_DIR}/source/src/colors.cpp)
+
+set(SRC_CORE
+    ${wcore_SOURCE_DIR}/source/src/config.cpp
+    ${wcore_SOURCE_DIR}/source/src/arguments.cpp
+    ${wcore_SOURCE_DIR}/source/src/globals.cpp
+    ${wcore_SOURCE_DIR}/source/src/informer.cpp
+    ${wcore_SOURCE_DIR}/source/src/listener.cpp
+    ${wcore_SOURCE_DIR}/source/src/logger.cpp
+    ${wcore_SOURCE_DIR}/source/src/message_tracker.cpp
+    ${wcore_SOURCE_DIR}/source/src/wentity.cpp
+    ${wcore_SOURCE_DIR}/source/src/wcomponent.cpp
+    ${wcore_SOURCE_DIR}/source/src/game_clock.cpp
+    ${wcore_SOURCE_DIR}/source/src/chunk.cpp
+    ${wcore_SOURCE_DIR}/source/src/chunk_manager.cpp
+    ${wcore_SOURCE_DIR}/source/src/scene.cpp
+    ${wcore_SOURCE_DIR}/source/src/scene_loader.cpp
+    ${wcore_SOURCE_DIR}/source/src/input_handler.cpp
+    ${wcore_SOURCE_DIR}/source/src/keymap.cpp
+    ${wcore_SOURCE_DIR}/source/src/debug_info.cpp
+    ${wcore_SOURCE_DIR}/source/src/gui_utils.cpp
+    ${wcore_SOURCE_DIR}/source/src/xml_utils.cpp
+    ${wcore_SOURCE_DIR}/source/src/xml_parser.cpp)
+
+set(SRC_3D
+    ${wcore_SOURCE_DIR}/source/src/gfx_driver.cpp
+    ${wcore_SOURCE_DIR}/source/src/model.cpp
+    ${wcore_SOURCE_DIR}/source/src/sky.cpp
+    ${wcore_SOURCE_DIR}/source/src/transformation.cpp
+    ${wcore_SOURCE_DIR}/source/src/camera.cpp
+    ${wcore_SOURCE_DIR}/source/src/shader.cpp
+    ${wcore_SOURCE_DIR}/source/src/height_map.cpp
+    ${wcore_SOURCE_DIR}/source/src/obj_loader.cpp
+    ${wcore_SOURCE_DIR}/source/src/heightmap_generator.cpp
+    ${wcore_SOURCE_DIR}/source/src/tree_generator.cpp
+    ${wcore_SOURCE_DIR}/source/src/rock_generator.cpp
+    ${wcore_SOURCE_DIR}/source/src/terrain_patch.cpp
+    ${wcore_SOURCE_DIR}/source/src/surface_mesh.cpp
+    ${wcore_SOURCE_DIR}/source/src/mesh_factory.cpp
+    ${wcore_SOURCE_DIR}/source/src/lights.cpp
+    ${wcore_SOURCE_DIR}/source/src/frame_buffer.cpp
+    ${wcore_SOURCE_DIR}/source/src/buffer_module.cpp
+    ${wcore_SOURCE_DIR}/source/src/g_buffer.cpp
+    ${wcore_SOURCE_DIR}/source/src/l_buffer.cpp
+    ${wcore_SOURCE_DIR}/source/src/shadow_buffer.cpp
+    ${wcore_SOURCE_DIR}/source/src/SSAO_buffer.cpp
+    ${wcore_SOURCE_DIR}/source/src/bounding_boxes.cpp
+    ${wcore_SOURCE_DIR}/source/src/geometry_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/shadow_map_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/SSAO_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/lighting_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/forward_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/bloom_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/post_processing_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/debug_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/text_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/debug_overlay_renderer.cpp
+    ${wcore_SOURCE_DIR}/source/src/daylight.cpp
+    ${wcore_SOURCE_DIR}/source/src/pipeline.cpp)
+
+set(SRC_CONTEXT
+    ${wcore_SOURCE_DIR}/source/src/gl_context.cpp)
+
+set(SRC_RES
+    ${wcore_SOURCE_DIR}/source/src/png_loader.cpp
+    ${wcore_SOURCE_DIR}/source/src/pixel_buffer.cpp
+    ${wcore_SOURCE_DIR}/source/src/texture.cpp
+    ${wcore_SOURCE_DIR}/source/src/material.cpp
+    ${wcore_SOURCE_DIR}/source/src/material_common.cpp
+    ${wcore_SOURCE_DIR}/source/src/material_factory.cpp)
+
+set(SRC_IMGUI
+    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui.cpp
+    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui_draw.cpp
+    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui_widgets.cpp
+    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui_impl_glfw.cpp
+    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui_impl_opengl3.cpp)
