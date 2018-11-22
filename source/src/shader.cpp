@@ -80,7 +80,7 @@ FragmentShaderID_(0)
     auto const pos_dot = res.vertex_shader.find_last_of('.');
     auto const pos_slh = res.vertex_shader.find_last_of('/');
     name_ = res.vertex_shader.substr(pos_slh+1, pos_dot-pos_slh-1);
-    DLOGN("[Shader] Creating new shader program: <n>" + name_ + "</n>");
+    DLOGS("[Shader] Creating new shader program: <n>" + name_ + "</n>");
 #endif
     // VERTEX SHADER
     if(res.vertex_shader.size())

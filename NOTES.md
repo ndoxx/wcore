@@ -4676,3 +4676,12 @@ Je pourrai donc réserver un gros système pour générer les différents chunks
 On pourrait imaginer un éditeur graphique standalone pour le terrain, capable d'exporter les mesh rapidement, de sorte que l'éditeur de jeu qui tourne séparément (genre sur mon deuxième écran que j'aurai un jour) puisse simplement recharger la map afin de visualiser rapidement les changements.
     -> Chaque chunk possèderait sa splat map et on pourrait la dessiner depuis l'éditeur de terrain.
     -> On pourrait aussi modifier la géométrie avec différents outils.
+
+#[21-11-18] Après le repos, la guerre.
+L'application "wcore" (qui sera bientôt renommée) est maintenant une application hôte. Son main.cpp est localisé dans le dossier hosts à la racine.
+Les applications hôtes ont accès aux includes de WCore, et compilent pour l'instant les sources de WCore séparément. Quand j'aurai une API elles n'auront plus qu'à link une lib statique. Cette architecture de projet me permet de séparer maintenant les sources "engine" des sources applicatives.
+
+Une nouvelle application hôte "ecs" vient de voir le jour. A l'image de "wcore" qui permet de tester le rendu et l'update d'une map simple avec de la géométrie essentiellement statique en s'appuyant sur de gros systèmes de WCore, "ecs" illustrera l'utilisation d'autres systèmes principaux tels que le système d'entités et de composants, en couplage fort avec un système de scripting qui reste à développer.
+La forme finale de l'application (graphique ou non) n'est pas encore définie à ce jour.
+
+Les entités "drawable" seront rendues séparément dans la passe géométrique, au dessus de la géométrie statique. Tout ne sera pas entité dans le jeu, en particulier la géométrie statique non destructible doit pouvoir se passer de l'overhead. Donc il est raisonnable de penser que l'introduction d'entités dessinables se fera simplement au prix de quelques ajouts dans les classes _GeometryRenderer_, _Scene_ et pourquoi pas _Chunk_, et ne nécessitera pas de refactor en profondeur. Toute la gestion des entités doit donc pouvoir s'envisager orthogonalement au rendu, ce qui est fort heureux.

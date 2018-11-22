@@ -10,7 +10,7 @@
  * http://gamedev.stackexchange.com/questions/17746/entity-component-systems-in-c-how-do-i-discover-types-and-construct-component
  */
 
-struct WComponent;
+class WComponent;
 namespace component
 {
     namespace detail

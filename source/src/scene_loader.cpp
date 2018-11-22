@@ -57,7 +57,7 @@ SceneLoader::~SceneLoader()
 
 void SceneLoader::load_file_xml(const char* xml_file)
 {
-    DLOGN("[SceneLoader] Parsing xml scene description.");
+    DLOGS("[SceneLoader] Parsing xml scene description.");
     xml_parser_.load_file_xml(xml_file);
     current_map_ = xml_file;
 }

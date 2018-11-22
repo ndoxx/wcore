@@ -82,8 +82,8 @@ void SSAORenderer::render()
     // Send uniforms
     const math::mat4& V = SCENE.get_camera()->get_view_matrix();
     SSAO_shader_.send_uniform(H_("rd.v2_noiseScale"), noise_scale_);
-    if(auto dir_light = SCENE.get_directional_light().lock())
-        SSAO_shader_.send_uniform(H_("rd.v3_lightDir"), V.submatrix(3,3)*dir_light->get_position());
+    //if(auto dir_light = SCENE.get_directional_light().lock())
+        //SSAO_shader_.send_uniform(H_("rd.v3_lightDir"), V.submatrix(3,3)*dir_light->get_position());
     SSAO_shader_.send_uniform(H_("rd.f_radius"), SSAO_radius_);
     SSAO_shader_.send_uniform(H_("rd.f_bias"), SSAO_bias_);
     SSAO_shader_.send_uniform(H_("rd.f_intensity"), SSAO_intensity_);

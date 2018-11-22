@@ -79,9 +79,15 @@ void DebugOverlayRenderer::register_debug_pane(BufferModule& buffer_module)
     dbg::DebugPane dbg_pane;
     for(uint32_t ii=0; ii< n_tex; ++ii)
     {
+#ifndef __PRESERVE_STRS__
         dbg_pane.push_back(dbg::DebugTextureProperties(buffer_module[ii],
                            std::to_string(buffer_module.get_texture()->get_sampler_name(ii)),
                            buffer_module.get_texture()->is_depth(ii)));
+#else
+        dbg_pane.push_back(dbg::DebugTextureProperties(buffer_module[ii],
+                           buffer_module.get_texture()->get_sampler_name(ii),
+                           buffer_module.get_texture()->is_depth(ii)));
+#endif
     }
     debug_panes_.push_back(dbg_pane);
 }

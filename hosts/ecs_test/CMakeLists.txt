@@ -1,9 +1,16 @@
 # Defines an application for Entity Component System testing.
 # Parent directory contains prototypes for game specific classes.
 # The goal of the application is to:
-#   - prototype some game logic relative to epsilon-core project
-#   - develop an architecture for game object management the ECS way
-#   - provide a set of components that will be usable by epsilon-core
+#   - prototype some game logic and a set of data-oriented components usable by epsilon-core project
+#   - develop an architecture for game object management and inter-component interactions
+#   - integrate scripting abilities
+
+# temporary directory for game classes
+subdirs(epsilon)
+include_directories(epsilon/include)
+set(SRC_EPSILON
+    epsilon/src/weapon.cpp
+   )
 
 SET (CMAKE_C_COMPILER             "/usr/bin/clang-6.0")
 SET (CMAKE_C_FLAGS                "-Wall -std=c99")
@@ -34,9 +41,6 @@ set(CMAKE_BUILD_TYPE Release)
 # set(CMAKE_BUILD_TYPE MinSizeRel)
 # set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
-include_directories(${wcore_SOURCE_DIR}/source/include)
-include_directories(${wcore_SOURCE_DIR}/source/vendor)
-
 add_executable(ecs
                ${SRC_MATHS}
                ${SRC_CORE}
@@ -44,6 +48,7 @@ add_executable(ecs
                ${SRC_3D}
                ${SRC_RES}
                ${SRC_IMGUI}
+			         ${SRC_EPSILON}
                main.cpp)
 
 set_target_properties(ecs

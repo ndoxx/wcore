@@ -7,7 +7,7 @@
 #include "wentity.h"
 
 // Define some dummy components
-struct WCfoo : public WComponent
+class WCfoo : public WComponent
 {
 public:
     WCfoo(){}
@@ -20,7 +20,7 @@ public:
 };
 REGISTER_COMPONENT(WCfoo, std::type_index(typeid(WCfoo)))
 
-struct WCbar : public WComponent
+class WCbar : public WComponent
 {
 public:
     WCbar(){}

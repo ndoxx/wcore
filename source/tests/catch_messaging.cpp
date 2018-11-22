@@ -79,7 +79,9 @@ TEST_CASE("Debug log functions.", "[dbg]")
 
     std::cout << "Testing debug logging." << std::endl;
     LOG.print_reference();
+    FDLOG("Formatted: A= ", 12, " B=", 13);
     std::cout << "Done." << std::endl;
+
 
     SUCCEED();
 }

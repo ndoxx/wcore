@@ -1,10 +1,15 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+
+#include <sstream>
+#include <algorithm>
+#include <iterator>
+
 // ----- constexpr string hash facilities -----
 // NOTE: hashing algorithm used is FNV-1a
 
-namespace details
+namespace detail
 {
     // FNV-1a constants
     static constexpr unsigned long long basis = 14695981039346656037ULL;
@@ -27,7 +32,7 @@ namespace details
     // compile-time hash
     extern constexpr hash_t H_(const char* str)
     {
-        return details::hash_one(str[0], str + 1, details::basis);
+        return detail::hash_one(str[0], str + 1, detail::basis);
     }
 #endif
 
@@ -35,12 +40,8 @@ typedef unsigned long long hashstr_t;
 // compile-time hash
 extern constexpr hashstr_t HS_(const char* str)
 {
-    return details::hash_one(str[0], str + 1, details::basis);
+    return detail::hash_one(str[0], str + 1, detail::basis);
 }
-
-#include <sstream>
-#include <algorithm>
-#include <iterator>
 
 template <class Container>
 void split_string(const std::string& str, Container& cont, char delim = ' ')

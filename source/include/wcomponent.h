@@ -9,7 +9,7 @@
 #include "wcomponent_detail.h"
 
 class WEntity;
-struct WComponent
+class WComponent
 {
 public:
     WComponent(): parent_(nullptr), active_(true) {}

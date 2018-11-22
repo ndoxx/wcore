@@ -1,5 +1,6 @@
 #include <sstream>
 #include <regex>
+#include <iomanip>
 
 #include "logger.h"
 #include "informer.h"
@@ -10,17 +11,18 @@
 
 static std::map<MsgType, std::string> STYLES =
 {
-    {MsgType::DBG_RAW,       "\033[1;38;2;200;200;200m"},
-    {MsgType::DBG_CANONICAL, "\033[1;38;2;255;255;255m"},
-    {MsgType::DBG_ITEM,      "\033[1;38;2;255;255;255m"},
-    {MsgType::DBG_TRACK,     "\033[1;38;2;75;255;75m"},
-    {MsgType::DBG_NOTIFY,    "\033[1;38;2;75;75;255m"},
-    {MsgType::DBG_WARNING,   "\033[1;38;2;255;175;0m"},
-    {MsgType::DBG_ERROR,     "\033[1;38;2;255;90;90m"},
-    {MsgType::DBG_FATAL,     "\033[1;38;2;255;0;0m"},
-    {MsgType::DBG_BANG,      "\033[1;38;2;255;100;0m"},
-    {MsgType::DBG_GOOD,      "\033[1;38;2;0;255;0m"},
-    {MsgType::DBG_BAD,       "\033[1;38;2;255;0;0m"},
+    {MsgType::RAW,       "\033[1;38;2;200;200;200m"},
+    {MsgType::CANONICAL, "\033[1;38;2;255;255;255m"},
+    {MsgType::ITEM,      "\033[1;38;2;255;255;255m"},
+    {MsgType::TRACK,     "\033[1;38;2;75;255;75m"},
+    {MsgType::NOTIFY,    "\033[1;38;2;75;75;255m"},
+    {MsgType::SECTION,   "\033[1;38;2;10;10;10m"},
+    {MsgType::WARNING,   "\033[1;38;2;255;175;0m"},
+    {MsgType::ERROR,     "\033[1;38;2;255;90;90m"},
+    {MsgType::FATAL,     "\033[1;38;2;255;0;0m"},
+    {MsgType::BANG,      "\033[1;38;2;255;100;0m"},
+    {MsgType::GOOD,      "\033[1;38;2;0;255;0m"},
+    {MsgType::BAD,       "\033[1;38;2;255;0;0m"},
 };
 
 static std::map<char, std::string> TAG_STYLES =
@@ -40,23 +42,25 @@ static std::map<char, std::string> TAG_STYLES =
 
 static std::map<MsgType, std::string> ICON =
 {
-    {MsgType::DBG_RAW,       "        "},
-    {MsgType::DBG_CANONICAL, "        "},
-    {MsgType::DBG_ITEM,      "     -->    "},
-    {MsgType::DBG_TRACK,     "[TRACK] "},
-    {MsgType::DBG_NOTIFY,    "  [*]   "},
-    {MsgType::DBG_WARNING,   "  /!\\   "},
-    {MsgType::DBG_ERROR,     "[ERROR] "},
-    {MsgType::DBG_FATAL,     "[FATAL] "},
-    {MsgType::DBG_BANG,      " <BANG> "},
-    {MsgType::DBG_GOOD,      "<bueno> "},
-    {MsgType::DBG_BAD,       "<ayyyy> "},
+    {MsgType::RAW,       "    "},
+    {MsgType::CANONICAL, "    "},
+    {MsgType::ITEM,      "     \u21B3 "},
+    {MsgType::SECTION,   "\033[1;48;2;200;200;200m\u2042  \033[1;49m \033[1;48;2;200;200;200m"},
+    {MsgType::TRACK,     "\033[1;48;2;50;50;50m \u03FE \033[1;49m "},
+    {MsgType::NOTIFY,    "\033[1;48;2;20;10;50m \u2055 \033[1;49m "},
+    {MsgType::WARNING,   "\033[1;48;2;50;40;10m \u203C \033[1;49m "},
+    {MsgType::ERROR,     "\033[1;48;2;50;10;10m \u2020 \033[1;49m "},
+    {MsgType::FATAL,     "\033[1;48;2;50;10;10m \u2021 \033[1;49m "},
+    {MsgType::BANG,      "\033[1;48;2;50;40;10m \u0489 \033[1;49m "},
+    {MsgType::GOOD,      "\033[1;48;2;10;50;10m \u203F \033[1;49m "},
+    {MsgType::BAD,       "\033[1;48;2;50;10;10m \u2054 \033[1;49m "},
 };
 
 Logger::Logger()
 : Listener()
-, file_mode_(FileMode::DBG_OVERWRITE)
+, file_mode_(FileMode::OVERWRITE)
 , messages_()
+, start_time_(std::chrono::high_resolution_clock::now())
 {
     //ctor
 }
@@ -88,12 +92,15 @@ void Logger::strip_tags(const std::string& message, std::string& stripped, MsgTy
     stripped = std::regex_replace(message, reg_tag, "$2");
 }
 
-void Logger::print_console(const std::string& message, MsgType type)
+void Logger::print_console(const std::string& message, MsgType type, float timestamp)
 {
     // Set style
-    std::cout << "  " << STYLES[type] << ICON[type];
+    std::cout << "\033[1;38;2;0;100;0m["
+              << std::setprecision(10) << std::fixed
+              << timestamp << "] ";
+    std::cout << STYLES[type] << ICON[type];
 
-    if(type == MsgType::DBG_RAW || type == MsgType::DBG_TRACK)
+    if(type == MsgType::RAW || type == MsgType::TRACK)
     {
         std::cout << message << "\033[0m" << std::endl;
         return;
@@ -108,29 +115,28 @@ void Logger::print_console(const std::string& message, MsgType type)
 
 void Logger::operator ()(const std::string& message, MsgType type, LogMode mode)
 {
-    if(((uint8_t)mode & (uint8_t)LogMode::DBG_FILE) != 0)
-        messages_.push_back(LogMessage(message, type, mode));
-
-    if(((uint8_t)mode & (uint8_t)LogMode::DBG_CONSOLE) != 0)
-        print_console(message, type);
+    auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
+    LogMessage logm(message, timestamp, type, mode);
+    operator ()(logm);
 }
 
 void Logger::operator ()(std::string&& message, MsgType type, LogMode mode)
 {
-    if(((uint8_t)mode & (uint8_t)LogMode::DBG_FILE) != 0)
-        messages_.push_back(LogMessage(message, type, mode));
-
-    if(((uint8_t)mode & (uint8_t)LogMode::DBG_CONSOLE) != 0)
-        print_console(message, type);
+    auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
+    LogMessage logm(message, timestamp, type, mode);
+    operator ()(logm);
 }
 
 void Logger::operator ()(const LogMessage& log_message)
 {
-    if(((uint8_t)log_message.mode_ & (uint8_t)LogMode::DBG_FILE) != 0)
+    if(((uint8_t)log_message.mode_ & (uint8_t)LogMode::TEXTFILE) != 0)
         messages_.push_back(log_message);
 
-    if(((uint8_t)log_message.mode_ & (uint8_t)LogMode::DBG_CONSOLE) != 0)
-        print_console(log_message.message_, log_message.type_);
+    if(((uint8_t)log_message.mode_ & (uint8_t)LogMode::CONSOLE) != 0)
+    {
+        float timestamp = std::chrono::duration_cast<std::chrono::duration<float>>(log_message.timestamp_).count();
+        print_console(log_message.message_, log_message.type_, timestamp);
+    }
 }
 
 #ifndef __DISABLE_EDITOR__
@@ -177,8 +183,10 @@ void Logger::generate_widget()
 
 void Logger::onTrack(const WData& data)
 {
-    LogMessage LM("Informer: " + std::to_string(data.sender_)
-                  + " >> " + data.to_string(), MsgType::DBG_TRACK);
+    auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
+    LogMessage LM("Informer: " + std::to_string(data.sender_) + " >> " + data.to_string(),
+                  timestamp,
+                  MsgType::TRACK);
     operator()(LM);
 }
 
@@ -188,7 +196,7 @@ void Logger::track(hash_t chan, Informer& informer)
     std::stringstream ss;
     ss << "[LOG] Listening to channel " << chan << " from informer "
        << informer.get_WID();
-    operator()(ss.str(), MsgType::DBG_NOTIFY);
+    operator()(ss.str(), MsgType::NOTIFY);
 }
 
 void Logger::untrack(hash_t chan, Informer& informer)
@@ -197,7 +205,7 @@ void Logger::untrack(hash_t chan, Informer& informer)
     std::stringstream ss;
     ss << "[LOG] Ignoring channel " << chan << " from informer "
        << informer.get_WID();
-    operator()(ss.str(), MsgType::DBG_NOTIFY);
+    operator()(ss.str(), MsgType::NOTIFY);
 }
 
 void Logger::untrack(Informer& informer)
@@ -207,7 +215,7 @@ void Logger::untrack(Informer& informer)
             unsubscribe(key.first.first, informer);
 
     operator()("[LOG] Ignoring messages from informer " + std::to_string(informer.get_WID()),
-               MsgType::DBG_NOTIFY);
+               MsgType::NOTIFY);
 }
 
 void Logger::write(const std::string& log_path)
@@ -217,7 +225,9 @@ void Logger::write(const std::string& log_path)
     log << "[TIME STAMP] [MTYPE] [MESSAGE]" << std::endl;
     for(const LogMessage& logmsg : messages_)
     {
-        log << "[" << std::chrono::system_clock::to_time_t(logmsg.timestamp_) << "] ";
+        float timestamp = std::chrono::duration_cast<std::chrono::duration<float>>(logmsg.timestamp_).count();
+
+        log << "[" << timestamp << "] ";
         log << ICON[logmsg.type_];
         log << logmsg.message_ << std::endl;
     }
@@ -226,15 +236,16 @@ void Logger::write(const std::string& log_path)
 
 void Logger::print_reference()
 {
-    print_console("Raw message.", MsgType::DBG_RAW);
-    print_console("Canonical message.", MsgType::DBG_CANONICAL);
-    print_console("Notify message.", MsgType::DBG_NOTIFY);
-    print_console("Item message.", MsgType::DBG_ITEM);
-    print_console("Tracking message.", MsgType::DBG_TRACK);
-    print_console("Warning message.", MsgType::DBG_WARNING);
-    print_console("Error message.", MsgType::DBG_ERROR);
-    print_console("Fatal Error message.", MsgType::DBG_FATAL);
-    print_console("Test success.", MsgType::DBG_GOOD);
-    print_console("Test fail.", MsgType::DBG_BAD);
+    print_console("Section.", MsgType::SECTION);
+    print_console("Raw message.", MsgType::RAW);
+    print_console("Canonical message.", MsgType::CANONICAL);
+    print_console("Item message.", MsgType::ITEM);
+    print_console("Notify message.", MsgType::NOTIFY);
+    print_console("Tracking message.", MsgType::TRACK);
+    print_console("Warning message.", MsgType::WARNING);
+    print_console("Error message.", MsgType::ERROR);
+    print_console("Fatal Error message.", MsgType::FATAL);
+    print_console("Test success.", MsgType::GOOD);
+    print_console("Test fail.", MsgType::BAD);
     std::cout << std::endl;
 }

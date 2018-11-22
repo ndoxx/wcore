@@ -23,7 +23,7 @@ mouse_lock_(true)
 
 void InputHandler::import_key_bindings()
 {
-    DLOGN("[InputHandler] Parsing xml file for key bindings.");
+    DLOGS("[InputHandler] Parsing xml file for key bindings.");
 
 
     for (xml_node<>* cat=xml_parser_.get_root()->first_node("Category");
