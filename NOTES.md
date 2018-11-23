@@ -4685,3 +4685,32 @@ Une nouvelle application hôte "ecs" vient de voir le jour. A l'image de "wcore"
 La forme finale de l'application (graphique ou non) n'est pas encore définie à ce jour.
 
 Les entités "drawable" seront rendues séparément dans la passe géométrique, au dessus de la géométrie statique. Tout ne sera pas entité dans le jeu, en particulier la géométrie statique non destructible doit pouvoir se passer de l'overhead. Donc il est raisonnable de penser que l'introduction d'entités dessinables se fera simplement au prix de quelques ajouts dans les classes _GeometryRenderer_, _Scene_ et pourquoi pas _Chunk_, et ne nécessitera pas de refactor en profondeur. Toute la gestion des entités doit donc pouvoir s'envisager orthogonalement au rendu, ce qui est fort heureux.
+
+#[23-11-18] Better logger
+Je vais implémenter un système de canaux de communication pour le logger, ce qui permettra de filtrer dynamiquement les messages de debug.
+Chaque instruction DLOGx pourra préciser un canal en argument et l'affichage console sera modulé en fonction des canaux actifs. L'UI du logger sera étendue pour proposer des cases à cocher pour chaque canal. Le système _Config_ établira quels sont les canaux actifs au lancement. Chaque canal sera référencé par un hash string.
+De plus, j'imagine y joindre un système de verbosité (une valeur à 4 niveaux pour chaque canal) ce qui permettra de grouper des comportements tels que __DEBUG_TEXTURE__ et __DEBUG_TEXTURE_VERBOSE__ sous un même canal. Du coup, peut être que des sliders colleraient mieux dans l'UI...
+
+    verobsity level     critical    warning    state    detail
+           0                X
+           1                X          X
+           2                X          X         X
+           3                X          X         X         X
+
+                          DLOG[E,F]  DLOGW          DLOGx
+
+[ ] __DEBUG_TEXTURE__
+[ ] __DEBUG_TEXTURE_VERBOSE__
+[ ] __DEBUG_MATERIAL_VERBOSE__
+[ ] __DEBUG_MODEL__
+[ ] __DEBUG_MODEL_VERBOSE__
+[ ] __DEBUG_SHADER__
+[ ] __DEBUG_SHADER_VERBOSE__
+[ ] __DEBUG_TEXT__
+[ ] __DEBUG_KB__
+[ ] __DEBUG_SPLINES__
+[ ] __DEBUG_BUFFERS__
+[ ] __PROFILING_GAMELOOP__
+[ ] __PROFILING_GAMELOOP_VERBOSE__
+[ ] __PROFILING_RENDERERS__
+[ ] __DEBUG_CHUNKS__

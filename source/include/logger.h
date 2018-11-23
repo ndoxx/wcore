@@ -3,14 +3,17 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <chrono>
 #include <ctime>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 #include "listener.h"
 #include "singleton.hpp"
+#include "utils.h"
 
 namespace wcore
 {
@@ -57,35 +60,58 @@ public:
     LogMessage(const std::string& message,
                const TimeStamp& timestamp,
                MsgType type=MsgType::CANONICAL,
-               LogMode mode=LogMode::CANONICAL)
+               LogMode mode=LogMode::CANONICAL,
+               uint32_t severity=0,
+               hashstr_t channel=H_("default"))
     : message_(message)
     , mode_(mode)
     , type_(type)
-    , timestamp_(timestamp) {}
+    , channel_(channel)
+    , timestamp_(timestamp)
+    {
+        init(severity);
+    }
 
     LogMessage(std::string&& message,
                const TimeStamp& timestamp,
                MsgType type=MsgType::CANONICAL,
-               LogMode mode=LogMode::CANONICAL)
+               LogMode mode=LogMode::CANONICAL,
+               uint32_t severity=0,
+               hashstr_t channel=H_("default"))
     : message_(std::move(message))
     , mode_(mode)
     , type_(type)
-    , timestamp_(timestamp) {}
+    , channel_(channel)
+    , timestamp_(timestamp)
+    {
+        init(severity);
+    }
 
     std::string message_;
     LogMode     mode_;
     MsgType     type_;
+    hashstr_t   channel_;
+    uint32_t    verbosity_level;
 
     const TimeStamp timestamp_;
+
+private:
+    inline void init(uint32_t severity)
+    {
+        verbosity_level = 3u - std::min(severity, 3u);
+    }
 };
 
 class Logger : public Singleton<Logger>, public Listener
 {
 private:
     FileMode file_mode_;               // What to do with the log file (new, overwrite, append)
-    std::vector<LogMessage> messages_; // List of logged messages
     bool widget_scroll_required_;      // When new message logged, widget needs to scroll down
     LogMessage::TimePoint start_time_; // Start time for timestamp handling
+
+    std::vector<LogMessage> messages_;          // List of logged messages
+    std::map<hashstr_t, uint32_t> verbosity_;   // Map of channels verbosity levels
+    std::map<hashstr_t, std::string> channels_; // Map of channel names
 
     // Singleton boilerplate
     Logger (const Logger&)=delete;
@@ -94,6 +120,7 @@ private:
 
     // Print to console with style given a message and its type
     void print_console(const std::string& message, MsgType type, float timestamp=0.f);
+    void print_console(const LogMessage& log_message);
     // Replace xml style tags within messages by ANSI escape sequences for styling
     void parse_tags(const std::string& message, std::string& final, MsgType type);
     // Strip xml tags from message
@@ -104,13 +131,40 @@ public:
     friend Logger& Singleton<Logger>::Instance();
     friend void Singleton<Logger>::Kill();
 
+    // Register a debugging channel
+    void register_channel(const char* name, uint32_t verbosity=0);
+    // Change channel verbosity
+    inline void set_channel_verbosity(hashstr_t name, uint32_t verbosity)
+    {
+        verbosity_.at(name) = std::min(verbosity, 3u);
+    }
+    // Mute channel by setting its verbosity to 0
+    inline void mute_channel(hashstr_t name)
+    {
+        verbosity_.at(name) = 0;
+    }
+    // Get channel verbosity by name
+    inline uint32_t get_channel_verbosity(hashstr_t name) const
+    {
+        return verbosity_.at(name);
+    }
+    // Get channel verbosity reference
+    inline uint32_t& get_channel_verbosity_nc(hashstr_t name)
+    {
+        return verbosity_.at(name);
+    }
+
     // Actual functions used for logging (functor style)
     void operator ()(const std::string& message,
                      MsgType type=MsgType::CANONICAL,
-                     LogMode mode=LogMode::CANONICAL);
+                     LogMode mode=LogMode::CANONICAL,
+                     uint32_t severity=0u,
+                     hashstr_t channel=H_("default"));
     void operator ()(std::string&& message,
                      MsgType type=MsgType::CANONICAL,
-                     LogMode mode=LogMode::CANONICAL);
+                     LogMode mode=LogMode::CANONICAL,
+                     uint32_t severity=0u,
+                     hashstr_t channel=H_("default"));
     void operator ()(const LogMessage& log_message);
 
     template <typename ...Args>

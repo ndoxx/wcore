@@ -6,6 +6,8 @@
 #include "wcomponent.h"
 #include "wentity.h"
 
+using namespace wcore;
+
 // Define some dummy components
 class WCfoo : public WComponent
 {

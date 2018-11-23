@@ -65,7 +65,8 @@ Logger::Logger()
 , messages_()
 , start_time_(std::chrono::high_resolution_clock::now())
 {
-    //ctor
+    // Create a default debugging channel
+    register_channel("default", 3u);
 }
 
 Logger::~Logger()
@@ -116,17 +117,58 @@ void Logger::print_console(const std::string& message, MsgType type, float times
     widget_scroll_required_ = true;
 }
 
-void Logger::operator ()(const std::string& message, MsgType type, LogMode mode)
+void Logger::print_console(const LogMessage& log_message)
+{
+    // Get properties of message
+    const std::string& message = log_message.message_;
+    MsgType type = log_message.type_;
+    float timestamp = std::chrono::duration_cast<std::chrono::duration<float>>(log_message.timestamp_).count();
+
+    // Set style
+    std::cout << "\033[1;38;2;0;100;0m["
+              << std::setprecision(10) << std::fixed
+              << timestamp << "] ";
+    std::cout << STYLES[type] << ICON[type];
+
+    if(type == MsgType::RAW || type == MsgType::TRACK)
+    {
+        std::cout << message << "\033[0m" << std::endl;
+        return;
+    }
+
+    std::string final;
+    parse_tags(message, final, type);
+
+    std::cout << final << "\033[0m" << std::endl;
+    widget_scroll_required_ = true;
+}
+
+void Logger::register_channel(const char* name, uint32_t verbosity)
+{
+    hashstr_t hname = H_(name);
+    verbosity_.insert(std::make_pair(hname, verbosity));
+    channels_.insert(std::make_pair(hname, std::string(name)));
+}
+
+void Logger::operator ()(const std::string& message,
+                         MsgType type,
+                         LogMode mode,
+                         uint32_t severity,
+                         hashstr_t channel)
 {
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
-    LogMessage logm(message, timestamp, type, mode);
+    LogMessage logm(message, timestamp, type, mode, severity, channel);
     operator ()(logm);
 }
 
-void Logger::operator ()(std::string&& message, MsgType type, LogMode mode)
+void Logger::operator ()(std::string&& message,
+                         MsgType type,
+                         LogMode mode,
+                         uint32_t severity,
+                         hashstr_t channel)
 {
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
-    LogMessage logm(message, timestamp, type, mode);
+    LogMessage logm(message, timestamp, type, mode, severity, channel);
     operator ()(logm);
 }
 
@@ -137,49 +179,69 @@ void Logger::operator ()(const LogMessage& log_message)
 
     if(((uint8_t)log_message.mode_ & (uint8_t)LogMode::CONSOLE) != 0)
     {
-        float timestamp = std::chrono::duration_cast<std::chrono::duration<float>>(log_message.timestamp_).count();
-        print_console(log_message.message_, log_message.type_, timestamp);
+        uint32_t cur_verbosity = get_channel_verbosity(log_message.channel_);
+        if(cur_verbosity >= log_message.verbosity_level)
+        {
+            print_console(log_message);
+        }
     }
 }
 
 #ifndef __DISABLE_EDITOR__
 void Logger::generate_widget()
 {
-    ImGuiTextFilter Filter;
     ImGui::SetNextWindowSize(ImVec2(500,400), ImGuiSetCond_FirstUseEver);
-    ImGui::Begin("Log");
-    if(ImGui::Button("Clear")) clear();
-    ImGui::SameLine();
-    bool copy = ImGui::Button("Copy");
-    ImGui::SameLine();
-    Filter.Draw("Filter", -100.0f);
-    ImGui::Separator();
-    ImGui::BeginChild("scrolling");
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0,1));
-    if(copy) ImGui::LogToClipboard();
+    ImGui::Begin("Debug");
 
-    if(Filter.IsActive())
+    ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
+    if(ImGui::CollapsingHeader("Channels"))
     {
-        for(uint32_t ii=0; ii<messages_.size(); ++ii)
+        ImGui::Text("Verbosity control");
+        // Display a verbosity control slider for each channel
+        for(auto&& [key, name]: channels_)
         {
-            const char* line_begin = messages_[ii].message_.c_str();
-            if(Filter.PassFilter(line_begin))
-                ImGui::TextUnformatted(line_begin);
-        }
-    }
-    else
-    {
-        for(uint32_t ii=0; ii<messages_.size(); ++ii)
-        {
-            ImGui::TextUnformatted(messages_[ii].message_.c_str());
+            ImGui::SliderInt(name.c_str(), (int*)&get_channel_verbosity_nc(key), 0u, 3u);
         }
     }
 
-    if (widget_scroll_required_)
-        ImGui::SetScrollHere(1.0f);
-    widget_scroll_required_ = false;
-    ImGui::PopStyleVar();
-    ImGui::EndChild();
+    ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+    if(ImGui::CollapsingHeader("Log"))
+    {
+        ImGuiTextFilter Filter;
+        if(ImGui::Button("Clear")) clear();
+        ImGui::SameLine();
+        bool copy = ImGui::Button("Copy");
+        ImGui::SameLine();
+        Filter.Draw("Filter", -100.0f);
+        ImGui::Separator();
+        ImGui::BeginChild("scrolling");
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0,1));
+        if(copy) ImGui::LogToClipboard();
+
+        if(Filter.IsActive())
+        {
+            for(uint32_t ii=0; ii<messages_.size(); ++ii)
+            {
+                const char* line_begin = messages_[ii].message_.c_str();
+                if(Filter.PassFilter(line_begin))
+                    ImGui::TextUnformatted(line_begin);
+            }
+        }
+        else
+        {
+            for(uint32_t ii=0; ii<messages_.size(); ++ii)
+            {
+                ImGui::TextUnformatted(messages_[ii].message_.c_str());
+            }
+        }
+
+        if (widget_scroll_required_)
+            ImGui::SetScrollHere(1.0f);
+        widget_scroll_required_ = false;
+        ImGui::PopStyleVar();
+        ImGui::EndChild();
+    }
+
     ImGui::End();
 }
 #endif

@@ -8,6 +8,8 @@
 #include "listener.h"
 #include "logger.h"
 
+using namespace wcore;
+
 class MessageIntValue: public WData
 {
 public:
@@ -75,12 +77,17 @@ private:
 
 TEST_CASE("Debug log functions.", "[dbg]")
 {
-    using namespace dbg;
-
     std::cout << "Testing debug logging." << std::endl;
-    LOG.print_reference();
+    dbg::LOG.print_reference();
     FDLOG("Formatted: A= ", 12, " B=", 13);
     std::cout << "Done." << std::endl;
+
+
+    SUCCEED();
+}
+
+TEST_CASE("Debug log functions severity.", "[dbg]")
+{
 
 
     SUCCEED();
