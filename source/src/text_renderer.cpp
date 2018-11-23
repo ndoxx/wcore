@@ -5,9 +5,10 @@
 #include "mesh.hpp"
 #include "globals.h"
 
+namespace wcore
+{
+
 using namespace math;
-
-
 
 TextRenderer::TextRenderer():
 Renderer<Vertex2P2U>(),
@@ -178,4 +179,6 @@ void TextRenderer::render()
         render_line(line.text, line.x, line.y, line.scale, line.color);
         line_queue_.pop();
     }
+}
+
 }

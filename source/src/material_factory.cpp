@@ -2,6 +2,9 @@
 #include "material.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 using namespace rapidxml;
 
 std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
@@ -148,4 +151,6 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, Mate
         if(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH))
             xml::parse_node(ovd_node, "ParallaxMap", descriptor.enable_parallax_mapping);
     }
+}
+
 }

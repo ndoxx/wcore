@@ -6,6 +6,9 @@
 #include "mesh_factory.h"
 #include "vertex_format.h"
 
+namespace wcore
+{
+
 template <typename VertexT>
 class Renderer
 {
@@ -53,5 +56,7 @@ public:
     }
     virtual void render() = 0;
 };
+
+}
 
 #endif // RENDERER_HPP

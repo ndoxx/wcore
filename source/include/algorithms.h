@@ -5,9 +5,10 @@
 #include <vector>
 #include <array>
 
+namespace wcore
+{
 namespace math
 {
-
 
 template <unsigned N, typename T> class vec;
 
@@ -27,5 +28,7 @@ inline T clamp(const T &a, const T &min, const T &max)
 extern void compute_extent(const std::vector<math::vec<3,float>>& vertices, float extent[6]);
 extern void compute_extent(const std::array<math::vec<3,float>, 8>& vertices, float extent[6]);
 
-}
+} // namespace math
+} // namespace wcore
+
 #endif // ALGORITHMS_H

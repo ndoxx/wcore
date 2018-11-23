@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "shader.h"
 
+namespace wcore
+{
+
 struct Vertex3P;
 class LBuffer;
 class DebugRenderer : public Renderer<Vertex3P>
@@ -30,4 +33,5 @@ public:
     inline uint8_t get_light_display_mode() const { return light_display_mode_; }
 };
 
+}
 #endif // DEBUG_RENDERER_H

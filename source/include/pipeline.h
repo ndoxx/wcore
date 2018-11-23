@@ -9,6 +9,9 @@
     #define PROFILING_MAX_SAMPLES 1000
 #endif
 
+namespace wcore
+{
+
 class GeometryRenderer;
 class ShadowMapRenderer;
 class LightingRenderer;
@@ -75,5 +78,7 @@ public:
     void generate_widget();
 #endif
 };
+
+}
 
 #endif // PIPELINE_H

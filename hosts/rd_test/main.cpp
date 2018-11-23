@@ -14,6 +14,8 @@
 #include "pipeline.h"
 #include "daylight.h"
 
+using namespace wcore;
+
 int main(int argc, char const *argv[])
 {
     // Parse config file

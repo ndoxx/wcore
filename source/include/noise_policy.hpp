@@ -11,6 +11,9 @@
 
 #include "math3d.h"
 
+namespace wcore
+{
+
 /*
  * A speed-improved simplex noise algorithm for 2D, 3D and 4D in C++.
  *
@@ -531,5 +534,7 @@ private:
     std::vector<Float>     coeffs_;
     std::vector<math::vec2> cells_;
 };
+
+}
 
 #endif // NOISE_POLICY_H

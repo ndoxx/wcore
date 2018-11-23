@@ -3,6 +3,9 @@
 
 #include "math_structures.hpp"
 
+namespace wcore
+{
+
 #define ENABLE_DETERMINANT_DISCRIMINATION_OPT
 #define ENABLE_AFFINE_MATRIX_INVERSION_OPT
 
@@ -13,7 +16,8 @@
 #define TORADIANS(A) M_PI*A/180.0f
 #define TODEGREES(A) 180.0f*A/M_PI
 
-namespace math{
+namespace math
+{
 
 // Vector helper funcs
 template <unsigned N, typename T>
@@ -135,10 +139,9 @@ T lerp(const T& t1, const T& t2, float param)
     return t1 + param*(t2-t1);
 }
 
-}
+} // namespace math
+} // namespace wcore
 
 #include "quaternion.h"
 
 #endif // MATH_H
-
-

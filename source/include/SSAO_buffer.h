@@ -5,6 +5,9 @@
 #include "singleton.hpp"
 #include "math3d.h"
 
+namespace wcore
+{
+
 class SSAOBuffer : public BufferModule, public SingletonNDI<SSAOBuffer>
 {
 public:
@@ -17,5 +20,7 @@ private:
                unsigned int screenHeight);
    virtual ~SSAOBuffer();
 };
+
+}
 
 #endif // SSAO_BUFFER_H

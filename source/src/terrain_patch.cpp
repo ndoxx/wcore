@@ -3,6 +3,9 @@
 #include "height_map.h"
 #include "scene.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 uint32_t TerrainChunk::chunk_size_ = 0;
@@ -78,4 +81,5 @@ void stitch_terrain_edges(std::shared_ptr<TerrainChunk> terrain,
     });
 }
 
-}
+} // namespace terrain
+} // namespace wcore

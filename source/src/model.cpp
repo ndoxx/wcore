@@ -5,6 +5,9 @@
 #include "material.h"
 #include "vertex_format.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 Model::Model(Mesh<Vertex3P3N3T2U>* pmesh, Material* material):
@@ -50,4 +53,6 @@ LineModel::~LineModel()
 {
     delete pmesh_;
     delete pmaterial_;
+}
+
 }

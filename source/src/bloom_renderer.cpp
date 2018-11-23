@@ -7,6 +7,9 @@
 #include "math3d.h"
 #include "globals.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 BloomRenderer::BloomRenderer():
@@ -112,4 +115,6 @@ void BloomRenderer::render()
 
     vertex_array_.unbind();
     blur_pass_shader_.unuse();
+}
+
 }

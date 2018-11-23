@@ -8,6 +8,9 @@
 #include "xml_parser.h"
 #include "informer.h"
 
+namespace wcore
+{
+
 struct KeyBindingProperties
 {
 public:
@@ -111,7 +114,6 @@ inline bool InputHandler::ready(hash_t binding_name)
     return key_bindings_.at(binding_name).ready();
 }
 
-
-
+}
 
 #endif // INPUT_HANDLER_H

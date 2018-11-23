@@ -2,6 +2,9 @@
 #include "l_buffer.h"
 #include "texture.h"
 
+namespace wcore
+{
+
 LBuffer::LBuffer(unsigned int screenWidth,
                  unsigned int screenHeight):
 BufferModule("lbuffer",
@@ -21,3 +24,5 @@ std::make_shared<Texture>(
 }){}
 
 LBuffer::~LBuffer() = default;
+
+}

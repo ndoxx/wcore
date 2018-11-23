@@ -4,6 +4,9 @@
 #include "updatable.h"
 #include "math3d.h"
 
+namespace wcore
+{
+
 //#define __OPT_CHUNK_LOAD_DIRECTION_HINT__
 #define __OPT_CHUNK_LOAD_FULL_DISK__
 
@@ -44,5 +47,7 @@ private:
                        ((lcp.y()>0)<<1));
     }
 };
+
+}
 
 #endif // CHUNK_MANAGER_H

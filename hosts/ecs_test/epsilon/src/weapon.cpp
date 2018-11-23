@@ -1,7 +1,6 @@
 #include "weapon.h"
 #include "logger.h"
 
-
 Weapon::Weapon():
 damage_type_(damage_t::BULLET),
 shield_damage_amount_(1.f),

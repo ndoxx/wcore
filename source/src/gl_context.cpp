@@ -8,6 +8,7 @@
 #include "arguments.h"
 #include "config.h"
 #include "globals.h"
+#include "clock.hpp"
 
 //GUI
 #ifndef __DISABLE_EDITOR__
@@ -20,6 +21,12 @@
     #include "moving_average.h"
     #include "debug_info.h"
     #include "math3d.h"
+#endif
+
+namespace wcore
+{
+
+#ifdef __PROFILING_GAMELOOP__
     static MovingAverage render_time_fifo(1000);
 #endif
 
@@ -198,7 +205,6 @@ static std::string dbg_display_sub_duration(const std::string& name,
 }
 #endif
 
-#include "clock.hpp"
 int GLContext::main_loop()
 {
     uint32_t target_fps_ = 60;
@@ -358,4 +364,6 @@ int GLContext::main_loop()
     dbg::LOG.write("debug.log");
 
     return 0;
+}
+
 }

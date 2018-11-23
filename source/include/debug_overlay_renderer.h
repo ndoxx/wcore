@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "shader.h"
 
+namespace wcore
+{
+
 class TextRenderer;
 class BufferModule;
 
@@ -55,5 +58,7 @@ public:
     void register_debug_pane(BufferModule& buffer_module);
     void render_pane(uint32_t index);
 };
+
+}
 
 #endif // DEBUG_OVERLAY_RENDERER_H

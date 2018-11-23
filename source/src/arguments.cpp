@@ -5,6 +5,9 @@
 #include "config.h"
 #include "globals.h"
 
+namespace wcore
+{
+
 static const char* get_cmd_option(const char** begin, const char ** end, const std::string & option)
 {
     const char ** itr = std::find(begin, end, option);
@@ -40,4 +43,6 @@ void parse_program_arguments(int argc, char const *argv[])
     // Fullscreen
     if(cmd_option_exists(argv, argv + argc, "-f"))
         GLB.SCR_FULL = true;
+}
+
 }

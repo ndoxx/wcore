@@ -2,6 +2,9 @@
 #include "text_renderer.h"
 #include "globals.h"
 
+namespace wcore
+{
+
 DebugInfo::DebugInfo():
 text_renderer_(nullptr),
 active_(false)
@@ -27,4 +30,6 @@ void DebugInfo::display(uint8_t index, const std::string& text, const math::vec3
         float yy = GLB.SCR_H-20-index*18;
         text_renderer_->schedule_for_drawing(text, H_("arial"), 10, yy, 1.0f, color);
     }
+}
+
 }

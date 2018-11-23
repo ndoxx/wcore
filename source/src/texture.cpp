@@ -11,6 +11,9 @@ namespace fs = std::filesystem;
 #include "algorithms.h"
 #include "material_common.h"
 
+namespace wcore
+{
+
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;
 Texture::TMap Texture::NAMED_TEXTURES_;
@@ -545,4 +548,6 @@ bool Texture::operator==(const Texture& texture) const
 bool Texture::operator!=(const Texture& texture) const
 {
     return !operator==(texture);
+}
+
 }

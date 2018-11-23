@@ -2,6 +2,9 @@
 #include "texture.h"
 #include "mesh_factory.h"
 
+namespace wcore
+{
+
 BufferModule::BufferModule(const char* out_tex_name,
                            std::shared_ptr<Texture> ptexture,
                            std::vector<GLenum>&& attachments):
@@ -60,4 +63,6 @@ void BufferModule::generate_mipmaps(uint32_t unit,
 GLuint BufferModule::operator[](uint8_t index) const
 {
     return (*out_texture_)[index];
+}
+
 }

@@ -10,6 +10,9 @@
 #include "texture.h"
 #include "shadow_buffer.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 uint32_t ShadowMapRenderer::SHADOW_WIDTH  = 1920;
@@ -148,4 +151,6 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map()
     GFX::disable_face_culling();
 
     return PVl;
+}
+
 }

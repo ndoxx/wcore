@@ -6,6 +6,9 @@
 #include "frame_buffer.h"
 #include "utils.h"
 
+namespace wcore
+{
+
 class BufferModule
 {
 protected:
@@ -73,5 +76,6 @@ inline void BufferModule::blit_depth_to_screen(uint32_t scrWidth, uint32_t scrHe
     frame_buffer_.blit_depth_default_fb(scrWidth, scrHeight);
 }
 
+}
 
 #endif // PROCESSING_STAGE_H

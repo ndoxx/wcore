@@ -11,6 +11,9 @@
 #include "math3d.h"
 #include "vertex_format.h"
 
+namespace wcore
+{
+
 class TerrainChunk;
 class Model;
 class LineModel;
@@ -45,13 +48,10 @@ typedef std::function<void(pcLight, uint32_t)>  cLightVisitor;
 typedef std::function<bool(pLight)>   LightEvaluator;
 typedef std::function<bool(pcLight)>  cLightEvaluator;
 
-namespace wcore
-{
 extern ModelEvaluator DEFAULT_MODEL_EVALUATOR;
 extern cModelEvaluator DEFAULT_CMODEL_EVALUATOR;
 extern LightEvaluator DEFAULT_LIGHT_EVALUATOR;
 extern cLightEvaluator DEFAULT_CLIGHT_EVALUATOR;
-}
 
 class PositionUpdater;
 class ConstantRotator;
@@ -105,16 +105,16 @@ public:
     void sort_models(pCamera camera);
 
     void traverse_models(ModelVisitor func,
-                         ModelEvaluator ifFunc=wcore::DEFAULT_MODEL_EVALUATOR,
-                         wcore::ORDER order=wcore::ORDER::IRRELEVANT,
-                         wcore::MODEL_CATEGORY model_cat=wcore::MODEL_CATEGORY::OPAQUE) const;
+                         ModelEvaluator ifFunc=DEFAULT_MODEL_EVALUATOR,
+                         ORDER order=ORDER::IRRELEVANT,
+                         MODEL_CATEGORY model_cat=MODEL_CATEGORY::OPAQUE) const;
 
     void traverse_line_models(std::function<void(pLineModel)> func);
 
     void traverse_lights(LightVisitor func,
-                         LightEvaluator ifFunc=wcore::DEFAULT_LIGHT_EVALUATOR);
+                         LightEvaluator ifFunc=DEFAULT_LIGHT_EVALUATOR);
     void traverse_lights(cLightVisitor func,
-                         cLightEvaluator ifFunc=wcore::DEFAULT_CLIGHT_EVALUATOR) const;
+                         cLightEvaluator ifFunc=DEFAULT_CLIGHT_EVALUATOR) const;
 
     void load_geometry();
     inline const BufferUnit<Vertex3P3N3T2U>& get_buffer_unit() const       { return buffer_unit_; }
@@ -132,5 +132,7 @@ public:
     inline uint32_t get_vertex_count() const    { return buffer_unit_.get_n_vertices(); }
     inline uint32_t get_triangles_count() const { return buffer_unit_.get_n_indices()/3; }
 };
+
+}
 
 #endif // CHUNK_H

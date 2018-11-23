@@ -8,6 +8,8 @@
 
 #include "weapon.h"
 
+using namespace wcore;
+
 class WCTransform: public WComponent, public Transformation
 {
 public:

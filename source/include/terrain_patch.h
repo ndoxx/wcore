@@ -5,6 +5,9 @@
 
 #include "model.h"
 
+namespace wcore
+{
+
 class HeightMap;
 
 /*
@@ -69,6 +72,6 @@ extern void stitch_terrain_edges(std::shared_ptr<TerrainChunk> terrain,
                                  uint32_t chunk_size);
 }
 
-
+}
 
 #endif // TERRAIN_PATCH_H

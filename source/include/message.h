@@ -6,6 +6,9 @@
 
 #include "utils.h"
 
+namespace wcore
+{
+
 typedef size_t WID;
 typedef size_t WDelegateID;
 
@@ -47,6 +50,8 @@ namespace dlg
     {
         return std::bind(func, std::placeholders::_1);
     }
+}
+
 }
 
 #endif // TYPES_H_INCLUDED

@@ -1,6 +1,9 @@
 #include "height_map.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 HeightMap::HeightMap(uint32_t width, uint32_t length, float height)
 : width_(width)
 , length_(length)
@@ -143,4 +146,6 @@ float HeightMap::get_height(const math::vec2& pos) const
 
     // Return correctly scaled height
     return y*scale_;
+}
+
 }

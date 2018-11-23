@@ -4,10 +4,12 @@
 #include <map>
 #include <vector>
 
-
 #include "singleton.hpp"
 #include "utils.h"
 #include "xml_parser.h"
+
+namespace wcore
+{
 
 // Singleton class for holding named global variables
 class Config: public Singleton<Config>
@@ -141,5 +143,7 @@ template <> inline bool Config::get(hash_t name, bool& destination)
 }
 
 #define CONFIG Config::Instance()
+
+}
 
 #endif // CONFIG_H

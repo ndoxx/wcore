@@ -5,6 +5,8 @@
 #include <cassert>
 #include "math3d.h"
 
+namespace wcore
+{
 namespace GFX
 {
 inline uint32_t get_error()         { return glGetError(); }
@@ -68,5 +70,7 @@ inline void viewport(float xx, float yy, float width, float height)
 
 inline void finish() { glFinish(); }
 
-}
+} // namespace GFX
+} // namespace wcore
+
 #endif // GFX_DRIVER_H

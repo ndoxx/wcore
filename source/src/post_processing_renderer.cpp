@@ -7,6 +7,9 @@
 #include "camera.h"
 #include "globals.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 PostProcessingRenderer::PostProcessingRenderer():
@@ -65,4 +68,6 @@ void PostProcessingRenderer::render()
         pbloom->unbind();
     post_processing_shader_.unuse();
     vertex_array_.unbind();
+}
+
 }

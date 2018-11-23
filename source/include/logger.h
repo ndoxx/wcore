@@ -12,6 +12,9 @@
 #include "listener.h"
 #include "singleton.hpp"
 
+namespace wcore
+{
+
 enum class FileMode : std::uint8_t
 {
     OVERWRITE,
@@ -155,63 +158,66 @@ void Logger::printfold(Args&&... args)
 namespace dbg
 {
     static Logger& LOG = Logger::Instance();  //Allows dbg::LOG("message",...) syntax
-}
+} // namespace dbg
+} // namespace wcore
+
+// DLOGx macros in GLOBAL namespace
 
 #ifdef __DEBUG__
     #define DLOG_SET(LOG_PATH, ...) do { \
-        dbg::LOG.set(LOG_PATH, ##__VA_ARGS__); \
+        wcore::dbg::LOG.set(LOG_PATH, ##__VA_ARGS__); \
         } while(0)
     #define DLOG_CLEAR() do { \
-        dbg::LOG.clear(); \
+        wcore::dbg::LOG.clear(); \
         } while(0)
     #define DLOG_WRITE() do { \
-        dbg::LOG.write(); \
+        wcore::dbg::LOG.write(); \
         } while(0)
     #define DLOG_PRINT_REF() do { \
-        dbg::LOG.print_reference(); \
+        wcore::dbg::LOG.print_reference(); \
         } while(0)
     #define DLOG_TRACK(MTYPESTR, INFORMER) do { \
-        dbg::LOG.track(H_(MTYPESTR), INFORMER); \
+        wcore::dbg::LOG.track(H_(MTYPESTR), INFORMER); \
         } while(0)
 
     #define FDLOG( ... ) do { \
-        dbg::LOG.printfold(__VA_ARGS__); \
+        wcore::dbg::LOG.printfold(__VA_ARGS__); \
         } while(0)
     #define DLOG(MESSAGE, ...) do { \
-        dbg::LOG(MESSAGE, ##__VA_ARGS__); \
+        wcore::dbg::LOG(MESSAGE, ##__VA_ARGS__); \
         } while(0)
     #define DLOGR(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::RAW); \
+        wcore::dbg::LOG(MESSAGE, MsgType::RAW); \
         } while(0)
     #define DLOGI(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::ITEM); \
+        wcore::dbg::LOG(MESSAGE, MsgType::ITEM); \
         } while(0)
     #define DLOGT(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::TRACK); \
+        wcore::dbg::LOG(MESSAGE, MsgType::TRACK); \
         } while(0)
     #define DLOGN(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::NOTIFY); \
+        wcore::dbg::LOG(MESSAGE, MsgType::NOTIFY); \
         } while(0)
     #define DLOGS(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::SECTION); \
+        wcore::dbg::LOG(MESSAGE, MsgType::SECTION); \
         } while(0)
     #define DLOGW(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::WARNING); \
+        wcore::dbg::LOG(MESSAGE, MsgType::WARNING); \
         } while(0)
     #define DLOGE(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::ERROR); \
+        wcore::dbg::LOG(MESSAGE, MsgType::ERROR); \
         } while(0)
     #define DLOGF(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::FATAL); \
+        wcore::dbg::LOG(MESSAGE, MsgType::FATAL); \
         } while(0)
     #define DLOGG(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::GOOD); \
+        wcore::dbg::LOG(MESSAGE, MsgType::GOOD); \
         } while(0)
     #define DLOGB(MESSAGE) do { \
-        dbg::LOG(MESSAGE, MsgType::BAD); \
+        wcore::dbg::LOG(MESSAGE, MsgType::BAD); \
         } while(0)
     #define BANG() do { \
-        dbg::LOG(std::string(__FILE__)+":"+std::to_string(__LINE__), MsgType::BANG); \
+        wcore::dbg::LOG(std::string(__FILE__)+":"+std::to_string(__LINE__), MsgType::BANG); \
         } while(0)
 #else
     #define DLOG_SET(LOG_PATH, ...)     do { } while(0)

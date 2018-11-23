@@ -11,6 +11,9 @@
 #include "vertex_array.hpp"
 #include "chunk.h"
 
+namespace wcore
+{
+
 struct Vertex3P3N3T2U;
 struct ModelRenderInfo;
 class Model;
@@ -182,5 +185,7 @@ inline uint32_t Scene::get_triangles_count() const
 }
 
 #define SCENE Scene::Instance()
+
+}
 
 #endif // SCENE_H

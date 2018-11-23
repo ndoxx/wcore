@@ -7,6 +7,10 @@
 #include "logger.h"
 
 struct GLFWwindow;
+
+namespace wcore
+{
+
 class GLContext
 {
 private:
@@ -42,5 +46,7 @@ public:
 
     int main_loop();
 };
+
+}
 
 #endif // GL_CONTEXT_H

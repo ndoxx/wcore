@@ -3,6 +3,9 @@
 
 #include "listener.h"
 
+namespace wcore
+{
+
 class MessageTracker: public Listener
 {
 public:
@@ -14,5 +17,7 @@ public:
 private:
     static void display(hash_t channel, const WData& wdata);
 };
+
+}
 
 #endif // MESSAGE_TRACKER_H

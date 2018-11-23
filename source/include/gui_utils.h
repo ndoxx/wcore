@@ -15,6 +15,7 @@ void PlotVar(const char* label,
 
 // Call this periodically to discard old/unused data
 void PlotVarFlushOldEntries();
+
 }
 
 #endif // GUI_UTILS_H

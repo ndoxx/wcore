@@ -6,6 +6,9 @@
 #include "logger.h"
 #include "mesh.hpp"
 
+namespace wcore
+{
+
 static inline uint32_t dimensionality(GLenum primitive)
 {
     switch(primitive)
@@ -167,5 +170,7 @@ public:
                       (void*)(offset * sizeof(GLuint)));
     }
 };
+
+}
 
 #endif // BUFFER_UNIT_HPP

@@ -6,6 +6,8 @@
 
 #include "math3d.h"
 
+namespace wcore
+{
 
 class HeightMap
 {
@@ -94,6 +96,8 @@ inline float HeightMap::interpolate(const math::vec3& p1,
     float l3 = 1.0f - l1 - l2;
     // Return interpolated value at pos using barycentric coordinates
     return l1 * p1.y() + l2 * p2.y() + l3 * p3.y();
+}
+
 }
 
 #endif // HEIGHT_MAP_H

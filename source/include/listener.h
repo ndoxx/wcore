@@ -6,6 +6,9 @@
 #include <utility>
 #include "message.h"
 
+namespace wcore
+{
+
 class Informer;
 class Listener
 {
@@ -33,6 +36,8 @@ void Listener::subscribe(hash_t chan, Informer& informer, void (T::*func)(const 
 {
     WpFunc delegate = dlg::make_delegate(func, *this);
     subscribe(chan, informer, delegate);
+}
+
 }
 
 #endif // LISTENER_H

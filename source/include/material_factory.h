@@ -5,6 +5,9 @@
 #include "xml_parser.h"
 #include "material_common.h"
 
+namespace wcore
+{
+
 class Material;
 class MaterialFactory
 {
@@ -27,5 +30,7 @@ public:
 private:
     void parse_material_descriptor(rapidxml::xml_node<>* node, MaterialDescriptor& descriptor);
 };
+
+}
 
 #endif // MATERIAL_FACTORY_H

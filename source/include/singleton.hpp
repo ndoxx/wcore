@@ -3,6 +3,9 @@
 
 #include <utility>
 
+namespace wcore
+{
+
 template <class T> class Singleton
 {
     public:
@@ -78,4 +81,5 @@ template <class T> void SingletonNDI<T>::Kill()
     instance_ = nullptr;
 }
 
+}
 #endif // SINGLETON_HPP_INCLUDED

@@ -1,6 +1,9 @@
 #include "game_clock.h"
 #include "input_handler.h"
 
+namespace wcore
+{
+
 float GameClock::MAX_FRAME_SPEED_ = 5.0f;
 float GameClock::SPEED_INCREMENT_ = 0.1f;
 
@@ -31,4 +34,6 @@ void GameClock::setup_user_inputs(InputHandler& handler)
     {
         require_next_frame();
     });
+}
+
 }

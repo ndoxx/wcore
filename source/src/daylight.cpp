@@ -15,6 +15,9 @@
     #include "gui_utils.h"
 #endif
 
+namespace wcore
+{
+
 using namespace math;
 typedef std::shared_ptr<Light> pLight;
 
@@ -157,4 +160,6 @@ void DaylightSystem::update(const GameClock& clock)
         pipeline_.set_pp_fog_color(color_interpolator_->interpolate(daytime_));
         pipeline_.set_pp_fog_density(pp_fog_density_interpolator_->interpolate(daytime_));
     }
+}
+
 }

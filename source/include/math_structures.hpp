@@ -7,10 +7,10 @@
 #include <iomanip>
 #include <sstream>
 
-
+namespace wcore
+{
 namespace math
 {
-
 namespace detail
 {
     // Zero Clip: If value near 0 up to precision return 0
@@ -1088,21 +1088,23 @@ namespace detail
         x = x ^ (x >> 30) ^ (x >> 60);
         return x;
     }
-}
+
+} // namespace detail
+} // namespace wcore
 
 namespace std
 {
     // Allows to use std::swap() on vecs
     template <unsigned N, typename T>
-    inline void swap(::math::vec<N,T>& left, ::math::vec<N,T>& right)
+    inline void swap(::wcore::math::vec<N,T>& left, ::wcore::math::vec<N,T>& right)
     { left.swap(right); }
 
     // math::vecN Hasher
     // enables the use of unordered containers with vecs
     template <unsigned N, typename T>
-    struct hash<math::vec<N,T>>
+    struct hash<::wcore::math::vec<N,T>>
     {
-        typedef math::vec<N,T> argument_type;
+        typedef ::wcore::math::vec<N,T> argument_type;
         typedef uint32_t result_type;
 
         result_type operator()(argument_type const& arg) const
@@ -1112,12 +1114,13 @@ namespace std
             // Combine component hashes to obtain a position hash
             // Similar to Boost's hash_combine function
             for(unsigned ii = 0; ii < N; ++ii) {
-                seed ^= detail::Hash(arg[ii]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                seed ^= ::wcore::detail::Hash(arg[ii]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             }
 
             return seed; // Two epsilon-distant vertices will share a common hash
         }
     };
 }
+
 
 #endif // MATH_STRUCTURES_H

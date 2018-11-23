@@ -18,6 +18,9 @@
 #include "config.h"
 #include "game_clock.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 uint32_t Scene::SHADOW_HEIGHT = 1024;
@@ -357,4 +360,6 @@ void Scene::get_loaded_chunks_coords(std::vector<math::i32vec2>& coord_list) con
 {
     for(auto&& [key, chunk]: chunks_)
         coord_list.push_back(chunk->get_coordinates());
+}
+
 }

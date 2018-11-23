@@ -11,6 +11,9 @@
 #include "vertex_format.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 ObjLoader::ObjLoader()
@@ -220,4 +223,6 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
     pmesh->compute_dimensions();
 
     return (SurfaceMesh*)pmesh;
+}
+
 }

@@ -4,6 +4,9 @@
 #include "singleton.hpp"
 #include "buffer_module.h"
 
+namespace wcore
+{
+
 class LBuffer : public BufferModule, public SingletonNDI<LBuffer>
 {
 public:
@@ -16,5 +19,7 @@ private:
             unsigned int screenHeight);
    virtual ~LBuffer();
 };
+
+}
 
 #endif // SCREEN_RENDERER_H

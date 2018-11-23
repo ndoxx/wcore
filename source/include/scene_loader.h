@@ -13,6 +13,9 @@
     #include "clock.hpp"
 #endif
 
+namespace wcore
+{
+
 class MaterialFactory;
 class Model;
 class LineModel;
@@ -147,6 +150,8 @@ void SceneLoader::parse_cspline(rapidxml::xml_node<>* cspline_node, CS& cspline)
         values.push_back(value);
     }
     cspline.init(domain, values);
+}
+
 }
 
 #endif // SCENE_LOADER_H

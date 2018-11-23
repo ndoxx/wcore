@@ -7,6 +7,9 @@
 #include "logger.h"
 #include "material_factory.h"
 
+namespace wcore
+{
+
 Material::Material(const MaterialDescriptor& descriptor):
 texture_(new Texture(descriptor.texture_descriptor)),
 albedo_(descriptor.albedo),
@@ -59,4 +62,6 @@ bool Material::has_texture(TextureUnit unit) const
         return texture_->has_unit(unit);
     else
         return false;
+}
+
 }

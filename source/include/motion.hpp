@@ -5,6 +5,8 @@
 #include "cspline.h"
 #include "model.h"
 
+namespace wcore
+{
 namespace timeEvolution
 {
 
@@ -162,6 +164,6 @@ public:
     }
 };
 
-
+}
 
 #endif // MOTION_HPP

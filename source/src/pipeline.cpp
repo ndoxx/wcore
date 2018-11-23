@@ -25,6 +25,9 @@
     #include "gui_utils.h"
 #endif
 
+namespace wcore
+{
+
 RenderPipeline::RenderPipeline():
 ssao_enabled_(false),
 bloom_enabled_(true),
@@ -399,4 +402,6 @@ void RenderPipeline::dbg_show_statistics()
     DLOGN("Post-processing pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ");
     pp_stats.debug_print(1e6, "µs");
 #endif
+}
+
 }

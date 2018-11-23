@@ -4,6 +4,9 @@
 #include "singleton.hpp"
 #include "math3d.h"
 
+namespace wcore
+{
+
 template <typename VertexT> class Mesh;
 struct Vertex3P3N3T2U;
 using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
@@ -36,5 +39,7 @@ public:
 };
 
 #define LOADOBJ ObjLoader::Instance()
+
+}
 
 #endif // OBJ_LOADER_H

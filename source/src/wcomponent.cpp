@@ -1,5 +1,8 @@
 #include "wcomponent.h"
 
+namespace wcore
+{
+
 WComponent::~WComponent()
 {
     //dtor
@@ -9,4 +12,6 @@ WComponent::~WComponent()
 void component::destroy(const WComponent* comp)
 {
     delete comp;
+}
+
 }

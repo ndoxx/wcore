@@ -4,6 +4,9 @@
 #include "texture.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 FrameBuffer::FrameBuffer(const Texture& texture, const std::vector<GLenum>& attachments):
 frame_buffer_(0),
 render_buffer_(0),
@@ -199,4 +202,6 @@ void FrameBuffer::blit_depth_default_fb(uint32_t screenWidth, uint32_t screenHei
                       screenHeight, // dst y1
                       GL_DEPTH_BUFFER_BIT,  // mask
                       GL_NEAREST);  // filter
+}
+
 }

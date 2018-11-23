@@ -9,6 +9,9 @@
 #include "math3d.h"
 #include "utils.h"
 
+namespace wcore
+{
+
 class Texture;
 class Material;
 class Light;
@@ -112,5 +115,7 @@ template <>
 bool Shader::send_uniforms<Texture>(const Texture& texture) const;
 template <>
 bool Shader::send_uniforms<Material>(const Material& material) const;
+
+}
 
 #endif // SHADER_H

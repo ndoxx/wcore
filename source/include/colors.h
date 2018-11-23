@@ -3,6 +3,8 @@
 
 #include "math3d.h"
 
+namespace wcore
+{
 namespace color
 {
 
@@ -19,6 +21,7 @@ inline math::vec3 hsl2rgb(float h, float s, float l)
     return hsl2rgb(math::vec3(h,s,l));
 }
 
-}
+} // namespace color
+} // namsepace wcore
 
 #endif // COLORS_H

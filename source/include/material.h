@@ -7,6 +7,9 @@
 #include "math3d.h"
 #include "utils.h"
 
+namespace wcore
+{
+
 enum class TextureUnit: uint16_t;
 struct MaterialDescriptor;
 class Texture;
@@ -77,6 +80,8 @@ inline void Material::set_parallax_height_scale(float value)
 {
     if(use_parallax_map_)
         parallax_height_scale_ = value;
+}
+
 }
 
 #endif // MATERIAL_H

@@ -5,6 +5,9 @@
 #include <cstdint>
 #include <functional>
 
+namespace wcore
+{
+
 class PixelBuffer
 {
 private:
@@ -54,5 +57,7 @@ public:
         return stream;
     }
 };
+
+}
 
 #endif // PIXEL_BUFFER_H

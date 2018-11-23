@@ -5,6 +5,9 @@
 #include <vector>
 #include <functional>
 
+namespace wcore
+{
+
 class Texture;
 class FrameBuffer
 {
@@ -30,5 +33,7 @@ public:
     void blit_depth_default_fb(uint32_t screenWidth, uint32_t screenHeight);
     void rebind_draw_buffers() const;
 };
+
+}
 
 #endif // FRAME_BUFFER_H

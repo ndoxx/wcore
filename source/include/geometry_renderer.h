@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "shader.h"
 
+namespace wcore
+{
+
 struct Vertex3P3N3T2U;
 class Scene;
 class Camera;
@@ -39,6 +42,8 @@ inline void GeometryRenderer::toggle_wireframe()
         wireframe_mix_ = 1.0f;
     else
         wireframe_mix_ = 0.0f;
+}
+
 }
 
 #endif // GEOMETRY_RENDERER_H

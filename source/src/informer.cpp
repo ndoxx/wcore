@@ -1,5 +1,8 @@
 #include "informer.h"
 
+namespace wcore
+{
+
 size_t Informer::N_INST = 0;
 const size_t Informer::MAX_DELEGATES = 1024;
 
@@ -27,4 +30,6 @@ WDelegateID Informer::add_delegate(hash_t chan, WpFunc delegate)
 void Informer::remove_delegate(WDelegateID del_id)
 {
     delegates_.erase(delegate_ids_.at(del_id));
+}
+
 }

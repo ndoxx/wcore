@@ -7,6 +7,8 @@
 
 #include "utils.h"
 
+namespace wcore
+{
 namespace keymap
 {
 
@@ -14,7 +16,7 @@ typedef std::map<hash_t, uint16_t> KeyNamesMap;
 
 extern KeyNamesMap NAMES;
 
-}
-
+} // namespace keymap
+} // namespace wcore
 
 #endif // KEYMAP_H

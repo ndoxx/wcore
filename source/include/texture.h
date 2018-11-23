@@ -12,6 +12,9 @@
 
 #include "utils.h"
 
+namespace wcore
+{
+
 enum class TextureUnit: uint16_t;
 struct TextureDescriptor;
 
@@ -194,5 +197,7 @@ inline bool Texture::is_depth(uint32_t ii) const
 }
 inline GLuint Texture::get_texture_id(uint32_t index) const { return internal_->get_texture_id(index); }
 inline GLuint Texture::operator[](uint32_t index) const { return internal_->get_texture_id(index); }
+
+}
 
 #endif // TEXTURE_H

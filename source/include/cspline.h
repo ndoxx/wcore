@@ -11,9 +11,10 @@
 #include "logger.h"
 #endif //__DEBUG__
 
+namespace wcore
+{
 namespace math
 {
-
 // Policy classes for tangent initialization of Hermite Splines
 namespace CSplineTangentPolicy
 {
@@ -255,6 +256,7 @@ private:
     using CSplineFiniteF   = CSpline<float, CSplineTangentPolicy::Finite<float>>;
     using CSplineCardinalF = CSpline<float, CSplineTangentPolicy::Cardinal<float>>;
 
-}
+} // namsepace math
+} // namespace wcore
 
 #endif // CSPLINE_H

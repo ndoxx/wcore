@@ -8,6 +8,12 @@
 #ifdef __PROFILING_CHUNKS__
 #include "clock.hpp"
 #include "moving_average.h"
+#endif
+
+namespace wcore
+{
+
+#ifdef __PROFILING_CHUNKS__
 #define PROFILING_MAX_SAMPLES 1000
 
 static nanoClock profile_clock_;
@@ -18,13 +24,11 @@ static MovingAverage sorting_fifo_(PROFILING_MAX_SAMPLES);
 
 using namespace math;
 
-namespace wcore
-{
 ModelEvaluator DEFAULT_MODEL_EVALUATOR([](pModel p){return true;});
 cModelEvaluator DEFAULT_CMODEL_EVALUATOR([](pcModel p){return true;});
 LightEvaluator DEFAULT_LIGHT_EVALUATOR([](pLight p){return true;});
 cLightEvaluator DEFAULT_CLIGHT_EVALUATOR([](pcLight p){return true;});
-}
+
 
 Chunk::Chunk(i32vec2 coords):
 coords_(coords),
@@ -277,4 +281,6 @@ void Chunk::dbg_show_statistics()
     DLOGN("Sorting (over <z>" + std::to_string(sorting_fifo_.get_size()) + "</z> points): ");
     sorting_stats.debug_print(1e6, "µs");
 #endif
+}
+
 }

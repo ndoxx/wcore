@@ -12,6 +12,9 @@
 #include "camera.h"
 #include "globals.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 DebugRenderer::DebugRenderer():
@@ -129,4 +132,6 @@ void DebugRenderer::render()
     line_shader_.unuse();
 
     GFX::disable_depth_testing();
+}
+
 }

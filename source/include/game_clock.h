@@ -1,8 +1,10 @@
 #ifndef GAME_CLOCK_H
 #define GAME_CLOCK_H
 
-class InputHandler;
+namespace wcore
+{
 
+class InputHandler;
 class GameClock
 {
 private:
@@ -47,5 +49,7 @@ public:
     inline float get_frame_duration() const { return dt_; }
 
 };
+
+}
 
 #endif // GAME_CLOCK_H

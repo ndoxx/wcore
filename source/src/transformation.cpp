@@ -1,5 +1,8 @@
 #include "transformation.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 Transformation::Transformation():
@@ -100,4 +103,6 @@ Transformation& Transformation::operator*=(const Transformation& other)
     scale_       *= other.scale_;
     scaled_      |= other.scaled_;
     return *this;
+}
+
 }

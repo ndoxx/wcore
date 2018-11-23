@@ -6,6 +6,9 @@
 
 #include "math3d.h"
 
+namespace wcore
+{
+
 struct FinalStatistics
 {
 public:
@@ -42,5 +45,7 @@ public:
     inline float last_element() const { return queue_.back(); }
     inline size_t get_size() const    { return std::min(queue_.size(), max_size_); }
 };
+
+}
 
 #endif // MOVING_AVERAGE_H

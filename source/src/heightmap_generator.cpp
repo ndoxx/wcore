@@ -8,6 +8,9 @@
 #include "logger.h"
 #include "xml_utils.hpp"
 
+namespace wcore
+{
+
 using namespace math;
 
 void SimplexNoiseProps::parse_xml(rapidxml::xml_node<char>* node)
@@ -315,4 +318,6 @@ void HeightmapGenerator::erode_droplets(HeightMap& hmap,
     #undef DEPOSIT
     #undef DEPOSIT_AT
     #undef HMAP_INDEX
+}
+
 }

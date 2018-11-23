@@ -3,6 +3,9 @@
 #include "moving_average.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 MovingAverage::MovingAverage(size_t size):
 max_size_(size)
 {
@@ -72,4 +75,6 @@ void FinalStatistics::debug_print(float scale, const std::string& unit)
     DLOGI("Median value:  <w>" + std::to_string(median*scale)  + "</w>" + unit);
     DLOGI("Minimum value: <g>" + std::to_string(min_val*scale) + "</g>" + unit);
     DLOGI("Maximum value: <b>" + std::to_string(max_val*scale) + "</b>" + unit);
+}
+
 }

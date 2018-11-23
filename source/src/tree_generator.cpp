@@ -11,6 +11,9 @@
 #include "xml_utils.hpp"
 #include "vertex_format.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 void TreeProps::parse_xml(rapidxml::xml_node<char>* node)
@@ -218,4 +221,6 @@ Mesh<Vertex3P3N3T2U>* TreeGenerator::generate_tree(const TreeProps& props)
     pmesh->compute_dimensions();
 
     return pmesh;
+}
+
 }

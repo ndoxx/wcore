@@ -9,6 +9,9 @@
 #include "math3d.h"
 #include "utils.h"
 
+namespace wcore
+{
+
 class TextRenderer;
 class DebugInfo : public Singleton<DebugInfo>
 {
@@ -43,5 +46,7 @@ inline void DebugInfo::display(hash_t slot_name, const std::string& text)
 
 
 #define DINFO DebugInfo::Instance()
+
+}
 
 #endif // DEBUG_INFO_H

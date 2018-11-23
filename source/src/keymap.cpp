@@ -2,6 +2,8 @@
 
 #include "keymap.h"
 
+namespace wcore
+{
 namespace keymap
 {
 
@@ -130,4 +132,5 @@ KeyNamesMap NAMES = {
 };
 
 
-}
+} // namespace keymap
+} // namespace wcore

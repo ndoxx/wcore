@@ -7,8 +7,10 @@
 #include "xml_utils.hpp"
 #include "vertex_format.h"
 
-using namespace math;
+namespace wcore
+{
 
+using namespace math;
 
 void RockProps::parse_xml(rapidxml::xml_node<char>* node)
 {
@@ -78,4 +80,6 @@ Mesh<Vertex3P3N3T2U>* RockGenerator::generate_rock(const RockProps& props)
     pmesh->build_normals_and_tangents();
     pmesh->compute_dimensions();
     return pmesh;
+}
+
 }

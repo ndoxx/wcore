@@ -11,6 +11,9 @@
 
 #include "math3d.h"
 
+namespace wcore
+{
+
 /**
  * @brief Vertex with position, normal, texCoord and color attributes.
  * @details Suitable if we want lighting, texturing and coloring.
@@ -417,4 +420,5 @@ public:
     }
 };
 
+}
 #endif // VERTEX_FORMAT_H_INCLUDED

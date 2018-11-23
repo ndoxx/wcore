@@ -4,6 +4,9 @@
 #include "buffer_module.h"
 #include "math3d.h"
 
+namespace wcore
+{
+
 class ShadowBuffer : public BufferModule
 {
 public:
@@ -11,5 +14,7 @@ public:
                  unsigned int height);
     virtual ~ShadowBuffer();
 };
+
+}
 
 #endif // SHADOW_BUFFER_H

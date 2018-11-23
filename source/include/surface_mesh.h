@@ -7,6 +7,9 @@
 #include "vertex_format.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 typedef std::function<float(float)> SmoothFunc;
 static SmoothFunc SMOOTH_MAX                 = [](float x){ (void)x; return 1.0f; };
 static SmoothFunc SMOOTH_HEAVISIDE           = [](float x){ x=1-fabs(x); return (x<0.1f)?1.0f:0.0f; };
@@ -147,5 +150,7 @@ public:
     virtual void build_normals() override;
     virtual void build_normals_and_tangents() override;
 };
+
+}
 
 #endif // SURFACE_MESH_H

@@ -11,6 +11,9 @@ namespace rapidxml
     template<class Ch> class xml_node;
 }
 
+namespace wcore
+{
+
 struct RockProps
 {
 public:
@@ -42,5 +45,7 @@ private:
     static NoiseGenerator2D<SimplexNoise<>> RNG_simplex_;
     static uint32_t last_seed_;
 };
+
+}
 
 #endif // ROCK_GENERATOR_H

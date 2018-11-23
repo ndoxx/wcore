@@ -1,5 +1,7 @@
 #include "colors.h"
 
+namespace wcore
+{
 namespace color
 {
 
@@ -56,4 +58,5 @@ math::vec3 hsl2rgb(const math::vec3& hsl_color)
 }
 
 
-}
+} // namespace color
+} // namespace wcore

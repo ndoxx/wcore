@@ -8,6 +8,9 @@
 
 #include "wcomponent.h"
 
+namespace wcore
+{
+
 class WEntity
 {
 public:
@@ -56,5 +59,7 @@ public:
 protected:
     std::unordered_map<std::type_index, WComponent*> components_;
 };
+
+}
 
 #endif // WENTITY_H

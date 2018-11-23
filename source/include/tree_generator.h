@@ -8,6 +8,9 @@ namespace rapidxml
     template<class Ch> class xml_node;
 }
 
+namespace wcore
+{
+
 struct TreeProps
 {
 public:
@@ -42,5 +45,7 @@ public:
     static Mesh<Vertex3P>* generate_spline_tree(const TreeProps& props);
     static Mesh<Vertex3P3N3T2U>* generate_tree(const TreeProps& props);
 };
+
+}
 
 #endif // TREE_GENERATOR_H

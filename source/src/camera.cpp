@@ -6,6 +6,9 @@
 #include "config.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 float Camera::MAX_PITCH = 89.0f;
@@ -251,4 +254,6 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
 
     // * Set orthographic perspective
     set_orthographic(extent);
+}
+
 }

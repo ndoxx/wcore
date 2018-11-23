@@ -6,6 +6,9 @@
 #include "math3d.h"
 #include "bounding_boxes.h"
 
+namespace wcore
+{
+
 class AABB;
 class Camera
 {
@@ -210,5 +213,6 @@ inline math::vec3 Camera::get_frustum_split_center(uint32_t splitIndex) const
     return frusBox_.split_center(splitIndex);
 }
 
+}
 
 #endif // CAMERA_H

@@ -7,6 +7,9 @@
 #include "utils.h"
 #include "math3d.h"
 
+namespace wcore
+{
+
 enum class TextureUnit: uint16_t
 {
     ALBEDO    = 1,
@@ -70,5 +73,7 @@ public:
     friend std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc);
 #endif
 };
+
+}
 
 #endif // MATERIAL_COMMON_H

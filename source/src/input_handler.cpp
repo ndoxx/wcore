@@ -6,6 +6,9 @@
 #include "logger.h"
 #include "keymap.h"
 
+namespace wcore
+{
+
 using namespace rapidxml;
 
 InputHandler::InputHandler():
@@ -192,4 +195,6 @@ void InputHandler::handle_mouse(GLFWwindow* window,
 
         Action(dx,dy);
     }
+}
+
 }

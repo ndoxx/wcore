@@ -13,6 +13,8 @@
 #include "l_buffer.h"
 #include "SSAO_buffer.h"
 
+namespace wcore
+{
 
 using namespace math;
 
@@ -133,4 +135,6 @@ void DebugOverlayRenderer::render()
     render_pane(mode_);
     passthrough_shader_.unuse();
     vertex_array_.unbind();
+}
+
 }

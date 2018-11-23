@@ -3,6 +3,9 @@
 #include "surface_mesh.h"
 #include "vertex_format.h"
 
+namespace wcore
+{
+
 void FaceMesh::build_normals()
 {
     if(indices_.size()==0)
@@ -239,4 +242,6 @@ void TriangularMesh::build_normals_and_tangents()
         vertices_[ii].set_normal(normal0.normalized());
         vertices_[ii].set_tangent(tangent0.normalized());
     }
+}
+
 }

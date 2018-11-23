@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "shader.h"
 
+namespace wcore
+{
+
 struct Vertex3P;
 class GBuffer;
 class LBuffer;
@@ -48,5 +51,7 @@ private:
     inline size_t SPHERE_NE()     { return num_elements_[1]; }
     inline size_t CONE_NE()       { return num_elements_[2]; }
 };
+
+}
 
 #endif // LIGHTING_RENDERER_H

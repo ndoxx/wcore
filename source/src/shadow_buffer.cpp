@@ -2,6 +2,9 @@
 #include "shadow_buffer.h"
 #include "texture.h"
 
+namespace wcore
+{
+
 ShadowBuffer::ShadowBuffer(unsigned int width,
                            unsigned int height):
 BufferModule("shadowmap",
@@ -28,3 +31,5 @@ std::make_shared<Texture>(
 ){}
 
 ShadowBuffer::~ShadowBuffer() = default;
+
+}

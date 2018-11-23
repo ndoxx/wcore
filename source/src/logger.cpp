@@ -9,6 +9,9 @@
     #include "imgui/imgui.h"
 #endif
 
+namespace wcore
+{
+
 static std::map<MsgType, std::string> STYLES =
 {
     {MsgType::RAW,       "\033[1;38;2;200;200;200m"},
@@ -248,4 +251,6 @@ void Logger::print_reference()
     print_console("Test success.", MsgType::GOOD);
     print_console("Test fail.", MsgType::BAD);
     std::cout << std::endl;
+}
+
 }

@@ -1,6 +1,9 @@
 #include "listener.h"
 #include "informer.h"
 
+namespace wcore
+{
+
 Listener::Listener()
 :delegate_ids_()
 {
@@ -34,4 +37,6 @@ void Listener::unsubscribe(hash_t chan, Informer& informer)
     informer.remove_delegate(delegate_ids_.at(key));
     // Remove reference in the delegate ID map.
     delegate_ids_.erase(key);
+}
+
 }

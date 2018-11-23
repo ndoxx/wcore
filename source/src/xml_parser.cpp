@@ -1,6 +1,9 @@
 #include "xml_parser.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 XMLParser::XMLParser() = default;
 
 XMLParser::XMLParser(const char* filename)
@@ -43,4 +46,6 @@ void XMLParser::reset()
 {
     dom_.clear();
     buffer_.clear();
+}
+
 }

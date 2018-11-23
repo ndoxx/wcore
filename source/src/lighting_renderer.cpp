@@ -12,6 +12,9 @@
 #include "mesh_factory.h"
 #include "model.h"
 
+namespace wcore
+{
+
 LightingRenderer::LightingRenderer(ShadowMapRenderer& smr):
 Renderer<Vertex3P>(),
 lpass_dir_shader_(ShaderResource("lpass_exp.vert;lpass_exp.frag", "VARIANT_DIRECTIONAL")),
@@ -241,4 +244,6 @@ void LightingRenderer::render()
         //glDrawBuffer(GL_FRONT_AND_BACK);
         vertex_array_.unbind();
     }
+}
+
 }

@@ -1,6 +1,9 @@
 #include <cassert>
 #include "bezier.h"
 #include <iostream>
+
+namespace wcore
+{
 namespace math
 {
 
@@ -85,4 +88,5 @@ vec3 Bezier::deCasteljau(unsigned rr,
     return p1*(1.0f-t) + p2*t;
 }
 
-}
+} // namespace math
+} // namespace wcore

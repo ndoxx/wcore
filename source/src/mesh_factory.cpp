@@ -8,6 +8,9 @@
 #include <random>
 #include <unordered_map>
 
+namespace wcore
+{
+
 using namespace math;
 
 namespace factory
@@ -804,4 +807,5 @@ void skin_spline(FaceMesh* pmesh,
     }
 }
 
-}
+} // namespace factory
+} // namespace wcore

@@ -4,6 +4,9 @@
 #include <utility>
 #include <random>
 
+namespace wcore
+{
+
 template <typename NoisePolicy>
 class NoiseGenerator2D
 {
@@ -89,5 +92,7 @@ public:
 private:
     NoisePolicy generator_;
 };
+
+}
 
 #endif // NOISEGENERATOR_HPP_INCLUDED

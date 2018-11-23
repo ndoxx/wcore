@@ -11,6 +11,9 @@
 
 #include "math3d.h"
 
+namespace wcore
+{
+
 template <typename VertexT>
 class BufferUnit;
 
@@ -180,5 +183,7 @@ struct Vertex3P;
 using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
 using MeshPU = Mesh<Vertex3P2U>;
 using MeshP = Mesh<Vertex3P>;
+
+}
 
 #endif // MESH_H

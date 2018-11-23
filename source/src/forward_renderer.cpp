@@ -11,8 +11,10 @@
 #include "camera.h"
 #include "w_symbols.h"
 
-using namespace math;
+namespace wcore
+{
 
+using namespace math;
 
 ForwardRenderer::ForwardRenderer():
 Renderer<Vertex3P3N3T2U>(),
@@ -80,4 +82,6 @@ void ForwardRenderer::render()
 
     // Restore state
     GFX::disable_depth_testing();
+}
+
 }

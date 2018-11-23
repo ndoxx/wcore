@@ -3,6 +3,9 @@
 
 #include "singleton.hpp"
 
+namespace wcore
+{
+
 class PixelBuffer;
 class PngLoader : public Singleton<PngLoader>
 {
@@ -19,5 +22,6 @@ public:
 
 };
 
+}
 
 #endif // PNG_LOADER_H

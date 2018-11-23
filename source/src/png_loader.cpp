@@ -1,10 +1,14 @@
 #include <png.h>
 #include <istream>
 #include <stdexcept>
+#include <sstream>
 
 #include "png_loader.h"
 #include "logger.h"
 #include "pixel_buffer.h"
+
+namespace wcore
+{
 
 static constexpr const int PNGSIGSIZE = 8;
 
@@ -41,7 +45,6 @@ PngLoader::~PngLoader()
 
 }
 
-#include <sstream>
 PixelBuffer* PngLoader::load_png(const char* filename)
 {
     // Try to open file, throw if not found.
@@ -99,7 +102,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
     }
 
     // Set data read function to our stream reader
-    png_set_read_fn(p_png,(png_voidp)&source, ::stream_read_data);
+    png_set_read_fn(p_png,(png_voidp)&source, stream_read_data);
     // Tell libpng we already read the first 8 bytes.
     png_set_sig_bytes(p_png, PNGSIGSIZE);
     // Read header
@@ -156,4 +159,6 @@ PixelBuffer* PngLoader::load_png(const char* filename)
     png_destroy_read_struct(&p_png, &p_info,(png_infopp)0);
 
     return px_buf;
+}
+
 }

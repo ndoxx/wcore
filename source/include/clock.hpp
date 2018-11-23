@@ -3,6 +3,9 @@
 
 #include <chrono>
 
+namespace wcore
+{
+
 template < typename Period >
 class Clock
 {
@@ -54,5 +57,7 @@ inline float TOC_()
     return std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
 }
 #endif
+
+}
 
 #endif // CLOCK_HPP_INCLUDED

@@ -1,6 +1,8 @@
 #include "algorithms.h"
 #include "math3d.h"
 
+namespace wcore
+{
 namespace math
 {
 
@@ -73,4 +75,5 @@ void compute_extent(const std::array<math::vec3, 8>& vertices, float extent[6])
     }
 }
 
-}
+} // namespace math
+} // namespace wcore

@@ -8,6 +8,9 @@
 
 #include "wcomponent_detail.h"
 
+namespace wcore
+{
+
 class WEntity;
 class WComponent
 {
@@ -22,25 +25,29 @@ public:
 
 namespace component
 {
-    template <typename T>
-    T* create()
-    {
-        detail::ComponentRegistry& reg = detail::getComponentRegistry();
-        detail::ComponentRegistry::iterator it = reg.find(std::type_index(typeid(T)));
 
-        // Make sure this component type is registered
-        assert(it != reg.end());
+template <typename T>
+T* create()
+{
+    detail::ComponentRegistry& reg = detail::getComponentRegistry();
+    detail::ComponentRegistry::iterator it = reg.find(std::type_index(typeid(T)));
 
-        detail::CreateComponentFunc func = it->second;
-        return (T*)func();
-    }
+    // Make sure this component type is registered
+    assert(it != reg.end());
 
-    void destroy(const WComponent* comp);
+    detail::CreateComponentFunc func = it->second;
+    return (T*)func();
 }
+
+void destroy(const WComponent* comp);
+
+} // namespace component
+} // namespace wcore
 
 // Macro to register a pair Type/Name for a component in the registry
 // and create a factory function for it
 #define REGISTER_COMPONENT(TYPE, NAME)                                        \
+    namespace wcore {                                                         \
     namespace component {                                                     \
     namespace detail {                                                        \
     namespace                                                                 \
@@ -54,10 +61,9 @@ namespace component
             static const ::component::detail::RegistryEntry<TYPE>& reg;       \
         };                                                                    \
                                                                               \
-        const ::component::detail::RegistryEntry<TYPE>&                       \
+        const wcore::component::detail::RegistryEntry<TYPE>&                  \
             ComponentRegistration<TYPE>::reg =                                \
-                ::component::detail::RegistryEntry<TYPE>::Instance(NAME);     \
-    }}}
+                wcore::component::detail::RegistryEntry<TYPE>::Instance(NAME);\
+    }}}}
 
 #endif // WCOMPONENT_H
-

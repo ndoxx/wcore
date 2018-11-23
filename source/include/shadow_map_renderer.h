@@ -5,6 +5,9 @@
 #include "shader.h"
 #include "frame_buffer.h"
 
+namespace wcore
+{
+
 class ShadowBuffer;
 
 class ShadowMapRenderer : public Renderer<Vertex3P>
@@ -30,5 +33,7 @@ public:
 
     static math::vec2 SHADOW_TEXEL_SIZE;
 };
+
+}
 
 #endif // SHADOW_MAP_RENDERER_H

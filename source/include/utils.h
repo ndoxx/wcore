@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <iterator>
 
+namespace wcore
+{
+
 // ----- constexpr string hash facilities -----
 // NOTE: hashing algorithm used is FNV-1a
 
@@ -51,6 +54,8 @@ void split_string(const std::string& str, Container& cont, char delim = ' ')
     while (std::getline(ss, token, delim)) {
         cont.push_back(token);
     }
+}
+
 }
 
 #endif

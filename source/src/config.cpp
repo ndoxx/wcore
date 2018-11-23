@@ -2,6 +2,9 @@
 #include "xml_utils.hpp"
 #include "logger.h"
 
+namespace wcore
+{
+
 using namespace rapidxml;
 
 void Config::load_file_xml(const char* xml_file)
@@ -138,4 +141,6 @@ void Config::debug_display_content()
     std::cout << "--bools--" << std::endl;
     for(auto&& [key, value]: bools_)
         std::cout << "    " << key << " -> " << value << std::endl;
+}
+
 }

@@ -1,5 +1,7 @@
 #include "math3d.h"
 
+namespace wcore
+{
 namespace math
 {
 
@@ -353,4 +355,5 @@ float det(const mat4& m)
     return m[0]*c0-m[4]*c4+m[8]*c8-m[12]*c12;
 }
 
-}
+} // namespace math
+} // namespace wcore

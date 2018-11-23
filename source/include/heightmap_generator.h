@@ -11,6 +11,9 @@ namespace rapidxml
     template<class Ch> class xml_node;
 }
 
+namespace wcore
+{
+
 struct SimplexNoiseProps
 {
 public:
@@ -69,5 +72,7 @@ public:
 private:
     static NoiseGenerator2D<SimplexNoise<>> RNG_simplex_;
 };
+
+}
 
 #endif // HEIGHTMAP_GENERATOR_H

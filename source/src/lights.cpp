@@ -6,6 +6,9 @@
 #include "shader.h"
 #include "camera.h"
 
+namespace wcore
+{
+
 Light::Light(const math::vec3& position,
              const math::vec3& color,
              float brightness):
@@ -139,4 +142,6 @@ bool PointLight::is_in_frustum(const Camera& camera) const
 bool PointLight::surrounds_camera(const Camera& camera) const
 {
     return norm(camera.get_position()-position_)<radius_;
+}
+
 }

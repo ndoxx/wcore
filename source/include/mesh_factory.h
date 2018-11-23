@@ -7,6 +7,9 @@
 
 #include "mesh.hpp"
 
+namespace wcore
+{
+
 struct Vertex3P;
 struct Vertex3P2U;
 struct Vertex3P3N3T2U;
@@ -95,5 +98,7 @@ public:
     }
 };
 */
+
+}
 
 #endif // MESH_FACTORY_H

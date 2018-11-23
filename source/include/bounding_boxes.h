@@ -8,6 +8,9 @@
 #include "math3d.h"
 #include "transformation.h"
 
+namespace wcore
+{
+
 class Model;
 
 class OBB
@@ -132,6 +135,8 @@ bool FrustumBox::collides(const BB& bb)
             return false;
     }
     return true;
+}
+
 }
 
 #endif // AABB_H

@@ -4,6 +4,9 @@
 #include "rapidxml/rapidxml.hpp"
 #include "xml_utils.hpp"
 
+namespace wcore
+{
+
 class XMLParser
 {
 private:
@@ -22,4 +25,5 @@ public:
     inline rapidxml::xml_node<>* get_root() { return root_; }
 };
 
+}
 #endif // XML_PARSER_H

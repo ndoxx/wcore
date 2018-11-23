@@ -4,6 +4,9 @@
 #include "camera.h"
 #include "algorithms.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 static const std::vector<vec3> CUBE_VERTICES
@@ -210,4 +213,6 @@ math::vec3 FrustumBox::split_center(uint32_t splitIndex) const
     vec3 RBii1 = lerp(RBN(),RBF(),splits_[splitIndex+1]);
     //vec3 LBii1 = lerp(LBN(),LBF(),splits_[splitIndex+1]);
     return lerp(LBii,RBii1,0.5);
+}
+
 }

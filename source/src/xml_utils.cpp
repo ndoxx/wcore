@@ -3,6 +3,9 @@
 #include "transformation.h"
 #include "logger.h"
 
+namespace wcore
+{
+
 using namespace math;
 using namespace rapidxml;
 
@@ -70,4 +73,5 @@ bool parse_node(xml_node<>* parent, const char* leaf_name, std::string& destinat
     return true;
 }
 
-}
+} // namespace xml
+} // namespace wcore

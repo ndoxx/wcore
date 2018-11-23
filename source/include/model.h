@@ -5,6 +5,8 @@
 #include "mesh.hpp"
 #include "bounding_boxes.h"
 
+namespace wcore
+{
 
 struct Vertex3P3N3T2U;
 struct Vertex3P;
@@ -105,5 +107,7 @@ typedef std::shared_ptr<Model> pModel;
 typedef std::shared_ptr<const Model> pcModel;
 typedef std::shared_ptr<LineModel> pLineModel;
 typedef std::shared_ptr<const LineModel> pcLineModel;
+
+}
 
 #endif // MODEL_H

@@ -4,6 +4,9 @@
 #include <cstdint>
 #include "singleton.hpp"
 
+namespace wcore
+{
+
 class GlobalData : public Singleton<GlobalData>
 {
 private:
@@ -22,5 +25,7 @@ public:
 };
 
 #define GLB GlobalData::Instance()
+
+}
 
 #endif // GLOBALS_H

@@ -14,6 +14,9 @@
 #include "math3d.h"
 #include "shader.h"
 
+namespace wcore
+{
+
 struct Character
 {
     GLuint tex_ID;  // ID handle of the glyph texture
@@ -83,5 +86,6 @@ inline void TextRenderer::set_face(hash_t face_name)
     current_face_ = face_name;
 }
 
+}
 
 #endif // TEXT_RENDERER_H

@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "shader.h"
 
+namespace wcore
+{
+
 class PostProcessingRenderer : public Renderer<Vertex3P>
 {
 private:
@@ -60,5 +63,7 @@ public:
     inline float& get_fog_density_nc()   { return fog_density_; }
 
 };
+
+}
 
 #endif // POST_PROCESSING_RENDERER_H

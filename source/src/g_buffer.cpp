@@ -1,6 +1,9 @@
 #include "g_buffer.h"
 #include "texture.h"
 
+namespace wcore
+{
+
 /*
     G-Buffer element groups:
     * Normal, Metallic and AO
@@ -32,3 +35,5 @@ std::make_shared<Texture>(
  GL_DEPTH_ATTACHMENT}){}
 
 GBuffer::~GBuffer() = default;
+
+}

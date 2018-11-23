@@ -6,6 +6,9 @@
 
 #include "logger.h"
 
+namespace wcore
+{
+
 /* Original idea by Paul Manta on:
  * http://gamedev.stackexchange.com/questions/17746/entity-component-systems-in-c-how-do-i-discover-types-and-construct-component
  */
@@ -13,62 +16,61 @@
 class WComponent;
 namespace component
 {
-    namespace detail
+namespace detail
+{
+    typedef WComponent* (*CreateComponentFunc)();
+    typedef std::unordered_map<std::type_index, CreateComponentFunc> ComponentRegistry;
+
+    inline ComponentRegistry& getComponentRegistry()
     {
-        typedef WComponent* (*CreateComponentFunc)();
-        typedef std::unordered_map<std::type_index, CreateComponentFunc> ComponentRegistry;
+        static ComponentRegistry reg;
+        return reg;
+    }
 
-        inline ComponentRegistry& getComponentRegistry()
+    //TODO: TEMPLATE THIS WITH ALLOCATOR TYPE, WE WANT TO ENSURE BLOCK ALLOCATION!!!
+    template<class T>
+    WComponent* createComponent()
+    {
+        return new T;
+    }
+
+    template<class T>
+    struct RegistryEntry
+    {
+    public:
+        static RegistryEntry<T>& Instance(std::type_index type)
         {
-            static ComponentRegistry reg;
-            return reg;
+            // Because I use a singleton here, even though `COMPONENT_REGISTER`
+            // is expanded in multiple translation units, the constructor
+            // will only be executed once. Only this cheap `Instance` function
+            // (which most likely gets inlined) is executed multiple times.
+
+            static RegistryEntry<T> inst(type);
+            return inst;
         }
 
-        //TODO: TEMPLATE THIS WITH ALLOCATOR TYPE, WE WANT TO ENSURE BLOCK ALLOCATION!!!
-        template<class T>
-        WComponent* createComponent()
+    private:
+        RegistryEntry(std::type_index type)
         {
-            return new T;
+            ComponentRegistry& reg = getComponentRegistry();
+            CreateComponentFunc func = createComponent<T>;
+
+            std::pair<ComponentRegistry::iterator, bool> ret =
+                reg.insert(ComponentRegistry::value_type(type, func));
+
+            if (ret.second == false)
+            {
+                // This means there already is a component registered to
+                // this name.
+                DLOGW("Commponent already defined: ");
+            }
         }
 
-        template<class T>
-        struct RegistryEntry
-        {
-        public:
-            static RegistryEntry<T>& Instance(std::type_index type)
-            {
-                // Because I use a singleton here, even though `COMPONENT_REGISTER`
-                // is expanded in multiple translation units, the constructor
-                // will only be executed once. Only this cheap `Instance` function
-                // (which most likely gets inlined) is executed multiple times.
+        RegistryEntry(const RegistryEntry<T>&)            = delete;
+        RegistryEntry& operator=(const RegistryEntry<T>&) = delete;
+    };
 
-                static RegistryEntry<T> inst(type);
-                return inst;
-            }
-
-        private:
-            RegistryEntry(std::type_index type)
-            {
-                ComponentRegistry& reg = getComponentRegistry();
-                CreateComponentFunc func = createComponent<T>;
-
-                std::pair<ComponentRegistry::iterator, bool> ret =
-                    reg.insert(ComponentRegistry::value_type(type, func));
-
-                if (ret.second == false)
-                {
-                    // This means there already is a component registered to
-                    // this name.
-                    DLOGW("Commponent already defined: ");
-                }
-            }
-
-            RegistryEntry(const RegistryEntry<T>&)            = delete;
-            RegistryEntry& operator=(const RegistryEntry<T>&) = delete;
-        };
-
-    } // namespace detail
-
+} // namespace detail
 } // namespace component
-
+} // namespace wcore
 #endif // COMPONENT_DETAIL_H

@@ -9,6 +9,9 @@
 #include "debug_info.h"
 #include "game_clock.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 ChunkManager::ChunkManager(SceneLoader& loader):
@@ -207,3 +210,5 @@ void ChunkManager::update(const GameClock& clock)
 #endif
 }
 #endif
+
+}

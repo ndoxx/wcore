@@ -1,5 +1,8 @@
 #include "pixel_buffer.h"
 
+namespace wcore
+{
+
 PixelBuffer::PixelBuffer(uint32_t imgWidth,
                          uint32_t imgHeight,
                          uint32_t bitDepth,
@@ -42,4 +45,6 @@ PixelBuffer::~PixelBuffer()
 {
     if(pp_rows_!=nullptr) delete [] pp_rows_;
     delete [] p_data_;
+}
+
 }

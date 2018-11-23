@@ -1,5 +1,8 @@
 #include "wentity.h"
 
+namespace wcore
+{
+
 WEntity::WEntity()
 : components_()
 {
@@ -12,4 +15,6 @@ WEntity::~WEntity()
     {
         delete it.second;
     }
+}
+
 }

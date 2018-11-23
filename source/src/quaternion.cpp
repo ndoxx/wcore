@@ -2,7 +2,10 @@
 #include <iostream>
 #include "quaternion.h"
 
-namespace math{
+namespace wcore
+{
+namespace math
+{
 
 const float Quaternion::NORM_TOL = 1e-5;
 
@@ -194,4 +197,5 @@ std::ostream& operator<<(std::ostream& stream, const Quaternion& rhs)
     return stream;
 }
 
-}
+} // namespace math
+} // namespace wcore

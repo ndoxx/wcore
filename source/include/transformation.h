@@ -3,6 +3,9 @@
 
 #include "math3d.h"
 
+namespace wcore
+{
+
 class Transformation
 {
 private:
@@ -64,5 +67,7 @@ public:
     Transformation operator*(const Transformation& other) const;
     Transformation& operator*=(const Transformation& other);
 };
+
+}
 
 #endif // TRANSFORMATION_H

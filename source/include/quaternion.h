@@ -6,7 +6,10 @@
 
 #include "math_structures.hpp"
 
-namespace math{
+namespace wcore
+{
+namespace math
+{
 
 class Quaternion{
 public:
@@ -56,5 +59,6 @@ private:
 
 using quat = Quaternion;
 
-}
+} // namespace quat
+} // namespace wcore
 #endif // QUATERNION_H

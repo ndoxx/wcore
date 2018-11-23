@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "shader.h"
 
+namespace wcore
+{
+
 class SSAORenderer : public Renderer<Vertex3P>
 {
 private:
@@ -36,5 +39,7 @@ public:
     void generate_random_kernel();
 
 };
+
+}
 
 #endif // SSAO_RENDERER_H

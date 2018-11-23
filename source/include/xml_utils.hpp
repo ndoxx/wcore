@@ -11,6 +11,8 @@
 #include "rapidxml/rapidxml.hpp"
 #include "math3d.h"
 
+namespace wcore
+{
 namespace xml
 {
 
@@ -128,5 +130,6 @@ public:
 
 typedef std::vector<std::shared_ptr<IProperty>> PropertyList;
 
+}
 }
 #endif // XML_UTILS_H

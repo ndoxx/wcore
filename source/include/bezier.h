@@ -7,7 +7,10 @@
 
 #include "math3d.h"
 
-namespace math{
+namespace wcore
+{
+namespace math
+{
 
 class Bezier
 {
@@ -90,7 +93,7 @@ vec3 Bezier::interpolate(float alpha, const std::vector<vec3>& points)
     return deCasteljau(points.size()-1, 0, alpha, points);
 }
 
-}
-
+} // namespace math
+} // namespace wcore
 
 #endif // BEZIER_H

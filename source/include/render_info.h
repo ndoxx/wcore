@@ -1,6 +1,9 @@
 #ifndef RENDER_INFO_H
 #define RENDER_INFO_H
 
+namespace wcore
+{
+
 struct ModelRenderInfo
 {
 public:
@@ -10,5 +13,7 @@ public:
 
     bool is_terrain;
 };
+
+}
 
 #endif // RENDER_INFO_H

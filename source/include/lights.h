@@ -3,6 +3,9 @@
 
 #include "math3d.h"
 
+namespace wcore
+{
+
 class Shader;
 class Camera;
 class Light
@@ -104,5 +107,7 @@ public:
     virtual bool is_in_frustum(const Camera& camera) const override;
     virtual bool surrounds_camera(const Camera& camera) const override;
 };
+
+}
 
 #endif // LIGHTS_H

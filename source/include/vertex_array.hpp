@@ -3,6 +3,9 @@
 
 #include "buffer_unit.hpp"
 
+namespace wcore
+{
+
 template <typename VertexT>
 class VertexArray
 {
@@ -42,6 +45,8 @@ template <typename VertexT>
 void VertexArray<VertexT>::unbind()
 {
     glBindVertexArray(0);
+}
+
 }
 
 #endif // VERTEX_ARRAY_HPP

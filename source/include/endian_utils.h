@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <cstdint>
 
+namespace wcore
+{
 // compile-time endianness swap based on http://stackoverflow.com/a/36937049
 // usage:
 // bswap<std::uint16_t>(0x1234u)                 ->   0x3412u
@@ -25,5 +27,6 @@ static constexpr U bswap(T i)
     return detail::bswap_impl<U>(i, std::make_index_sequence<sizeof(T)>{});
 }
 
+}
 
 #endif // ENDIAN_H

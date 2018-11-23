@@ -7,6 +7,9 @@
 
 #include "message.h"
 
+namespace wcore
+{
+
 class Informer
 {
     friend class Listener;
@@ -59,6 +62,8 @@ void Informer::post(hash_t message_type, T&& data)
     Range range = delegates_.equal_range(message_type);
     for(cIter it=range.first; it!=range.second; ++it)
         (it->second)(std::forward<T>(data));
+}
+
 }
 
 #endif // INFORMER_H

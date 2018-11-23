@@ -8,6 +8,9 @@
 #include "logger.h"
 #include "material_common.h"
 
+namespace wcore
+{
+
 std::vector<std::string> Shader::global_defines_ =
 {
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
@@ -641,4 +644,6 @@ bool Shader::send_uniforms(std::shared_ptr<const Light> plight) const
     // Let polymorphism take care of this
     plight->update_uniforms(*this);
     return true;
+}
+
 }

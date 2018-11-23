@@ -7,6 +7,9 @@
 #include "shader.h"
 #include "frame_buffer.h"
 
+namespace wcore
+{
+
 class Texture;
 class BloomRenderer : public Renderer<Vertex3P>
 {
@@ -23,5 +26,7 @@ public:
     virtual ~BloomRenderer();
     virtual void render() override;
 };
+
+}
 
 #endif // BLUR_PASS_H

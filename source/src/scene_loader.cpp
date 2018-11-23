@@ -29,6 +29,9 @@
 #include "input_handler.h"
 #include "material_factory.h"
 
+namespace wcore
+{
+
 using namespace rapidxml;
 using namespace math;
 
@@ -1292,4 +1295,6 @@ uint32_t SceneLoader::get_num_controls(rapidxml::xml_node<>* cspline_node)
          control; control=control->next_sibling("Control"))
         ++count;
     return count;
+}
+
 }

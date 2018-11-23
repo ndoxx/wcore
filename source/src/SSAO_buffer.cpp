@@ -1,6 +1,8 @@
 #include "SSAO_buffer.h"
 #include "texture.h"
 
+namespace wcore
+{
 
 SSAOBuffer::SSAOBuffer(unsigned int width,
                        unsigned int height):
@@ -17,3 +19,5 @@ std::make_shared<Texture>(
 {GL_COLOR_ATTACHMENT0}){}
 
 SSAOBuffer::~SSAOBuffer() = default;
+
+}

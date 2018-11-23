@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "shader.h"
 
+namespace wcore
+{
+
 struct Vertex3P3N3T2U;
 class GBuffer;
 class LBuffer;
@@ -20,5 +23,7 @@ public:
     void load_geometry();
     virtual void render() override;
 };
+
+}
 
 #endif // FORWARD_RENDERER_H

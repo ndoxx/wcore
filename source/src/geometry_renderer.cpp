@@ -12,6 +12,9 @@
 #include "bounding_boxes.h"
 #include "material.h"
 
+namespace wcore
+{
+
 using namespace math;
 
 GeometryRenderer::GeometryRenderer():
@@ -99,4 +102,6 @@ void GeometryRenderer::render()
     // Lock depth buffer (read only)
     GFX::lock_depth_buffer();
     GFX::disable_depth_testing();
+}
+
 }

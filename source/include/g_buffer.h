@@ -5,6 +5,9 @@
 #include "singleton.hpp"
 #include "math3d.h"
 
+namespace wcore
+{
+
 class GBuffer : public BufferModule, public SingletonNDI<GBuffer>
 {
 public:
@@ -17,5 +20,7 @@ private:
             unsigned int screenHeight);
    virtual ~GBuffer();
 };
+
+}
 
 #endif // G_BUFFER_H

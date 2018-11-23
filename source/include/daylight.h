@@ -5,6 +5,9 @@
 #include "cspline.h"
 #include "math3d.h"
 
+namespace wcore
+{
+
 class RenderPipeline;
 class InputHandler;
 
@@ -78,5 +81,7 @@ public:
         ambient_strength_interpolator_ = interp;
     }
 };
+
+}
 
 #endif // DAYLIGHT_H
