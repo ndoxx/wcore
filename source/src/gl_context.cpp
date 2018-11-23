@@ -231,15 +231,16 @@ int GLContext::main_loop()
 #endif //__PROFILING_STOP_AFTER_X_SAMPLES__
 
     setup_func_(window_);
-
+/*
 #ifdef __PROFILING_GAMELOOP__
     std::cout << "\n\n\n\n\n\n\n\n";  // Reserve 5 lines in terminal for profiling report
 #endif
+*/
     do
     {
 #ifdef __PROFILING_GAMELOOP__
-            std::cout << "\033[8A"; // Set cursor five lines up
-            DLOGT("-------- Game loop start --------", "core", Severity::LOW);
+            //std::cout << "\033[8A"; // Set cursor five lines up
+            //DLOGT("-------- Game loop start --------", "core", Severity::LOW);
 #endif //__PROFILING_GAMELOOP__
 
         // Restart timers

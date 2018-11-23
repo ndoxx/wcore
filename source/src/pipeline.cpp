@@ -389,17 +389,17 @@ void RenderPipeline::dbg_show_statistics()
     FinalStatistics pp_stats = pp_dt_fifo_.get_stats();
     uint32_t n_iter = geometry_dt_fifo_.get_size();
 
-    DLOGN("Geometry pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ");
+    DLOGN("Geometry pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::LOW);
     geom_stats.debug_print(1e6, "µs");
-    DLOGN("SSAO pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ");
+    DLOGN("SSAO pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::LOW);
     SSAO_stats.debug_print(1e6, "µs");
-    DLOGN("Lighting pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ");
+    DLOGN("Lighting pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::LOW);
     lighting_stats.debug_print(1e6, "µs");
-    DLOGN("Forward pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ");
+    DLOGN("Forward pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::LOW);
     forward_stats.debug_print(1e6, "µs");
-    DLOGN("Bloom pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ");
+    DLOGN("Bloom pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::LOW);
     bloom_stats.debug_print(1e6, "µs");
-    DLOGN("Post-processing pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ");
+    DLOGN("Post-processing pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::LOW);
     pp_stats.debug_print(1e6, "µs");
 #endif
 }

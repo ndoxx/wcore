@@ -6,6 +6,7 @@
 #include <utility>
 #include <iomanip>
 #include <sstream>
+#include <array>
 
 namespace wcore
 {
@@ -107,6 +108,14 @@ public:
     void swap(vec<N,T>& other)
     {
         std::swap(value_, other.value_);
+    }
+
+    inline std::array<T, N> to_array()
+    {
+        std::array<T, N> out;
+        for(uint32_t ii=0; ii<N; ++ii)
+            out[ii] = value_[ii];
+        return out;
     }
 
     // Bracket accessors

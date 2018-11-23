@@ -163,7 +163,12 @@ void Logger::register_channel(const char* name, uint32_t verbosity)
     channels_.insert(std::make_pair(hname, std::string(name)));
 
     // Generate a random color style for channel name display
-    math::i32vec3 bgcolor = color::random_color_uint(hname+CHANNEL_STYLE_PALETTE, 1.f, 0.4f);
+    math::vec3 bgcolor_f = color::random_color(hname+CHANNEL_STYLE_PALETTE, 1.f, 0.4f);
+#ifndef __DISABLE_EDITOR__
+    chancolors_.insert(std::make_pair(hname, bgcolor_f.to_array()));
+#endif
+
+    math::i32vec3 bgcolor = color::rgbfloat2rgbuint(bgcolor_f);
     std::ostringstream ss;
     ss << "\033[1;48;2;" << bgcolor.r() << ";" << bgcolor.g() << ";" << bgcolor.b() << "m";
     chanstyles_.insert(std::make_pair(hname, ss.str()));
@@ -219,7 +224,10 @@ void Logger::generate_widget()
         // Display a verbosity control slider for each channel
         for(auto&& [key, name]: channels_)
         {
+            auto&& cc = chancolors_.at(key);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(cc[0],cc[1],cc[2],1));
             ImGui::SliderInt(name.c_str(), (int*)&get_channel_verbosity_nc(key), 0u, 3u);
+            ImGui::PopStyleColor();
         }
     }
 

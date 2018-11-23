@@ -20,7 +20,7 @@ public:
     median(0)
     {}
 
-    void debug_print(float scale, const std::string& unit);
+    void debug_print(float scale, const std::string& unit, const char* channel="default");
 
     float mean;
     float std;

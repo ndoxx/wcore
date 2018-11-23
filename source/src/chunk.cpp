@@ -274,12 +274,12 @@ void Chunk::dbg_show_statistics()
     FinalStatistics lights_traversal_stats = lights_traversal_fifo_.get_stats();
     FinalStatistics sorting_stats          = sorting_fifo_.get_stats();
 
-    DLOGN("Models traversal (over <z>" + std::to_string(models_traversal_fifo_.get_size()) + "</z> points): ");
-    models_traversal_stats.debug_print(1e6, "µs");
-    DLOGN("Lights traversal (over <z>" + std::to_string(lights_traversal_fifo_.get_size()) + "</z> points): ");
-    lights_traversal_stats.debug_print(1e6, "µs");
-    DLOGN("Sorting (over <z>" + std::to_string(sorting_fifo_.get_size()) + "</z> points): ");
-    sorting_stats.debug_print(1e6, "µs");
+    DLOGN("Models traversal (over <z>" + std::to_string(models_traversal_fifo_.get_size()) + "</z> points): ", "chunk", Severity::LOW);
+    models_traversal_stats.debug_print(1e6, "µs", "chunk");
+    DLOGN("Lights traversal (over <z>" + std::to_string(lights_traversal_fifo_.get_size()) + "</z> points): ", "chunk", Severity::LOW);
+    lights_traversal_stats.debug_print(1e6, "µs", "chunk");
+    DLOGN("Sorting (over <z>" + std::to_string(sorting_fifo_.get_size()) + "</z> points): ", "chunk", Severity::LOW);
+    sorting_stats.debug_print(1e6, "µs", "chunk");
 #endif
 }
 

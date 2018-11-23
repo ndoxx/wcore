@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include <map>
 #include <chrono>
 #include <ctime>
@@ -121,6 +122,9 @@ private:
     std::map<hashstr_t, uint32_t> verbosity_;     // Map of channels verbosity levels
     std::map<hashstr_t, std::string> channels_;   // Map of channel names
     std::map<hashstr_t, std::string> chanstyles_; // Map of channel syles
+#ifndef __DISABLE_EDITOR__
+    std::map<hashstr_t, std::array<float,3>> chancolors_;
+#endif
 
     // Singleton boilerplate
     Logger (const Logger&)=delete;
