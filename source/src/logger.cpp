@@ -4,6 +4,7 @@
 
 #include "logger.h"
 #include "informer.h"
+#include "colors.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -126,8 +127,10 @@ void Logger::print_console(const LogMessage& log_message)
 
     // Set style
     std::cout << "\033[1;38;2;0;100;0m["
-              << std::setprecision(10) << std::fixed
-              << timestamp << "] ";
+              << std::setprecision(6) << std::fixed
+              << timestamp << "]";
+    std::cout << "\033[1;38;2;10;10;10m" << chanstyles_.at(log_message.channel_)
+              << "[" << channels_.at(log_message.channel_).substr(0,3) << "]\033[0m ";
     std::cout << STYLES[type] << ICON[type];
 
     if(type == MsgType::RAW || type == MsgType::TRACK)
@@ -145,9 +148,16 @@ void Logger::print_console(const LogMessage& log_message)
 
 void Logger::register_channel(const char* name, uint32_t verbosity)
 {
+    // Register channel name, hash and verbosity
     hashstr_t hname = H_(name);
     verbosity_.insert(std::make_pair(hname, verbosity));
     channels_.insert(std::make_pair(hname, std::string(name)));
+
+    // Generate a random color style for channel name display
+    math::i32vec3 bgcolor = color::random_color_uint(hname, 1.f, 0.4f);
+    std::ostringstream ss;
+    ss << "\033[1;48;2;" << bgcolor.r() << ";" << bgcolor.g() << ";" << bgcolor.b() << "m";
+    chanstyles_.insert(std::make_pair(hname, ss.str()));
 }
 
 void Logger::operator ()(const std::string& message,

@@ -1,3 +1,5 @@
+#include <random>
+
 #include "colors.h"
 
 namespace wcore
@@ -55,6 +57,27 @@ math::vec3 hsl2rgb(const math::vec3& hsl_color)
         default:
             return math::vec3(m,m,m);
     }
+}
+
+math::i32vec3 rgbfloat2rgbuint(const math::vec3& rgb_color)
+{
+    return math::i32vec3(uint32_t(rgb_color.r()*255),
+                         uint32_t(rgb_color.g()*255),
+                         uint32_t(rgb_color.b()*255));
+}
+
+
+math::vec3 random_color(unsigned long long seed,
+                        float saturation,
+                        float lightness)
+{
+    std::default_random_engine generator(seed);
+    std::uniform_real_distribution<float> distribution(0.f,1.f);
+
+    math::vec3 hsl(distribution(generator),
+                   saturation,
+                   lightness);
+    return hsl2rgb(hsl);
 }
 
 

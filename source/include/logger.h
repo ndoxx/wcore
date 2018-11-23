@@ -117,9 +117,10 @@ private:
     bool widget_scroll_required_;      // When new message logged, widget needs to scroll down
     LogMessage::TimePoint start_time_; // Start time for timestamp handling
 
-    std::vector<LogMessage> messages_;          // List of logged messages
-    std::map<hashstr_t, uint32_t> verbosity_;   // Map of channels verbosity levels
-    std::map<hashstr_t, std::string> channels_; // Map of channel names
+    std::vector<LogMessage> messages_;            // List of logged messages
+    std::map<hashstr_t, uint32_t> verbosity_;     // Map of channels verbosity levels
+    std::map<hashstr_t, std::string> channels_;   // Map of channel names
+    std::map<hashstr_t, std::string> chanstyles_; // Map of channel syles
 
     // Singleton boilerplate
     Logger (const Logger&)=delete;
