@@ -19,8 +19,8 @@ XMLParser::~XMLParser()
 void XMLParser::load_file_xml(const char* filename)
 {
 #ifdef __DEBUG__
-    DLOGN("[XML] Parsing xml file:");
-    DLOGI("<p>" + std::string(filename) + "</p>");
+    DLOGN("[XML] Parsing xml file:", "default", Severity::LOW);
+    DLOGI("<p>" + std::string(filename) + "</p>", "default", Severity::LOW);
 #endif
 
     // Read the xml file into a vector
@@ -36,7 +36,7 @@ void XMLParser::load_file_xml(const char* filename)
     if(!root_)
     {
 #ifdef __DEBUG__
-        DLOGE("[XML] No root node.");
+        DLOGE("[XML] No root node.", "default", Severity::CRIT);
 #endif
         return;
     }

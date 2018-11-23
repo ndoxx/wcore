@@ -193,8 +193,8 @@ public:
         std::ofstream logf(logfilePath.c_str());
         if(logf.is_open())
         {
-            DLOGN("[CSpline] Sampling CSpline to log file:");
-            DLOGI(logfilePath);
+            DLOGN("[CSpline] Sampling CSpline to log file:", "default", Severity::LOW);
+            DLOGI(logfilePath, "default", Severity::LOW);
             for(float xx=xx_min; xx<xx_max+step/2; xx+=step)
             {
                 logf << xx << " " << interpolate(xx) << std::endl;
@@ -203,8 +203,8 @@ public:
         }
         else
         {
-            DLOGW("[CSpline] Unable to open log file:");
-            DLOGI(logfilePath);
+            DLOGW("[CSpline] Unable to open log file:", "default", Severity::WARN);
+            DLOGI(logfilePath, "default", Severity::WARN);
         }
     }
 #endif //__DEBUG__

@@ -4691,7 +4691,8 @@ Je vais implémenter un système de canaux de communication pour le logger, ce q
 Chaque instruction DLOGx pourra préciser un canal en argument et l'affichage console sera modulé en fonction des canaux actifs. L'UI du logger sera étendue pour proposer des cases à cocher pour chaque canal. Le système _Config_ établira quels sont les canaux actifs au lancement. Chaque canal sera référencé par un hash string.
 De plus, j'imagine y joindre un système de verbosité (une valeur à 4 niveaux pour chaque canal) ce qui permettra de grouper des comportements tels que __DEBUG_TEXTURE__ et __DEBUG_TEXTURE_VERBOSE__ sous un même canal. Du coup, peut être que des sliders colleraient mieux dans l'UI...
 
-    verobsity level     critical    warning    state    detail
+       severity          critical    warning     low    detail
+    verobsity level
            0                X
            1                X          X
            2                X          X         X

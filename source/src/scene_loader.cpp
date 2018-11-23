@@ -60,7 +60,7 @@ SceneLoader::~SceneLoader()
 
 void SceneLoader::load_file_xml(const char* xml_file)
 {
-    DLOGS("[SceneLoader] Parsing xml scene description.");
+    DLOGS("[SceneLoader] Parsing xml scene description.", "parsing", Severity::LOW);
     xml_parser_.load_file_xml(xml_file);
     current_map_ = xml_file;
 }
@@ -117,7 +117,7 @@ void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)
     success &= xml::parse_node(node, "Brightness", brightness);
     if(!success)
     {
-        DLOGE("[SceneLoader] Ill-formed directional light declaration.");
+        DLOGE("[SceneLoader] Ill-formed directional light declaration.", "parsing", Severity::CRIT);
         return;
     }
 
@@ -155,8 +155,8 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
     if(chunk_size_m_%2==0)
     {
         ++chunk_size_m_;
-        DLOGW("[SceneLoader] Chunk size must be <v>odd</v> for hex terrain meshes.");
-        DLOGI("Corrected: Chunk Size is now " + std::to_string(chunk_size_m_));
+        DLOGW("[SceneLoader] Chunk size must be <v>odd</v> for hex terrain meshes.", "chunk", Severity::WARN);
+        DLOGI("Corrected: Chunk Size is now " + std::to_string(chunk_size_m_), "chunk", Severity::WARN);
     }
     chunk_size_ = uint32_t(floor(chunk_size_m_/lattice_scale_));
     SCENE.set_chunk_size_meters(chunk_size_m_);
@@ -174,7 +174,7 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
         success &= xml::parse_attribute(patch, "size", patchSize);
         if(!success)
         {
-            DLOGE("[SceneLoader] TerrainPatch node must define 'origin' and 'size' attributes.");
+            DLOGE("[SceneLoader] TerrainPatch node must define 'origin' and 'size' attributes.", "parsing", Severity::CRIT);
         }
 
         // For each chunk within that patch
@@ -189,16 +189,16 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
                 auto it = chunk_patches_.find(chunk_index);
                 if(it!=chunk_patches_.end())
                 {
-                    DLOGW("[SceneLoader] Silent chunk override:");
+                    DLOGW("[SceneLoader] Silent chunk override:", "scene", Severity::WARN);
                     std::stringstream ss;
                     ss << "Chunk index= <n>" << chunk_index << "</n>, "
                        << "coordinates= <v>" << i32vec2(xx,yy) << "</v>";
-                    DLOGI(ss.str());
+                    DLOGI(ss.str(), "scene", Severity::WARN);
 
                     ss.str("");
                     ss << "By patch of origin= <v>" << patchStart << "</v>, "
                        << "size= " << patchSize;
-                    DLOGI(ss.str());
+                    DLOGI(ss.str(), "scene", Severity::WARN);
                 }
 #endif
                 chunk_patches_[chunk_index] = patch;
@@ -211,19 +211,19 @@ void SceneLoader::parse_ambient(DaylightSystem& daylight, rapidxml::xml_node<>* 
 {
     if(!node)
     {
-        DLOGW("[SceneLoader] No Ambient node.");
+        DLOGW("[SceneLoader] No Ambient node.", "parsing", Severity::WARN);
         return;
     }
     xml_node<>* dir_node = node->first_node("Directional");
     if(!dir_node)
     {
-        DLOGW("[SceneLoader] No Ambient.Directional node.");
+        DLOGW("[SceneLoader] No Ambient.Directional node.", "parsing", Severity::WARN);
         return;
     }
     xml_node<>* pp_node = node->first_node("PostProcessing");
     if(!pp_node)
     {
-        DLOGW("[SceneLoader] No Ambient.PostProcessing node.");
+        DLOGW("[SceneLoader] No Ambient.PostProcessing node.", "parsing", Severity::WARN);
         return;
     }
     xml_node<>* c_node = dir_node->first_node("Color");
@@ -234,7 +234,7 @@ void SceneLoader::parse_ambient(DaylightSystem& daylight, rapidxml::xml_node<>* 
     xml_node<>* f_node = pp_node->first_node("FogDensity");
     if(!c_node || !b_node || !a_node || !g_node || !s_node || !f_node)
     {
-        DLOGW("[SceneLoader] Ill-formed Ambient hierarchy.");
+        DLOGW("[SceneLoader] Ill-formed Ambient hierarchy.", "parsing", Severity::WARN);
         return;
     }
 
@@ -269,10 +269,10 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
     if(it == chunk_nodes_.end())
     {
 #ifdef __DEBUG_CHUNKS__
-        DLOGW("[SceneLoader] Ignoring non existing chunk:");
+        DLOGW("[SceneLoader] Ignoring non existing chunk:", "chunk", Severity::WARN);
         std::stringstream ss;
         ss << "at coordinates <v>" << chunk_coords << "</v>";
-        DLOGI(ss.str());
+        DLOGI(ss.str(), "chunk", Severity::WARN);
 #endif
         return 0;
     }
@@ -282,7 +282,7 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
         std::stringstream ss;
         ss << "[SceneLoader] Loading chunk: <n>" << chunk_index << "</n>"
            << " at <v>" << chunk_coords << "</v>";
-        DLOGN(ss.str());
+        DLOGN(ss.str(), "chunk", Severity::LOW);
 #endif
     }
 
@@ -352,27 +352,27 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
     float dt_total_us = dt_terrain_us + dt_models_us + dt_batches_us + dt_lights_us + dt_upload_us;
     std::stringstream ss;
     ss << "Chunk loaded in <v>" << dt_total_us << "</v> µs total.";
-    DLOGI(ss.str());
+    DLOGI(ss.str(), "chunk", Severity::DET);
 
     ss.str("");
     ss << "Terrain: <v>" << dt_terrain_us << "</v> µs";
-    DLOGI(ss.str());
+    DLOGI(ss.str(), "chunk", Severity::DET);
 
     ss.str("");
     ss << "Models: <v>" << dt_models_us << "</v> µs";
-    DLOGI(ss.str());
+    DLOGI(ss.str(), "chunk", Severity::DET);
 
     ss.str("");
     ss << "Model Batches: <v>" << dt_batches_us << "</v> µs";
-    DLOGI(ss.str());
+    DLOGI(ss.str(), "chunk", Severity::DET);
 
     ss.str("");
     ss << "Lights: <v>" << dt_lights_us << "</v> µs";
-    DLOGI(ss.str());
+    DLOGI(ss.str(), "chunk", Severity::DET);
 
     ss.str("");
     ss << "Geometry upload: <v>" << dt_upload_us << "</v> µs";
-    DLOGI(ss.str());
+    DLOGI(ss.str(), "chunk", Severity::DET);
 #endif
     return chunk_index;
 }
@@ -406,7 +406,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
         std::stringstream ss;
         ss << "[SceneLoader] <b>Orphan chunk</b> at <v>" << chunk_coords << "</v>"
            << " (chunk is outside of all terrain patches).";
-        DLOGE(ss.str());
+        DLOGE(ss.str(), "chunk", Severity::CRIT);
         return;
     }
     xml_node<>* patch = it->second;
@@ -445,7 +445,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
 
         if(!success)
         {
-            DLOGE("[SceneLoader] Generator node must have a 'type' attribute initialized.");
+            DLOGE("[SceneLoader] Generator node must have a 'type' attribute initialized.", "parsing", Severity::CRIT);
             return;
         }
 
@@ -603,7 +603,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         SurfaceMesh* pmesh = parse_mesh(mesh_node, rng);
         if(!pmesh)
         {
-            DLOGW("[SceneLoader] Skipping incomplete mesh declaration.");
+            DLOGW("[SceneLoader] Skipping incomplete mesh declaration.", "parsing", Severity::WARN);
             if(pmat)
                 delete pmat;
             continue;
@@ -683,7 +683,7 @@ void SceneLoader::parse_line_models(xml_node<>* chunk_node, uint32_t chunk_index
         Mesh<Vertex3P>* pmesh = parse_line_mesh(mesh_node);
         if(!pmesh)
         {
-            DLOGW("[SceneLoader] Skipping incomplete mesh declaration.");
+            DLOGW("[SceneLoader] Skipping incomplete mesh declaration.", "parsing", Severity::WARN);
             if(pmat)
                 delete pmat;
             continue;
@@ -769,7 +769,7 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
             SurfaceMesh* pmesh = parse_mesh(mesh_node, rng);
             if(!pmesh)
             {
-                DLOGW("[SceneLoader] Skipping incomplete mesh declaration.");
+                DLOGW("[SceneLoader] Skipping incomplete mesh declaration.", "parsing", Severity::WARN);
                 continue;
             }
 
@@ -1112,8 +1112,8 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
         std::string location;
         if(!xml::parse_node(mesh_node, "Location", location))
         {
-            DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.");
-            DLOGI("Missing <n>Location</n> node.");
+            DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.", "parsing", Severity::WARN);
+            DLOGI("Missing <n>Location</n> node.", "parsing", Severity::WARN);
             return nullptr;
         }
         bool process_uv = false;
@@ -1124,8 +1124,8 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
     }
     else
     {
-        DLOGW("Unknown mesh name: ");
-        DLOGI(mesh);
+        DLOGW("Unknown mesh name: ", "parsing", Severity::WARN);
+        DLOGI(mesh, "parsing", Severity::WARN);
     }
     return pmesh;
 }

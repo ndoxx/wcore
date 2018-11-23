@@ -27,7 +27,7 @@ public:
 #ifdef __DEBUG__
             std::stringstream ss;
             ss << "Ignoring duplicate component: " << typeid(T).name();
-            DLOGW(ss.str());
+            DLOGW(ss.str(), "entity", Severity::WARN);
 #endif
             return static_cast<T*>(it->second);
         }

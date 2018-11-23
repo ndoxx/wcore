@@ -22,9 +22,9 @@ height_(texture.get_height())
     draw_buffers_ = new GLenum[n_textures_];
 
     #if __DEBUG_TEXTURE_VERBOSE__
-        DLOGN("[FrameBuffer] Initializing as render target.");
-        DLOGI("width:  <v>" + std::to_string(width_)  + "</v>");
-        DLOGI("height: <v>" + std::to_string(height_) + "</v>");
+        DLOGN("[FrameBuffer] Initializing as render target.", "buffer", Severity::DET);
+        DLOGI("width:  <v>" + std::to_string(width_)  + "</v>", "buffer", Severity::DET);
+        DLOGI("height: <v>" + std::to_string(height_) + "</v>", "buffer", Severity::DET);
     #endif
 
     /*
@@ -50,7 +50,7 @@ height_(texture.get_height())
             glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_);
 
             #if __DEBUG_TEXTURE_VERBOSE__
-                DLOGI("Generated new FBO.");
+                DLOGI("Generated new FBO.", "buffer", Severity::LOW);
             #endif
         }
 
@@ -99,20 +99,20 @@ height_(texture.get_height())
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(status != GL_FRAMEBUFFER_COMPLETE)
     {
-        DLOGE("[Texture] Framebuffer creation failed!");
+        DLOGE("[Texture] Framebuffer creation failed!", "buffer", Severity::CRIT);
         switch(status)
         {
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-                DLOGI("Not all framebuffer attachment points are framebuffer attachment complete.");
+                DLOGI("Not all framebuffer attachment points are framebuffer attachment complete.", "buffer", Severity::CRIT);
                 break;
             /*case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
                 DLOGI("Not all attached images have the same width and height.");
                 break;*/
             case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-                DLOGI("No images are attached to the framebuffer.");
+                DLOGI("No images are attached to the framebuffer.", "buffer", Severity::CRIT);
                 break;
             case GL_FRAMEBUFFER_UNSUPPORTED:
-                DLOGI("The combination of internal formats of the attached images violates an implementation-dependent set of restrictions.");
+                DLOGI("The combination of internal formats of the attached images violates an implementation-dependent set of restrictions.", "buffer", Severity::CRIT);
                 break;
         }
         throw std::runtime_error("Framebuffer creation <b>failed</b>!");
@@ -120,7 +120,7 @@ height_(texture.get_height())
     else
     {
         #if __DEBUG_TEXTURE_VERBOSE__
-            DLOGI("Framebuffer creation <g>complete</g>.");
+            DLOGI("Framebuffer creation <g>complete</g>.", "buffer", Severity::LOW);
         #endif
         // Save texture indices
             for(uint32_t ii=0; ii<n_textures_; ++ii)

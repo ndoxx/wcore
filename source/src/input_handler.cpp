@@ -26,7 +26,7 @@ mouse_lock_(true)
 
 void InputHandler::import_key_bindings()
 {
-    DLOGS("[InputHandler] Parsing xml file for key bindings.");
+    DLOGS("[InputHandler] Parsing xml file for key bindings.", "parsing", Severity::LOW);
 
 
     for (xml_node<>* cat=xml_parser_.get_root()->first_node("Category");
@@ -34,7 +34,7 @@ void InputHandler::import_key_bindings()
     {
         std::string category;
         xml::parse_attribute(cat, "name", category);
-        DLOGI("Parsing category: <x>" + category + "</x>");
+        DLOGI("Parsing category: <x>" + category + "</x>", "input", Severity::LOW);
 
         for (xml_node<>* kb=cat->first_node("KB");
              kb; kb=kb->next_sibling("KB"))
@@ -54,8 +54,8 @@ void InputHandler::import_key_bindings()
             auto it = keymap::NAMES.find(H_(str_key.c_str()));
             if(it == keymap::NAMES.end())
             {
-                DLOGW("[InputHandler] Unknown key name:");
-                DLOGI(str_key);
+                DLOGW("[InputHandler] Unknown key name:", "input", Severity::WARN);
+                DLOGI(str_key, "input", Severity::WARN);
                 continue;
             }
             key = it->second;
@@ -78,7 +78,7 @@ void InputHandler::import_key_bindings()
                 std::stringstream ss;
                 ss << "[<i>" << ((trigger==GLFW_PRESS)?"PRESS":"RELEASE")
                    << "</i>] <n>" << str_key << "</n> -> " << str_desc;
-                DLOG(ss.str());
+                DLOG(ss.str(), "input", Severity::DET);
 #endif
             }
 
@@ -105,7 +105,7 @@ void InputHandler::set_key_binding(hash_t name,
         std::stringstream ss;
         ss << "[InputHandler] Ignoring duplicate key binding:"
            << "<n>" << name << "</n>";
-        DLOGW(ss.str());
+        DLOGW(ss.str(), "input", Severity::WARN);
 #endif
         return;
     }
@@ -155,7 +155,7 @@ void InputHandler::register_action(hash_t binding_name,
         std::stringstream ss;
         ss << "[InputHandler] Ignoring unknown key binding:"
            << "<n>" << binding_name << "</n>";
-        DLOGW(ss.str());
+        DLOGW(ss.str(), "input", Severity::WARN);
 #endif
     }
 }

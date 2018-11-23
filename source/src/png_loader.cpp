@@ -54,7 +54,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
     {
         std::stringstream ss;
         ss << "[PngLoader] Couldn't reach file: " << filename;
-        DLOGE(ss.str());
+        DLOGE(ss.str(), "io", Severity::CRIT);
         throw std::runtime_error("Couldn't reach file.");
     }
 
@@ -63,7 +63,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
     {
         std::stringstream ss;
         ss << "[PngLoader] File: " << filename << " is not a valid PNG file.";
-        DLOGE(ss.str());
+        DLOGE(ss.str(), "parsing", Severity::CRIT);
         throw std::runtime_error("Not a valid PNG file.");
     }
 
@@ -73,7 +73,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
     {
         std::stringstream ss;
         ss << "[PngLoader] Couldn't initialize png read struct for: " << filename;
-        DLOGE(ss.str());
+        DLOGE(ss.str(), "parsing", Severity::CRIT);
         throw std::runtime_error("Read struct init failed.");
     }
 
@@ -84,7 +84,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         std::stringstream ss;
         ss << "[PngLoader] Couldn't initialize png info struct for: " << filename;
         png_destroy_read_struct(&p_png, (png_infopp)0, (png_infopp)0);
-        DLOGE(ss.str());
+        DLOGE(ss.str(), "parsing", Severity::CRIT);
         throw std::runtime_error("Info struct init failed.");
     }
 
@@ -97,7 +97,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         if (px_buf != nullptr) delete px_buf;
         std::stringstream ss;
         ss << "[PngLoader] An error occured while reading: " << filename;
-        DLOGE(ss.str());
+        DLOGE(ss.str(), "parsing", Severity::CRIT);
         throw std::runtime_error("Png read error.");
     }
 

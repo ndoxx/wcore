@@ -50,6 +50,14 @@ enum class LogMode : std::uint8_t
     CANONICAL = 5   // Console AND File
 };
 
+enum Severity : std::uint32_t
+{
+    DET  = 0, // Detail
+    LOW  = 1, // Informative stuff
+    WARN = 2, // Warning (can recover)
+    CRIT = 3  // Critical (error and fatal error)
+};
+
 // Holds a log message together with type and timestamp
 struct LogMessage : public WData
 {
@@ -62,7 +70,7 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hashstr_t channel=H_("default"))
+               hashstr_t channel=HS_("default"))
     : message_(message)
     , mode_(mode)
     , type_(type)
@@ -77,7 +85,7 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hashstr_t channel=H_("default"))
+               hashstr_t channel=HS_("default"))
     : message_(std::move(message))
     , mode_(mode)
     , type_(type)
@@ -159,12 +167,12 @@ public:
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hashstr_t channel=H_("default"));
+                     hashstr_t channel=HS_("default"));
     void operator ()(std::string&& message,
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hashstr_t channel=H_("default"));
+                     hashstr_t channel=HS_("default"));
     void operator ()(const LogMessage& log_message);
 
     template <typename ...Args>
@@ -237,38 +245,41 @@ namespace dbg
     #define FDLOG( ... ) do { \
         wcore::dbg::LOG.printfold(__VA_ARGS__); \
         } while(0)
-    #define DLOG(MESSAGE, ...) do { \
-        wcore::dbg::LOG(MESSAGE, ##__VA_ARGS__); \
+    /*#define DLOG(MESSAGE, ...) do { \
+        wcore::dbg::LOG( MESSAGE, ##__VA_ARGS__ ); \
+        } while(0)*/
+    #define DLOG(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::CANONICAL, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGR(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::RAW); \
+    #define DLOGR(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::RAW,     LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGI(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::ITEM); \
+    #define DLOGI(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::ITEM,    LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGT(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::TRACK); \
+    #define DLOGT(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::TRACK,   LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGN(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::NOTIFY); \
+    #define DLOGN(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::NOTIFY,  LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGS(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::SECTION); \
+    #define DLOGS(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::SECTION, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGW(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::WARNING); \
+    #define DLOGW(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::WARNING, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGE(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::ERROR); \
+    #define DLOGE(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::ERROR,   LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGF(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::FATAL); \
+    #define DLOGF(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::FATAL,   LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGG(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::GOOD); \
+    #define DLOGG(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::GOOD,    LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGB(MESSAGE) do { \
-        wcore::dbg::LOG(MESSAGE, MsgType::BAD); \
+    #define DLOGB(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::BAD,     LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
     #define BANG() do { \
         wcore::dbg::LOG(std::string(__FILE__)+":"+std::to_string(__LINE__), MsgType::BANG); \

@@ -9,7 +9,7 @@ using namespace rapidxml;
 
 void Config::load_file_xml(const char* xml_file)
 {
-    DLOGN("[Config] Parsing xml configuration file:");
+    DLOGN("[Config] Parsing xml configuration file:", "default", Severity::LOW);
     xml_parser_.load_file_xml(xml_file);
 
     retrieve_configuration(xml_parser_.get_root(), "root");
@@ -51,8 +51,8 @@ void Config::retrieve_configuration(rapidxml::xml_node<>* node,
             #endif
             else // Node is invalid
             {
-                DLOGW("[Config] Ignoring ill-formed property node.");
-                DLOGI("At: " + name_chain + ": " + cur_node->name());
+                DLOGW("[Config] Ignoring ill-formed property node.", "default", Severity::WARN);
+                DLOGI("At: " + name_chain + ": " + cur_node->name(), "default", Severity::WARN);
             }
         }
     }

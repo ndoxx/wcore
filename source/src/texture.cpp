@@ -99,7 +99,7 @@ static void handle_mipmap(bool bound_tex_has_mipmap, GLenum target)
 #ifdef __DEBUG_TEXTURE__
 void Texture::debug_print_rmap_bindings()
 {
-    DLOG("[Texture] Displaying binding states: ");
+    DLOG("[Texture] Displaying binding states: ", "texture", Severity::DET);
     for(auto&& [hash, pinternal]: RESOURCE_MAP_)
     {
         auto && states = pinternal->get_binding_states();
@@ -117,10 +117,10 @@ void Texture::register_named_texture(hash_t name, pTexture ptex)
         std::stringstream ss;
         ss << "[Texture] Registering new named texture: "
            << "<n>" << name << "</n>";
-        DLOGN(ss.str());
-        DLOGI("width:  <v>" + std::to_string(ptex->get_width()) + "</v>");
-        DLOGI("height: <v>" + std::to_string(ptex->get_height()) + "</v>");
-        DLOGI("units:  <v>" + std::to_string(ptex->get_num_textures()) + "</v>");
+        DLOGN(ss.str(), "texture", Severity::DET);
+        DLOGI("width:  <v>" + std::to_string(ptex->get_width()) + "</v>", "texture", Severity::DET);
+        DLOGI("height: <v>" + std::to_string(ptex->get_height()) + "</v>", "texture", Severity::DET);
+        DLOGI("units:  <v>" + std::to_string(ptex->get_num_textures()) + "</v>", "texture", Severity::DET);
 
     }
     #endif
@@ -134,7 +134,7 @@ void Texture::register_named_texture(hash_t name, pTexture ptex)
         #if __DEBUG_TEXTURE_VERBOSE__
             std::stringstream ss;
             ss << "[Texture] Ignored duplicate named texture registration for: <n>" << name << "</n>";
-            DLOGW(ss.str());
+            DLOGW(ss.str(), "texture", Severity::WARN);
         #endif
     }
 }
@@ -146,7 +146,7 @@ Texture::wpTexture Texture::get_named_texture(hash_t name)
     {
         std::stringstream ss;
         ss << "[Texture] Couldn't find named texture: <n>" << name << "</n>";
-        DLOGF(ss.str());
+        DLOGF(ss.str(), "texture", Severity::CRIT);
         throw std::runtime_error("Couldn't find named texture.");
     }
     else
@@ -188,13 +188,14 @@ ID_(++Ninst)
             px_bufs[ii] = PngLoader::Instance().load_png((TEX_IMAGE_PATH + descriptor.locations.at(key)).c_str());
             data[ii] = px_bufs[ii]->get_data_pointer();
             #if __DEBUG_TEXTURE_VERBOSE__
-                DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>");
-                std::cout << *px_bufs[ii] << std::endl;
+                DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
+                if(dbg::LOG.get_channel_verbosity(HS_("texture")) == 3u)
+                    std::cout << *px_bufs[ii] << std::endl;
             #endif
         }
         catch(const std::exception& e)
         {
-            DLOGF("[Texture] Unable to load Texture.");
+            DLOGF("[Texture] Unable to load Texture.", "texture", Severity::CRIT);
             for (uint32_t jj=0; jj<=ii; ++jj)
                 if(px_bufs[jj])
                     delete px_bufs[jj];
@@ -418,7 +419,7 @@ units_(descriptor.units)
     {
         std::stringstream ss;
         ss << "[Texture] New texture from asset: <n>" << resourceID_ << "</n>";
-        DLOGN(ss.str());
+        DLOGN(ss.str(), "texture", Severity::DET);
     }
     #endif
 
@@ -441,7 +442,7 @@ units_(descriptor.units)
                     std::stringstream ss;
                     ss << "<v>" << sampler_name << "</v> <- <p>"
                        << descriptor.locations.at(key) << "</p>";
-                    DLOGI(ss.str());
+                    DLOGI(ss.str(), "texture", Severity::DET);
                 }
             #endif
         }
@@ -452,7 +453,7 @@ units_(descriptor.units)
     {
         internal_ = it->second;
         #if __DEBUG_TEXTURE_VERBOSE__
-            DLOGI("<i>Using cache.</i>");
+            DLOGI("<i>Using cache.</i>", "texture", Severity::DET);
         #endif
     }
     // Else, create new texture internal using parameters
@@ -478,7 +479,7 @@ Texture::~Texture()
             #ifdef __DEBUG_TEXTURE_VERBOSE__
             std::stringstream ss;
             ss << "[Texture] Destroying cached texture: <n>" << resourceID_ << "</n>";
-            DLOGN(ss.str());
+            DLOGN(ss.str(), "texture", Severity::LOW);
             #endif
         }
     }

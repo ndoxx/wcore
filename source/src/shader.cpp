@@ -63,11 +63,11 @@ uint32_t Shader::instance_count_ = 0;
 void Shader::dbg_show_defines()
 {
     if(global_defines_.size()==0) return;
-    DLOGN("[Shader] Debug nonce.");
-    DLOG("Global <i>#define</i>s in shaders:");
+    DLOGN("[Shader] Debug nonce.", "shader", Severity::LOW);
+    DLOG("Global <i>#define</i>s in shaders:", "shader", Severity::LOW);
     for(const std::string& str: global_defines_)
     {
-        DLOGI("<i>#define</i> <v>" + str + "</v>");
+        DLOGI("<i>#define</i> <v>" + str + "</v>", "shader", Severity::LOW);
     }
 }
 #endif
@@ -83,14 +83,14 @@ FragmentShaderID_(0)
     auto const pos_dot = res.vertex_shader.find_last_of('.');
     auto const pos_slh = res.vertex_shader.find_last_of('/');
     name_ = res.vertex_shader.substr(pos_slh+1, pos_dot-pos_slh-1);
-    DLOGS("[Shader] Creating new shader program: <n>" + name_ + "</n>");
+    DLOGS("[Shader] Creating new shader program: <n>" + name_ + "</n>", "shader", Severity::LOW);
 #endif
     // VERTEX SHADER
     if(res.vertex_shader.size())
     {
         VertexShaderID_   = compile_shader(res.vertex_shader, GL_VERTEX_SHADER, res.flags);
 #ifdef __DEBUG_SHADER__
-        DLOGI("<g>Compiled</g> vertex shader from: <p>" + res.vertex_shader + "</p>");
+        DLOGI("<g>Compiled</g> vertex shader from: <p>" + res.vertex_shader + "</p>", "shader", Severity::DET);
 #endif
     }
 
@@ -99,7 +99,7 @@ FragmentShaderID_(0)
     {
         GeometryShaderID_ = compile_shader(res.geometry_shader, GL_GEOMETRY_SHADER, res.flags);
 #ifdef __DEBUG_SHADER__
-        DLOGI("<g>Compiled</g> geometry shader from: <p>" + res.geometry_shader + "</p>");
+        DLOGI("<g>Compiled</g> geometry shader from: <p>" + res.geometry_shader + "</p>", "shader", Severity::DET);
 #endif
     }
 
@@ -108,14 +108,14 @@ FragmentShaderID_(0)
     {
         FragmentShaderID_ = compile_shader(res.fragment_shader, GL_FRAGMENT_SHADER, res.flags);
 #ifdef __DEBUG_SHADER__
-        DLOGI("<g>Compiled</g> fragment shader from: <p>" + res.fragment_shader + "</p>");
+        DLOGI("<g>Compiled</g> fragment shader from: <p>" + res.fragment_shader + "</p>", "shader", Severity::DET);
 #endif
     }
 
     // Link program
     link();
 #ifdef __DEBUG_SHADER__
-    DLOGI("Shader program [" + std::to_string(ProgramID_) + "] linked.");
+    DLOGI("Shader program [" + std::to_string(ProgramID_) + "] linked.", "shader", Severity::LOW);
     program_active_report();
 #endif
 
@@ -127,7 +127,7 @@ FragmentShaderID_(0)
 Shader::~Shader()
 {
     #ifdef __DEBUG_SHADER_VERBOSE__
-        DLOGN("[Shader] Destroying program <z>[" + std::to_string(ProgramID_) + "]</z> <n>" + name_ + "</n>");
+        DLOGN("[Shader] Destroying program <z>[" + std::to_string(ProgramID_) + "]</z> <n>" + name_ + "</n>", "shader", Severity::LOW);
     #endif
     glDetachShader(ProgramID_,VertexShaderID_);
     glDetachShader(ProgramID_,FragmentShaderID_);
@@ -147,7 +147,7 @@ void Shader::program_active_report()
         // Display active attributes
         GLint active_attribs;
         glGetProgramiv(ProgramID_, GL_ACTIVE_ATTRIBUTES, &active_attribs);
-        DLOGN("Detected " + std::to_string(active_attribs) + " active attributes:");
+        DLOGN("Detected " + std::to_string(active_attribs) + " active attributes:", "shader", Severity::DET);
 
         for(GLint ii=0; ii<active_attribs; ++ii)
         {
@@ -159,12 +159,12 @@ void Shader::program_active_report()
             glGetActiveAttrib(ProgramID_, ii, 32, &length, &size, &type, name);
             GLint loc = glGetAttribLocation(ProgramID_, name);
 
-            DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(type) + "] loc=" + std::to_string(loc));
+            DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(type) + "] loc=" + std::to_string(loc), "shader", Severity::DET);
         }
 
         GLint active_unif;
         glGetProgramiv(ProgramID_, GL_ACTIVE_UNIFORMS, &active_unif);
-        DLOGN("Detected " + std::to_string(active_unif) + " active uniforms:");
+        DLOGN("Detected " + std::to_string(active_unif) + " active uniforms:", "shader", Severity::DET);
 
         for(GLint ii=0; ii<active_unif; ++ii)
         {
@@ -174,7 +174,7 @@ void Shader::program_active_report()
             glGetActiveUniformName(ProgramID_, ii, 32, &length, name);
             GLint loc = glGetUniformLocation(ProgramID_, name);
 
-            DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(ii) + "] loc=" + std::to_string(loc));
+            DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(ii) + "] loc=" + std::to_string(loc), "shader", Severity::DET);
         }
     #endif // __DEBUG_SHADER_VERBOSE__
 }
@@ -208,14 +208,14 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
 
     // Open included file
 #ifdef __DEBUG_SHADER_VERBOSE__
-    DLOGI("Dependency: <p>" + file_path + "</p>");
+    DLOGI("Dependency: <p>" + file_path + "</p>", "shader", Severity::DET);
 #endif
     std::ifstream include_file(file_path);
 
     if(!include_file.is_open())
     {
 #ifdef __DEBUG_SHADER_VERBOSE__
-        DLOGW("Unable to open file, skipping.");
+        DLOGW("Unable to open file, skipping.", "shader", Severity::WARN);
 #endif
         return;
     }
@@ -235,7 +235,7 @@ void Shader::parse_version(const std::string& line, std::string& shader_source)
     if(line.substr(0,sizeof(verStr)).compare(verStr))
     {
 #ifdef __DEBUG_SHADER__
-        DLOGW("Shader does not start with <i>#version</i> directive.");
+        DLOGW("Shader does not start with <i>#version</i> directive.", "shader", Severity::WARN);
 #endif
         return;
     }
@@ -243,7 +243,7 @@ void Shader::parse_version(const std::string& line, std::string& shader_source)
 #ifdef __DEBUG_SHADER__
     uint32_t offset = sizeof(verStr) + 1;
     glsl_version_ = line.substr(offset, line.length()-offset);
-    DLOGI("<i>#version</i> <v>" + glsl_version_ + "</v>");
+    DLOGI("<i>#version</i> <v>" + glsl_version_ + "</v>", "shader", Severity::DET);
 #endif
 
     shader_source += line + "\n";
@@ -272,7 +272,7 @@ GLuint Shader::compile_shader(const std::string& ShaderPath,
         std::ifstream file(ShaderPath);
         if(!file.is_open())
         {
-            DLOGF("File <p>" + ShaderPath + "</p> not found.");
+            DLOGF("File <p>" + ShaderPath + "</p> not found.", "shader", Severity::CRIT);
             throw std::runtime_error("File " + ShaderPath + " not found.");
 
         }
@@ -299,7 +299,7 @@ GLuint Shader::compile_shader(const std::string& ShaderPath,
     GLuint ShaderID = glCreateShader(ShaderType);
     if(ShaderID == 0)
     {
-        DLOGF("Cannot create shader: <p>" + ShaderPath + "</p>");
+        DLOGF("Cannot create shader: <p>" + ShaderPath + "</p>", "shader", Severity::CRIT);
         throw std::runtime_error("Cannot create shader: " + ShaderPath);
     }
 
@@ -316,7 +316,7 @@ GLuint Shader::compile_shader(const std::string& ShaderPath,
 
         //We don't need the shader anymore.
         glDeleteShader(ShaderID);
-        DLOGF("Shader will not compile: <p>" + ShaderPath + "</p>");
+        DLOGF("Shader will not compile: <p>" + ShaderPath + "</p>", "shader", Severity::CRIT);
         throw std::runtime_error("Shader will not compile: " + ShaderPath);
     }
 
@@ -337,7 +337,7 @@ void Shader::link()
     if(isLinked == GL_FALSE)
     {
         program_error_report();
-        DLOGF("Unable to link shaders.");
+        DLOGF("Unable to link shaders.", "shader", Severity::CRIT);
 
         //We don't need the program anymore.
         glDeleteProgram(ProgramID_);
@@ -359,7 +359,7 @@ void Shader::shader_error_report(GLuint ShaderID)
     log = (char*) malloc(logsize + 1);
     if(log == nullptr)
     {
-        DLOGF("Cannot allocate memory for Shader Error Report.");
+        DLOGF("Cannot allocate memory for Shader Error Report.", "shader", Severity::CRIT);
         throw std::runtime_error("Cannot allocate memory for Shader Error Report.");
     }
 
@@ -379,7 +379,7 @@ void Shader::program_error_report()
     log = (char*) malloc(logsize + 1);
     if(log == nullptr)
     {
-        DLOGF("Cannot allocate memory for Program Error Report.");
+        DLOGF("Cannot allocate memory for Program Error Report.", "shader", Severity::CRIT);
         throw std::runtime_error("Cannot allocate memory for Program Error Report.");
     }
 
@@ -394,14 +394,14 @@ static inline void warn_unknown_uniform(const std::string& shaderName, hash_t na
 {
     std::stringstream ss;
     ss << "[Shader] [<n>" << shaderName << "</n>] Unknown uniform name: <u>" << name << "</u>";
-    DLOGW(ss.str());
+    DLOGW(ss.str(), "shader", Severity::WARN);
 }
 #endif
 
 void Shader::warn_uniform_unknown_type() const
 {
 #ifdef __DEBUG__
-    DLOGW("[Shader] Unknown type in send_uniform()/send_uniforms().");
+    DLOGW("[Shader] Unknown type in send_uniform()/send_uniforms().", "shader", Severity::WARN);
 #endif
 }
 

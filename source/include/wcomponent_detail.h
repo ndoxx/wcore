@@ -62,7 +62,7 @@ namespace detail
             {
                 // This means there already is a component registered to
                 // this name.
-                DLOGW("Commponent already defined: ");
+                DLOGW("Commponent already defined: ", "entity", Severity::WARN);
             }
         }
 

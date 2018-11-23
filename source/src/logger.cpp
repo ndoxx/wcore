@@ -66,7 +66,7 @@ Logger::Logger()
 , start_time_(std::chrono::high_resolution_clock::now())
 {
     // Create a default debugging channel
-    register_channel("default", 3u);
+    register_channel("default", 0u);
 }
 
 Logger::~Logger()

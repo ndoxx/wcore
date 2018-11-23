@@ -50,8 +50,8 @@ static char* trim_whitespaces(char* str)
 SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
 {
 #ifdef __DEBUG_MODEL__
-    DLOGN("[ObjLoader] Loading obj file: ");
-    DLOGI(objfile);
+    DLOGN("[ObjLoader] Loading obj file: ", "model", Severity::LOW);
+    DLOGI(objfile, "model", Severity::LOW);
 #endif
 
     // Open file, sanity check
@@ -60,7 +60,7 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
     if((char)objfile[0]==0) return nullptr;
     if((fn = fopen(objfile, "rb")) == NULL)
     {
-        DLOGE(std::string("File ") + objfile + std::string(" not found."));
+        DLOGE(std::string("File ") + objfile + std::string(" not found."), "model", Severity::CRIT);
         return nullptr;
     }
 
@@ -160,8 +160,8 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
             }
             else
             {
-                DLOGE("Unrecognized sequence during face extraction: ");
-                DLOGI(line);
+                DLOGE("Unrecognized sequence during face extraction: ", "model", Severity::CRIT);
+                DLOGI(line, "model", Severity::CRIT);
                 fclose(fn);
                 return nullptr;
             }
@@ -200,7 +200,7 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
        << ", #normals: " << normals.size()
        << ", #triangles: " << triangles.size()
        << ", #UVs: " << uvs.size();
-    DLOGI(ss.str());
+    DLOGI(ss.str(), "model", Severity::DET);
 #endif
 
     fclose(fn);

@@ -133,7 +133,7 @@ inline void Scene::add_chunk(const math::i32vec2& coords)
     if(it!=chunks_.end())
     {
         DLOGE("[Scene] Chunk <n>" + std::to_string(chunk->get_index()) + "</n> "
-            + "already loaded. Possible hash collision.");
+            + "already loaded. Possible hash collision.", "scene", Severity::CRIT);
         delete chunk;
         return;
     }

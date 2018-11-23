@@ -16,7 +16,7 @@ ft_(),
 text_shader_(ShaderResource("text.vert;text.frag"))
 {
     if (FT_Init_FreeType(&ft_))
-        DLOGF("[TextRenderer] Could not init FreeType Library.");
+        DLOGF("[TextRenderer] Could not init FreeType Library.", "text", Severity::CRIT);
 
     load_geometry();
 }
@@ -59,7 +59,7 @@ void TextRenderer::load_face(const char* fontname,
     FT_Face face;
     if (FT_New_Face(ft_, filename.c_str(), 0, &face))
     {
-        DLOGE("[TextRenderer] Failed to load font: <p>" + filename + "</p>");
+        DLOGE("[TextRenderer] Failed to load font: <p>" + filename + "</p>", "text", Severity::CRIT);
         return;
     }
 
@@ -75,7 +75,7 @@ void TextRenderer::load_face(const char* fontname,
         // Load character glyph
         if (FT_Load_Char(face, cc, FT_LOAD_RENDER))
         {
-            DLOGW(std::string("[TextRenderer] Failed to load Glyph: \'") + std::to_string(cc) + "\'");
+            DLOGW(std::string("[TextRenderer] Failed to load Glyph: \'") + std::to_string(cc) + "\'", "text", Severity::WARN);
             continue;
         }
         // Generate texture
@@ -119,8 +119,8 @@ void TextRenderer::load_face(const char* fontname,
     set_face(hname);
 
 #ifdef __DEBUG_TEXT__
-    DLOGN("[TextRenderer] New face: <n>" + std::string(fontname) + "</n>");
-    DLOGI("from file: <p>" + filename + "</p>");
+    DLOGN("[TextRenderer] New face: <n>" + std::string(fontname) + "</n>", "text", Severity::LOW);
+    DLOGI("from file: <p>" + filename + "</p>", "text", Severity::LOW);
 #endif
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4); // Restore byte-alignment state

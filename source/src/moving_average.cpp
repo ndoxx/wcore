@@ -70,11 +70,11 @@ FinalStatistics MovingAverage::get_stats() const
 
 void FinalStatistics::debug_print(float scale, const std::string& unit)
 {
-    DLOGI("Mean value:    <v>" + std::to_string(mean*scale)    + "</v>" + unit);
-    DLOGI("Standard dev:  <w>" + std::to_string(std*scale)     + "</w>" + unit);
-    DLOGI("Median value:  <w>" + std::to_string(median*scale)  + "</w>" + unit);
-    DLOGI("Minimum value: <g>" + std::to_string(min_val*scale) + "</g>" + unit);
-    DLOGI("Maximum value: <b>" + std::to_string(max_val*scale) + "</b>" + unit);
+    DLOGI("Mean value:    <v>" + std::to_string(mean*scale)    + "</v>" + unit, "default", Severity::LOW);
+    DLOGI("Standard dev:  <w>" + std::to_string(std*scale)     + "</w>" + unit, "default", Severity::LOW);
+    DLOGI("Median value:  <w>" + std::to_string(median*scale)  + "</w>" + unit, "default", Severity::LOW);
+    DLOGI("Minimum value: <g>" + std::to_string(min_val*scale) + "</g>" + unit, "default", Severity::LOW);
+    DLOGI("Maximum value: <b>" + std::to_string(max_val*scale) + "</b>" + unit, "default", Severity::LOW);
 }
 
 }

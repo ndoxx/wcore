@@ -51,10 +51,10 @@ Chunk::~Chunk()
         delete cr;
 
 #ifdef __DEBUG_CHUNKS__
-    DLOGN("[Chunk] Destroying chunk: <n>" + std::to_string(index_) + "</n>.");
+    DLOGN("[Chunk] Destroying chunk: <n>" + std::to_string(index_) + "</n>.", "chunk", Severity::LOW);
 #endif
 #ifdef __PROFILING_CHUNKS__
-    DLOGN("[Chunk] <n>" + std::to_string(index_) + "</n> statistics:");
+    DLOGN("[Chunk] <n>" + std::to_string(index_) + "</n> statistics:", "chunk", Severity::LOW);
     dbg_show_statistics();
 #endif
 }
@@ -147,7 +147,7 @@ void Chunk::traverse_models(ModelVisitor func,
         }
         else
         {
-            DLOGW("[Scene] Traverse order not supported for opaque models.");
+            DLOGW("[Scene] Traverse order not supported for opaque models.", "chunk", Severity::WARN);
         }
     }
     else if(model_cat == wcore::MODEL_CATEGORY::TRANSPARENT)
@@ -168,7 +168,7 @@ void Chunk::traverse_models(ModelVisitor func,
         }
         else
         {
-            DLOGW("[Scene] Traverse order not supported for transparent models.");
+            DLOGW("[Scene] Traverse order not supported for transparent models.", "chunk", Severity::WARN);
         }
     }
 
@@ -223,7 +223,7 @@ void Chunk::load_geometry()
         ss << "<i>Submitting</i> model: nv=" << pmodel->get_mesh().get_nv()
            << "\tni=" << pmodel->get_mesh().get_ni()
            << "\tne=" << pmodel->get_mesh().get_n_elements();
-        DLOG(ss.str());
+        DLOG(ss.str(), "chunk", Severity::DET);
 #endif //__DEBUG_MODEL_VERBOSE__
         buffer_unit_.submit(pmodel->get_mesh());
     }

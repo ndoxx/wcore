@@ -90,8 +90,8 @@ void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* root)
 #ifdef __DEBUG__
             if(material_descriptors_.find(H_(material_name.c_str())) != material_descriptors_.end())
             {
-                DLOGW("[MaterialFactory] Material redefinition or collision: ");
-                DLOGI(material_name);
+                DLOGW("[MaterialFactory] Material redefinition or collision: ", "material", Severity::WARN);
+                DLOGI(material_name, "material", Severity::WARN);
             }
 #endif
 

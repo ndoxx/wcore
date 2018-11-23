@@ -34,8 +34,8 @@ static void glfw_error_callback(int error, const char* description)
 {
     std::stringstream ss;
     ss << "GLFW error code <v>" << error << "</v> :";
-    DLOGE(ss.str());
-    DLOGI(description);
+    DLOGE(ss.str(), "core", Severity::CRIT);
+    DLOGI(description, "core", Severity::CRIT);
 }
 
 GLContext::GLContext():
@@ -48,7 +48,7 @@ render_editor_GUI_(false)
     // Initialise GLFW
     if( !glfwInit() )
     {
-        DLOGE("Failed to initialize GLFW.");
+        DLOGE("Failed to initialize GLFW.", "core", Severity::CRIT);
         throw std::runtime_error("Failed to initialize GLFW.");
     }
     glGetError(); // Hide glfwInit's errors
@@ -66,7 +66,7 @@ render_editor_GUI_(false)
 
     if( window_ == NULL )
     {
-        DLOGE("Failed to open GLFW window.");
+        DLOGE("Failed to open GLFW window.", "core", Severity::CRIT);
         throw std::runtime_error("Failed to open GLFW window.");
     }
 
@@ -79,7 +79,7 @@ render_editor_GUI_(false)
     // Initialize GLEW
     glewExperimental = GL_TRUE; // If not set, segfault at glGenVertexArrays()
     if (glewInit() != GLEW_OK) {
-        DLOGE("Failed to initialize GLEW.");
+        DLOGE("Failed to initialize GLEW.", "core", Severity::CRIT);
         throw std::runtime_error("Failed to initialize GLEW.");
     }
     glGetError();   // Mask an unavoidable error caused by GLEW
@@ -239,7 +239,7 @@ int GLContext::main_loop()
     {
 #ifdef __PROFILING_GAMELOOP__
             std::cout << "\033[8A"; // Set cursor five lines up
-            DLOGT("-------- Game loop start --------");
+            DLOGT("-------- Game loop start --------", "core", Severity::LOW);
 #endif //__PROFILING_GAMELOOP__
 
         // Restart timers
@@ -331,6 +331,7 @@ int GLContext::main_loop()
         DINFO.display(H_("sdiRender"), std::string("Render: ") + std::to_string(1e3*dt_profile_render)
                       + std::string("ms"));
 
+/*
 #ifdef __PROFILING_GAMELOOP_VERBOSE__
         DLOGR(std::string("\033[2KFrame:\t") + std::to_string(1e6*dt) + std::string("µs"));
         DLOGR(std::string("\033[2KActive:\t") + std::to_string(1e6*active_time)
@@ -344,6 +345,8 @@ int GLContext::main_loop()
         DLOGR(dbg_display_sub_duration("Events", dt_profile_events, dt));
         DLOGR(dbg_display_sub_duration("BufSwp", dt_profile_bufswp, dt));
 #endif //__PROFILING_GAMELOOP_VERBOSE__
+*/
+
 #endif //__PROFILING_GAMELOOP__
 #ifdef __PROFILING_STOP_AFTER_X_SAMPLES__
         if(++n_frames > 1200) break;
@@ -353,11 +356,11 @@ int GLContext::main_loop()
           glfwWindowShouldClose(window_) == 0 );
 
 #ifdef __PROFILING_GAMELOOP__
-    DLOGT("-------- Game loop stop ---------");
+    DLOGT("-------- Game loop stop ---------", "core", Severity::LOW);
     FinalStatistics render_stats = render_time_fifo.get_stats();
     uint32_t n_iter = render_time_fifo.get_size();
 
-    DLOGN("Render time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ");
+    DLOGN("Render time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::DET);
     render_stats.debug_print(1e6, "µs");
 #endif //__PROFILING_GAMELOOP__
 

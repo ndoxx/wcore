@@ -32,7 +32,12 @@ int main(int argc, char const *argv[])
              text_verbosity     = 0u,
              input_verbosity    = 0u,
              buffer_verbosity   = 0u,
-             chunk_verbosity    = 0u;
+             chunk_verbosity    = 0u,
+             parsing_verbosity  = 0u,
+             entity_verbosity   = 0u,
+             scene_verbosity    = 0u,
+             core_verbosity     = 0u,
+             io_verbosity       = 0u;
 
     CONFIG.get(H_("root.debug.channel_verbosity.texture"),  texture_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.material"), material_verbosity);
@@ -42,6 +47,11 @@ int main(int argc, char const *argv[])
     CONFIG.get(H_("root.debug.channel_verbosity.input"),    input_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.buffer"),   buffer_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.chunk"),    chunk_verbosity);
+    CONFIG.get(H_("root.debug.channel_verbosity.parsing"),  parsing_verbosity);
+    CONFIG.get(H_("root.debug.channel_verbosity.entity"),   entity_verbosity);
+    CONFIG.get(H_("root.debug.channel_verbosity.scene"),    scene_verbosity);
+    CONFIG.get(H_("root.debug.channel_verbosity.core"),     core_verbosity);
+    CONFIG.get(H_("root.debug.channel_verbosity.io"),       io_verbosity);
 
     dbg::LOG.register_channel("texture",  texture_verbosity);
     dbg::LOG.register_channel("material", material_verbosity);
@@ -51,6 +61,11 @@ int main(int argc, char const *argv[])
     dbg::LOG.register_channel("input",    input_verbosity);
     dbg::LOG.register_channel("buffer",   buffer_verbosity);
     dbg::LOG.register_channel("chunk",    chunk_verbosity);
+    dbg::LOG.register_channel("parsing",  parsing_verbosity);
+    dbg::LOG.register_channel("entity",   entity_verbosity);
+    dbg::LOG.register_channel("scene",    scene_verbosity);
+    dbg::LOG.register_channel("core",     core_verbosity);
+    dbg::LOG.register_channel("io",       io_verbosity);
 #endif
 
     // Initialize context
@@ -89,8 +104,8 @@ int main(int argc, char const *argv[])
     // LOADING
     context._setup([&](GLFWwindow* window)
     {
-        // scene_loader.load_file_xml("../res/xml/crystal_scene.xml");
-        scene_loader.load_file_xml("../res/xml/tree_scene.xml");
+        scene_loader.load_file_xml("../res/xml/crystal_scene.xml");
+        // scene_loader.load_file_xml("../res/xml/tree_scene.xml");
         scene_loader.load_global(daylight);
         chunk_manager.init();
         // Map key bindings
@@ -115,9 +130,9 @@ int main(int argc, char const *argv[])
         auto error = GFX::get_error();
         std::string msg = std::string("post _setup() glGetError: ") + std::to_string(error);
         if(error)
-            DLOGB(msg);
+            DLOGB(msg, "core", Severity::CRIT);
         else
-            DLOGG(msg);
+            DLOGG(msg, "core", Severity::LOW);
 #endif
     });
 
