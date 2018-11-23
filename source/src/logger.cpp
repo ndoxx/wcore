@@ -60,6 +60,8 @@ static std::map<MsgType, std::string> ICON =
     {MsgType::BAD,       "\033[1;48;2;50;10;10m \u2054 \033[1;49m "},
 };
 
+static const uint32_t CHANNEL_STYLE_PALETTE = 3u;
+
 Logger::Logger()
 : Listener()
 , file_mode_(FileMode::OVERWRITE)
@@ -150,11 +152,18 @@ void Logger::register_channel(const char* name, uint32_t verbosity)
 {
     // Register channel name, hash and verbosity
     hashstr_t hname = H_(name);
+
+    // Detect duplicate channel or hash collision
+    auto it = channels_.find(hname);
+    if(it != channels_.end())
+        operator ()("[Logger] Duplicate channel or collision detected: " + it->second,
+                    MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, HS_("default"));
+
     verbosity_.insert(std::make_pair(hname, verbosity));
     channels_.insert(std::make_pair(hname, std::string(name)));
 
     // Generate a random color style for channel name display
-    math::i32vec3 bgcolor = color::random_color_uint(hname, 1.f, 0.4f);
+    math::i32vec3 bgcolor = color::random_color_uint(hname+CHANNEL_STYLE_PALETTE, 1.f, 0.4f);
     std::ostringstream ss;
     ss << "\033[1;48;2;" << bgcolor.r() << ";" << bgcolor.g() << ";" << bgcolor.b() << "m";
     chanstyles_.insert(std::make_pair(hname, ss.str()));

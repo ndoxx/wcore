@@ -220,10 +220,10 @@ void Chunk::load_geometry()
     {
 #ifdef __DEBUG_MODEL_VERBOSE__
         std::stringstream ss;
-        ss << "<i>Submitting</i> model: nv=" << pmodel->get_mesh().get_nv()
+        ss << "[Chunk] <i>Submitting</i> model: nv=" << pmodel->get_mesh().get_nv()
            << "\tni=" << pmodel->get_mesh().get_ni()
            << "\tne=" << pmodel->get_mesh().get_n_elements();
-        DLOG(ss.str(), "chunk", Severity::DET);
+        DLOG(ss.str(), "model", Severity::DET);
 #endif //__DEBUG_MODEL_VERBOSE__
         buffer_unit_.submit(pmodel->get_mesh());
     }

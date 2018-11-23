@@ -71,7 +71,7 @@ math::vec3 random_color(unsigned long long seed,
                         float saturation,
                         float lightness)
 {
-    std::default_random_engine generator(seed);
+    std::mt19937 generator(seed);
     std::uniform_real_distribution<float> distribution(0.f,1.f);
 
     math::vec3 hsl(distribution(generator),

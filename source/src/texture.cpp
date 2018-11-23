@@ -190,7 +190,8 @@ ID_(++Ninst)
             #if __DEBUG_TEXTURE_VERBOSE__
                 DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
                 if(dbg::LOG.get_channel_verbosity(HS_("texture")) == 3u)
-                    std::cout << *px_bufs[ii] << std::endl;
+                    px_bufs[ii]->debug_display();
+                    //std::cout << *px_bufs[ii] << std::endl;
             #endif
         }
         catch(const std::exception& e)

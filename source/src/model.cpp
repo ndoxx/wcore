@@ -21,7 +21,7 @@ is_dynamic_(false),
 shadow_cull_face_(0)
 {
     #ifdef __DEBUG_MODEL_VERBOSE__
-        DLOGN("[MODEL] New model.", "model", Severity::LOW);
+        DLOGN("[Model] New static model.", "model", Severity::LOW);
         std::stringstream ss;
         ss << "Mesh: n_indices=" << pmesh->get_ni() << " n_vertices="
            << pmesh->get_nv();
@@ -41,7 +41,7 @@ pmaterial_(material),
 trans_()
 {
     #ifdef __DEBUG_MODEL_VERBOSE__
-        DLOGN("[MODEL] New line model.", "model", Severity::LOW);
+        DLOGN("[LineModel] New static line model.", "model", Severity::LOW);
         std::stringstream ss;
         ss << "Mesh: n_indices=" << pmesh->get_ni() << " n_vertices="
            << pmesh->get_nv();

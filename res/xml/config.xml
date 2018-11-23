@@ -29,19 +29,19 @@
     </input>
     <debug>
         <channel_verbosity>
-            <uint name="texture"  value="3"/>
-            <uint name="material" value="3"/>
-            <uint name="model"    value="3"/>
-            <uint name="shader"   value="3"/>
-            <uint name="text"     value="0"/>
+            <uint name="texture"  value="1"/>
+            <uint name="material" value="1"/>
+            <uint name="model"    value="1"/>
+            <uint name="shader"   value="1"/>
+            <uint name="text"     value="1"/>
             <uint name="input"    value="1"/>
-            <uint name="buffer"   value="3"/>
-            <uint name="chunk"    value="3"/>
-            <uint name="parsing"  value="3"/>
-            <uint name="entity"   value="3"/>
-            <uint name="scene"    value="3"/>
-            <uint name="core"     value="3"/>
-            <uint name="io"       value="3"/>
+            <uint name="buffer"   value="1"/>
+            <uint name="chunk"    value="1"/>
+            <uint name="parsing"  value="1"/>
+            <uint name="entity"   value="1"/>
+            <uint name="scene"    value="1"/>
+            <uint name="core"     value="1"/>
+            <uint name="io"       value="1"/>
         </channel_verbosity>
     </debug>
 </Config>

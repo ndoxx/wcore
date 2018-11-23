@@ -1,4 +1,5 @@
 #include "pixel_buffer.h"
+#include "logger.h"
 
 namespace wcore
 {
@@ -46,5 +47,33 @@ PixelBuffer::~PixelBuffer()
     if(pp_rows_!=nullptr) delete [] pp_rows_;
     delete [] p_data_;
 }
+
+void PixelBuffer::debug_display()
+{
+    std::stringstream stream;
+    stream << "WxH= " << width_ << "x" << height_
+           << " -> aspect ratio= " << aspect_ratio_;
+    DLOGI(stream.str(), "texture", Severity::DET);
+    stream.str("");
+
+    stream << channels_ << " color channels, bitdepth= " << bit_depth_;
+    DLOGI(stream.str(), "texture", Severity::DET);
+    stream.str("");
+
+    stream << "stride= " << stride_ << " total size= " << size_/1024.0f << "kB";
+    DLOGI(stream.str(), "texture", Severity::DET);
+    stream.str("");
+
+    stream << "first 10 bytes: [";
+    for(unsigned short ii=0; ii<10; ++ii)
+    {
+        stream << std::hex << (int)p_data_[ii];
+        stream << " ";
+    }
+    stream << "...]" << std::dec;
+    DLOGI(stream.str(), "texture", Severity::DET);
+    stream.str("");
+}
+
 
 }

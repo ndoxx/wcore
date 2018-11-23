@@ -41,6 +41,9 @@ public:
 
     inline unsigned char& operator[](uint32_t index) { return p_data_[index]; }
 
+#ifdef __DEBUG__
+    void debug_display();
+
     friend std::ostream& operator<<(std::ostream& stream, const PixelBuffer& px_buf)
     {
         stream << "\t|WxH= " << px_buf.width_ << "x" << px_buf.height_
@@ -56,6 +59,7 @@ public:
         stream << "...]" << std::dec;
         return stream;
     }
+#endif
 };
 
 }
