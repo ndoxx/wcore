@@ -111,6 +111,19 @@ private:
     }
 };
 
+struct LogChannel
+{
+public:
+    LogChannel(std::string&& name,
+               std::array<float,3>&& color,
+               uint32_t verbosity);
+
+    std::string name;
+    std::string style;
+    uint32_t verbosity;
+    std::array<float,3> color;
+};
+
 class Logger : public Singleton<Logger>, public Listener
 {
 private:
@@ -118,13 +131,8 @@ private:
     bool widget_scroll_required_;      // When new message logged, widget needs to scroll down
     LogMessage::TimePoint start_time_; // Start time for timestamp handling
 
-    std::vector<LogMessage> messages_;            // List of logged messages
-    std::map<hashstr_t, uint32_t> verbosity_;     // Map of channels verbosity levels
-    std::map<hashstr_t, std::string> channels_;   // Map of channel names
-    std::map<hashstr_t, std::string> chanstyles_; // Map of channel syles
-#ifndef __DISABLE_EDITOR__
-    std::map<hashstr_t, std::array<float,3>> chancolors_;
-#endif
+    std::vector<LogMessage> messages_;         // List of logged messages
+    std::map<hashstr_t, LogChannel> channels_; // Map of debugging channels
 
     // Singleton boilerplate
     Logger (const Logger&)=delete;
@@ -149,22 +157,22 @@ public:
     // Change channel verbosity
     inline void set_channel_verbosity(hashstr_t name, uint32_t verbosity)
     {
-        verbosity_.at(name) = std::min(verbosity, 3u);
+        channels_.at(name).verbosity = std::min(verbosity, 3u);
     }
     // Mute channel by setting its verbosity to 0
     inline void mute_channel(hashstr_t name)
     {
-        verbosity_.at(name) = 0;
+        channels_.at(name).verbosity = 0;
     }
     // Get channel verbosity by name
     inline uint32_t get_channel_verbosity(hashstr_t name) const
     {
-        return verbosity_.at(name);
+        return channels_.at(name).verbosity;
     }
     // Get channel verbosity reference
     inline uint32_t& get_channel_verbosity_nc(hashstr_t name)
     {
-        return verbosity_.at(name);
+        return channels_.at(name).verbosity;
     }
 
     // Actual functions used for logging (functor style)

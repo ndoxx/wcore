@@ -62,6 +62,18 @@ static std::map<MsgType, std::string> ICON =
 
 static const uint32_t CHANNEL_STYLE_PALETTE = 3u;
 
+LogChannel::LogChannel(std::string&& name,
+                       std::array<float,3>&& color,
+                       uint32_t verbosity):
+name(std::move(name)),
+verbosity(verbosity),
+color(std::move(color))
+{
+    std::ostringstream ss;
+    ss << "\033[1;48;2;" << uint32_t(color[0]*255) << ";" << uint32_t(color[1]*255) << ";" << uint32_t(color[2]*255) << "m";
+    style = ss.str();
+}
+
 Logger::Logger()
 : Listener()
 , file_mode_(FileMode::OVERWRITE)
@@ -127,23 +139,27 @@ void Logger::print_console(const LogMessage& log_message)
     MsgType type = log_message.type_;
     float timestamp = std::chrono::duration_cast<std::chrono::duration<float>>(log_message.timestamp_).count();
 
-    // Set style
+    // Stylized display
+    auto&& channel = channels_.at(log_message.channel_);
     std::cout << "\033[1;38;2;0;100;0m["
               << std::setprecision(6) << std::fixed
               << timestamp << "]";
-    std::cout << "\033[1;38;2;10;10;10m" << chanstyles_.at(log_message.channel_)
-              << "[" << channels_.at(log_message.channel_).substr(0,3) << "]\033[0m ";
+    std::cout << "\033[1;38;2;10;10;10m" << channel.style
+              << "[" << channel.name.substr(0,3) << "]\033[0m ";
     std::cout << STYLES[type] << ICON[type];
 
+    // Display raw message and exit
     if(type == MsgType::RAW || type == MsgType::TRACK)
     {
         std::cout << message << "\033[0m" << std::endl;
         return;
     }
 
+    // Parse color tags within message string
     std::string final;
     parse_tags(message, final, type);
 
+    // Output message
     std::cout << final << "\033[0m" << std::endl;
     widget_scroll_required_ = true;
 }
@@ -156,22 +172,18 @@ void Logger::register_channel(const char* name, uint32_t verbosity)
     // Detect duplicate channel or hash collision
     auto it = channels_.find(hname);
     if(it != channels_.end())
-        operator ()("[Logger] Duplicate channel or collision detected: " + it->second,
+    {
+        operator ()("[Logger] Ignoring duplicate channel or collision detected: " + it->second.name,
                     MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, HS_("default"));
-
-    verbosity_.insert(std::make_pair(hname, verbosity));
-    channels_.insert(std::make_pair(hname, std::string(name)));
+        return;
+    }
 
     // Generate a random color style for channel name display
     math::vec3 bgcolor_f = color::random_color(hname+CHANNEL_STYLE_PALETTE, 1.f, 0.4f);
-#ifndef __DISABLE_EDITOR__
-    chancolors_.insert(std::make_pair(hname, bgcolor_f.to_array()));
-#endif
 
-    math::i32vec3 bgcolor = color::rgbfloat2rgbuint(bgcolor_f);
-    std::ostringstream ss;
-    ss << "\033[1;48;2;" << bgcolor.r() << ";" << bgcolor.g() << ";" << bgcolor.b() << "m";
-    chanstyles_.insert(std::make_pair(hname, ss.str()));
+    // Add channel
+    channels_.insert(std::make_pair(hname,
+                     LogChannel(std::string(name), bgcolor_f.to_array(), verbosity)));
 }
 
 void Logger::operator ()(const std::string& message,
@@ -198,9 +210,11 @@ void Logger::operator ()(std::string&& message,
 
 void Logger::operator ()(const LogMessage& log_message)
 {
+    // Push message if it needs to be output to a file
     if(((uint8_t)log_message.mode_ & (uint8_t)LogMode::TEXTFILE) != 0)
         messages_.push_back(log_message);
 
+    // Display message on console if required and verbosity level is sufficient
     if(((uint8_t)log_message.mode_ & (uint8_t)LogMode::CONSOLE) != 0)
     {
         uint32_t cur_verbosity = get_channel_verbosity(log_message.channel_);
@@ -222,11 +236,11 @@ void Logger::generate_widget()
     {
         ImGui::Text("Verbosity control");
         // Display a verbosity control slider for each channel
-        for(auto&& [key, name]: channels_)
+        for(auto&& [key, channel]: channels_)
         {
-            auto&& cc = chancolors_.at(key);
+            auto&& cc = channel.color;
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(cc[0],cc[1],cc[2],1));
-            ImGui::SliderInt(name.c_str(), (int*)&get_channel_verbosity_nc(key), 0u, 3u);
+            ImGui::SliderInt(channel.name.c_str(), (int*)&get_channel_verbosity_nc(key), 0u, 3u);
             ImGui::PopStyleColor();
         }
     }
