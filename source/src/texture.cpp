@@ -96,7 +96,7 @@ static void handle_mipmap(bool bound_tex_has_mipmap, GLenum target)
     }
 }
 
-#ifdef __DEBUG_TEXTURE__
+#ifdef __DEBUG__
 void Texture::debug_print_rmap_bindings()
 {
     DLOG("[Texture] Displaying binding states: ", "texture", Severity::DET);
@@ -112,7 +112,7 @@ void Texture::debug_print_rmap_bindings()
 
 void Texture::register_named_texture(hash_t name, pTexture ptex)
 {
-    #if __DEBUG_TEXTURE_VERBOSE__
+    #if __DEBUG__
     {
         std::stringstream ss;
         ss << "[Texture] Registering new named texture: "
@@ -131,7 +131,7 @@ void Texture::register_named_texture(hash_t name, pTexture ptex)
     }
     else
     {
-        #if __DEBUG_TEXTURE_VERBOSE__
+        #if __DEBUG__
             std::stringstream ss;
             ss << "[Texture] Ignored duplicate named texture registration for: <n>" << name << "</n>";
             DLOGW(ss.str(), "texture", Severity::WARN);
@@ -187,7 +187,7 @@ ID_(++Ninst)
         {
             px_bufs[ii] = PngLoader::Instance().load_png((TEX_IMAGE_PATH + descriptor.locations.at(key)).c_str());
             data[ii] = px_bufs[ii]->get_data_pointer();
-            #if __DEBUG_TEXTURE_VERBOSE__
+            #if __DEBUG__
                 DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
                 if(dbg::LOG.get_channel_verbosity(HS_("texture")) == 3u)
                     px_bufs[ii]->debug_display();
@@ -416,7 +416,7 @@ Texture::Texture(const TextureDescriptor& descriptor):
 resourceID_(descriptor.resource_id),
 units_(descriptor.units)
 {
-    #if __DEBUG_TEXTURE_VERBOSE__
+    #if __DEBUG__
     {
         std::stringstream ss;
         ss << "[Texture] New texture from asset: <n>" << resourceID_ << "</n>";
@@ -437,7 +437,7 @@ units_(descriptor.units)
             unit_indices_[key] = uniform_sampler_names_.size();
             uniform_sampler_names_.push_back(sampler_name);
 
-            #if __DEBUG_TEXTURE_VERBOSE__
+            #if __DEBUG__
                 if(!cache_exists)
                 {
                     std::stringstream ss;
@@ -453,7 +453,7 @@ units_(descriptor.units)
     if(cache_exists)
     {
         internal_ = it->second;
-        #if __DEBUG_TEXTURE_VERBOSE__
+        #if __DEBUG__
             DLOGI("<i>Using cache.</i>", "texture", Severity::DET);
         #endif
     }
@@ -477,7 +477,7 @@ Texture::~Texture()
         if(resourceID_ != H_(""))
         {
             RESOURCE_MAP_.erase(resourceID_);
-            #ifdef __DEBUG_TEXTURE_VERBOSE__
+            #ifdef __DEBUG__
             std::stringstream ss;
             ss << "[Texture] Destroying cached texture: <n>" << resourceID_ << "</n>";
             DLOGN(ss.str(), "texture", Severity::LOW);
@@ -492,7 +492,7 @@ void Texture::bind(GLuint unit) const
     glActiveTexture(GL_TEXTURE0 + unit);
     internal_->bind(unit);
 
-#ifdef __DEBUG_TEXTURE__
+#ifdef __DEBUG__
     internal_->set_binding_state(unit, unit);
 #endif
 }
@@ -504,7 +504,7 @@ void Texture::bind(GLuint unit, uint32_t index) const
     glActiveTexture(GL_TEXTURE0 + unit);
     internal_->bind(index);
 
-#ifdef __DEBUG_TEXTURE__
+#ifdef __DEBUG__
     internal_->set_binding_state(index, unit);
 #endif
 }
@@ -521,7 +521,7 @@ void Texture::unbind() const
     {
         glActiveTexture(GL_TEXTURE0 + ii);
         glBindTexture(GL_TEXTURE_2D, 0);
-#ifdef __DEBUG_TEXTURE__
+#ifdef __DEBUG__
         internal_->set_binding_state(ii, -1);
 #endif
     }

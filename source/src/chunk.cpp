@@ -50,7 +50,7 @@ Chunk::~Chunk()
     for(ConstantRotator* cr: constant_rotators_)
         delete cr;
 
-#ifdef __DEBUG_CHUNKS__
+#ifdef __DEBUG__
     DLOGN("[Chunk] Destroying chunk: <n>" + std::to_string(index_) + "</n>.", "chunk", Severity::LOW);
 #endif
 #ifdef __PROFILING_CHUNKS__
@@ -218,13 +218,13 @@ void Chunk::load_geometry()
     // Submit models mesh to buffer unit then upload to OpenGL
     for(pModel pmodel: models_)
     {
-#ifdef __DEBUG_MODEL_VERBOSE__
+#ifdef __DEBUG__
         std::stringstream ss;
         ss << "[Chunk] <i>Submitting</i> model: nv=" << pmodel->get_mesh().get_nv()
            << "\tni=" << pmodel->get_mesh().get_ni()
            << "\tne=" << pmodel->get_mesh().get_n_elements();
         DLOG(ss.str(), "model", Severity::DET);
-#endif //__DEBUG_MODEL_VERBOSE__
+#endif //__DEBUG__
         buffer_unit_.submit(pmodel->get_mesh());
     }
     buffer_unit_.submit(terrain_->get_mesh());

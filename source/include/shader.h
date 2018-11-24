@@ -59,7 +59,7 @@ private:
 
     static std::vector<std::string> global_defines_;
 
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
     std::string name_;
     std::string glsl_version_;
     static uint32_t instance_count_;

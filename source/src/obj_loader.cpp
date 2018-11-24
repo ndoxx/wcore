@@ -49,7 +49,7 @@ static char* trim_whitespaces(char* str)
 #define MAXLINE 512
 SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
 {
-#ifdef __DEBUG_MODEL__
+#ifdef __DEBUG__
     DLOGN("[ObjLoader] Loading obj file: ", "model", Severity::LOW);
     DLOGI(objfile, "model", Severity::LOW);
 #endif
@@ -194,7 +194,7 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
             for(uint32_t jj=0; jj<3; ++jj)
                 triangles[ii].uvs[jj] = uvs[uvMap[ii][jj]];
 
-#ifdef __DEBUG_MODEL__
+#ifdef __DEBUG__
     std::stringstream ss;
     ss << "#vertices: " << positions.size()
        << ", #normals: " << normals.size()

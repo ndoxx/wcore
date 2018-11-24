@@ -118,7 +118,7 @@ void TextRenderer::load_face(const char* fontname,
 
     set_face(hname);
 
-#ifdef __DEBUG_TEXT__
+#ifdef __DEBUG__
     DLOGN("[TextRenderer] New face: <n>" + std::string(fontname) + "</n>", "text", Severity::LOW);
     DLOGI("from file: <p>" + filename + "</p>", "text", Severity::LOW);
 #endif

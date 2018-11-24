@@ -74,7 +74,7 @@ void InputHandler::import_key_bindings()
             std::string str_desc;
             if(xml::parse_attribute(kb, "description", str_desc))
             {
-#ifdef __DEBUG_KB__
+#ifdef __DEBUG__
                 std::stringstream ss;
                 ss << "[<i>" << ((trigger==GLFW_PRESS)?"PRESS":"RELEASE")
                    << "</i>] <n>" << str_key << "</n> -> " << str_desc;
@@ -101,7 +101,7 @@ void InputHandler::set_key_binding(hash_t name,
     auto it = key_bindings_.find(name);
     if(it != key_bindings_.end())
     {
-#ifdef __DEBUG_KB__
+#ifdef __DEBUG__
         std::stringstream ss;
         ss << "[InputHandler] Ignoring duplicate key binding:"
            << "<n>" << name << "</n>";
@@ -151,7 +151,7 @@ void InputHandler::register_action(hash_t binding_name,
         action_map_.insert(std::make_pair(binding_name, Action));
     else
     {
-#ifdef __DEBUG_KB__
+#ifdef __DEBUG__
         std::stringstream ss;
         ss << "[InputHandler] Ignoring unknown key binding:"
            << "<n>" << binding_name << "</n>";

@@ -28,6 +28,8 @@ namespace wcore
 
 #ifdef __PROFILING_GAMELOOP__
     static MovingAverage render_time_fifo(1000);
+    static MovingAverage update_time_fifo(1000);
+    static MovingAverage idle_time_fifo(1000);
 #endif
 
 static void glfw_error_callback(int error, const char* description)
@@ -231,18 +233,9 @@ int GLContext::main_loop()
 #endif //__PROFILING_STOP_AFTER_X_SAMPLES__
 
     setup_func_(window_);
-/*
-#ifdef __PROFILING_GAMELOOP__
-    std::cout << "\n\n\n\n\n\n\n\n";  // Reserve 5 lines in terminal for profiling report
-#endif
-*/
+
     do
     {
-#ifdef __PROFILING_GAMELOOP__
-            //std::cout << "\033[8A"; // Set cursor five lines up
-            //DLOGT("-------- Game loop start --------", "core", Severity::LOW);
-#endif //__PROFILING_GAMELOOP__
-
         // Restart timers
         frame_clock.restart();
         clock.restart();
@@ -252,12 +245,13 @@ int GLContext::main_loop()
         profile_clock.restart();
 #endif //__PROFILING_GAMELOOP__
         update_func_(window_, dt);
-#ifdef __PROFILING_GAMELOOP_VERBOSE__
+#ifdef __PROFILING_GAMELOOP__
         {
             auto period = profile_clock.get_elapsed_time();
             dt_profile_update = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
+            update_time_fifo.push(dt_profile_update);
         }
-#endif //__PROFILING_GAMELOOP_VERBOSE__
+#endif //__PROFILING_GAMELOOP__
 
         // GUI
 #ifndef __DISABLE_EDITOR__
@@ -296,32 +290,33 @@ int GLContext::main_loop()
 #endif //__PROFILING_GAMELOOP__
         // Swap buffers
         glfwSwapBuffers(window_);
-#ifdef __PROFILING_GAMELOOP_VERBOSE__
+#ifdef __PROFILING_GAMELOOP__
         {
             auto period = profile_clock.get_elapsed_time();
             dt_profile_bufswp = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
         }
-#endif //__PROFILING_GAMELOOP_VERBOSE__
+#endif //__PROFILING_GAMELOOP__
 
 #ifdef __PROFILING_GAMELOOP__
         profile_clock.restart();
 #endif //__PROFILING_GAMELOOP__
         glfwPollEvents();
-#ifdef __PROFILING_GAMELOOP_VERBOSE__
+#ifdef __PROFILING_GAMELOOP__
         {
             auto period = profile_clock.get_elapsed_time();
             dt_profile_events = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
         }
-#endif //__PROFILING_GAMELOOP_VERBOSE__
+#endif //__PROFILING_GAMELOOP__
 
         auto frame_d = clock.restart();
-#ifdef __PROFILING_GAMELOOP_VERBOSE__
-            float active_time = std::chrono::duration_cast<std::chrono::duration<float>>(frame_d).count();
-#endif //__PROFILING_GAMELOOP_VERBOSE__
+#ifdef __PROFILING_GAMELOOP__
+        float active_time = std::chrono::duration_cast<std::chrono::duration<float>>(frame_d).count();
+#endif //__PROFILING_GAMELOOP__
         auto sleep_duration = frame_duration_ns_ - frame_d;
-#ifdef __PROFILING_GAMELOOP_VERBOSE__
-            float sleep_time = std::chrono::duration_cast<std::chrono::duration<float>>(sleep_duration).count();
-#endif //__PROFILING_GAMELOOP_VERBOSE__
+#ifdef __PROFILING_GAMELOOP__
+        float sleep_time = std::chrono::duration_cast<std::chrono::duration<float>>(sleep_duration).count();
+        idle_time_fifo.push(sleep_time);
+#endif //__PROFILING_GAMELOOP__
         std::this_thread::sleep_for(sleep_duration);
 
         frame_d = frame_clock.restart();
@@ -331,22 +326,6 @@ int GLContext::main_loop()
         DINFO.display(H_("sdiFPS"), std::string("FPS: ") + std::to_string(1.0f/dt));
         DINFO.display(H_("sdiRender"), std::string("Render: ") + std::to_string(1e3*dt_profile_render)
                       + std::string("ms"));
-
-/*
-#ifdef __PROFILING_GAMELOOP_VERBOSE__
-        DLOGR(std::string("\033[2KFrame:\t") + std::to_string(1e6*dt) + std::string("µs"));
-        DLOGR(std::string("\033[2KActive:\t") + std::to_string(1e6*active_time)
-            + std::string("µs\t") + std::to_string(100.0f*active_time/dt)
-            + std::string("%"));
-        DLOGR(std::string("\033[2KIdle:\t\t") + std::to_string(1e6*sleep_time)
-            + std::string("µs\t") + std::to_string(100.0f*sleep_time/dt)
-            + std::string("%"));
-        DLOGR(dbg_display_sub_duration("Update", dt_profile_update, dt));
-        DLOGR(dbg_display_sub_duration("Render", dt_profile_render, dt));
-        DLOGR(dbg_display_sub_duration("Events", dt_profile_events, dt));
-        DLOGR(dbg_display_sub_duration("BufSwp", dt_profile_bufswp, dt));
-#endif //__PROFILING_GAMELOOP_VERBOSE__
-*/
 
 #endif //__PROFILING_GAMELOOP__
 #ifdef __PROFILING_STOP_AFTER_X_SAMPLES__
@@ -359,10 +338,18 @@ int GLContext::main_loop()
 #ifdef __PROFILING_GAMELOOP__
     DLOGT("-------- Game loop stop ---------", "core", Severity::LOW);
     FinalStatistics render_stats = render_time_fifo.get_stats();
+    FinalStatistics update_stats = update_time_fifo.get_stats();
+    FinalStatistics idle_stats   = idle_time_fifo.get_stats();
     uint32_t n_iter = render_time_fifo.get_size();
 
     DLOGN("Render time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::DET);
     render_stats.debug_print(1e6, "µs");
+
+    DLOGN("Update time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::DET);
+    update_stats.debug_print(1e6, "µs");
+
+    DLOGN("Idle time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::DET);
+    idle_stats.debug_print(1e6, "µs");
 #endif //__PROFILING_GAMELOOP__
 
     dbg::LOG.write("debug.log");

@@ -128,7 +128,7 @@ public:
 inline void Scene::add_chunk(const math::i32vec2& coords)
 {
     Chunk* chunk = new Chunk(coords);
-#ifdef __DEBUG_CHUNKS__
+#ifdef __DEBUG__
     auto it = chunks_.find(chunk->get_index());
     if(it!=chunks_.end())
     {

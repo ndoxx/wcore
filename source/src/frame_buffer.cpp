@@ -21,7 +21,7 @@ height_(texture.get_height())
     assert(n_textures_ <= 32); // Assert to be sure no buffer overrun should occur
     draw_buffers_ = new GLenum[n_textures_];
 
-    #if __DEBUG_TEXTURE_VERBOSE__
+    #if __DEBUG__
         DLOGN("[FrameBuffer] Initializing as render target.", "buffer", Severity::DET);
         DLOGI("width:  <v>" + std::to_string(width_)  + "</v>", "buffer", Severity::DET);
         DLOGI("height: <v>" + std::to_string(height_) + "</v>", "buffer", Severity::DET);
@@ -49,7 +49,7 @@ height_(texture.get_height())
             glGenFramebuffers(1, &frame_buffer_);
             glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_);
 
-            #if __DEBUG_TEXTURE_VERBOSE__
+            #if __DEBUG__
                 DLOGI("Generated new FBO.", "buffer", Severity::LOW);
             #endif
         }
@@ -119,7 +119,7 @@ height_(texture.get_height())
     }
     else
     {
-        #if __DEBUG_TEXTURE_VERBOSE__
+        #if __DEBUG__
             DLOGI("Framebuffer creation <g>complete</g>.", "buffer", Severity::LOW);
         #endif
         // Save texture indices

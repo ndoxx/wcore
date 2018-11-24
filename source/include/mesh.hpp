@@ -5,7 +5,7 @@
 #include <limits>
 #include <functional>
 
-#ifdef __DEBUG_MODEL__
+#ifdef __DEBUG__
     #include <iostream>
 #endif
 
@@ -164,7 +164,7 @@ public:
         dimensions_ = {xmin, xmax, ymin, ymax, zmin, zmax};
     }
 
-#ifdef __DEBUG_MODEL__
+#ifdef __DEBUG__
     void dbg_display_dimensions()
     {
         std::cout << "xmin: " << dimensions_[0] << " xmax: " << dimensions_[1] << std::endl;

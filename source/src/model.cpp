@@ -20,7 +20,7 @@ frustum_cull_(true),
 is_dynamic_(false),
 shadow_cull_face_(0)
 {
-    #ifdef __DEBUG_MODEL_VERBOSE__
+    #ifdef __DEBUG__
         DLOGN("[Model] New static model.", "model", Severity::LOW);
         std::stringstream ss;
         ss << "Mesh: n_indices=" << pmesh->get_ni() << " n_vertices="
@@ -40,7 +40,7 @@ pmesh_(pmesh),
 pmaterial_(material),
 trans_()
 {
-    #ifdef __DEBUG_MODEL_VERBOSE__
+    #ifdef __DEBUG__
         DLOGN("[LineModel] New static line model.", "model", Severity::LOW);
         std::stringstream ss;
         ss << "Mesh: n_indices=" << pmesh->get_ni() << " n_vertices="

@@ -4700,18 +4700,15 @@ De plus, j'imagine y joindre un système de verbosité (une valeur à 4 niveaux 
 
                           DLOG[E,F]  DLOGW          DLOGx
 
-[ ] __DEBUG_TEXTURE__
-[ ] __DEBUG_TEXTURE_VERBOSE__
-[ ] __DEBUG_MATERIAL_VERBOSE__
-[ ] __DEBUG_MODEL__
-[ ] __DEBUG_MODEL_VERBOSE__
-[ ] __DEBUG_SHADER__
-[ ] __DEBUG_SHADER_VERBOSE__
-[ ] __DEBUG_TEXT__
-[ ] __DEBUG_KB__
-[ ] __DEBUG_SPLINES__
-[ ] __DEBUG_BUFFERS__
-[ ] __PROFILING_GAMELOOP__
-[ ] __PROFILING_GAMELOOP_VERBOSE__
-[ ] __PROFILING_RENDERERS__
-[ ] __DEBUG_CHUNKS__
+[x] __DEBUG_TEXTURE__
+[x] __DEBUG_TEXTURE_VERBOSE__
+[x] __DEBUG_MATERIAL_VERBOSE__
+[x] __DEBUG_MODEL__
+[x] __DEBUG_MODEL_VERBOSE__
+[x] __DEBUG_SHADER__
+[x] __DEBUG_SHADER_VERBOSE__
+[x] __DEBUG_TEXT__
+[x] __DEBUG_KB__
+[x] __DEBUG_SPLINES__
+[x] __DEBUG_BUFFERS__
+[x] __DEBUG_CHUNKS__

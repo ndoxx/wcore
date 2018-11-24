@@ -185,7 +185,7 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
                 // Compute chunk index
                 uint32_t chunk_index = std::hash<i32vec2>{}(i32vec2(xx,yy));
                 // Add/Override reference to patch node in table
-#ifdef __DEBUG_CHUNKS__
+#ifdef __DEBUG__
                 auto it = chunk_patches_.find(chunk_index);
                 if(it!=chunk_patches_.end())
                 {
@@ -268,7 +268,7 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
     auto it = chunk_nodes_.find(chunk_index);
     if(it == chunk_nodes_.end())
     {
-#ifdef __DEBUG_CHUNKS__
+#ifdef __DEBUG__
         DLOGW("[SceneLoader] Ignoring non existing chunk:", "chunk", Severity::WARN);
         std::stringstream ss;
         ss << "at coordinates <v>" << chunk_coords << "</v>";
@@ -278,7 +278,7 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
     }
     else
     {
-#ifdef __DEBUG_CHUNKS__
+#ifdef __DEBUG__
         std::stringstream ss;
         ss << "[SceneLoader] Loading chunk: <n>" << chunk_index << "</n>"
            << " at <v>" << chunk_coords << "</v>";

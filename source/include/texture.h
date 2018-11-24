@@ -116,7 +116,7 @@ public:
     bool operator==(const Texture& texture) const;
     bool operator!=(const Texture& texture) const;
 
-#ifdef __DEBUG_TEXTURE__
+#ifdef __DEBUG__
     // For all cached textures, print their current binding state (id, active texture)
     // Active texture is -1 if unbound
     static void debug_print_rmap_bindings();
@@ -156,7 +156,7 @@ public:
 
     virtual ~TextureInternal();
 
-#ifdef __DEBUG_TEXTURE__
+#ifdef __DEBUG__
     inline void set_binding_state(GLuint texID, int activeTexIndex)
     {
         binding_states_[texID] = activeTexIndex;
@@ -181,7 +181,7 @@ private:
 
     static uint32_t Ninst;
 
-#ifdef __DEBUG_TEXTURE__
+#ifdef __DEBUG__
     // Map of texture binding states for debug purposes
     std::map<GLuint, int> binding_states_;
 #endif

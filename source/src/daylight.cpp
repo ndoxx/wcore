@@ -84,7 +84,7 @@ void DaylightSystem::generate_widget()
 
 void DaylightSystem::debug_export_splines()
 {
-#ifdef __DEBUG_SPLINES__
+#ifdef __DEBUG_EXPORT_SPLINES__
     float nsteps = 100.0f;
     float extrapolation = 0.0f;
     color_interpolator_->dbg_sample("cspline_color.txt", nsteps, extrapolation);

@@ -57,7 +57,7 @@ ShaderResource::ShaderResource(std::string&& resource_str,
         split_string(flags_str, flags, ';');
 }
 
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
 uint32_t Shader::instance_count_ = 0;
 
 void Shader::dbg_show_defines()
@@ -78,7 +78,7 @@ VertexShaderID_(0),
 GeometryShaderID_(0),
 FragmentShaderID_(0)
 {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
     if(++instance_count_ == 1) dbg_show_defines();
     auto const pos_dot = res.vertex_shader.find_last_of('.');
     auto const pos_slh = res.vertex_shader.find_last_of('/');
@@ -89,7 +89,7 @@ FragmentShaderID_(0)
     if(res.vertex_shader.size())
     {
         VertexShaderID_   = compile_shader(res.vertex_shader, GL_VERTEX_SHADER, res.flags);
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         DLOGI("<g>Compiled</g> vertex shader from: <p>" + res.vertex_shader + "</p>", "shader", Severity::DET);
 #endif
     }
@@ -98,7 +98,7 @@ FragmentShaderID_(0)
     if(res.geometry_shader.size())
     {
         GeometryShaderID_ = compile_shader(res.geometry_shader, GL_GEOMETRY_SHADER, res.flags);
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         DLOGI("<g>Compiled</g> geometry shader from: <p>" + res.geometry_shader + "</p>", "shader", Severity::DET);
 #endif
     }
@@ -107,14 +107,14 @@ FragmentShaderID_(0)
     if(res.fragment_shader.size())
     {
         FragmentShaderID_ = compile_shader(res.fragment_shader, GL_FRAGMENT_SHADER, res.flags);
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         DLOGI("<g>Compiled</g> fragment shader from: <p>" + res.fragment_shader + "</p>", "shader", Severity::DET);
 #endif
     }
 
     // Link program
     link();
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
     DLOGI("Shader program [" + std::to_string(ProgramID_) + "] linked.", "shader", Severity::LOW);
     program_active_report();
 #endif
@@ -126,7 +126,7 @@ FragmentShaderID_(0)
 
 Shader::~Shader()
 {
-    #ifdef __DEBUG_SHADER_VERBOSE__
+    #ifdef __DEBUG__
         DLOGN("[Shader] Destroying program <z>[" + std::to_string(ProgramID_) + "]</z> <n>" + name_ + "</n>", "shader", Severity::LOW);
     #endif
     glDetachShader(ProgramID_,VertexShaderID_);
@@ -143,7 +143,7 @@ Shader::~Shader()
 
 void Shader::program_active_report()
 {
-    #ifdef __DEBUG_SHADER_VERBOSE__
+    #ifdef __DEBUG__
         // Display active attributes
         GLint active_attribs;
         glGetProgramiv(ProgramID_, GL_ACTIVE_ATTRIBUTES, &active_attribs);
@@ -176,7 +176,7 @@ void Shader::program_active_report()
 
             DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(ii) + "] loc=" + std::to_string(loc), "shader", Severity::DET);
         }
-    #endif // __DEBUG_SHADER_VERBOSE__
+    #endif // __DEBUG__
 }
 
 void Shader::setup_uniform_map()
@@ -207,14 +207,14 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
     file_path += incline.substr(offset, incline.length()-(offset+1));
 
     // Open included file
-#ifdef __DEBUG_SHADER_VERBOSE__
+#ifdef __DEBUG__
     DLOGI("Dependency: <p>" + file_path + "</p>", "shader", Severity::DET);
 #endif
     std::ifstream include_file(file_path);
 
     if(!include_file.is_open())
     {
-#ifdef __DEBUG_SHADER_VERBOSE__
+#ifdef __DEBUG__
         DLOGW("Unable to open file, skipping.", "shader", Severity::WARN);
 #endif
         return;
@@ -234,13 +234,13 @@ void Shader::parse_version(const std::string& line, std::string& shader_source)
     const char* verStr = "#version";
     if(line.substr(0,sizeof(verStr)).compare(verStr))
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         DLOGW("Shader does not start with <i>#version</i> directive.", "shader", Severity::WARN);
 #endif
         return;
     }
 
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
     uint32_t offset = sizeof(verStr) + 1;
     glsl_version_ = line.substr(offset, line.length()-offset);
     DLOGI("<i>#version</i> <v>" + glsl_version_ + "</v>", "shader", Severity::DET);
@@ -389,7 +389,7 @@ void Shader::program_error_report()
     free(log);
 }
 
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
 static inline void warn_unknown_uniform(const std::string& shaderName, hash_t name)
 {
     std::stringstream ss;
@@ -411,7 +411,7 @@ bool Shader::send_uniform<bool>(hash_t name, const bool& value) const
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -427,7 +427,7 @@ bool Shader::send_uniform<float>(hash_t name, const float& value) const
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -443,7 +443,7 @@ bool Shader::send_uniform<int>(hash_t name, const int& value) const
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -459,7 +459,7 @@ bool Shader::send_uniform<uint32_t>(hash_t name, const uint32_t& value) const
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -475,7 +475,7 @@ bool Shader::send_uniform<math::vec2>(hash_t name, const math::vec2& value) cons
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -491,7 +491,7 @@ bool Shader::send_uniform<math::vec3>(hash_t name, const math::vec3& value) cons
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -507,7 +507,7 @@ bool Shader::send_uniform<math::vec4>(hash_t name, const math::vec4& value) cons
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -523,7 +523,7 @@ bool Shader::send_uniform<math::mat2>(hash_t name, const math::mat2& value) cons
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -539,7 +539,7 @@ bool Shader::send_uniform<math::mat3>(hash_t name, const math::mat3& value) cons
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
@@ -555,7 +555,7 @@ bool Shader::send_uniform<math::mat4>(hash_t name, const math::mat4& value) cons
     auto it = uniform_locations_.find(name);
     if(it == uniform_locations_.end())
     {
-#ifdef __DEBUG_SHADER__
+#ifdef __DEBUG__
         warn_unknown_uniform(name_, name);
 #endif
         return false;
