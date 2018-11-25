@@ -1,5 +1,6 @@
 #include "material_factory.h"
 #include "material.h"
+#include "io_utils.h"
 #include "logger.h"
 
 namespace wcore
@@ -17,9 +18,10 @@ std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
     {TextureUnit::ROUGHNESS, "Roughness"}
 };
 
-MaterialFactory::MaterialFactory(const char* filename)
+MaterialFactory::MaterialFactory(const char* xml_file)
 {
-    xml_parser_.load_file_xml(filename);
+    fs::path file_path(io::get_file(H_("root.folders.xml"), xml_file));
+    xml_parser_.load_file_xml(file_path);
     retrieve_asset_descriptions(xml_parser_.get_root());
 }
 

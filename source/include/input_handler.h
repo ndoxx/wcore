@@ -47,7 +47,6 @@ private:
 
 public:
     InputHandler();
-    InputHandler(const char* xml_file);
     ~InputHandler() = default;
 
     inline void lock_mouse()        { mouse_lock_ = true; }

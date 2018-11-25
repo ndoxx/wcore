@@ -45,8 +45,16 @@ void Config::init()
     DLOGI("Self path: <p>" + self_path_.string() + "</p>", "core", Severity::LOW);
     DLOGI("Root path: <p>" + root_path_.string() + "</p>", "core", Severity::LOW);
 
+    conf_path_ = root_path_ / "config";
+    if(!fs::exists(conf_path_))
+    {
+        DLOGE("[Config] Missing 'config' folder in root directory.", "core", Severity::CRIT);
+        return;
+    }
+    DLOGI("Config path: <p>" + conf_path_.string() + "</p>", "core", Severity::LOW);
+
     DLOGN("[Config] Parsing xml configuration file.", "core", Severity::LOW);
-    xml_parser_.load_file_xml(root_path_ / "config.xml");
+    xml_parser_.load_file_xml(conf_path_ / "config.xml");
     retrieve_configuration(xml_parser_.get_root(), "root");
     DLOGES("core", Severity::LOW);
 }

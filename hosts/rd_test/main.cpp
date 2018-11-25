@@ -99,7 +99,7 @@ int main(int argc, char const *argv[])
     updatables.push_back(static_cast<Updatable*>(&chunk_manager));
 
     // User input
-    InputHandler input_handler("../res/xml/w_keybindings.xml");
+    InputHandler input_handler;
     GameClock clock;
     // MessageTracker tracker;
     //tracker.track(H_("k_tg_daysys"), input_handler);

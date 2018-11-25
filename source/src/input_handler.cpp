@@ -3,6 +3,7 @@
 
 #include "xml_utils.hpp"
 #include "input_handler.h"
+#include "io_utils.h"
 #include "logger.h"
 #include "keymap.h"
 
@@ -14,20 +15,15 @@ using namespace rapidxml;
 InputHandler::InputHandler():
 mouse_lock_(true)
 {
-
-}
-
-InputHandler::InputHandler(const char* xml_file):
-xml_parser_(xml_file),
-mouse_lock_(true)
-{
     import_key_bindings();
 }
 
 void InputHandler::import_key_bindings()
 {
-    DLOGS("[InputHandler] Parsing xml file for key bindings.", "parsing", Severity::LOW);
+    DLOGS("[InputHandler] Parsing key bindings.", "input", Severity::LOW);
 
+    fs::path file_path(io::get_file(H_("root.folders.config"), "keybindings.xml"));
+    xml_parser_.load_file_xml(file_path);
 
     for (xml_node<>* cat=xml_parser_.get_root()->first_node("Category");
          cat; cat=cat->next_sibling("Category"))
@@ -90,6 +86,8 @@ void InputHandler::import_key_bindings()
                             repeat);
         }
     }
+
+    DLOGES("input", Severity::LOW);
 }
 
 void InputHandler::set_key_binding(hash_t name,

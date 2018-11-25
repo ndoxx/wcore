@@ -30,6 +30,7 @@ private:
     // Paths
     fs::path self_path_;
     fs::path root_path_;
+    fs::path conf_path_;
 
     XMLParser xml_parser_;
     std::map<hash_t, rapidxml::xml_node<>*> dom_locations_;

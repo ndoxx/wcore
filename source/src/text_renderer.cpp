@@ -4,7 +4,7 @@
 #include "vertex_format.h"
 #include "mesh.hpp"
 #include "globals.h"
-#include "config.h"
+#include "io_utils.h"
 
 namespace wcore
 {
@@ -52,21 +52,9 @@ void TextRenderer::load_face(const char* fontname,
                              uint32_t height,
                              uint32_t width)
 {
-    fs::path file_path;
-    if(!CONFIG.get(H_("root.folders.font"), file_path))
-    {
-        DLOGE("[TextRenderer] Missing font folder config node: root.folders.font.", "text", Severity::CRIT);
-        return;
-    }
-
     std::string font_file(fontname);
     font_file += ".ttf";
-    file_path /= font_file;
-    if(!fs::exists(file_path))
-    {
-        DLOGE("[TextRenderer] Font file not found: <p>" + font_file + "</p>", "text", Severity::CRIT);
-        return;
-    }
+    fs::path file_path(io::get_file(H_("root.folders.font"), font_file));
 
     std::string full_path_str(file_path.string());
 

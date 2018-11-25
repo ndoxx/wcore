@@ -45,7 +45,7 @@ typedef std::shared_ptr<const Light>  pcLight;
 
 SceneLoader::SceneLoader():
 xml_parser_(),
-material_factory_(new MaterialFactory("../res/xml/assets.xml")),
+material_factory_(new MaterialFactory("assets.xml")),
 chunk_size_m_(32),
 lattice_scale_(1.0f),
 texture_scale_(1.0f)

@@ -83,7 +83,8 @@ FragmentShaderID_(0)
     auto const pos_dot = res.vertex_shader.find_last_of('.');
     auto const pos_slh = res.vertex_shader.find_last_of('/');
     name_ = res.vertex_shader.substr(pos_slh+1, pos_dot-pos_slh-1);
-    DLOGS("[Shader] Creating new shader program: <n>" + name_ + "</n>", "shader", Severity::LOW);
+    DLOGS("[Shader] Creating new shader program:", "shader", Severity::LOW);
+    DLOGI("name= <n>" + name_ + "</n>", "shader", Severity::LOW);
 #endif
     // VERTEX SHADER
     if(res.vertex_shader.size())
@@ -121,6 +122,7 @@ FragmentShaderID_(0)
 
     // Register uniform locations
     setup_uniform_map();
+    DLOGES("shader", Severity::LOW);
 }
 
 

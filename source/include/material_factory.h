@@ -19,7 +19,7 @@ private:
     static std::map<TextureUnit, const char*> TEX_SAMPLERS_NODES;
 
 public:
-    MaterialFactory(const char* filename);
+    MaterialFactory(const char* xml_file);
     ~MaterialFactory();
 
     void retrieve_asset_descriptions(rapidxml::xml_node<>* root);

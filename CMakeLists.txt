@@ -14,6 +14,7 @@ set(SRC_MATHS
 
 set(SRC_CORE
     ${wcore_SOURCE_DIR}/source/src/config.cpp
+    ${wcore_SOURCE_DIR}/source/src/io_utils.cpp
     ${wcore_SOURCE_DIR}/source/src/arguments.cpp
     ${wcore_SOURCE_DIR}/source/src/globals.cpp
     ${wcore_SOURCE_DIR}/source/src/informer.cpp
