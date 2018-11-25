@@ -20,7 +20,7 @@ std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
 
 MaterialFactory::MaterialFactory(const char* xml_file)
 {
-    fs::path file_path(io::get_file(H_("root.folders.xml"), xml_file));
+    fs::path file_path(io::get_file(H_("root.folders.level"), xml_file));
     xml_parser_.load_file_xml(file_path);
     retrieve_asset_descriptions(xml_parser_.get_root());
 }

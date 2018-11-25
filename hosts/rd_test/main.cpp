@@ -13,6 +13,7 @@
 //#include "message_tracker.h"
 #include "pipeline.h"
 #include "daylight.h"
+#include "globals.h"
 
 using namespace wcore;
 
@@ -36,7 +37,6 @@ int main(int argc, char const *argv[])
              parsing_verbosity  = 0u,
              entity_verbosity   = 0u,
              scene_verbosity    = 0u,
-             //core_verbosity     = 0u,
              io_verbosity       = 0u,
              profile_verbosity  = 0u;
 
@@ -51,7 +51,6 @@ int main(int argc, char const *argv[])
     CONFIG.get(H_("root.debug.channel_verbosity.parsing"),  parsing_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.entity"),   entity_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.scene"),    scene_verbosity);
-    //CONFIG.get(H_("root.debug.channel_verbosity.core"),     core_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.io"),       io_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.profile"),  profile_verbosity);
 
@@ -66,7 +65,6 @@ int main(int argc, char const *argv[])
     dbg::LOG.register_channel("parsing",  parsing_verbosity);
     dbg::LOG.register_channel("entity",   entity_verbosity);
     dbg::LOG.register_channel("scene",    scene_verbosity);
-    //dbg::LOG.register_channel("core",     core_verbosity);
     dbg::LOG.register_channel("io",       io_verbosity);
     dbg::LOG.register_channel("profile",  profile_verbosity);
 #endif
@@ -107,8 +105,7 @@ int main(int argc, char const *argv[])
     // LOADING
     context._setup([&](GLFWwindow* window)
     {
-        scene_loader.load_file_xml("../res/xml/crystal_scene.xml");
-        // scene_loader.load_file_xml("../res/xml/tree_scene.xml");
+        scene_loader.load_level(GLB.START_LEVEL);
         scene_loader.load_global(daylight);
         chunk_manager.init();
         // Map key bindings

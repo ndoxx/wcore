@@ -3,7 +3,7 @@
     <folders>
         <path name="config"  value="config/"/>
         <path name="log"     value="logs/"/>
-        <path name="xml"     value="res/xml/"/>
+        <path name="level"   value="res/levels/"/>
         <path name="shader"  value="res/shaders/"/>
         <path name="font"    value="res/fonts/"/>
         <path name="texture" value="res/textures/"/>

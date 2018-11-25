@@ -5,6 +5,8 @@
 #include "config.h"
 #include "globals.h"
 
+// MOVE to hosts/rd_test folder
+
 namespace wcore
 {
 
@@ -38,6 +40,13 @@ void parse_program_arguments(int argc, char const *argv[])
         std::size_t xpos = screenSizeStr.find("x");
         GLB.SCR_W = std::stoi(screenSizeStr.substr(0, xpos));
         GLB.SCR_H = std::stoi(screenSizeStr.substr(xpos+1));
+    }
+
+    // Level name specified?
+    const char* levelName = get_cmd_option(argv, argv + argc, "-l");
+    if(levelName)
+    {
+        GLB.START_LEVEL = levelName;
     }
 
     // Fullscreen

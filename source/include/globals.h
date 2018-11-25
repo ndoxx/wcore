@@ -2,6 +2,8 @@
 #define GLOBALS_H
 
 #include <cstdint>
+#include <string>
+
 #include "singleton.hpp"
 
 namespace wcore
@@ -22,6 +24,8 @@ public:
     uint32_t SCR_W    = 1024;
     uint32_t SCR_H    = 768;
     bool     SCR_FULL = false;
+
+    std::string START_LEVEL = "crystal";
 };
 
 #define GLB GlobalData::Instance()

@@ -28,6 +28,7 @@
 #include "daylight.h"
 #include "input_handler.h"
 #include "material_factory.h"
+#include "io_utils.h"
 
 namespace wcore
 {
@@ -58,11 +59,17 @@ SceneLoader::~SceneLoader()
     delete material_factory_;
 }
 
-void SceneLoader::load_file_xml(const char* xml_file)
+static inline std::string level_file(const char* level_name)
 {
-    DLOGS("[SceneLoader] Parsing xml scene description.", "parsing", Severity::LOW);
-    xml_parser_.load_file_xml(xml_file);
-    current_map_ = xml_file;
+    return std::string("l_") + level_name + ".xml";
+}
+
+void SceneLoader::load_level(const char* level_name)
+{
+    DLOGS("[SceneLoader] Parsing xml scene description.", "scene", Severity::LOW);
+    fs::path file_path(io::get_file(H_("root.folders.level"), level_file(level_name)));
+    xml_parser_.load_file_xml(file_path);
+    current_map_ = level_name;
 }
 
 void SceneLoader::setup_user_inputs(InputHandler& handler)
@@ -391,7 +398,7 @@ void SceneLoader::reload_map()
 {
     xml_parser_.reset();
 
-    load_file_xml(current_map_.c_str());
+    load_level(current_map_.c_str());
     reload_chunks();
 }
 

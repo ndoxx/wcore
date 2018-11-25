@@ -69,7 +69,12 @@ public:
     SceneLoader();
     ~SceneLoader();
 
-    void load_file_xml(const char* xml_file);
+    void load_level(const char* level_name);
+    inline void load_level(const std::string& level_name)
+    {
+        load_level(level_name.c_str());
+    }
+
     void load_global(DaylightSystem& daylight);
     uint32_t load_chunk(const math::i32vec2& chunk_coords);
 
