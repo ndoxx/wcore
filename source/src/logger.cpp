@@ -81,7 +81,7 @@ Logger::Logger()
 , start_time_(std::chrono::high_resolution_clock::now())
 {
     // Create a default debugging channel
-    register_channel("default", 0u);
+    register_channel("core", 3u);
 }
 
 Logger::~Logger()
@@ -154,6 +154,10 @@ void Logger::print_console(const LogMessage& log_message)
         std::cout << message << "\033[0m" << std::endl;
         return;
     }
+    else if(type == MsgType::SECTION)
+    {
+        last_section_size_ = message.size();
+    }
 
     // Parse color tags within message string
     std::string final;
@@ -174,7 +178,7 @@ void Logger::register_channel(const char* name, uint32_t verbosity)
     if(it != channels_.end())
     {
         operator ()("[Logger] Ignoring duplicate channel or collision detected: " + it->second.name,
-                    MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, HS_("default"));
+                    MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, HS_("core"));
         return;
     }
 
@@ -286,6 +290,15 @@ void Logger::generate_widget()
     ImGui::End();
 }
 #endif
+
+void Logger::end_section(hashstr_t channel, uint32_t severity)
+{
+    operator() (std::string(last_section_size_, '-'),
+                MsgType::SECTION,
+                LogMode::CANONICAL,
+                severity,
+                channel);
+}
 
 void Logger::onTrack(const WData& data)
 {

@@ -1,3 +1,10 @@
+#ifdef __linux__
+    #include <unistd.h>
+    #include <climits>
+#elif _WIN32
+
+#endif
+
 #include "config.h"
 #include "xml_utils.hpp"
 #include "logger.h"
@@ -7,12 +14,41 @@ namespace wcore
 
 using namespace rapidxml;
 
-void Config::load_file_xml(const char* xml_file)
+static fs::path get_selfpath()
 {
-    DLOGN("[Config] Parsing xml configuration file:", "default", Severity::LOW);
-    xml_parser_.load_file_xml(xml_file);
+#ifdef __linux__
+    char buff[PATH_MAX];
+    std::size_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+    if (len != -1)
+    {
+        buff[len] = '\0';
+        return fs::path(buff);
+    }
+    else
+    {
+        DLOGE("Cannot read self path using readlink.", "core", Severity::CRIT);
+        return fs::path();
+    }
+#elif _WIN32
 
+    DLOGE("get_selfpath() not yet implemented.", "core", Severity::CRIT);
+    return fs::path();
+
+#endif
+}
+
+void Config::init()
+{
+    DLOGS("[Config] Beginning configuration step.", "core", Severity::LOW);
+    self_path_ = get_selfpath();
+    root_path_ = self_path_.parent_path().parent_path();
+    DLOGI("Self path: <p>" + self_path_.string() + "</p>", "core", Severity::LOW);
+    DLOGI("Root path: <p>" + root_path_.string() + "</p>", "core", Severity::LOW);
+
+    DLOGN("[Config] Parsing xml configuration file.", "core", Severity::LOW);
+    xml_parser_.load_file_xml(root_path_ / "config.xml");
     retrieve_configuration(xml_parser_.get_root(), "root");
+    DLOGES("core", Severity::LOW);
 }
 
 // Recursive parser
@@ -51,8 +87,8 @@ void Config::retrieve_configuration(rapidxml::xml_node<>* node,
             #endif
             else // Node is invalid
             {
-                DLOGW("[Config] Ignoring ill-formed property node.", "default", Severity::WARN);
-                DLOGI("At: " + name_chain + ": " + cur_node->name(), "default", Severity::WARN);
+                DLOGW("[Config] Ignoring ill-formed property node.", "core", Severity::WARN);
+                DLOGI("At: " + name_chain + ": " + cur_node->name(), "core", Severity::WARN);
             }
         }
     }
@@ -63,6 +99,7 @@ static const hashstr_t H_INT    = HS_("int");
 static const hashstr_t H_FLOAT  = HS_("float");
 static const hashstr_t H_STRING = HS_("string");
 static const hashstr_t H_BOOL   = HS_("bool");
+static const hashstr_t H_PATH   = HS_("path");
 
 
 hash_t Config::parse_xml_property(rapidxml::xml_node<>* node,
@@ -106,6 +143,22 @@ hash_t Config::parse_xml_property(rapidxml::xml_node<>* node,
             std::string value;
             if(!xml::parse_attribute(node, "value", value)) return 0;
             this->set(full_name_hash, value.c_str());
+            break;
+        }
+        case H_PATH:
+        {
+            std::string value;
+            if(!xml::parse_attribute(node, "value", value)) return 0;
+            fs::path dir(root_path_ / fs::path(value.c_str()));
+            if(fs::exists(dir))
+                this->set_ref(full_name_hash, dir);
+            else
+            {
+                DLOGE("[Config] Directory does not exist: ", "core", Severity::CRIT);
+                DLOGI(dir.string(), "core", Severity::CRIT);
+                DLOGI("Skipping.", "core", Severity::CRIT);
+                return 0;
+            }
             break;
         }
         case H_BOOL:

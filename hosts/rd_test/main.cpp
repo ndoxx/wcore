@@ -19,7 +19,7 @@ using namespace wcore;
 int main(int argc, char const *argv[])
 {
     // Parse config file
-    CONFIG.load_file_xml("../res/xml/config.xml");
+    CONFIG.init();
     // Parse command line arguments
     parse_program_arguments(argc, argv);
 
@@ -36,8 +36,9 @@ int main(int argc, char const *argv[])
              parsing_verbosity  = 0u,
              entity_verbosity   = 0u,
              scene_verbosity    = 0u,
-             core_verbosity     = 0u,
-             io_verbosity       = 0u;
+             //core_verbosity     = 0u,
+             io_verbosity       = 0u,
+             profile_verbosity  = 0u;
 
     CONFIG.get(H_("root.debug.channel_verbosity.texture"),  texture_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.material"), material_verbosity);
@@ -50,8 +51,9 @@ int main(int argc, char const *argv[])
     CONFIG.get(H_("root.debug.channel_verbosity.parsing"),  parsing_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.entity"),   entity_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.scene"),    scene_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.core"),     core_verbosity);
+    //CONFIG.get(H_("root.debug.channel_verbosity.core"),     core_verbosity);
     CONFIG.get(H_("root.debug.channel_verbosity.io"),       io_verbosity);
+    CONFIG.get(H_("root.debug.channel_verbosity.profile"),  profile_verbosity);
 
     dbg::LOG.register_channel("texture",  texture_verbosity);
     dbg::LOG.register_channel("material", material_verbosity);
@@ -64,8 +66,9 @@ int main(int argc, char const *argv[])
     dbg::LOG.register_channel("parsing",  parsing_verbosity);
     dbg::LOG.register_channel("entity",   entity_verbosity);
     dbg::LOG.register_channel("scene",    scene_verbosity);
-    dbg::LOG.register_channel("core",     core_verbosity);
+    //dbg::LOG.register_channel("core",     core_verbosity);
     dbg::LOG.register_channel("io",       io_verbosity);
+    dbg::LOG.register_channel("profile",  profile_verbosity);
 #endif
 
     // Initialize context

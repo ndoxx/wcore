@@ -4,6 +4,7 @@
 #include "vertex_format.h"
 #include "mesh.hpp"
 #include "globals.h"
+#include "config.h"
 
 namespace wcore
 {
@@ -51,15 +52,29 @@ void TextRenderer::load_face(const char* fontname,
                              uint32_t height,
                              uint32_t width)
 {
-    std::string filename("../res/fonts/");
-    filename += fontname;
-    filename += ".ttf";
+    fs::path file_path;
+    if(!CONFIG.get(H_("root.folders.font"), file_path))
+    {
+        DLOGE("[TextRenderer] Missing font folder config node: root.folders.font.", "text", Severity::CRIT);
+        return;
+    }
+
+    std::string font_file(fontname);
+    font_file += ".ttf";
+    file_path /= font_file;
+    if(!fs::exists(file_path))
+    {
+        DLOGE("[TextRenderer] Font file not found: <p>" + font_file + "</p>", "text", Severity::CRIT);
+        return;
+    }
+
+    std::string full_path_str(file_path.string());
 
     // Generate new face
     FT_Face face;
-    if (FT_New_Face(ft_, filename.c_str(), 0, &face))
+    if (FT_New_Face(ft_, full_path_str.c_str(), 0, &face))
     {
-        DLOGE("[TextRenderer] Failed to load font: <p>" + filename + "</p>", "text", Severity::CRIT);
+        DLOGE("[TextRenderer] Failed to load font: <p>" + full_path_str + "</p>", "text", Severity::CRIT);
         return;
     }
 
@@ -120,7 +135,7 @@ void TextRenderer::load_face(const char* fontname,
 
 #ifdef __DEBUG__
     DLOGN("[TextRenderer] New face: <n>" + std::string(fontname) + "</n>", "text", Severity::LOW);
-    DLOGI("from file: <p>" + filename + "</p>", "text", Severity::LOW);
+    DLOGI("from file: <p>" + full_path_str + "</p>", "text", Severity::LOW);
 #endif
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4); // Restore byte-alignment state

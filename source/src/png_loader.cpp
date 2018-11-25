@@ -35,16 +35,6 @@ static void stream_read_data(png_structp p_png, png_bytep data, png_size_t lengt
     ((std::istream*)a)->read((char*)data, length);
 }
 
-PngLoader::PngLoader()
-{
-
-}
-
-PngLoader::~PngLoader()
-{
-
-}
-
 PixelBuffer* PngLoader::load_png(const char* filename)
 {
     // Try to open file, throw if not found.

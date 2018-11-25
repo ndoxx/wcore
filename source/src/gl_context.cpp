@@ -233,7 +233,9 @@ int GLContext::main_loop()
 #endif //__PROFILING_STOP_AFTER_X_SAMPLES__
 
     setup_func_(window_);
-
+#ifdef __DEBUG__
+    DLOGT("-------- Game loop start --------", "profile", Severity::LOW);
+#endif
     do
     {
         // Restart timers
@@ -335,21 +337,24 @@ int GLContext::main_loop()
     while(glfwGetKey(window_, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
           glfwWindowShouldClose(window_) == 0 );
 
+#ifdef __DEBUG__
+    DLOGT("-------- Game loop stop ---------", "profile", Severity::LOW);
+#endif
+
 #ifdef __PROFILING_GAMELOOP__
-    DLOGT("-------- Game loop stop ---------", "core", Severity::LOW);
     FinalStatistics render_stats = render_time_fifo.get_stats();
     FinalStatistics update_stats = update_time_fifo.get_stats();
     FinalStatistics idle_stats   = idle_time_fifo.get_stats();
     uint32_t n_iter = render_time_fifo.get_size();
 
-    DLOGN("Render time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::DET);
-    render_stats.debug_print(1e6, "µs");
+    DLOGN("Render time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile", Severity::DET);
+    render_stats.debug_print(1e6, "µs", "profile");
 
-    DLOGN("Update time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::DET);
-    update_stats.debug_print(1e6, "µs");
+    DLOGN("Update time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile", Severity::DET);
+    update_stats.debug_print(1e6, "µs", "profile");
 
-    DLOGN("Idle time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "core", Severity::DET);
-    idle_stats.debug_print(1e6, "µs");
+    DLOGN("Idle time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile", Severity::DET);
+    idle_stats.debug_print(1e6, "µs", "profile");
 #endif //__PROFILING_GAMELOOP__
 
     dbg::LOG.write("debug.log");

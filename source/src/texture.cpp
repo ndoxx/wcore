@@ -5,7 +5,6 @@
 namespace fs = std::filesystem;
 
 #include "texture.h"
-#include "png_loader.h"
 #include "pixel_buffer.h"
 #include "logger.h"
 #include "algorithms.h"
@@ -28,6 +27,8 @@ std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
     {TextureUnit::NORMAL,    H_("mt.normalTex")},
     {TextureUnit::ROUGHNESS, H_("mt.roughnessTex")}
 };
+
+PngLoader Texture::png_loader_;
 
 static std::map<GLenum, GLenum> DATA_TYPES =
 {
@@ -185,7 +186,7 @@ ID_(++Ninst)
 
         try
         {
-            px_bufs[ii] = PngLoader::Instance().load_png((TEX_IMAGE_PATH + descriptor.locations.at(key)).c_str());
+            px_bufs[ii] = png_loader_.load_png((TEX_IMAGE_PATH + descriptor.locations.at(key)).c_str());
             data[ii] = px_bufs[ii]->get_data_pointer();
             #if __DEBUG__
                 DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);

@@ -1,11 +1,15 @@
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
 
+#include <filesystem>
+
 #include "rapidxml/rapidxml.hpp"
 #include "xml_utils.hpp"
 
 namespace wcore
 {
+
+namespace fs = std::filesystem;
 
 class XMLParser
 {
@@ -19,7 +23,8 @@ public:
     XMLParser(const char* filename);
     ~XMLParser();
 
-    void load_file_xml(const char* filename);
+    void load_file_xml(const char* filename); // DEPREC
+    void load_file_xml(const fs::path& filepath);
     void reset();
 
     inline rapidxml::xml_node<>* get_root() { return root_; }

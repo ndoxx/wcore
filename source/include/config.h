@@ -3,6 +3,8 @@
 
 #include <map>
 #include <vector>
+#include <filesystem>
+#include <vector>
 
 #include "singleton.hpp"
 #include "utils.h"
@@ -11,15 +13,23 @@
 namespace wcore
 {
 
+namespace fs = std::filesystem;
+
 // Singleton class for holding named global variables
 class Config: public Singleton<Config>
 {
 private:
+    // Configuration key/values
     std::map<hash_t, uint32_t>    uints_;
     std::map<hash_t, int32_t>     ints_;
     std::map<hash_t, float>       floats_;
     std::map<hash_t, std::string> strings_;
     std::map<hash_t, bool>        bools_;
+    std::map<hash_t, fs::path>    paths_;
+
+    // Paths
+    fs::path self_path_;
+    fs::path root_path_;
 
     XMLParser xml_parser_;
     std::map<hash_t, rapidxml::xml_node<>*> dom_locations_;
@@ -34,11 +44,14 @@ public:
 
     // Generic accessors for values in maps
     template <typename T> inline void set(hash_t name, T value);
+    template <typename T> inline void set_ref(hash_t name, const T& value);
+    template <typename T> inline void set_move(hash_t name, T&& value);
     template <typename T> inline bool get(hash_t name, T& destination);
     // Test a boolean flag quickly
     inline bool is(hash_t name);
-    // Load properties in an XML file recursively into maps
-    void load_file_xml(const char* xml_file);
+
+    // Initialize directory info
+    void init();
     // Display maps content
     void debug_display_content();
 
@@ -120,6 +133,27 @@ template <> inline bool Config::get(hash_t name, std::string& destination)
 {
     auto it = strings_.find(name);
     if(it != strings_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+template <> inline void Config::set_ref(hash_t name, const fs::path& value)
+{
+    paths_[name] = std::move(value);
+}
+
+template <> inline void Config::set_move(hash_t name, fs::path&& value)
+{
+    paths_[name] = std::move(value);
+}
+
+template <> inline bool Config::get(hash_t name, fs::path& destination)
+{
+    auto it = paths_.find(name);
+    if(it != paths_.end())
     {
         destination = it->second;
         return true;

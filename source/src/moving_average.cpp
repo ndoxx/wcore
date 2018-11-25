@@ -46,7 +46,7 @@ FinalStatistics MovingAverage::get_stats() const
     variance /= n_iter;
 
     // Compute median
-    std::vector values(queue_.begin(), queue_.end());
+    std::vector<float> values(queue_.begin(), queue_.end());
     std::sort(values.begin(), values.end(), [](float xx, float yy)
     {
         return xx<yy;

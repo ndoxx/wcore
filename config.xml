@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Config>
+    <folders>
+        <path name="log"     value="logs/"/>
+        <path name="xml"     value="res/xml/"/>
+        <path name="shader"  value="res/shaders/"/>
+        <path name="font"    value="res/fonts/"/>
+        <path name="texture" value="res/textures/"/>
+        <path name="model"   value="res/models/"/>
+    </folders>
+    <display>
+        <uint name="width"      value="1920"/>
+        <uint name="height"     value="1080"/>
+        <bool name="full"       value="false"/>
+        <bool name="vsync"      value="true"/>
+        <uint name="target_fps" value="60"/>
+    </display>
+    <render>
+        <chunk>
+            <uint name="load_distance" value="3"/>
+        </chunk>
+        <shadowmap>
+            <uint name="width"  value="2048"/>
+            <uint name="height" value="2048"/>
+        </shadowmap>
+        <override>
+            <bool name="allow_normal_mapping"   value="true"/>
+            <bool name="allow_parallax_mapping" value="true"/>
+            <bool name="allow_shadow_mapping"   value="true"/>
+        </override>
+    </render>
+    <input>
+        <mouse>
+            <float name="sensitivity" value="1.0"/>
+            <bool  name="y_inverted"  value="false"/>
+        </mouse>
+    </input>
+    <debug>
+        <channel_verbosity>
+            <uint name="texture"  value="0"/><!--3"/>-->
+            <uint name="material" value="0"/><!--3"/>-->
+            <uint name="model"    value="0"/><!--1"/>-->
+            <uint name="shader"   value="0"/><!--3"/>-->
+            <uint name="text"     value="0"/><!--1"/>-->
+            <uint name="input"    value="0"/><!--1"/>-->
+            <uint name="buffer"   value="0"/><!--2"/>-->
+            <uint name="chunk"    value="0"/><!--3"/>-->
+            <uint name="parsing"  value="0"/><!--1"/>-->
+            <uint name="entity"   value="0"/><!--1"/>-->
+            <uint name="scene"    value="0"/><!--1"/>-->
+            <uint name="io"       value="0"/><!--1"/>-->
+            <uint name="profile"  value="0"/><!--1"/>-->
+        </channel_verbosity>
+    </debug>
+</Config>

@@ -71,7 +71,7 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hashstr_t channel=HS_("default"))
+               hashstr_t channel=HS_("core"))
     : message_(message)
     , mode_(mode)
     , type_(type)
@@ -86,7 +86,7 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hashstr_t channel=HS_("default"))
+               hashstr_t channel=HS_("core"))
     : message_(std::move(message))
     , mode_(mode)
     , type_(type)
@@ -130,6 +130,7 @@ private:
     FileMode file_mode_;               // What to do with the log file (new, overwrite, append)
     bool widget_scroll_required_;      // When new message logged, widget needs to scroll down
     LogMessage::TimePoint start_time_; // Start time for timestamp handling
+    uint32_t last_section_size_;       // Size of last section message
 
     std::vector<LogMessage> messages_;         // List of logged messages
     std::map<hashstr_t, LogChannel> channels_; // Map of debugging channels
@@ -180,16 +181,20 @@ public:
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hashstr_t channel=HS_("default"));
+                     hashstr_t channel=HS_("core"));
     void operator ()(std::string&& message,
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hashstr_t channel=HS_("default"));
+                     hashstr_t channel=HS_("core"));
     void operator ()(const LogMessage& log_message);
 
     template <typename ...Args>
     void printfold(Args&&... args);
+
+    // End last section
+    void end_section(hashstr_t channel=HS_("core"),
+                     uint32_t severity=0u);
 
     // Logs any event the logger has subscribed to
     void onTrack(const WData& data);
@@ -276,9 +281,6 @@ namespace dbg
     #define DLOGN(MESSAGE, CHANNEL, SEVERITY) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::NOTIFY,  LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
-    #define DLOGS(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::SECTION, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
-        } while(0)
     #define DLOGW(MESSAGE, CHANNEL, SEVERITY) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::WARNING, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)
@@ -293,6 +295,12 @@ namespace dbg
         } while(0)
     #define DLOGB(MESSAGE, CHANNEL, SEVERITY) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::BAD,     LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        } while(0)
+    #define DLOGS(MESSAGE, CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::SECTION, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        } while(0)
+    #define DLOGES(CHANNEL, SEVERITY) do { \
+        wcore::dbg::LOG.end_section( HS_( CHANNEL ), SEVERITY ); \
         } while(0)
     #define BANG() do { \
         wcore::dbg::LOG(std::string(__FILE__)+":"+std::to_string(__LINE__), MsgType::BANG); \

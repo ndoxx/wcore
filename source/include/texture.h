@@ -11,6 +11,7 @@
 #include <GL/glew.h>
 
 #include "utils.h"
+#include "png_loader.h"
 
 namespace wcore
 {
@@ -47,6 +48,7 @@ private:
     static RMap RESOURCE_MAP_;   // TextureInternal cache
     static TMap NAMED_TEXTURES_; // Holds pointers to named textures
     static std::map<TextureUnit, hash_t> SAMPLER_NAMES_;
+    static PngLoader png_loader_;
 
 public:
     static const std::string TEX_IMAGE_PATH;
