@@ -37,6 +37,26 @@ static fs::path get_selfpath()
 #endif
 }
 
+#ifdef __DEBUG__
+static std::vector<std::string> LOGGER_CHANNELS
+{
+    "texture", "material", "model", "shader",
+    "text", "input", "buffer", "chunk",
+    "parsing", "entity", "scene", "io",
+    "profile"
+};
+
+void Config::init_logger_channels()
+{
+    for(auto&& channel: LOGGER_CHANNELS)
+    {
+        uint32_t verbosity = 0u;
+        get(H_(("root.debug.channel_verbosity."+channel).c_str()),  verbosity);
+        dbg::LOG.register_channel(channel.c_str(),  verbosity);
+    }
+}
+#endif
+
 void Config::init()
 {
     DLOGS("[Config] Beginning configuration step.", "core", Severity::LOW);
@@ -56,6 +76,11 @@ void Config::init()
     DLOGN("[Config] Parsing xml configuration file.", "core", Severity::LOW);
     xml_parser_.load_file_xml(conf_path_ / "config.xml");
     retrieve_configuration(xml_parser_.get_root(), "root");
+
+#ifdef __DEBUG__
+    init_logger_channels();
+#endif
+
     DLOGES("core", Severity::LOW);
 }
 

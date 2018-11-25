@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace wcore
+namespace rd_test
 {
 
 extern void parse_program_arguments(int argc, char const *argv[]);

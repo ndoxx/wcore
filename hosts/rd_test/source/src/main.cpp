@@ -22,58 +22,13 @@ int main(int argc, char const *argv[])
     // Parse config file
     CONFIG.init();
     // Parse command line arguments
-    parse_program_arguments(argc, argv);
-
-    // Initialize logger channels
-#ifdef __DEBUG__
-    uint32_t texture_verbosity  = 0u,
-             material_verbosity = 0u,
-             model_verbosity    = 0u,
-             shader_verbosity   = 0u,
-             text_verbosity     = 0u,
-             input_verbosity    = 0u,
-             buffer_verbosity   = 0u,
-             chunk_verbosity    = 0u,
-             parsing_verbosity  = 0u,
-             entity_verbosity   = 0u,
-             scene_verbosity    = 0u,
-             io_verbosity       = 0u,
-             profile_verbosity  = 0u;
-
-    CONFIG.get(H_("root.debug.channel_verbosity.texture"),  texture_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.material"), material_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.model"),    model_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.shader"),   shader_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.text"),     text_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.input"),    input_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.buffer"),   buffer_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.chunk"),    chunk_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.parsing"),  parsing_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.entity"),   entity_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.scene"),    scene_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.io"),       io_verbosity);
-    CONFIG.get(H_("root.debug.channel_verbosity.profile"),  profile_verbosity);
-
-    dbg::LOG.register_channel("texture",  texture_verbosity);
-    dbg::LOG.register_channel("material", material_verbosity);
-    dbg::LOG.register_channel("model",    model_verbosity);
-    dbg::LOG.register_channel("shader",   shader_verbosity);
-    dbg::LOG.register_channel("text",     text_verbosity);
-    dbg::LOG.register_channel("input",    input_verbosity);
-    dbg::LOG.register_channel("buffer",   buffer_verbosity);
-    dbg::LOG.register_channel("chunk",    chunk_verbosity);
-    dbg::LOG.register_channel("parsing",  parsing_verbosity);
-    dbg::LOG.register_channel("entity",   entity_verbosity);
-    dbg::LOG.register_channel("scene",    scene_verbosity);
-    dbg::LOG.register_channel("io",       io_verbosity);
-    dbg::LOG.register_channel("profile",  profile_verbosity);
-#endif
+    rd_test::parse_program_arguments(argc, argv);
 
     // Initialize context
     GLContext context;
 
     // Initialize scene
-    SCENE;
+    SCENE; // Not really needed
     SceneLoader scene_loader;
 
     // MAIN SYSTEMS

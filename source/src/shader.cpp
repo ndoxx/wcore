@@ -47,9 +47,8 @@ ShaderResource::ShaderResource(std::string&& resource_str,
                 fragment_shader = SHADER_PATH + resources[ii];
                 break;
             default:
-                std::cout << "ERROR" << std::endl;
+                DLOGE("[Shader] Unknown / unsupported shader type: " + resources[ii], "shader", Severity::CRIT);
         }
-
     }
 
     // Parse flags (for shader variants)

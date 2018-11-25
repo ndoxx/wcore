@@ -184,9 +184,9 @@ ID_(++Ninst)
         }
         formats[ii] = descriptor.parameters.format;
 
-        try
+        px_bufs[ii] = png_loader_.load_png((TEX_IMAGE_PATH + descriptor.locations.at(key)).c_str());
+        if(px_bufs[ii])
         {
-            px_bufs[ii] = png_loader_.load_png((TEX_IMAGE_PATH + descriptor.locations.at(key)).c_str());
             data[ii] = px_bufs[ii]->get_data_pointer();
             #if __DEBUG__
                 DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
@@ -195,7 +195,7 @@ ID_(++Ninst)
                     //std::cout << *px_bufs[ii] << std::endl;
             #endif
         }
-        catch(const std::exception& e)
+        else
         {
             DLOGF("[Texture] Unable to load Texture.", "texture", Severity::CRIT);
             for (uint32_t jj=0; jj<=ii; ++jj)
@@ -206,7 +206,6 @@ ID_(++Ninst)
             delete [] filters;
             delete [] data;
             delete [] px_bufs;
-            throw;
         }
         ++ii;
     }

@@ -53,6 +53,9 @@ public:
 
     // Initialize directory info
     void init();
+#ifdef __DEBUG__
+    void init_logger_channels();
+#endif // __DEBUG__
     // Display maps content
     void debug_display_content();
 

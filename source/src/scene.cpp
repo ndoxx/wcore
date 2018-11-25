@@ -32,9 +32,6 @@ light_camera_(std::make_shared<Camera>(1, 1)),
 chunk_size_m_(32),
 current_chunk_index_(0)
 {
-    // Read textures directory and store filenames
-    //Texture::load_asset_map();
-
     // Disable light camera frustum update
     light_camera_->disable_frustum_update();
 

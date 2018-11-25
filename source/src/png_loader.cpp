@@ -1,6 +1,5 @@
 #include <png.h>
 #include <istream>
-#include <stdexcept>
 #include <sstream>
 
 #include "png_loader.h"
@@ -37,7 +36,7 @@ static void stream_read_data(png_structp p_png, png_bytep data, png_size_t lengt
 
 PixelBuffer* PngLoader::load_png(const char* filename)
 {
-    // Try to open file, throw if not found.
+    // Try to open file
     std::ifstream source;
     source.open(filename, std::ios::binary | std::ios::in);
     if(!source)
@@ -45,7 +44,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         std::stringstream ss;
         ss << "[PngLoader] Couldn't reach file: " << filename;
         DLOGE(ss.str(), "io", Severity::CRIT);
-        throw std::runtime_error("Couldn't reach file.");
+        return nullptr;
     }
 
     // Validate file as a png by checking signature
@@ -54,7 +53,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         std::stringstream ss;
         ss << "[PngLoader] File: " << filename << " is not a valid PNG file.";
         DLOGE(ss.str(), "parsing", Severity::CRIT);
-        throw std::runtime_error("Not a valid PNG file.");
+        return nullptr;
     }
 
     // Get a handle on png file
@@ -64,7 +63,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         std::stringstream ss;
         ss << "[PngLoader] Couldn't initialize png read struct for: " << filename;
         DLOGE(ss.str(), "parsing", Severity::CRIT);
-        throw std::runtime_error("Read struct init failed.");
+        return nullptr;
     }
 
     // Get info struct
@@ -75,7 +74,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         ss << "[PngLoader] Couldn't initialize png info struct for: " << filename;
         png_destroy_read_struct(&p_png, (png_infopp)0, (png_infopp)0);
         DLOGE(ss.str(), "parsing", Severity::CRIT);
-        throw std::runtime_error("Info struct init failed.");
+        return nullptr;
     }
 
     PixelBuffer* px_buf = nullptr;
@@ -88,7 +87,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         std::stringstream ss;
         ss << "[PngLoader] An error occured while reading: " << filename;
         DLOGE(ss.str(), "parsing", Severity::CRIT);
-        throw std::runtime_error("Png read error.");
+        return nullptr;
     }
 
     // Set data read function to our stream reader

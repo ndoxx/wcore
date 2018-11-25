@@ -37,6 +37,13 @@ set(CMAKE_BUILD_TYPE Release)
 # set(CMAKE_BUILD_TYPE MinSizeRel)
 # set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
+subdirs(source)
+include_directories(source/include)
+set(SRC_RD_TEST
+    source/src/main.cpp
+    source/src/arguments.cpp
+   )
+
 add_executable(wcore
                ${SRC_MATHS}
                ${SRC_CORE}
@@ -44,7 +51,7 @@ add_executable(wcore
                ${SRC_3D}
                ${SRC_RES}
                ${SRC_IMGUI}
-               main.cpp)
+               ${SRC_RD_TEST})
 
 set_target_properties(wcore
     PROPERTIES
