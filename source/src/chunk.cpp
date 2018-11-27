@@ -147,7 +147,7 @@ void Chunk::traverse_models(ModelVisitor func,
         }
         else
         {
-            DLOGW("[Scene] Traverse order not supported for opaque models.", "chunk", Severity::WARN);
+            DLOGW("[Chunk] Traverse order not supported for opaque models.", "chunk", Severity::WARN);
         }
     }
     else if(model_cat == wcore::MODEL_CATEGORY::TRANSPARENT)
@@ -168,7 +168,7 @@ void Chunk::traverse_models(ModelVisitor func,
         }
         else
         {
-            DLOGW("[Scene] Traverse order not supported for transparent models.", "chunk", Severity::WARN);
+            DLOGW("[Chunk] Traverse order not supported for transparent models.", "chunk", Severity::WARN);
         }
     }
 

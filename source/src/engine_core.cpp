@@ -169,7 +169,7 @@ void GameLoop::handle_events()
     handler_.handle_keybindings(context_);
 }
 
-int GameLoop::main_loop()
+int GameLoop::run()
 {
     uint32_t target_fps_ = 60;
     CONFIG.get(H_("root.display.target_fps"), target_fps_);

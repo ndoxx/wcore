@@ -13,6 +13,7 @@ set(SRC_MATHS
     ${wcore_SOURCE_DIR}/source/src/colors.cpp)
 
 set(SRC_CORE
+    ${wcore_SOURCE_DIR}/source/src/wcore.cpp
     ${wcore_SOURCE_DIR}/source/src/engine_core.cpp
     ${wcore_SOURCE_DIR}/source/src/context.cpp
     ${wcore_SOURCE_DIR}/source/src/error.cpp

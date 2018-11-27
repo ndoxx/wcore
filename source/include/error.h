@@ -14,6 +14,8 @@ extern inline void fatal(const std::string& message)
     fatal(message.c_str());
 }
 
+extern void show_driver_error(const char* line="");
+
 }
 
 #endif // ERROR_H

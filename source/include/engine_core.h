@@ -39,7 +39,12 @@ public:
 
     inline InputHandler& get_input_handler() { return handler_; }
     inline void set_render_func(std::function<void(void)> render_func) { render_func_ = render_func;}
-    inline void register_updatable_system(Updatable* system) { updatables_.push_back(system); }
+
+    template <class T>
+    inline void register_updatable_system(T& system)
+    {
+        updatables_.push_back(static_cast<Updatable*>(&system));
+    }
 
 #ifndef __DISABLE_EDITOR__
     inline void toggle_editor_GUI_rendering() { render_editor_GUI_ = !render_editor_GUI_; }
@@ -51,7 +56,7 @@ public:
 
     void onKeyboardEvent(const WData& data);
     void handle_events();
-    int main_loop();
+    int run();
 };
 
 }

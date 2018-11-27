@@ -249,7 +249,7 @@ void SceneLoader::parse_ambient(DaylightSystem& daylight, rapidxml::xml_node<>* 
 
     CSplineCatmullV3* color_interpolator            = new CSplineCatmullV3(get_num_controls(c_node->first_node("CSpline")));
     CSplineCatmullV3* pp_gamma_interpolator         = new CSplineCatmullV3(get_num_controls(g_node->first_node("CSpline")));;
-    CSplineCatmullF*   brightness_interpolator      = new CSplineCatmullF(get_num_controls(b_node->first_node("CSpline")));;
+    CSplineCatmullF*  brightness_interpolator       = new CSplineCatmullF(get_num_controls(b_node->first_node("CSpline")));;
     CSplineCatmullF*  pp_saturation_interpolator    = new CSplineCatmullF(get_num_controls(s_node->first_node("CSpline")));;
     CSplineCardinalF* pp_fog_density_interpolator   = new CSplineCardinalF(get_num_controls(f_node->first_node("CSpline")));;
     CSplineCardinalF* ambient_strength_interpolator = new CSplineCardinalF(get_num_controls(a_node->first_node("CSpline")));;

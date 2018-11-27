@@ -200,42 +200,6 @@ void Scene::traverse_lights(LightVisitor func,
         chunks_.at(chunks_order_[ii])->traverse_lights(func, ifFunc);
 }
 
-/*void Scene::setup_user_inputs(InputHandler& handler)
-{
-    handler.register_action(H_("k_run"), [&]()
-    {
-        camera_->set_speed(Camera::SPEED_FAST);
-    });
-    handler.register_action(H_("k_walk"), [&]()
-    {
-        camera_->set_speed(Camera::SPEED_SLOW);
-    });
-    handler.register_action(H_("k_forward"), [&]()
-    {
-        camera_->move_forward();
-    });
-    handler.register_action(H_("k_backward"), [&]()
-    {
-        camera_->move_backward();
-    });
-    handler.register_action(H_("k_strafe_left"), [&]()
-    {
-        camera_->strafe_left();
-    });
-    handler.register_action(H_("k_strafe_right"), [&]()
-    {
-        camera_->strafe_right();
-    });
-    handler.register_action(H_("k_ascend"), [&]()
-    {
-        camera_->ascend();
-    });
-    handler.register_action(H_("k_descend"), [&]()
-    {
-        camera_->descend();
-    });
-}*/
-
 void Scene::traverse_loaded_neighbor_chunks(uint32_t chunk_index,
                                             std::function<void(Chunk*, wcore::NEIGHBOR)> visitor)
 {
