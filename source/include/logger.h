@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <filesystem>
 
 #include "listener.h"
 #include "singleton.hpp"
@@ -18,6 +19,8 @@
 
 namespace wcore
 {
+
+namespace fs = std::filesystem;
 
 enum class FileMode : std::uint8_t
 {
@@ -206,7 +209,7 @@ public:
     void untrack(Informer& informer);
 
     // Write logged messages to file
-    void write(const std::string& log_path);
+    void write(const fs::path& log_path);
 
     // Shows logged message in an ImGui window with filtering options
 #ifndef __DISABLE_EDITOR__

@@ -23,7 +23,6 @@ public:
     XMLParser(const char* filename);
     ~XMLParser();
 
-    void load_file_xml(const char* filename); // DEPREC
     void load_file_xml(const fs::path& filepath);
     void reset();
 

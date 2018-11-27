@@ -1,14 +1,14 @@
-#include <stdexcept>
 #include <thread>
 #include <sstream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "gl_context.h"
+#include "engine_core.h"
 #include "arguments.h"
 #include "config.h"
 #include "globals.h"
 #include "clock.hpp"
+#include "error.h"
 
 //GUI
 #ifndef __DISABLE_EDITOR__
@@ -40,61 +40,12 @@ static void glfw_error_callback(int error, const char* description)
     DLOGI(description, "core", Severity::CRIT);
 }
 
-GLContext::GLContext():
-window_(nullptr),
-cursor_hidden_(true),
-render_editor_GUI_(false)
+static void init_imgui(GLFWwindow* window)
 {
-    // Setup GLFW error callback
-    glfwSetErrorCallback(glfw_error_callback);
-    // Initialise GLFW
-    if( !glfwInit() )
-    {
-        DLOGE("Failed to initialize GLFW.", "core", Severity::CRIT);
-        throw std::runtime_error("Failed to initialize GLFW.");
-    }
-    glGetError(); // Hide glfwInit's errors
-    glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // Open a window and create its OpenGL context
-    if(GLB.SCR_FULL)
-        window_ = glfwCreateWindow(GLB.SCR_W, GLB.SCR_H, "WCore", glfwGetPrimaryMonitor(), NULL);
-    else
-        window_ = glfwCreateWindow(GLB.SCR_W, GLB.SCR_H, "WCore", NULL, NULL);
-
-    if( window_ == NULL )
-    {
-        DLOGE("Failed to open GLFW window.", "core", Severity::CRIT);
-        throw std::runtime_error("Failed to open GLFW window.");
-    }
-
-    glfwMakeContextCurrent(window_);
-    // Ensure we can capture the escape key being pressed below
-    glfwSetInputMode(window_, GLFW_STICKY_KEYS, GL_TRUE);
-    // [BUG][glfw] glfwGetCursorPos does not update if cursor visible ???!!!
-    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    // Initialize GLEW
-    glewExperimental = GL_TRUE; // If not set, segfault at glGenVertexArrays()
-    if (glewInit() != GLEW_OK) {
-        DLOGE("Failed to initialize GLEW.", "core", Severity::CRIT);
-        throw std::runtime_error("Failed to initialize GLEW.");
-    }
-    glGetError();   // Mask an unavoidable error caused by GLEW
-
-    if(CONFIG.is(H_("root.display.vsync")))
-        glfwSwapInterval(1); // Enable vsync
-
-    // GUI initialization
-#ifndef __DISABLE_EDITOR__
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForOpenGL(window_, true);
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 400 core");
     // Setup style
     ImGui::StyleColorsDark();
@@ -133,13 +84,69 @@ render_editor_GUI_(false)
     style->Colors[ImGuiCol_SliderGrabActive] = active;
 
     style->Colors[ImGuiCol_PlotLines] = ImVec4(0.1f, 0.8f, 0.2f, 1.0f);
+}
+
+GameLoop::GameLoop():
+window_(nullptr),
+cursor_hidden_(true),
+render_editor_GUI_(false)
+{
+    // Setup GLFW error callback
+    glfwSetErrorCallback(glfw_error_callback);
+
+    // Initialise GLFW
+    if( !glfwInit() )
+    {
+        DLOGF("Failed to initialize GLFW.", "core", Severity::CRIT);
+        fatal("Failed to initialize GLFW.");
+    }
+
+    glGetError(); // Hide glfwInit's errors
+    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // Open a window and create its OpenGL context
+    if(GLB.SCR_FULL)
+        window_ = glfwCreateWindow(GLB.SCR_W, GLB.SCR_H, "WCore", glfwGetPrimaryMonitor(), NULL);
+    else
+        window_ = glfwCreateWindow(GLB.SCR_W, GLB.SCR_H, "WCore", NULL, NULL);
+
+    if( window_ == NULL )
+    {
+        DLOGF("Failed to open GLFW window.", "core", Severity::CRIT);
+        fatal("Failed to open GLFW window.");
+    }
+
+    glfwMakeContextCurrent(window_);
+    // Ensure we can capture the escape key being pressed below
+    glfwSetInputMode(window_, GLFW_STICKY_KEYS, GL_TRUE);
+    // [BUG][glfw] glfwGetCursorPos does not update if cursor visible ???!!!
+    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    // Initialize GLEW
+    glewExperimental = GL_TRUE; // If not set, segfault at glGenVertexArrays()
+    if (glewInit() != GLEW_OK) {
+        DLOGF("Failed to initialize GLEW.", "core", Severity::CRIT);
+        fatal("Failed to initialize GLEW.");
+    }
+    glGetError();   // Mask an unavoidable error caused by GLEW
+
+    if(CONFIG.is(H_("root.display.vsync")))
+        glfwSwapInterval(1); // Enable vsync
+
+    // GUI initialization
+#ifndef __DISABLE_EDITOR__
+    init_imgui(window_);
 #endif
 
     // Clear window
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-GLContext::~GLContext()
+GameLoop::~GameLoop()
 {
 #ifndef __DISABLE_EDITOR__
     // Shutdown ImGUI
@@ -153,7 +160,29 @@ GLContext::~GLContext()
     glfwTerminate();
 }
 
-void GLContext::toggle_cursor()
+void GameLoop::swap_buffers()
+{
+/*#ifdef __PROFILING_GAMELOOP__
+        profile_clock.restart();
+#endif //__PROFILING_GAMELOOP__*/
+
+    glfwSwapBuffers(window_);
+
+/*#ifdef __PROFILING_GAMELOOP__
+        {
+            auto period = profile_clock.get_elapsed_time();
+            dt_profile_bufswp = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
+        }
+#endif //__PROFILING_GAMELOOP__*/
+}
+
+void GameLoop::poll_events()
+{
+    glfwPollEvents();
+}
+
+
+void GameLoop::toggle_cursor()
 {
     cursor_hidden_ = !cursor_hidden_;
     if(cursor_hidden_)
@@ -172,14 +201,14 @@ void GLContext::toggle_cursor()
 }
 
 #ifndef __DISABLE_EDITOR__
-void GLContext::imgui_new_frame()
+void GameLoop::imgui_new_frame()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 }
 
-void GLContext::generate_editor_widgets()
+void GameLoop::generate_editor_widgets()
 {
     for(auto&& func: editor_widget_generators_)
         func();
@@ -207,7 +236,7 @@ static std::string dbg_display_sub_duration(const std::string& name,
 }
 #endif
 
-int GLContext::main_loop()
+int GameLoop::main_loop()
 {
     uint32_t target_fps_ = 60;
     CONFIG.get(H_("root.display.target_fps"), target_fps_);
@@ -232,7 +261,6 @@ int GLContext::main_loop()
     uint32_t n_frames = 0;
 #endif //__PROFILING_STOP_AFTER_X_SAMPLES__
 
-    setup_func_(window_);
 #ifdef __DEBUG__
     DLOGT("-------- Game loop start --------", "profile", Severity::LOW);
 #endif
@@ -287,38 +315,19 @@ int GLContext::main_loop()
         }
 #endif //__PROFILING_GAMELOOP__
 
-#ifdef __PROFILING_GAMELOOP__
-        profile_clock.restart();
-#endif //__PROFILING_GAMELOOP__
-        // Swap buffers
-        glfwSwapBuffers(window_);
-#ifdef __PROFILING_GAMELOOP__
-        {
-            auto period = profile_clock.get_elapsed_time();
-            dt_profile_bufswp = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        }
-#endif //__PROFILING_GAMELOOP__
+        // Finish game loop
+        swap_buffers();
+        poll_events();
 
-#ifdef __PROFILING_GAMELOOP__
-        profile_clock.restart();
-#endif //__PROFILING_GAMELOOP__
-        glfwPollEvents();
-#ifdef __PROFILING_GAMELOOP__
-        {
-            auto period = profile_clock.get_elapsed_time();
-            dt_profile_events = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        }
-#endif //__PROFILING_GAMELOOP__
-
+        // Sleep for the rest of the frame
         auto frame_d = clock.restart();
-#ifdef __PROFILING_GAMELOOP__
-        float active_time = std::chrono::duration_cast<std::chrono::duration<float>>(frame_d).count();
-#endif //__PROFILING_GAMELOOP__
         auto sleep_duration = frame_duration_ns_ - frame_d;
+
 #ifdef __PROFILING_GAMELOOP__
         float sleep_time = std::chrono::duration_cast<std::chrono::duration<float>>(sleep_duration).count();
         idle_time_fifo.push(sleep_time);
 #endif //__PROFILING_GAMELOOP__
+
         std::this_thread::sleep_for(sleep_duration);
 
         frame_d = frame_clock.restart();
@@ -326,10 +335,9 @@ int GLContext::main_loop()
 
 #ifdef __PROFILING_GAMELOOP__
         DINFO.display(H_("sdiFPS"), std::string("FPS: ") + std::to_string(1.0f/dt));
-        DINFO.display(H_("sdiRender"), std::string("Render: ") + std::to_string(1e3*dt_profile_render)
-                      + std::string("ms"));
-
+        DINFO.display(H_("sdiRender"), std::string("Render: ") + std::to_string(1e3*dt_profile_render) + std::string("ms"));
 #endif //__PROFILING_GAMELOOP__
+
 #ifdef __PROFILING_STOP_AFTER_X_SAMPLES__
         if(++n_frames > 1200) break;
 #endif //__PROFILING_STOP_AFTER_X_SAMPLES__
@@ -357,7 +365,11 @@ int GLContext::main_loop()
     idle_stats.debug_print(1e6, "µs", "profile");
 #endif //__PROFILING_GAMELOOP__
 
-    dbg::LOG.write("debug.log");
+    fs::path log_path;
+    if(CONFIG.get<fs::path>(HS_("root.folders.log"), log_path))
+        dbg::LOG.write(log_path / "debug.log");
+    else
+        dbg::LOG.write(fs::path("debug.log"));
 
     return 0;
 }

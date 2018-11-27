@@ -2,7 +2,6 @@
 #define XML_UTILS_H
 
 #include <cstring>
-#include <fstream>
 #include <sstream>
 #include <functional>
 #include <memory>

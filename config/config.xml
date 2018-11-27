@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Config>
     <folders>
-        <path name="config"  value="config/"/>
-        <path name="log"     value="logs/"/>
-        <path name="level"   value="res/levels/"/>
-        <path name="shader"  value="res/shaders/"/>
-        <path name="font"    value="res/fonts/"/>
-        <path name="texture" value="res/textures/"/>
-        <path name="model"   value="res/models/"/>
+        <path name="config"    value="config/"/>
+        <path name="log"       value="logs/"/>
+        <path name="level"     value="res/levels/"/>
+        <path name="shader"    value="res/shaders/"/>
+        <path name="shaderinc" value="res/shaders/include/"/>
+        <path name="font"      value="res/fonts/"/>
+        <path name="texture"   value="res/textures/"/>
+        <path name="model"     value="res/models/"/>
     </folders>
     <display>
         <uint name="width"      value="1920"/>

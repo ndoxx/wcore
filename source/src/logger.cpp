@@ -233,7 +233,7 @@ void Logger::operator ()(const LogMessage& log_message)
 void Logger::generate_widget()
 {
     ImGui::SetNextWindowSize(ImVec2(500,400), ImGuiSetCond_FirstUseEver);
-    ImGui::Begin("Debug");
+    ImGui::Begin("Logging");
 
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Channels"))
@@ -337,9 +337,9 @@ void Logger::untrack(Informer& informer)
                MsgType::NOTIFY);
 }
 
-void Logger::write(const std::string& log_path)
+void Logger::write(const fs::path& log_path)
 {
-    std::ofstream log(log_path.c_str());
+    std::ofstream log(log_path);
     log << "-------------------------" << std::endl;
     log << "[TIME STAMP] [MTYPE] [MESSAGE]" << std::endl;
     for(const LogMessage& logmsg : messages_)

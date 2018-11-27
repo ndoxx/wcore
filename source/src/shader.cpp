@@ -1,4 +1,3 @@
-#include <stdexcept>
 #include <cstring>
 
 #include "shader.h"
@@ -7,6 +6,9 @@
 #include "texture.h"
 #include "logger.h"
 #include "material_common.h"
+#include "io_utils.h"
+#include "error.h"
+
 
 namespace wcore
 {
@@ -18,8 +20,6 @@ std::vector<std::string> Shader::global_defines_ =
 #endif
 };
 
-const std::string ShaderResource::SHADER_PATH("../res/shaders/");
-
 ShaderResource::ShaderResource(std::string&& resource_str,
                                std::string&& flags_str)
 {
@@ -30,21 +30,19 @@ ShaderResource::ShaderResource(std::string&& resource_str,
     // For each token, determine shader type and initialize corresponding field
     for(uint32_t ii=0; ii<resources.size(); ++ii)
     {
-        std::vector<std::string> name_extension;
-        split_string(resources[ii], name_extension, '.');
-
-        hashstr_t shader_type = HS_(name_extension[1].c_str());
+        fs::path file_name(resources[ii]);
+        hashstr_t shader_type = HS_(file_name.extension().string().c_str());
 
         switch(shader_type)
         {
             case VS:
-                vertex_shader   = SHADER_PATH + resources[ii];
+                vertex_shader   = file_name;
                 break;
             case GS:
-                geometry_shader = SHADER_PATH + resources[ii];
+                geometry_shader = file_name;
                 break;
             case FS:
-                fragment_shader = SHADER_PATH + resources[ii];
+                fragment_shader = file_name;
                 break;
             default:
                 DLOGE("[Shader] Unknown / unsupported shader type: " + resources[ii], "shader", Severity::CRIT);
@@ -79,36 +77,34 @@ FragmentShaderID_(0)
 {
 #ifdef __DEBUG__
     if(++instance_count_ == 1) dbg_show_defines();
-    auto const pos_dot = res.vertex_shader.find_last_of('.');
-    auto const pos_slh = res.vertex_shader.find_last_of('/');
-    name_ = res.vertex_shader.substr(pos_slh+1, pos_dot-pos_slh-1);
+    name_ = res.vertex_shader.stem().string();
     DLOGS("[Shader] Creating new shader program:", "shader", Severity::LOW);
     DLOGI("name= <n>" + name_ + "</n>", "shader", Severity::LOW);
 #endif
     // VERTEX SHADER
-    if(res.vertex_shader.size())
+    if(!res.vertex_shader.empty())
     {
         VertexShaderID_   = compile_shader(res.vertex_shader, GL_VERTEX_SHADER, res.flags);
 #ifdef __DEBUG__
-        DLOGI("<g>Compiled</g> vertex shader from: <p>" + res.vertex_shader + "</p>", "shader", Severity::DET);
+        DLOGI("<g>Compiled</g> vertex shader from: <p>" + res.vertex_shader.string() + "</p>", "shader", Severity::DET);
 #endif
     }
 
     // GEOMETRY SHADER
-    if(res.geometry_shader.size())
+    if(!res.geometry_shader.empty())
     {
         GeometryShaderID_ = compile_shader(res.geometry_shader, GL_GEOMETRY_SHADER, res.flags);
 #ifdef __DEBUG__
-        DLOGI("<g>Compiled</g> geometry shader from: <p>" + res.geometry_shader + "</p>", "shader", Severity::DET);
+        DLOGI("<g>Compiled</g> geometry shader from: <p>" + res.geometry_shader.string() + "</p>", "shader", Severity::DET);
 #endif
     }
 
     // FRAGMENT SHADER
-    if(res.fragment_shader.size())
+    if(!res.fragment_shader.empty())
     {
         FragmentShaderID_ = compile_shader(res.fragment_shader, GL_FRAGMENT_SHADER, res.flags);
 #ifdef __DEBUG__
-        DLOGI("<g>Compiled</g> fragment shader from: <p>" + res.fragment_shader + "</p>", "shader", Severity::DET);
+        DLOGI("<g>Compiled</g> fragment shader from: <p>" + res.fragment_shader.string() + "</p>", "shader", Severity::DET);
 #endif
     }
 
@@ -204,26 +200,12 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
     // Capture argument of include directive between quotes
     const char* incStr = "#include";
     uint32_t offset = sizeof(incStr) + 2;
-    std::string file_path("../res/shaders/include/");
-    file_path += incline.substr(offset, incline.length()-(offset+1));
 
-    // Open included file
+    std::string file_name(incline.substr(offset, incline.length()-(offset+1)));
+    std::string include_source(io::get_file_as_string(HS_("root.folders.shaderinc"), file_name));
 #ifdef __DEBUG__
-    DLOGI("Dependency: <p>" + file_path + "</p>", "shader", Severity::DET);
+    DLOGI("Dependency: <p>" + file_name + "</p>", "shader", Severity::DET);
 #endif
-    std::ifstream include_file(file_path);
-
-    if(!include_file.is_open())
-    {
-#ifdef __DEBUG__
-        DLOGW("Unable to open file, skipping.", "shader", Severity::WARN);
-#endif
-        return;
-    }
-
-    // Read file to buffer
-    std::string include_source((std::istreambuf_iterator<char>(include_file)),
-                               std::istreambuf_iterator<char>());
 
     // Append to source
     shader_source += include_source;
@@ -264,47 +246,44 @@ void Shader::setup_defines(std::string& shader_source,
     }
 }
 
-GLuint Shader::compile_shader(const std::string& ShaderPath,
+GLuint Shader::compile_shader(const fs::path& shader_file,
                               GLenum ShaderType,
                               const std::vector<std::string>& flags)
 {
-    std::string ShaderSource;
-    {
-        std::ifstream file(ShaderPath);
-        if(!file.is_open())
-        {
-            DLOGF("File <p>" + ShaderPath + "</p> not found.", "shader", Severity::CRIT);
-            throw std::runtime_error("File " + ShaderPath + " not found.");
+    //fs::path shader_path = io::get_file(HS_("root.folders.shader"), shader_file);
 
-        }
+    std::string shader_file_name(shader_file.string());
+    std::string shader_source_raw(io::get_file_as_string(HS_("root.folders.shader"), shader_file));
+    std::string shader_source;
+    {
+        std::stringstream ss(shader_source_raw);
+        std::string line;
 
         // Parse version directive
-        std::string line;
-        getline(file, line);
-        parse_version(line, ShaderSource);
+        std::getline(ss, line);
+        parse_version(line, shader_source);
 
         // First, add #define directives
-        setup_defines(ShaderSource, flags);
+        setup_defines(shader_source, flags);
 
-        // Parse file
-        while(getline(file,line))
+        // Parse buffer
+        while(std::getline(ss, line, '\n'))
         {
             if(!line.substr(0,8).compare("#include"))
-                parse_include(line, ShaderSource);
+                parse_include(line, shader_source);
             else
-                ShaderSource += line + "\n";
+                shader_source += line + "\n";
         }
-        file.close();
     }
 
     GLuint ShaderID = glCreateShader(ShaderType);
     if(ShaderID == 0)
     {
-        DLOGF("Cannot create shader: <p>" + ShaderPath + "</p>", "shader", Severity::CRIT);
-        throw std::runtime_error("Cannot create shader: " + ShaderPath);
+        DLOGF("Cannot create shader: <p>" + shader_file_name + "</p>", "shader", Severity::CRIT);
+        fatal("Cannot create shader: " + shader_file_name);
     }
 
-    const GLchar* source = (const GLchar*) ShaderSource.c_str();
+    const GLchar* source = (const GLchar*) shader_source.c_str();
     glShaderSource(ShaderID, 1, &source, nullptr);
     glCompileShader(ShaderID);
 
@@ -317,8 +296,8 @@ GLuint Shader::compile_shader(const std::string& ShaderPath,
 
         //We don't need the shader anymore.
         glDeleteShader(ShaderID);
-        DLOGF("Shader will not compile: <p>" + ShaderPath + "</p>", "shader", Severity::CRIT);
-        throw std::runtime_error("Shader will not compile: " + ShaderPath);
+        DLOGF("Shader will not compile: <p>" + shader_file_name + "</p>", "shader", Severity::CRIT);
+        fatal("Shader will not compile: " + shader_file_name);
     }
 
     return ShaderID;
@@ -346,7 +325,7 @@ void Shader::link()
         glDeleteShader(VertexShaderID_);
         glDeleteShader(FragmentShaderID_);
 
-        throw std::runtime_error("Unable to link shaders.");
+        fatal("Unable to link shaders.");
     }
 }
 
@@ -361,7 +340,7 @@ void Shader::shader_error_report(GLuint ShaderID)
     if(log == nullptr)
     {
         DLOGF("Cannot allocate memory for Shader Error Report.", "shader", Severity::CRIT);
-        throw std::runtime_error("Cannot allocate memory for Shader Error Report.");
+        fatal("Cannot allocate memory for Shader Error Report.");
     }
 
     memset(log, '\0', logsize + 1);
@@ -381,7 +360,7 @@ void Shader::program_error_report()
     if(log == nullptr)
     {
         DLOGF("Cannot allocate memory for Program Error Report.", "shader", Severity::CRIT);
-        throw std::runtime_error("Cannot allocate memory for Program Error Report.");
+        fatal("Cannot allocate memory for Program Error Report.");
     }
 
     memset(log, '\0', logsize + 1);

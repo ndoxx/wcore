@@ -1,17 +1,21 @@
 #include <png.h>
 #include <istream>
 #include <sstream>
+#include <cstring>
+#include <vector>
 
 #include "png_loader.h"
 #include "logger.h"
 #include "pixel_buffer.h"
+#include "io_utils.h"
 
 namespace wcore
 {
 
 static constexpr const int PNGSIGSIZE = 8;
 
-static bool is_valid_png(std::istream& source) {
+static bool is_valid_png(std::istream& source)
+{
 
     // Compare file signature
     png_byte pngsig[PNGSIGSIZE];
@@ -34,12 +38,34 @@ static void stream_read_data(png_structp p_png, png_bytep data, png_size_t lengt
     ((std::istream*)a)->read((char*)data, length);
 }
 
-PixelBuffer* PngLoader::load_png(const char* filename)
+/*static bool is_valid_png(const std::vector<char>& source)
 {
+    int is_png = png_sig_cmp((png_bytep)&source[0], 0, PNGSIGSIZE);
+    return (is_png == 0);
+}
+
+static void stream_read_data(png_structp p_png, png_bytep data, png_size_t length)
+{
+    // Here we get our IO pointer back from the read struct.
+    // This is the parameter we passed to the png_set_read_fn() function.
+    png_voidp source = png_get_io_ptr(p_png);
+    memcpy(data, &(reinterpret_cast<unsigned char*>(source))[PNGSIGSIZE], length);
+}*/
+
+PixelBuffer* PngLoader::load_png(const fs::path& file_path)
+{
+    DLOGN("[PngLoader] Loading png image:", "io", Severity::LOW);
+    DLOGI(file_path.string(), "io", Severity::LOW);
+
     // Try to open file
     std::ifstream source;
-    source.open(filename, std::ios::binary | std::ios::in);
+    source.open(file_path, std::ios::binary | std::ios::in);
+
+    //std::vector<char> source(io::get_binary_file_as_vector(file_path));
+
+    std::string filename(file_path.string());
     if(!source)
+    //if(source.size()==0)
     {
         std::stringstream ss;
         ss << "[PngLoader] Couldn't reach file: " << filename;
@@ -52,7 +78,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
     {
         std::stringstream ss;
         ss << "[PngLoader] File: " << filename << " is not a valid PNG file.";
-        DLOGE(ss.str(), "parsing", Severity::CRIT);
+        DLOGE(ss.str(), "io", Severity::CRIT);
         return nullptr;
     }
 
@@ -62,7 +88,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
     {
         std::stringstream ss;
         ss << "[PngLoader] Couldn't initialize png read struct for: " << filename;
-        DLOGE(ss.str(), "parsing", Severity::CRIT);
+        DLOGE(ss.str(), "io", Severity::CRIT);
         return nullptr;
     }
 
@@ -73,7 +99,7 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         std::stringstream ss;
         ss << "[PngLoader] Couldn't initialize png info struct for: " << filename;
         png_destroy_read_struct(&p_png, (png_infopp)0, (png_infopp)0);
-        DLOGE(ss.str(), "parsing", Severity::CRIT);
+        DLOGE(ss.str(), "io", Severity::CRIT);
         return nullptr;
     }
 
@@ -86,12 +112,13 @@ PixelBuffer* PngLoader::load_png(const char* filename)
         if (px_buf != nullptr) delete px_buf;
         std::stringstream ss;
         ss << "[PngLoader] An error occured while reading: " << filename;
-        DLOGE(ss.str(), "parsing", Severity::CRIT);
+        DLOGE(ss.str(), "io", Severity::CRIT);
         return nullptr;
     }
 
     // Set data read function to our stream reader
     png_set_read_fn(p_png,(png_voidp)&source, stream_read_data);
+    //png_set_read_fn(p_png,(png_voidp)&source[0], stream_read_data);
     // Tell libpng we already read the first 8 bytes.
     png_set_sig_bytes(p_png, PNGSIGSIZE);
     // Read header

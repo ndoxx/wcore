@@ -5,6 +5,7 @@
 #include "mesh.hpp"
 #include "globals.h"
 #include "io_utils.h"
+#include "error.h"
 
 namespace wcore
 {
@@ -17,7 +18,10 @@ ft_(),
 text_shader_(ShaderResource("text.vert;text.frag"))
 {
     if (FT_Init_FreeType(&ft_))
+    {
         DLOGF("[TextRenderer] Could not init FreeType Library.", "text", Severity::CRIT);
+        fatal("Could not init FreeType Library.");
+    }
 
     load_geometry();
 }

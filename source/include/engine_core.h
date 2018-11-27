@@ -1,5 +1,5 @@
-#ifndef GL_CONTEXT_H
-#define GL_CONTEXT_H
+#ifndef ENGINE_CORE_H
+#define ENGINE_CORE_H
 
 #include <functional>
 #include <list>
@@ -11,14 +11,13 @@ struct GLFWwindow;
 namespace wcore
 {
 
-class GLContext
+class GameLoop
 {
 private:
     GLFWwindow* window_;
     bool cursor_hidden_;
     bool render_editor_GUI_;
 
-    std::function<void(GLFWwindow*)> setup_func_;
     std::function<void(GLFWwindow*, float)> update_func_;
     std::function<void(void)> render_func_;
 
@@ -29,10 +28,9 @@ private:
 #endif
 
 public:
-    GLContext();
-    ~GLContext();
+    GameLoop();
+    ~GameLoop();
 
-    void _setup(std::function<void(GLFWwindow*)> before_loop)  { setup_func_ = before_loop; }
     void _update(std::function<void(GLFWwindow*, float)> update_func) { update_func_ = update_func;}
     void _render(std::function<void(void)> render_func) { render_func_ = render_func;}
 
@@ -42,6 +40,8 @@ public:
     void imgui_new_frame();
 #endif
 
+    void swap_buffers();
+    void poll_events();
     void toggle_cursor();
 
     int main_loop();
@@ -49,4 +49,4 @@ public:
 
 }
 
-#endif // GL_CONTEXT_H
+#endif // ENGINE_CORE_H

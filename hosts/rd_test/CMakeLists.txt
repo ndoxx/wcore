@@ -47,7 +47,6 @@ set(SRC_RD_TEST
 add_executable(wcore
                ${SRC_MATHS}
                ${SRC_CORE}
-               ${SRC_CONTEXT}
                ${SRC_3D}
                ${SRC_RES}
                ${SRC_IMGUI}

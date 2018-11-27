@@ -2,7 +2,6 @@
 #define MESH_FACTORY_H
 
 #include <map>
-#include <exception>
 #include <cstdint>
 
 #include "mesh.hpp"
@@ -75,29 +74,6 @@ namespace factory
                             float radius_exponent=1.0f);
     extern void subdivide_mesh(TriangularMesh* pmesh);
 }
-
-/*
-template <typename MeshT, typename CreatorT, typename... Args>
-class MeshFactory
-{
-private:
-    std::map<uint32_t, CreatorT> creators_;
-
-public:
-    void register_creator(uint32_t index, CreatorT creator)
-    {
-        if(creators_.find(index) == creators_.end())
-            creators_.insert(std::make_pair(index, creator));
-        else
-            throw std::runtime_error("Creator method already exists for index: " + std::to_string(index));
-    }
-
-    void make(uint32_t index, Args&&... args)
-    {
-        creators_.at(index)(std::forward<Args>(args)...);
-    }
-};
-*/
 
 }
 

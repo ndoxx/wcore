@@ -1,0 +1,9 @@
+[source/src/texture.cpp:264]: (error) Deallocating a deallocated pointer: data
+[source/src/texture.cpp:265]: (error) Deallocating a deallocated pointer: px_bufs
+[source/src/texture.cpp:263]: (error) Deallocating a deallocated pointer: filters
+[source/src/texture.cpp:262]: (error) Deallocating a deallocated pointer: internalFormats
+[source/src/texture.cpp:261]: (error) Deallocating a deallocated pointer: formats
+[source/vendor/delaunator/examples/triangulate_geojson.cpp:68]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.
+[source/vendor/imgui/imgui.cpp:8451]: (error) Memory leak: g.LogFile
+[source/vendor/imgui/imgui.cpp:1989]: (error) va_list 'args_copy' used before va_start() was called.
+[source/vendor/imgui/imgui.cpp:1994]: (error) va_list 'args_copy' used before va_start() was called.

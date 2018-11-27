@@ -3,6 +3,7 @@
 #include "frame_buffer.h"
 #include "texture.h"
 #include "logger.h"
+#include "error.h"
 
 namespace wcore
 {
@@ -99,7 +100,7 @@ height_(texture.get_height())
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(status != GL_FRAMEBUFFER_COMPLETE)
     {
-        DLOGE("[Texture] Framebuffer creation failed!", "buffer", Severity::CRIT);
+        DLOGF("[Texture] Framebuffer creation failed!", "buffer", Severity::CRIT);
         switch(status)
         {
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
@@ -115,7 +116,7 @@ height_(texture.get_height())
                 DLOGI("The combination of internal formats of the attached images violates an implementation-dependent set of restrictions.", "buffer", Severity::CRIT);
                 break;
         }
-        throw std::runtime_error("Framebuffer creation <b>failed</b>!");
+        fatal("Framebuffer creation failed!");
     }
     else
     {

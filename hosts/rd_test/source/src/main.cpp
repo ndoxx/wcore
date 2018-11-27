@@ -4,7 +4,7 @@
 #include "config.h"
 #include "gfx_driver.h"
 #include "camera.h"
-#include "gl_context.h"
+#include "engine_core.h"
 #include "scene.h"
 #include "chunk_manager.h"
 #include "scene_loader.h"
@@ -24,8 +24,8 @@ int main(int argc, char const *argv[])
     // Parse command line arguments
     rd_test::parse_program_arguments(argc, argv);
 
-    // Initialize context
-    GLContext context;
+    // Initialize game_loop
+    GameLoop game_loop;
 
     // Initialize scene
     SCENE; // Not really needed
@@ -41,9 +41,9 @@ int main(int argc, char const *argv[])
 
     // Editor widgets
 #ifndef __DISABLE_EDITOR__
-    context.add_editor_widget_generator([&](){ dbg::LOG.generate_widget(); });
-    context.add_editor_widget_generator([&](){ pipeline.generate_widget(); });
-    context.add_editor_widget_generator([&](){ daylight.generate_widget(); });
+    game_loop.add_editor_widget_generator([&](){ dbg::LOG.generate_widget(); });
+    game_loop.add_editor_widget_generator([&](){ pipeline.generate_widget(); });
+    game_loop.add_editor_widget_generator([&](){ daylight.generate_widget(); });
 #endif
 
     std::list<Updatable*> updatables;
@@ -57,41 +57,38 @@ int main(int argc, char const *argv[])
     // MessageTracker tracker;
     //tracker.track(H_("k_tg_daysys"), input_handler);
 
-    // LOADING
-    context._setup([&](GLFWwindow* window)
-    {
-        scene_loader.load_level(GLB.START_LEVEL);
-        scene_loader.load_global(daylight);
-        chunk_manager.init();
-        // Map key bindings
-        SCENE.setup_user_inputs(input_handler);
-        pipeline.setup_user_inputs(input_handler);
-        daylight.setup_user_inputs(input_handler);
-        scene_loader.setup_user_inputs(input_handler);
-        chunk_manager.setup_user_inputs(input_handler);
-        clock.setup_user_inputs(input_handler);
+    // Setup
+    scene_loader.load_level(GLB.START_LEVEL);
+    scene_loader.load_global(daylight);
+    chunk_manager.init();
+    // Map key bindings
+    SCENE.setup_user_inputs(input_handler);
+    pipeline.setup_user_inputs(input_handler);
+    daylight.setup_user_inputs(input_handler);
+    scene_loader.setup_user_inputs(input_handler);
+    chunk_manager.setup_user_inputs(input_handler);
+    clock.setup_user_inputs(input_handler);
 
 #ifndef __DISABLE_EDITOR__
-        input_handler.register_action(H_("k_tg_editor"), [&]()
-        {
-            input_handler.toggle_mouse_lock();
-            context.toggle_editor_GUI_rendering();
-            context.toggle_cursor();
-        });
+    input_handler.register_action(H_("k_tg_editor"), [&]()
+    {
+        input_handler.toggle_mouse_lock();
+        game_loop.toggle_editor_GUI_rendering();
+        game_loop.toggle_cursor();
+    });
 #endif
 
 #ifdef __DEBUG__
-        // Error check
-        auto error = GFX::get_error();
-        std::string msg = std::string("post _setup() glGetError: ") + std::to_string(error);
-        if(error)
-            DLOGB(msg, "core", Severity::CRIT);
-        else
-            DLOGG(msg, "core", Severity::LOW);
+    // Error check
+    auto error = GFX::get_error();
+    std::string msg = std::string("post _setup() glGetError: ") + std::to_string(error);
+    if(error)
+        DLOGB(msg, "core", Severity::CRIT);
+    else
+        DLOGG(msg, "core", Severity::LOW);
 #endif
-    });
 
-    context._update([&](GLFWwindow* window, float dt)
+    game_loop._update([&](GLFWwindow* window, float dt)
     {
         // USER INPUTS
         input_handler.handle_mouse(window, [&](float dx, float dy)
@@ -103,7 +100,7 @@ int main(int argc, char const *argv[])
 
         // Start the Dear ImGui frame
 #ifndef __DISABLE_EDITOR__
-        context.imgui_new_frame();
+        game_loop.imgui_new_frame();
 #endif
 
         // GAME UPDATES
@@ -117,13 +114,13 @@ int main(int argc, char const *argv[])
         clock.release_flags();
     });
 
-    context._render([&]()
+    game_loop._render([&]()
     {
         if(!clock.is_game_paused())
             pipeline.render();
     });
 
-    auto mainLoopRet = context.main_loop();
+    auto mainLoopRet = game_loop.main_loop();
     pipeline.dbg_show_statistics();
 
     // Cleanup

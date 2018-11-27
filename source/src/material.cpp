@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <stdexcept>
 
 #include "material.h"
 #include "texture.h"

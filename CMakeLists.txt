@@ -13,6 +13,8 @@ set(SRC_MATHS
     ${wcore_SOURCE_DIR}/source/src/colors.cpp)
 
 set(SRC_CORE
+    ${wcore_SOURCE_DIR}/source/src/engine_core.cpp
+    ${wcore_SOURCE_DIR}/source/src/error.cpp
     ${wcore_SOURCE_DIR}/source/src/config.cpp
     ${wcore_SOURCE_DIR}/source/src/io_utils.cpp
     ${wcore_SOURCE_DIR}/source/src/globals.cpp
@@ -69,9 +71,6 @@ set(SRC_3D
     ${wcore_SOURCE_DIR}/source/src/debug_overlay_renderer.cpp
     ${wcore_SOURCE_DIR}/source/src/daylight.cpp
     ${wcore_SOURCE_DIR}/source/src/pipeline.cpp)
-
-set(SRC_CONTEXT
-    ${wcore_SOURCE_DIR}/source/src/gl_context.cpp)
 
 set(SRC_RES
     ${wcore_SOURCE_DIR}/source/src/png_loader.cpp

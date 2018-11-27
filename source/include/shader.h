@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <filesystem>
 #include <GL/glew.h>
 
 #include "math3d.h"
@@ -11,6 +12,8 @@
 
 namespace wcore
 {
+
+namespace fs = std::filesystem;
 
 class Texture;
 class Material;
@@ -20,15 +23,16 @@ class Light;
 struct ShaderResource
 {
 public:
-    std::string vertex_shader;      // complete path to vertex shader
-    std::string geometry_shader;    // complete path to geometry shader
-    std::string fragment_shader;    // complete path to fragment shader
+    fs::path vertex_shader;   // filename.ext for vertex shader
+    fs::path geometry_shader; // filename.ext for geometry shader
+    fs::path fragment_shader; // filename.ext for fragment shader
+
     std::vector<std::string> flags; // list of flags that will end up in #define directives
 
-    static const std::string SHADER_PATH;
-    static constexpr hashstr_t VS = HS_("vert"); // extension for vertex shader
-    static constexpr hashstr_t GS = HS_("geom"); // extension for geometry shader
-    static constexpr hashstr_t FS = HS_("frag"); // extension for fragment shader
+    //static const std::string SHADER_PATH;
+    static constexpr hashstr_t VS = HS_(".vert"); // extension for vertex shader
+    static constexpr hashstr_t GS = HS_(".geom"); // extension for geometry shader
+    static constexpr hashstr_t FS = HS_(".frag"); // extension for fragment shader
 
     ShaderResource(std::string&& resource_str,
                    std::string&& flags_str = "");
@@ -44,7 +48,7 @@ private:
 
     std::map<hash_t, GLint> uniform_locations_;
 
-    GLuint compile_shader(const std::string& ShaderPath,
+    GLuint compile_shader(const fs::path& shader_file,
                           GLenum ShaderType,
                           const std::vector<std::string>& flags);
     void parse_include(const std::string& line, std::string& shader_source);

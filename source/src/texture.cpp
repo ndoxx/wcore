@@ -1,14 +1,14 @@
 #include <cassert>
-#include <stdexcept>
-#include <filesystem>
 #include <vector>
-namespace fs = std::filesystem;
 
 #include "texture.h"
 #include "pixel_buffer.h"
 #include "logger.h"
 #include "algorithms.h"
 #include "material_common.h"
+#include "config.h"
+#include "io_utils.h"
+#include "error.h"
 
 namespace wcore
 {
@@ -16,7 +16,6 @@ namespace wcore
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;
 Texture::TMap Texture::NAMED_TEXTURES_;
-const std::string Texture::TEX_IMAGE_PATH("../res/textures/");
 
 std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
 {
@@ -148,7 +147,7 @@ Texture::wpTexture Texture::get_named_texture(hash_t name)
         std::stringstream ss;
         ss << "[Texture] Couldn't find named texture: <n>" << name << "</n>";
         DLOGF(ss.str(), "texture", Severity::CRIT);
-        throw std::runtime_error("Couldn't find named texture.");
+        fatal("Couldn't find named texture.");
     }
     else
         return wpTexture(it->second);
@@ -184,7 +183,9 @@ ID_(++Ninst)
         }
         formats[ii] = descriptor.parameters.format;
 
-        px_bufs[ii] = png_loader_.load_png((TEX_IMAGE_PATH + descriptor.locations.at(key)).c_str());
+        fs::path file_path = io::get_file(HS_("root.folders.texture"), descriptor.locations.at(key));
+        px_bufs[ii] = png_loader_.load_png(file_path);
+
         if(px_bufs[ii])
         {
             data[ii] = px_bufs[ii]->get_data_pointer();
@@ -206,6 +207,7 @@ ID_(++Ninst)
             delete [] filters;
             delete [] data;
             delete [] px_bufs;
+            fatal();
         }
         ++ii;
     }
