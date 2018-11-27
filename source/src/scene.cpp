@@ -274,6 +274,13 @@ void Scene::add_terrain(pTerrain terrain, uint32_t chunk_index)
     chunks_.at(chunk_index)->terrain_ = terrain;
 }
 
+void Scene::onMouseEvent(const WData& data)
+{
+    const MouseData& md = static_cast<const MouseData&>(data);
+    get_camera()->update_orientation(md.dx, md.dy);
+}
+
+
 void Scene::update(const GameClock& clock)
 {
     float scaled_dt = clock.get_scaled_frame_duration();

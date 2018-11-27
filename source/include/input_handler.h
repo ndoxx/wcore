@@ -11,6 +11,8 @@
 namespace wcore
 {
 
+class Context;
+
 struct KeyBindingProperties
 {
 public:
@@ -43,6 +45,7 @@ private:
     std::map<hash_t, KeyBindingProperties>      key_bindings_; // Associate binding name to properties
     std::map<hash_t, std::function<void(void)>> action_map_;   // Associate key binding to action
 
+    uint8_t last_mouse_button_state_;
     bool mouse_lock_;
 
 public:
@@ -53,7 +56,7 @@ public:
     inline void unlock_mouse()      { mouse_lock_ = false; }
     inline void toggle_mouse_lock() { mouse_lock_ = !mouse_lock_; }
     inline bool is_mouse_locked() const { return mouse_lock_; }
-    void toggle_cursor(GLFWwindow* window);
+    void toggle_cursor(Context& context);
 
     void import_key_bindings();
 
@@ -63,17 +66,16 @@ public:
                          uint16_t trigger = GLFW_PRESS,
                          bool repeat = false);
 
-    void stroke_debounce(GLFWwindow* window,
+    void stroke_debounce(Context& context,
                          hash_t binding_name,
                          std::function<void(void)> Action);
 
     void register_action(hash_t binding_name,
                          std::function<void(void)> Action);
 
-    void handle_keybindings(GLFWwindow* window);
+    void handle_keybindings(Context& context);
 
-    void handle_mouse(GLFWwindow* window,
-                      std::function<void(float dx, float dy)> Action);
+    void handle_mouse(Context& context);
 
 private:
     inline void cooldown();

@@ -14,6 +14,7 @@ set(SRC_MATHS
 
 set(SRC_CORE
     ${wcore_SOURCE_DIR}/source/src/engine_core.cpp
+    ${wcore_SOURCE_DIR}/source/src/context.cpp
     ${wcore_SOURCE_DIR}/source/src/error.cpp
     ${wcore_SOURCE_DIR}/source/src/config.cpp
     ${wcore_SOURCE_DIR}/source/src/io_utils.cpp

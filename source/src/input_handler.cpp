@@ -1,11 +1,11 @@
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 #include "xml_utils.hpp"
 #include "input_handler.h"
 #include "io_utils.h"
 #include "logger.h"
 #include "keymap.h"
+#include "context.h"
 
 namespace wcore
 {
@@ -13,6 +13,7 @@ namespace wcore
 using namespace rapidxml;
 
 InputHandler::InputHandler():
+last_mouse_button_state_(0),
 mouse_lock_(true)
 {
     import_key_bindings();
@@ -112,7 +113,7 @@ void InputHandler::set_key_binding(hash_t name,
         KeyBindingProperties(cooldown, trigger, key, repeat)));
 }
 
-void InputHandler::stroke_debounce(GLFWwindow* window,
+void InputHandler::stroke_debounce(Context& context,
                                    hash_t binding_name,
                                    std::function<void(void)> Action)
 {
@@ -120,7 +121,7 @@ void InputHandler::stroke_debounce(GLFWwindow* window,
     const uint16_t& trig = key_bindings_.at(binding_name).trigger;
     const bool& repeat   = key_bindings_.at(binding_name).repeat;
 
-    auto evt = glfwGetKey(window, key);
+    auto evt = glfwGetKey(context.window_, key);
     if(evt == trig)
     {
         if(ready(binding_name))
@@ -158,41 +159,49 @@ void InputHandler::register_action(hash_t binding_name,
     }
 }
 
-void InputHandler::handle_keybindings(GLFWwindow* window)
+void InputHandler::handle_keybindings(Context& context)
 {
     for(auto pair: action_map_)
     {
-        stroke_debounce(window, pair.first, pair.second);
+        stroke_debounce(context, pair.first, pair.second);
     }
 }
 
-void InputHandler::handle_mouse(GLFWwindow* window,
-                                std::function<void(float dx, float dy)> Action)
+void InputHandler::handle_mouse(Context& context)
 {
-    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS || mouse_lock_)
-    {
-        if(!mouse_lock_) return;
+    uint8_t buttons = (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_LEFT)   << MouseButton::LMB)
+                    + (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_RIGHT)  << MouseButton::RMB)
+                    + (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_MIDDLE) << MouseButton::MMB);
 
+    if(mouse_lock_)
+    {
         // Get window size
         int win_width, win_height;
-        glfwGetWindowSize(window, &win_width, &win_height);
+        glfwGetWindowSize(context.window_, &win_width, &win_height);
 
         // Get mouse position
         double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
+        glfwGetCursorPos(context.window_, &xpos, &ypos);
 
         // Reset mouse position for next frame
-        glfwSetCursorPos(window,
+        glfwSetCursorPos(context.window_,
                          win_width/2,
                          win_height/2);
 
 
         // Compute new orientation
-        float dx = float(xpos-win_width/2)/win_width;
-        float dy = float(ypos-win_height/2)/win_height;
+        int dxi = xpos-win_width/2;
+        int dyi = ypos-win_height/2;
+        if(dxi!=0 || dyi!=0 || buttons!=last_mouse_button_state_)
+        {
+            float dx = float(dxi)/win_width;
+            float dy = float(dyi)/win_height;
 
-        Action(dx,dy);
+            post(H_("input.mouse"), MouseData(dx, dy, buttons));
+        }
     }
+
+    last_mouse_button_state_ = buttons;
 }
 
 }

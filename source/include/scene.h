@@ -10,6 +10,7 @@
 #include "buffer_unit.hpp"
 #include "vertex_array.hpp"
 #include "chunk.h"
+#include "listener.h"
 
 namespace wcore
 {
@@ -22,7 +23,7 @@ class Light;
 class HeightMap;
 class InputHandler;
 
-class Scene: public Singleton<Scene>, public Updatable
+class Scene: public Singleton<Scene>, public Updatable, public Listener
 {
 private:
     std::map<uint32_t, Chunk*> chunks_;
@@ -93,6 +94,9 @@ public:
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_rotator(rotator); }
 
     // Methods
+    // Listener
+    void onMouseEvent(const WData& data);
+
     // Upload given chunk geometry to OpenGL
     inline void load_geometry(uint32_t chunk_index) { if(chunk_index) chunks_.at(chunk_index)->load_geometry(); }
 
