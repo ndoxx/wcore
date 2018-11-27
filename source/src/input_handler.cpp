@@ -113,35 +113,60 @@ void InputHandler::set_key_binding(hash_t name,
         KeyBindingProperties(cooldown, trigger, key, repeat)));
 }
 
-void InputHandler::stroke_debounce(Context& context,
-                                   hash_t binding_name,
-                                   std::function<void(void)> Action)
+bool InputHandler::stroke_debounce(Context& context,
+                                   hash_t binding_name)
 {
-    const uint16_t& key  = key_bindings_.at(binding_name).key;
-    const uint16_t& trig = key_bindings_.at(binding_name).trigger;
-    const bool& repeat   = key_bindings_.at(binding_name).repeat;
-
-    auto evt = glfwGetKey(context.window_, key);
-    if(evt == trig)
+    auto && kb = key_bindings_.at(binding_name);
+    auto evt = glfwGetKey(context.window_, kb.key);
+    if(evt == kb.trigger)
     {
         if(ready(binding_name))
         {
-            post(binding_name, NullData());
-            Action();
+            post(H_("input.keyboard"), KbdData(binding_name));
             hot(binding_name);
-            return;
+            return true;
         }
-        if(!repeat)
+        if(!kb.repeat)
             hot(binding_name);
     }
     if(evt == GLFW_RELEASE)
     {
         cold(binding_name);
-        return;
+        return false;
     }
     cooldown(binding_name);
+    return false;
 }
 
+// DEPREC
+bool InputHandler::stroke_debounce(Context& context,
+                                   hash_t binding_name,
+                                   std::function<void(void)> Action)
+{
+    auto && kb = key_bindings_.at(binding_name);
+    auto evt = glfwGetKey(context.window_, kb.key);
+    if(evt == kb.trigger)
+    {
+        if(ready(binding_name))
+        {
+            post(H_("input.keyboard"), KbdData(binding_name));
+            Action();
+            hot(binding_name);
+            return true;
+        }
+        if(!kb.repeat)
+            hot(binding_name);
+    }
+    if(evt == GLFW_RELEASE)
+    {
+        cold(binding_name);
+        return false;
+    }
+    cooldown(binding_name);
+    return false;
+}
+
+// DEPREC
 void InputHandler::register_action(hash_t binding_name,
                                    std::function<void(void)> Action)
 {
@@ -161,9 +186,15 @@ void InputHandler::register_action(hash_t binding_name,
 
 void InputHandler::handle_keybindings(Context& context)
 {
-    for(auto pair: action_map_)
+    for(auto&& [binding, prop]: key_bindings_)
     {
-        stroke_debounce(context, pair.first, pair.second);
+        if(stroke_debounce(context, binding))
+        {
+            // action map is DEPREC
+            auto it = action_map_.find(binding);
+            if(it != action_map_.end())
+                (it->second)();
+        }
     }
 }
 

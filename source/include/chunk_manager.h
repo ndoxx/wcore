@@ -3,6 +3,7 @@
 
 #include "updatable.h"
 #include "math3d.h"
+#include "listener.h"
 
 namespace wcore
 {
@@ -13,7 +14,7 @@ namespace wcore
 class SceneLoader;
 class InputHandler;
 
-class ChunkManager: public Updatable
+class ChunkManager: public Updatable, public Listener
 {
 private:
     SceneLoader& loader_;
@@ -32,7 +33,7 @@ public:
     ChunkManager(SceneLoader& loader);
     ~ChunkManager();
 
-    void setup_user_inputs(InputHandler& handler);
+    void onKeyboardEvent(const WData& data);
     void init();
     virtual void update(const GameClock& clock) override;
 

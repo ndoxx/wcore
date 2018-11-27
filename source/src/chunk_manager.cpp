@@ -67,12 +67,16 @@ void ChunkManager::init()
 }
 
 
-void ChunkManager::setup_user_inputs(InputHandler& handler)
+void ChunkManager::onKeyboardEvent(const WData& data)
 {
-    handler.register_action(H_("k_tg_chunk_mgr"), [&]()
+    const KbdData& kbd = static_cast<const KbdData&>(data);
+
+    switch(kbd.key_binding)
     {
-        toggle();
-    });
+        case H_("k_tg_chunk_mgr"):
+    		toggle();
+    		break;
+    }
 }
 
 #ifdef __OPT_CHUNK_LOAD_DIRECTION_HINT__

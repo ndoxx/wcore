@@ -16,24 +16,4 @@ pause_(false)
 
 }
 
-void GameClock::setup_user_inputs(InputHandler& handler)
-{
-    handler.register_action(H_("k_tg_pause"), [&]()
-    {
-        toggle_pause();
-    });
-    handler.register_action(H_("k_frame_speed_up"), [&]()
-    {
-        frame_speed_up();
-    });
-    handler.register_action(H_("k_frame_slow_down"), [&]()
-    {
-        frame_slow_down();
-    });
-    handler.register_action(H_("k_next_frame"), [&]()
-    {
-        require_next_frame();
-    });
-}
-
 }

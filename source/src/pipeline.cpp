@@ -97,40 +97,37 @@ void RenderPipeline::debug_overlay_next()
     debug_overlay_renderer_->next_mode();
 }
 
-void RenderPipeline::setup_user_inputs(InputHandler& handler)
+void RenderPipeline::onKeyboardEvent(const WData& data)
 {
-    handler.register_action(H_("k_tg_fog"), [&]()
+    const KbdData& kbd = static_cast<const KbdData&>(data);
+
+    switch(kbd.key_binding)
     {
-        toggle_fog();
-    });
-    handler.register_action(H_("k_bb_next_mode"), [&]()
-    {
-        next_bb_display_mode();
-    });
-    handler.register_action(H_("k_tg_line_models"), [&]()
-    {
-        debug_renderer_->toggle_line_models();
-    });
-    handler.register_action(H_("k_light_volumes_next_mode"), [&]()
-    {
-        next_light_display_mode();
-    });
-    handler.register_action(H_("k_tg_debug_overlay"), [&]()
-    {
-        toggle_debug_overlay();
-    });
-    handler.register_action(H_("k_debug_overlay_next_mode"), [&]()
-    {
-        debug_overlay_next();
-    });
-    handler.register_action(H_("k_tg_debug_info"), [&]()
-    {
-        toggle_debug_info();
-    });
-    handler.register_action(H_("k_tg_wireframe"), [&]()
-    {
-        toggle_wireframe();
-    });
+        case H_("k_tg_fog"):
+    		toggle_fog();
+    		break;
+        case H_("k_bb_next_mode"):
+    		next_bb_display_mode();
+    		break;
+        case H_("k_tg_line_models"):
+    		debug_renderer_->toggle_line_models();
+    		break;
+        case H_("k_light_volumes_next_mode"):
+    		next_light_display_mode();
+    		break;
+        case H_("k_tg_debug_overlay"):
+    		toggle_debug_overlay();
+    		break;
+        case H_("k_debug_overlay_next_mode"):
+    		debug_overlay_next();
+    		break;
+        case H_("k_tg_debug_info"):
+    		toggle_debug_info();
+    		break;
+        case H_("k_tg_wireframe"):
+    		toggle_wireframe();
+    		break;
+    }
 }
 
 #ifndef __DISABLE_EDITOR__

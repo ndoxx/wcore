@@ -2,6 +2,7 @@
 #define PIPELINE_H
 
 #include "math3d.h"
+#include "listener.h"
 
 #ifdef __PROFILING_RENDERERS__
     #include "clock.hpp"
@@ -23,7 +24,8 @@ class TextRenderer;
 class DebugRenderer;
 class DebugOverlayRenderer;
 class InputHandler;
-class RenderPipeline
+
+class RenderPipeline : public Listener
 {
 private:
     GeometryRenderer*        geometry_renderer_;
@@ -70,7 +72,7 @@ public:
     void toggle_debug_info();
     void debug_overlay_next();
 
-    void setup_user_inputs(InputHandler& handler);
+    void onKeyboardEvent(const WData& data);
     void render();
     void dbg_show_statistics();
 

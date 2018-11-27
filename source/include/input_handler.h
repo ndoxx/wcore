@@ -66,12 +66,15 @@ public:
                          uint16_t trigger = GLFW_PRESS,
                          bool repeat = false);
 
-    void stroke_debounce(Context& context,
+    bool stroke_debounce(Context& context,
                          hash_t binding_name,
-                         std::function<void(void)> Action);
+                         std::function<void(void)> Action); // DEPREC
+
+    bool stroke_debounce(Context& context,
+                         hash_t binding_name);
 
     void register_action(hash_t binding_name,
-                         std::function<void(void)> Action);
+                         std::function<void(void)> Action); // DEPREC
 
     void handle_keybindings(Context& context);
 

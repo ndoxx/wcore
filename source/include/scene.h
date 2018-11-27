@@ -96,12 +96,10 @@ public:
     // Methods
     // Listener
     void onMouseEvent(const WData& data);
+    void onKeyboardEvent(const WData& data);
 
     // Upload given chunk geometry to OpenGL
     inline void load_geometry(uint32_t chunk_index) { if(chunk_index) chunks_.at(chunk_index)->load_geometry(); }
-
-    // Setup key bindings
-    void setup_user_inputs(InputHandler& handler);
 
     // Update camera and models that use basic updaters
     virtual void update(const GameClock& clock) override;

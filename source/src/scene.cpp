@@ -200,7 +200,7 @@ void Scene::traverse_lights(LightVisitor func,
         chunks_.at(chunks_order_[ii])->traverse_lights(func, ifFunc);
 }
 
-void Scene::setup_user_inputs(InputHandler& handler)
+/*void Scene::setup_user_inputs(InputHandler& handler)
 {
     handler.register_action(H_("k_run"), [&]()
     {
@@ -234,7 +234,7 @@ void Scene::setup_user_inputs(InputHandler& handler)
     {
         camera_->descend();
     });
-}
+}*/
 
 void Scene::traverse_loaded_neighbor_chunks(uint32_t chunk_index,
                                             std::function<void(Chunk*, wcore::NEIGHBOR)> visitor)
@@ -280,6 +280,38 @@ void Scene::onMouseEvent(const WData& data)
     get_camera()->update_orientation(md.dx, md.dy);
 }
 
+void Scene::onKeyboardEvent(const WData& data)
+{
+    const KbdData& kbd = static_cast<const KbdData&>(data);
+
+    switch(kbd.key_binding)
+    {
+        case H_("k_run"):
+            camera_->set_speed(Camera::SPEED_FAST);
+            break;
+        case H_("k_walk"):
+            camera_->set_speed(Camera::SPEED_SLOW);
+            break;
+        case H_("k_forward"):
+            camera_->move_forward();
+            break;
+        case H_("k_backward"):
+            camera_->move_backward();
+            break;
+        case H_("k_strafe_left"):
+            camera_->strafe_left();
+            break;
+        case H_("k_strafe_right"):
+            camera_->strafe_right();
+            break;
+        case H_("k_ascend"):
+            camera_->ascend();
+            break;
+        case H_("k_descend"):
+            camera_->descend();
+            break;
+    }
+}
 
 void Scene::update(const GameClock& clock)
 {

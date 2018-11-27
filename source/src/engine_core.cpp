@@ -80,16 +80,13 @@ void GameLoop::init_imgui()
 }
 
 GameLoop::GameLoop():
-context_(),
 render_editor_GUI_(false)
 {
     // GUI initialization
 #ifndef __DISABLE_EDITOR__
     init_imgui();
+    subscribe(H_("input.keyboard"), handler_, &GameLoop::onKeyboardEvent);
 #endif
-
-    // Clear window
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 GameLoop::~GameLoop()
@@ -138,18 +135,38 @@ static std::string dbg_display_sub_duration(const std::string& name,
 }
 #endif
 
-void GameLoop::setup_user_inputs(InputHandler& handler)
+void GameLoop::onKeyboardEvent(const WData& data)
 {
-    game_clock_.setup_user_inputs(handler);
+    const KbdData& kbd = static_cast<const KbdData&>(data);
 
-#ifndef __DISABLE_EDITOR__
-    handler.register_action(H_("k_tg_editor"), [&]()
+    switch(kbd.key_binding)
     {
-        handler.toggle_mouse_lock();
-        toggle_editor_GUI_rendering();
-        toggle_cursor();
-    });
+#ifndef __DISABLE_EDITOR__
+        case H_("k_tg_editor"):
+            handler_.toggle_mouse_lock();
+            toggle_editor_GUI_rendering();
+            toggle_cursor();
+        break;
 #endif
+        case H_("k_tg_pause"):
+    		game_clock_.toggle_pause();
+    		break;
+        case H_("k_frame_speed_up"):
+    		game_clock_.frame_speed_up();
+    		break;
+        case H_("k_frame_slow_down"):
+    		game_clock_.frame_slow_down();
+    		break;
+        case H_("k_next_frame"):
+    		game_clock_.require_next_frame();
+    		break;
+    }
+}
+
+void GameLoop::handle_events()
+{
+    handler_.handle_mouse(context_);
+    handler_.handle_keybindings(context_);
 }
 
 int GameLoop::main_loop()
@@ -190,7 +207,7 @@ int GameLoop::main_loop()
 #ifdef __PROFILING_GAMELOOP__
         profile_clock.restart();
 #endif //__PROFILING_GAMELOOP__
-        update_func_(context_, dt);
+        handle_events();
         // Start the Dear ImGui frame
 #ifndef __DISABLE_EDITOR__
         imgui_new_frame();

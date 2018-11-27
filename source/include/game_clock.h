@@ -20,8 +20,6 @@ public:
     GameClock();
     ~GameClock() = default;
 
-    void setup_user_inputs(InputHandler& handler);
-
     inline bool is_next_frame_required() const { return next_frame_required_; }
     inline bool is_game_paused() const { return pause_; }
     inline float get_frame_speed() const { return next_frame_required_?1.0f:frame_speed_; }

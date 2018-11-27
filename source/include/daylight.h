@@ -4,6 +4,7 @@
 #include "updatable.h"
 #include "cspline.h"
 #include "math3d.h"
+#include "listener.h"
 
 namespace wcore
 {
@@ -11,7 +12,7 @@ namespace wcore
 class RenderPipeline;
 class InputHandler;
 
-class DaylightSystem: public Updatable
+class DaylightSystem: public Updatable, public Listener
 {
 private:
     RenderPipeline& pipeline_;
@@ -39,7 +40,7 @@ public:
     void generate_widget();
 #endif
 
-    void setup_user_inputs(InputHandler& handler);
+    void onKeyboardEvent(const WData& data);
     virtual void update(const GameClock& clock) override;
 
     inline void toggle() { active_ = !active_; }

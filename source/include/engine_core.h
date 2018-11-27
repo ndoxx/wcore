@@ -7,21 +7,22 @@
 #include "logger.h"
 #include "context.h"
 #include "game_clock.h"
+#include "input_handler.h"
+#include "listener.h"
 
 namespace wcore
 {
 
 class Updatable;
-class InputHandler;
 
-class GameLoop
+class GameLoop: public Listener
 {
 private:
     Context context_;
     GameClock game_clock_;
+    InputHandler handler_;
     bool render_editor_GUI_;
 
-    std::function<void(Context&, float)> update_func_;
     std::function<void(void)> render_func_;
 
     std::list<std::function<void(void)>> editor_widget_generators_;
@@ -36,9 +37,8 @@ public:
     GameLoop();
     ~GameLoop();
 
-    void _update(std::function<void(Context&, float)> update_func) { update_func_ = update_func;}
-    void set_render_func(std::function<void(void)> render_func) { render_func_ = render_func;}
-
+    inline InputHandler& get_input_handler() { return handler_; }
+    inline void set_render_func(std::function<void(void)> render_func) { render_func_ = render_func;}
     inline void register_updatable_system(Updatable* system) { updatables_.push_back(system); }
 
 #ifndef __DISABLE_EDITOR__
@@ -49,8 +49,8 @@ public:
 
     inline void toggle_cursor() { context_.toggle_cursor(); }
 
-    void setup_user_inputs(InputHandler& handler);
-
+    void onKeyboardEvent(const WData& data);
+    void handle_events();
     int main_loop();
 };
 

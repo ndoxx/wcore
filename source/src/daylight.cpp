@@ -96,16 +96,16 @@ void DaylightSystem::debug_export_splines()
 #endif
 }
 
-void DaylightSystem::setup_user_inputs(InputHandler& handler)
+void DaylightSystem::onKeyboardEvent(const WData& data)
 {
-    /*subscribe(H_("k_tg_daysys"), handler, [&](const WData& data)
+    const KbdData& kbd = static_cast<const KbdData&>(data);
+
+    switch(kbd.key_binding)
     {
-        toggle();
-    });*/
-    handler.register_action(H_("k_tg_daysys"), [&]()
-    {
-        toggle();
-    });
+        case H_("k_tg_daysys"):
+    		toggle();
+    		break;
+    }
 }
 
 void DaylightSystem::update(const GameClock& clock)

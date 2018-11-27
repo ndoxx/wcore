@@ -71,16 +71,19 @@ void SceneLoader::load_level(const char* level_name)
     current_map_ = level_name;
 }
 
-void SceneLoader::setup_user_inputs(InputHandler& handler)
+void SceneLoader::onKeyboardEvent(const WData& data)
 {
-    handler.register_action(H_("k_reload_chunks"), [&]()
+    const KbdData& kbd = static_cast<const KbdData&>(data);
+
+    switch(kbd.key_binding)
     {
-        reload_chunks();
-    });
-    handler.register_action(H_("k_reload_map"), [&]()
-    {
-        reload_map();
-    });
+        case H_("k_reload_chunks"):
+    		reload_chunks();
+    		break;
+        case H_("k_reload_map"):
+    		reload_map();
+    		break;
+    }
 }
 
 

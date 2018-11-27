@@ -8,6 +8,7 @@
 
 #include "xml_parser.h"
 #include "math3d.h"
+#include "listener.h"
 
 #ifdef __PROFILING_CHUNKS__
     #include "clock.hpp"
@@ -45,7 +46,7 @@ namespace math
     }
 }
 
-class SceneLoader
+class SceneLoader: public Listener
 {
 private:
     XMLParser xml_parser_;
@@ -81,7 +82,7 @@ public:
     void reload_chunks();
     void reload_map();
 
-    void setup_user_inputs(InputHandler& handler);
+    void onKeyboardEvent(const WData& data);
 
     inline uint32_t get_chunk_size_meters() const { return chunk_size_m_; }
     inline uint32_t get_chunk_size() const        { return chunk_size_; }
