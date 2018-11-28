@@ -27,6 +27,9 @@ void GlobalsSet(hashstr_t name, const void* data)
 {
     switch(name)
     {
+        default:
+            warn_global_not_found(name);
+            break;
         case HS_("SCR_W"):
             GLB.SCR_W = *reinterpret_cast<const uint32_t*>(data);
             break;
@@ -37,10 +40,8 @@ void GlobalsSet(hashstr_t name, const void* data)
             GLB.SCR_FULL = *reinterpret_cast<const bool*>(data);
             break;
         case HS_("START_LEVEL"):
-            GLB.START_LEVEL = *reinterpret_cast<const char*>(data);
-            break;
-        default:
-            warn_global_not_found(name);
+            char* value = const_cast<char*>(reinterpret_cast<const char*>(data));
+            GLB.START_LEVEL = value;
             break;
     }
 }

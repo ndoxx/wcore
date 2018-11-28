@@ -7,6 +7,9 @@
 #include "wapi.h"
 #include "wtypes.h"
 
+using wcore::H_;
+using wcore::HS_;
+
 namespace wcore
 {
     // Globals access
