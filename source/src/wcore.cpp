@@ -16,6 +16,35 @@
 namespace wcore
 {
 
+static void warn_global_not_found(hashstr_t name)
+{
+    DLOGW("Global name not found:", "core", Severity::WARN);
+    DLOGI(std::to_string(name), "core", Severity::WARN);
+    DLOGW("Skipping.", "core", Severity::WARN);
+}
+
+void GlobalsSet(hashstr_t name, const void* data)
+{
+    switch(name)
+    {
+        case HS_("SCR_W"):
+            GLB.SCR_W = *reinterpret_cast<const uint32_t*>(data);
+            break;
+        case HS_("SCR_H"):
+            GLB.SCR_H = *reinterpret_cast<const uint32_t*>(data);
+            break;
+        case HS_("SCR_FULL"):
+            GLB.SCR_FULL = *reinterpret_cast<const bool*>(data);
+            break;
+        case HS_("START_LEVEL"):
+            GLB.START_LEVEL = *reinterpret_cast<const char*>(data);
+            break;
+        default:
+            warn_global_not_found(name);
+            break;
+    }
+}
+
 struct Engine::EngineImpl
 {
     EngineImpl():
@@ -73,6 +102,12 @@ void Engine::Init(int argc, char const *argv[],
 {
     // Parse config file
     CONFIG.init();
+
+    // First, try to initialize default values using config
+    wcore::CONFIG.get(wcore::HS_("root.display.width"),  wcore::GLB.SCR_W);
+    wcore::CONFIG.get(wcore::HS_("root.display.height"), wcore::GLB.SCR_H);
+    wcore::CONFIG.get(wcore::HS_("root.display.full"),   wcore::GLB.SCR_FULL);
+
     // Parse command line arguments
     parse_arguments(argc, argv);
 

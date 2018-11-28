@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "math3d.h"
-#include "utils.h"
+#include "wtypes.h"
 
 namespace wcore
 {

@@ -7,7 +7,7 @@
 #include <bitset>
 #include <iomanip>
 
-#include "utils.h"
+#include "wtypes.h"
 
 namespace wcore
 {

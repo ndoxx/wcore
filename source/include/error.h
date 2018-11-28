@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "utils.h"
+#include "wtypes.h"
 
 namespace wcore
 {

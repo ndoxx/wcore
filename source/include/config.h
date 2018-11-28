@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "singleton.hpp"
-#include "utils.h"
+#include "wtypes.h"
 #include "xml_parser.h"
 
 namespace wcore

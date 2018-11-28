@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <map>
 
-#include "utils.h"
+#include "wtypes.h"
 #include "math3d.h"
 
 namespace wcore

@@ -9,7 +9,7 @@
 #include <string>
 #include <queue>
 
-#include "utils.h"
+#include "wtypes.h"
 #include "renderer.hpp"
 #include "math3d.h"
 #include "shader.h"

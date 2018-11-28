@@ -4,7 +4,7 @@
 #include <functional>
 
 #include "frame_buffer.h"
-#include "utils.h"
+#include "wtypes.h"
 
 namespace wcore
 {

@@ -46,20 +46,13 @@ set(SRC_SANDBOX
     source/src/arguments.cpp
    )
 
-# add_executable(sandbox ${SRC_SANDBOX})
+add_executable(sandbox ${SRC_SANDBOX})
 
-add_executable(sandbox
-               ${SRC_MATHS}
-               ${SRC_CORE}
-               ${SRC_3D}
-               ${SRC_RES}
-               ${SRC_IMGUI}
-               ${SRC_SANDBOX})
-
-target_include_directories(sandbox PRIVATE "${CMAKE_SOURCE_DIR}/source")
+target_include_directories(sandbox PRIVATE "${CMAKE_SOURCE_DIR}/hosts/sandbox/source/include")
+# TMP---------------
 target_include_directories(sandbox PRIVATE "${CMAKE_SOURCE_DIR}/source/include")
 target_include_directories(sandbox PRIVATE "${CMAKE_SOURCE_DIR}/source/vendor")
-target_include_directories(sandbox PRIVATE "${CMAKE_SOURCE_DIR}/hosts/sandbox/source/include")
+# /TMP---------------
 
 set_target_properties(sandbox
     PROPERTIES
@@ -68,32 +61,11 @@ set_target_properties(sandbox
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
-link_directories(${CMAKE_SOURCE_DIR}/lib)
-
-# add_definitions(-D__DISABLE_EDITOR__)
-add_definitions(-D__DEBUG__)
-# add_definitions(-D__PRESERVE_STRS__)
-# add_definitions(-D__DEBUG_EXPORT_SPLINES__)
-# add_definitions(-D__PROFILING_GAMELOOP__)
-# add_definitions(-D__PROFILING_RENDERERS__)
-# add_definitions(-D__PROFILING_CHUNKS__)
-# add_definitions(-D__PROFILING_STOP_AFTER_X_SAMPLES__)
-# add_definitions(-D__PROFILING_SET_1x1_VIEWPORT__)
-# add_definitions(-D__PROFILING_SET_2x2_TEXTURE__)
-# add_definitions(-D__OPTIM_BLOOM_USE_PP2__)
-# add_definitions(-D__EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__)
-# add_definitions(-D__EXPERIMENTAL_VSM_BLUR__)
-# add_definitions(-D__OPTIM_LIGHT_VOLUMES_STENCIL_INVERT__)
-
-add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
+add_library(iwcore SHARED IMPORTED)
+set_target_properties(iwcore PROPERTIES
+  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/libwcore.so"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source"
+)
 
 target_link_libraries(sandbox
-                      m
-                      stdc++fs
-                      GL
-                      glfw
-                      GLEW
-                      png
-                      z
-                      freetype
-                      pthread)
+                      iwcore)

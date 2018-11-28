@@ -5,7 +5,7 @@
 #include <string>
 #include <cstdint>
 
-#include "utils.h"
+#include "wtypes.h"
 
 namespace wcore
 {

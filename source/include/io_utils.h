@@ -6,7 +6,7 @@
 #include <vector>
 #include <istream>
 
-#include "utils.h"
+#include "wtypes.h"
 
 namespace wcore
 {

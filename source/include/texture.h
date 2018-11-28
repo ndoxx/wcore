@@ -10,7 +10,7 @@
 #include <string>
 #include <GL/glew.h>
 
-#include "utils.h"
+#include "wtypes.h"
 #include "png_loader.h"
 
 namespace wcore

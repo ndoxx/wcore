@@ -2,11 +2,16 @@
 #define WCORE_H
 
 #include <memory>
+#include <cstdint>
 
 #include "wapi.h"
+#include "wtypes.h"
 
 namespace wcore
 {
+    // Globals access
+    extern "C" void WEXPORT GlobalsSet(hashstr_t name, const void* data);
+
     class WEXPORT Engine
     {
     public:
