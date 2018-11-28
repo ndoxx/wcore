@@ -53,9 +53,9 @@ add_executable(ecs
 
 set_target_properties(ecs
     PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
 link_directories(${CMAKE_SOURCE_DIR}/lib)

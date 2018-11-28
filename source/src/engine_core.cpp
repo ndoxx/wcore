@@ -3,7 +3,6 @@
 #include <GL/glew.h>
 
 #include "engine_core.h"
-#include "arguments.h"
 #include "config.h"
 #include "globals.h"
 #include "updatable.h"

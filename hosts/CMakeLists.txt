@@ -1,6 +1,4 @@
-subdirs(rd_test)
+subdirs(sandbox)
 subdirs(ecs_test)
 
-# Give full access to headers to host applications
-include_directories(${wcore_SOURCE_DIR}/source/include)
-include_directories(${wcore_SOURCE_DIR}/source/vendor)
+include_directories(${CMAKE_SOURCE_DIR}/source)

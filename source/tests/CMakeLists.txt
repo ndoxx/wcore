@@ -27,41 +27,41 @@ set(CMAKE_BUILD_TYPE Release)
 # set(CMAKE_BUILD_TYPE MinSizeRel)
 # set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
-include_directories(${wcore_SOURCE_DIR}/source/include)
-include_directories(${wcore_SOURCE_DIR}/source/vendor)
+include_directories(${CMAKE_SOURCE_DIR}/source/include)
+include_directories(${CMAKE_SOURCE_DIR}/source/vendor)
 
 
 set(SRC_MATHS_TEST
-    ${wcore_SOURCE_DIR}/source/src/quaternion.cpp
-    ${wcore_SOURCE_DIR}/source/src/math3d.cpp
-    ${wcore_SOURCE_DIR}/source/src/bezier.cpp
-    ${wcore_SOURCE_DIR}/source/src/algorithms.cpp)
+    ${CMAKE_SOURCE_DIR}/source/src/quaternion.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/math3d.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/bezier.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/algorithms.cpp)
 
 set(SRC_CORE_TEST
-    ${wcore_SOURCE_DIR}/source/src/informer.cpp
-    ${wcore_SOURCE_DIR}/source/src/listener.cpp
-    ${wcore_SOURCE_DIR}/source/src/logger.cpp
-    ${wcore_SOURCE_DIR}/source/src/wentity.cpp
-    ${wcore_SOURCE_DIR}/source/src/wcomponent.cpp)
+    ${CMAKE_SOURCE_DIR}/source/src/informer.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/listener.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/logger.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/wentity.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/wcomponent.cpp)
 
 set(SRC_3D_TEST
-    ${wcore_SOURCE_DIR}/source/src/model.cpp
-    ${wcore_SOURCE_DIR}/source/src/transformation.cpp
-    ${wcore_SOURCE_DIR}/source/src/camera.cpp)
+    ${CMAKE_SOURCE_DIR}/source/src/model.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/transformation.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/camera.cpp)
 
 set(SRC_CONTEXT_TEST
-    ${wcore_SOURCE_DIR}/source/src/gl_context.cpp)
+    ${CMAKE_SOURCE_DIR}/source/src/gl_context.cpp)
 
 set(SRC_RES_TEST
-    ${wcore_SOURCE_DIR}/source/src/png_loader.cpp
-    ${wcore_SOURCE_DIR}/source/src/pixel_buffer.cpp)
+    ${CMAKE_SOURCE_DIR}/source/src/png_loader.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/pixel_buffer.cpp)
 
 set(SRC_IMGUI
-    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui.cpp
-    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui_draw.cpp
-    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui_widgets.cpp
-    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui_impl_glfw.cpp
-    ${wcore_SOURCE_DIR}/source/vendor/imgui/imgui_impl_opengl3.cpp)
+    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui.cpp
+    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui_draw.cpp
+    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui_widgets.cpp
+    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui_impl_glfw.cpp
+    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui_impl_opengl3.cpp)
 
 add_executable(test_math
                catch_app.cpp
@@ -75,7 +75,7 @@ add_executable(test_math
 
 set_target_properties(test_math
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
 #add_definitions(-D__PRESERVE_STRS__)
@@ -88,7 +88,7 @@ add_executable(test_engine_core
 
 set_target_properties(test_engine_core
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
 add_executable(test_engine_3d
@@ -103,7 +103,7 @@ add_executable(test_engine_3d
 
 set_target_properties(test_engine_3d
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
 target_link_libraries(test_engine_3d
@@ -119,7 +119,7 @@ add_executable(test_resources
 
 set_target_properties(test_resources
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
 #add_definitions(-D__DEBUG__)
@@ -135,7 +135,7 @@ add_executable(test_xml
 
 set_target_properties(test_xml
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
 target_link_libraries(test_xml
@@ -148,31 +148,31 @@ add_executable(test_logger
 
 set_target_properties(test_logger
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
 # add_definitions(-D__PRESERVE_STRS__)
 add_executable(test_config
                catch_app.cpp
                catch_config.cpp
-               ${wcore_SOURCE_DIR}/source/src/xml_utils.cpp
-               ${wcore_SOURCE_DIR}/source/src/config.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/xml_utils.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/config.cpp
                ${SRC_CORE_TEST})
 
 set_target_properties(test_config
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
 add_definitions(-D__DEBUG_MODEL__)
 add_executable(test_objload
                catch_app.cpp
                catch_objload.cpp
-               ${wcore_SOURCE_DIR}/source/src/obj_loader.cpp
-               ${wcore_SOURCE_DIR}/source/src/surface_mesh.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/obj_loader.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/surface_mesh.cpp
                ${SRC_CORE_TEST})
 
 set_target_properties(test_objload
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${wcore_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )

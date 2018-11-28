@@ -2,7 +2,6 @@
 
 #include "gfx_driver.h" // Won't compile if removed
 #include "error.h"
-#include "arguments.h"
 #include "config.h"
 #include "engine_core.h"
 #include "scene.h"
@@ -17,9 +16,9 @@
 namespace wcore
 {
 
-struct Engine::EngineResources
+struct Engine::EngineImpl
 {
-    EngineResources():
+    EngineImpl():
     game_loop(nullptr),
     scene_loader(nullptr),
     pipeline(nullptr),
@@ -29,7 +28,7 @@ struct Engine::EngineResources
 
     }
 
-    ~EngineResources()
+    ~EngineImpl()
     {
         delete chunk_manager;
         delete daylight;
@@ -58,7 +57,7 @@ struct Engine::EngineResources
 };
 
 Engine::Engine():
-eres_(new EngineResources)
+eimpl_(new EngineImpl)
 {
 
 }
@@ -70,37 +69,37 @@ Engine::~Engine()
 
 
 void Engine::Init(int argc, char const *argv[],
-                  std::function<void(int, char const **)> argument_parser)
+                  void(*parse_arguments)(int, char const **))
 {
     // Parse config file
     CONFIG.init();
     // Parse command line arguments
-    argument_parser(argc, argv);
+    parse_arguments(argc, argv);
 
-    eres_->init();
+    eimpl_->init();
 
     // Initialize game_loop
-    auto&& input_handler = eres_->game_loop->get_input_handler();
-    eres_->game_loop->set_render_func([&]() { eres_->pipeline->render(); });
+    auto&& input_handler = eimpl_->game_loop->get_input_handler();
+    eimpl_->game_loop->set_render_func([&]() { eimpl_->pipeline->render(); });
 
-    // User input
+    // User input (debug)
     SCENE.subscribe(H_("input.mouse"), input_handler, &Scene::onMouseEvent);
     SCENE.subscribe(H_("input.keyboard"), input_handler, &Scene::onKeyboardEvent);
-    eres_->pipeline->subscribe(H_("input.keyboard"), input_handler, &RenderPipeline::onKeyboardEvent);
-    eres_->daylight->subscribe(H_("input.keyboard"), input_handler, &DaylightSystem::onKeyboardEvent);
-    eres_->scene_loader->subscribe(H_("input.keyboard"), input_handler, &SceneLoader::onKeyboardEvent);
-    eres_->chunk_manager->subscribe(H_("input.keyboard"), input_handler, &ChunkManager::onKeyboardEvent);
+    eimpl_->pipeline->subscribe(H_("input.keyboard"), input_handler, &RenderPipeline::onKeyboardEvent);
+    eimpl_->daylight->subscribe(H_("input.keyboard"), input_handler, &DaylightSystem::onKeyboardEvent);
+    eimpl_->scene_loader->subscribe(H_("input.keyboard"), input_handler, &SceneLoader::onKeyboardEvent);
+    eimpl_->chunk_manager->subscribe(H_("input.keyboard"), input_handler, &ChunkManager::onKeyboardEvent);
 
     // Editor widgets
 #ifndef __DISABLE_EDITOR__
-    eres_->game_loop->register_editor_widget([&](){ dbg::LOG.generate_widget(); });
-    eres_->game_loop->register_editor_widget([&](){ eres_->pipeline->generate_widget(); });
-    eres_->game_loop->register_editor_widget([&](){ eres_->daylight->generate_widget(); });
+    eimpl_->game_loop->register_editor_widget([&](){ dbg::LOG.generate_widget(); });
+    eimpl_->game_loop->register_editor_widget([&](){ eimpl_->pipeline->generate_widget(); });
+    eimpl_->game_loop->register_editor_widget([&](){ eimpl_->daylight->generate_widget(); });
 #endif
 
-    eres_->game_loop->register_updatable_system(*eres_->daylight);
-    eres_->game_loop->register_updatable_system(SCENE);
-    eres_->game_loop->register_updatable_system(*eres_->chunk_manager);
+    eimpl_->game_loop->register_updatable_system(*eimpl_->daylight);
+    eimpl_->game_loop->register_updatable_system(SCENE);
+    eimpl_->game_loop->register_updatable_system(*eimpl_->chunk_manager);
 
 #ifdef __DEBUG__
     show_driver_error("post Init() glGetError(): ");
@@ -110,9 +109,9 @@ void Engine::Init(int argc, char const *argv[],
 void Engine::LoadStart()
 {
     // Load level
-    eres_->scene_loader->load_level(GLB.START_LEVEL);
-    eres_->scene_loader->load_global(*eres_->daylight);
-    eres_->chunk_manager->init();
+    eimpl_->scene_loader->load_level(GLB.START_LEVEL);
+    eimpl_->scene_loader->load_global(*eimpl_->daylight);
+    eimpl_->chunk_manager->init();
 
 #ifdef __DEBUG__
     show_driver_error("post LoadStart() glGetError(): ");
@@ -121,8 +120,8 @@ void Engine::LoadStart()
 
 int Engine::Run()
 {
-    int ret = eres_->game_loop->run();
-    eres_->pipeline->dbg_show_statistics();
+    int ret = eimpl_->game_loop->run();
+    eimpl_->pipeline->dbg_show_statistics();
     return ret;
 }
 
