@@ -58,7 +58,7 @@ void destroy(const WComponent* comp);
         template<>                                                            \
         class ComponentRegistration<TYPE>                                     \
         {                                                                     \
-            static const wcore::component::detail::RegistryEntry<TYPE>& reg;       \
+            static const wcore::component::detail::RegistryEntry<TYPE>& reg;  \
         };                                                                    \
                                                                               \
         const wcore::component::detail::RegistryEntry<TYPE>&                  \

@@ -4,6 +4,12 @@
 
 #include "wcore.h"
 
+// TMP
+#include "wcomponent.h"
+#include "wentity.h"
+#include "basic_components.h"
+// TMP
+
 #include "weapon.h"
 
 using namespace wcore;

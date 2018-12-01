@@ -41,8 +41,8 @@ set(SRC_CORE_TEST
     ${CMAKE_SOURCE_DIR}/source/src/informer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/listener.cpp
     ${CMAKE_SOURCE_DIR}/source/src/logger.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/entity.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/component.cpp)
+    ${CMAKE_SOURCE_DIR}/source/src/wentity.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/wcomponent.cpp)
 
 set(SRC_3D_TEST
     ${CMAKE_SOURCE_DIR}/source/src/model.cpp
