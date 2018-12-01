@@ -1,5 +1,6 @@
+#include <iostream>
+
 #include "weapon.h"
-#include "wcore.h"
 
 Weapon::Weapon():
 damage_type_(damage_t::BULLET),
@@ -70,7 +71,7 @@ void BeamWeapon::update(float dt)
             {
                 energy_ = 0.f;
                 ready_ = false;
-                DLOG("<n>" + name_ + "</n> energy buffer <b>depleted</b>.");
+                std::cout << name_ << "energy buffer depleted." << std::endl;
             }
         }
         else

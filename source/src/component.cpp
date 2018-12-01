@@ -1,4 +1,4 @@
-#include "wcomponent.h"
+#include "component.h"
 
 namespace wcore
 {

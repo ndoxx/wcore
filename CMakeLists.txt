@@ -23,8 +23,8 @@ set(SRC_CORE
     ${CMAKE_SOURCE_DIR}/source/src/listener.cpp
     ${CMAKE_SOURCE_DIR}/source/src/logger.cpp
     ${CMAKE_SOURCE_DIR}/source/src/message_tracker.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/wentity.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/wcomponent.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/entity.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/component.cpp
     ${CMAKE_SOURCE_DIR}/source/src/game_clock.cpp
     ${CMAKE_SOURCE_DIR}/source/src/chunk.cpp
     ${CMAKE_SOURCE_DIR}/source/src/chunk_manager.cpp

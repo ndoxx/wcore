@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-#include "wcomponent.h"
+#include "component.h"
 
 namespace wcore
 {

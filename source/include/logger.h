@@ -244,16 +244,8 @@ namespace dbg
 } // namespace dbg
 } // namespace wcore
 
-/*static inline void DLOG(const std::string& message, hashstr_t channel, uint32_t severity)
-{
-#ifdef __DEBUG__
-
-#endif
-}*/
-
 
 // DLOGx macros in GLOBAL namespace
-
 #ifdef __DEBUG__
     #define DLOG_SET(LOG_PATH, ...) do { \
         wcore::dbg::LOG.set(LOG_PATH, ##__VA_ARGS__); \
@@ -322,18 +314,18 @@ namespace dbg
     #define DLOG_WRITE()                do { } while(0)
     #define DLOG_PRINT_REF()            do { } while(0)
     #define DLOG_TRACK(MTYPE, INFORMER) do { } while(0)
-    #define DLOG(MESSAGE, ...)          do { } while(0)
+    #define DLOG( ... )                 do { } while(0)
     #define FDLOG( ... )                do { } while(0)
-    #define DLOGR(MESSAGE)              do { } while(0)
-    #define DLOGI(MESSAGE)              do { } while(0)
-    #define DLOGT(MESSAGE)              do { } while(0)
-    #define DLOGN(MESSAGE)              do { } while(0)
-    #define DLOGS(MESSAGE)              do { } while(0)
-    #define DLOGW(MESSAGE)              do { } while(0)
-    #define DLOGE(MESSAGE)              do { } while(0)
-    #define DLOGF(MESSAGE)              do { } while(0)
-    #define DLOGG(MESSAGE)              do { } while(0)
-    #define DLOGB(MESSAGE)              do { } while(0)
+    #define DLOGR( ... )                do { } while(0)
+    #define DLOGI( ... )                do { } while(0)
+    #define DLOGT( ... )                do { } while(0)
+    #define DLOGN( ... )                do { } while(0)
+    #define DLOGS( ... )                do { } while(0)
+    #define DLOGW( ... )                do { } while(0)
+    #define DLOGE( ... )                do { } while(0)
+    #define DLOGF( ... )                do { } while(0)
+    #define DLOGG( ... )                do { } while(0)
+    #define DLOGB( ... )                do { } while(0)
     #define BANG(MESSAGE)               do { } while(0)
 #endif
 

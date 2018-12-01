@@ -6,7 +6,7 @@
 #include <memory>
 #include <cassert>
 
-#include "wcomponent_detail.h"
+#include "component_detail.h"
 
 namespace wcore
 {
@@ -58,7 +58,7 @@ void destroy(const WComponent* comp);
         template<>                                                            \
         class ComponentRegistration<TYPE>                                     \
         {                                                                     \
-            static const ::component::detail::RegistryEntry<TYPE>& reg;       \
+            static const wcore::component::detail::RegistryEntry<TYPE>& reg;       \
         };                                                                    \
                                                                               \
         const wcore::component::detail::RegistryEntry<TYPE>&                  \

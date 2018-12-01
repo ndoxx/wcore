@@ -6,6 +6,7 @@
 
 #include "wapi.h"
 #include "wtypes.h"
+#include "wecs.h"
 
 using wcore::H_;
 using wcore::HS_;

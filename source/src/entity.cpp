@@ -1,4 +1,4 @@
-#include "wentity.h"
+#include "entity.h"
 
 namespace wcore
 {

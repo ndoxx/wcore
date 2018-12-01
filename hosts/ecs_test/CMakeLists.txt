@@ -40,15 +40,19 @@ set(CMAKE_BUILD_TYPE Release)
 # set(CMAKE_BUILD_TYPE MinSizeRel)
 # set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
-subdirs(epsilon)
+subdirs(source)
 
 set(SRC_EPSILON
-    epsilon/src/weapon.cpp
+    source/src/weapon.cpp
+    source/src/main.cpp
    )
 
 add_executable(ecs ${SRC_EPSILON})
 
-target_include_directories(ecs PRIVATE "${CMAKE_SOURCE_DIR}/hosts/ecs_test/epsilon/include")
+target_include_directories(ecs PRIVATE "${CMAKE_SOURCE_DIR}/hosts/ecs_test/source/include")
+# TMP --------
+target_include_directories(ecs PRIVATE "${CMAKE_SOURCE_DIR}/source/include")
+# TMP --------
 
 set_target_properties(ecs
     PROPERTIES

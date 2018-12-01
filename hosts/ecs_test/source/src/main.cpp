@@ -1,27 +1,12 @@
 #include <vector>
 #include <cassert>
+#include <iostream>
 
-#include "logger.h"
-#include "wcomponent.h"
-#include "wentity.h"
-#include "transformation.h"
+#include "wcore.h"
 
 #include "weapon.h"
 
 using namespace wcore;
-
-class WCTransform: public WComponent, public Transformation
-{
-public:
-    WCTransform(): Transformation() {}
-    WCTransform(const math::vec3& position,
-                const math::quat& orientation,
-                float scale=1.0f): Transformation(position, orientation, scale) {}
-    WCTransform(math::vec3&& position,
-                math::quat&& orientation,
-                float scale=1.0f): Transformation(position, orientation, scale) {}
-};
-REGISTER_COMPONENT(WCTransform, std::type_index(typeid(WCTransform)));
 
 class WCModel_Stub: public WComponent
 {
@@ -127,7 +112,7 @@ public:
             if(weapon->ready())
             {
                 // shoot
-                DLOG("<n>" + weapon->get_name() + "</n> shooting");
+                std::cout << weapon->get_name() << " shooting." << std::endl;
             }
         }
     }
@@ -137,11 +122,11 @@ REGISTER_COMPONENT(WCShipWeaponMountingPoints, std::type_index(typeid(WCShipWeap
 using namespace math;
 int main(int argc, char** argv)
 {
-    DLOGS("ECS test application");
+    std::cout << "ECS test application" << std::endl;
 
     WEntity ship;
     {
-        auto ship_transform = ship.add_component<WCTransform>();
+        auto ship_transform = ship.add_component<wcore::component::WCTransform>();
         auto ship_model     = ship.add_component<WCModel_Stub>();
         auto ship_mounts    = ship.add_component<WCShipWeaponMountingPoints>();
 
