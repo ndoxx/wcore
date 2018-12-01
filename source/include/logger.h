@@ -244,6 +244,14 @@ namespace dbg
 } // namespace dbg
 } // namespace wcore
 
+/*static inline void DLOG(const std::string& message, hashstr_t channel, uint32_t severity)
+{
+#ifdef __DEBUG__
+
+#endif
+}*/
+
+
 // DLOGx macros in GLOBAL namespace
 
 #ifdef __DEBUG__
@@ -266,9 +274,9 @@ namespace dbg
     #define FDLOG( ... ) do { \
         wcore::dbg::LOG.printfold(__VA_ARGS__); \
         } while(0)
-    /*#define DLOG(MESSAGE, ...) do { \
-        wcore::dbg::LOG( MESSAGE, ##__VA_ARGS__ ); \
-        } while(0)*/
+    // #define DLOG(MESSAGE, ...) do { \
+    //     wcore::dbg::LOG( MESSAGE, ##__VA_ARGS__ ); \
+    //     } while(0)
     #define DLOG(MESSAGE, CHANNEL, SEVERITY) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::CANONICAL, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
         } while(0)

@@ -1,6 +1,6 @@
 #include "wcore.h"
 
-#include "gfx_driver.h" // Won't compile if removed
+#include "gfx_driver.h" // Won't compile if removed: ensures GLFW header included before GL
 #include "error.h"
 #include "config.h"
 #include "engine_core.h"
@@ -110,7 +110,8 @@ void Engine::Init(int argc, char const *argv[],
     wcore::CONFIG.get(wcore::HS_("root.display.full"),   wcore::GLB.SCR_FULL);
 
     // Parse command line arguments
-    parse_arguments(argc, argv);
+    if(parse_arguments)
+        parse_arguments(argc, argv);
 
     eimpl_->init();
 

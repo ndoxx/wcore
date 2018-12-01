@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace rd_test
+namespace sandbox
 {
 
 extern void parse_program_arguments(int argc, char const *argv[]);

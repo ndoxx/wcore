@@ -31,9 +31,8 @@ struct WData
 
 struct KbdData : public WData
 {
-    public:
-        KbdData(hash_t keyBinding): key_binding(keyBinding) {}
-        hash_t key_binding;
+    KbdData(hash_t keyBinding): key_binding(keyBinding) {}
+    hash_t key_binding;
 };
 
 // Offsets in bitset

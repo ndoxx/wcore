@@ -1,5 +1,5 @@
 #include "weapon.h"
-#include "logger.h"
+#include "wcore.h"
 
 Weapon::Weapon():
 damage_type_(damage_t::BULLET),

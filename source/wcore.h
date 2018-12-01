@@ -13,15 +13,15 @@ using wcore::HS_;
 namespace wcore
 {
     // Globals access
-    extern "C" void WEXPORT GlobalsSet(hashstr_t name, const void* data);
+    extern "C" void WAPI GlobalsSet(hashstr_t name, const void* data);
 
-    class WEXPORT Engine
+    class WAPI Engine
     {
     public:
         Engine();
         ~Engine();
 
-        void Init(int argc, char const *argv[], void(*parse_arguments)(int, char const **));
+        void Init(int argc, char const *argv[], void(*parse_arguments)(int, char const **)=nullptr);
         void LoadStart();
         int Run();
 

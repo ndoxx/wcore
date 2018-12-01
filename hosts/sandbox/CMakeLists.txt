@@ -49,10 +49,6 @@ set(SRC_SANDBOX
 add_executable(sandbox ${SRC_SANDBOX})
 
 target_include_directories(sandbox PRIVATE "${CMAKE_SOURCE_DIR}/hosts/sandbox/source/include")
-# TMP---------------
-target_include_directories(sandbox PRIVATE "${CMAKE_SOURCE_DIR}/source/include")
-target_include_directories(sandbox PRIVATE "${CMAKE_SOURCE_DIR}/source/vendor")
-# /TMP---------------
 
 set_target_properties(sandbox
     PROPERTIES

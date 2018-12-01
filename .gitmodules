@@ -4,3 +4,6 @@
 [submodule "source/vendor/delaunator"]
 	path = source/vendor/delaunator
 	url = https://github.com/delfrrr/delaunator-cpp.git
+[submodule "source/vendor/pybind11"]
+	path = source/vendor/pybind11
+	url = https://github.com/pybind/pybind11.git

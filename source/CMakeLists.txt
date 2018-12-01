@@ -56,6 +56,8 @@ set_target_properties(wcore
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
+target_compile_definitions(wcore PRIVATE WCORE_BUILD_LIB=1)
+
 
 add_library(freetype STATIC IMPORTED)
 set_target_properties(freetype PROPERTIES

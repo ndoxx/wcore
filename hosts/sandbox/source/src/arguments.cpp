@@ -4,7 +4,7 @@
 #include "arguments.h"
 #include "wcore.h"
 
-namespace rd_test
+namespace sandbox
 {
 
 static const char* get_cmd_option(const char** begin, const char ** end, const std::string & option)
