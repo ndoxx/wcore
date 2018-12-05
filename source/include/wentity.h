@@ -24,11 +24,9 @@ public:
         auto it = components_.find(index);
         if(it != components_.end())
         {
-#ifdef __DEBUG__
-            std::stringstream ss;
-            ss << "Ignoring duplicate component: " << typeid(T).name();
-            DLOGW(ss.str(), "entity", Severity::WARN);
-#endif
+            #ifdef __DEBUG__
+                warn_duplicate_component(typeid(T).name());
+            #endif
             return static_cast<T*>(it->second);
         }
 
@@ -58,6 +56,11 @@ public:
 
 protected:
     std::unordered_map<std::type_index, WComponent*> components_;
+
+private:
+#ifdef __DEBUG__
+    static void warn_duplicate_component(const char* name);
+#endif
 };
 
 }

@@ -46,7 +46,7 @@ void destroy(const WComponent* comp);
 
 // Macro to register a pair Type/Name for a component in the registry
 // and create a factory function for it
-#define REGISTER_COMPONENT(TYPE, NAME)                                        \
+#define REGISTER_COMPONENT(TYPE)                                              \
     namespace wcore {                                                         \
     namespace component {                                                     \
     namespace detail {                                                        \
@@ -63,7 +63,8 @@ void destroy(const WComponent* comp);
                                                                               \
         const wcore::component::detail::RegistryEntry<TYPE>&                  \
             ComponentRegistration<TYPE>::reg =                                \
-                wcore::component::detail::RegistryEntry<TYPE>::Instance(NAME);\
+                wcore::component::detail::RegistryEntry<TYPE>                 \
+                ::Instance(std::type_index(typeid(TYPE)));                    \
     }}}}
 
 #endif // WCOMPONENT_H

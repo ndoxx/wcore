@@ -30,7 +30,7 @@ private:
     int mesh_;
     int material_;
 };
-REGISTER_COMPONENT(WCModel_Stub, std::type_index(typeid(WCModel_Stub)));
+REGISTER_COMPONENT(WCModel_Stub);
 
 
 class WCShipWeaponMountingPoints: public WComponent
@@ -123,7 +123,7 @@ public:
         }
     }
 };
-REGISTER_COMPONENT(WCShipWeaponMountingPoints, std::type_index(typeid(WCShipWeaponMountingPoints)));
+REGISTER_COMPONENT(WCShipWeaponMountingPoints);
 
 using namespace math;
 int main(int argc, char** argv)

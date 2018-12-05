@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <typeindex>
 
-#include "logger.h"
+#include "error.h"
 
 namespace wcore
 {
@@ -62,7 +62,7 @@ namespace detail
             {
                 // This means there already is a component registered to
                 // this name.
-                DLOGW("Commponent already defined: ", "entity", Severity::WARN);
+                fatal("Commponent already defined: type_index= " + std::string(type.name()));
             }
         }
 

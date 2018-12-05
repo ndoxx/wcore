@@ -21,6 +21,6 @@ public:
 
 } // namespace wcore::component
 
-REGISTER_COMPONENT(WCTransform, std::type_index(typeid(WCTransform)));
+REGISTER_COMPONENT(WCTransform);
 
 #endif // WCOMPONENTS_H
