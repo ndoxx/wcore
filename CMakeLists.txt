@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.11)
 subdirs(source)
 subdirs(hosts)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+include(cotire)
+
 set(SRC_MATHS
     ${CMAKE_SOURCE_DIR}/source/src/quaternion.cpp
     ${CMAKE_SOURCE_DIR}/source/src/math3d.cpp

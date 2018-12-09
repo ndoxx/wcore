@@ -5083,3 +5083,33 @@ Je me retourne les méninges à essayer d'imaginer une API pour l'ECS. Le souci 
 
 Que les factories soient exposées, passe encore. L'ensemble de component_detail.h j'ai déjà un peu plus mal au cul. Mais _Transformation_ c'est un autre genre d'emmerdes. Basiquement, si on expose cette classe, alors on doit exposer toutes les classes de maths. Et si la situation se reproduit avec un autre composant qui hérite d'une classe de WCore ça va être l'explosion de caca.
     -> On peut imaginer une relation de composition entre _WCTransform_ et _Transformation_. Un wrapper et du PImpl, emballez c'est pesé.
+
+#[09-12-18] Cotire
+J'utilise le module CMake Cotire (compile time reducer) pour accélérer le build en automatisant la génération d'un precompiled header et de targets unity builds.
+
+Un dossier "cmake" est présent à la racine, qui contiendra tous les modules CMake customs que je vais intégrer au projet.
+Le CMakeLists.txt à la racine doit donc comporter les deux lignes suivantes :
+
+```cmake
+    set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+    include(cotire)
+```
+La première initialise le path parcouru en premier par CMake pour aller chercher un module lors d'un appel à include() ou find_package(). La seconde va exécuter cotire.cmake localisé dans le dossier de modules "cmake".
+
+Pour accélérer un build, il suffit de rajouter :
+```cmake
+    cotire([target_name])
+```
+juste après le target_link_libraries(), genre cotire(ecs), cotire(sandbox), cotire(wcore)...
+
+Et la suite c'est de la putain de magie noire. Le script va de ce que j'ai compris parcourir les sources et rechercher les headers externes (qui ne seront a priori jamais modifiés comme <vector>, <unordered_map> et méritent donc d'être dans un PCH afin d'éviter leur parsing à chaque putain d'include), et générer un PCH automatiquement sur lequel la cible sera construite.
+
+De plus, Cotire génère pour chaque target une target unity build avec la même sortie et les mêmes paramètres que la target de base, mais qui compile méga plus vite. Pour construire depuis un build unity il suffit de lancer :
+
+>> make target_name_unity
+
+exemples :
+>> make wcore_unity
+>> make sandbox_unity
+
+Le build est monolithique (un seul fichier cpp sera compilé, le fichier unity). On ne peut plus suivre la progression et le compilo mouline longtemps sans rien afficher ce qui est déconcertant, mais la compilation est beaucoup plus rapide.

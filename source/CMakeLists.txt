@@ -92,3 +92,4 @@ target_link_libraries(wcore
                       z
                       freetype
                       pthread)
+cotire(wcore)

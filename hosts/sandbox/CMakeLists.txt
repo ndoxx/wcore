@@ -65,3 +65,4 @@ set_target_properties(iwcore PROPERTIES
 
 target_link_libraries(sandbox
                       iwcore)
+cotire(sandbox)

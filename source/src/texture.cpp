@@ -148,6 +148,7 @@ Texture::wpTexture Texture::get_named_texture(hash_t name)
         ss << "[Texture] Couldn't find named texture: <n>" << name << "</n>";
         DLOGF(ss.str(), "texture", Severity::CRIT);
         fatal("Couldn't find named texture.");
+        return wpTexture(); // Never gets here
     }
     else
         return wpTexture(it->second);
