@@ -22,25 +22,17 @@ vec2 ShadowMapRenderer::SHADOW_TEXEL_SIZE(1.0f/ShadowMapRenderer::SHADOW_WIDTH, 
 
 ShadowMapRenderer::ShadowMapRenderer():
 Renderer<Vertex3P>(),
-sbuffer_(nullptr),
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-sm_shader_(ShaderResource("vsm.vert;vsm.frag")),
-#ifdef __EXPERIMENTAL_VSM_BLUR__
-blur_pass_shader_(ShaderResource("blurpass.vert;blurpass.frag")),
-tmp_tex_(std::make_shared<Texture>(
-            std::vector<std::string>{"tmp0Tex"},
-            SHADOW_WIDTH/2,
-            SHADOW_HEIGHT/2,
-            GL_TEXTURE_2D,
-            GL_LINEAR,
-            GL_RGBA32F,
-            GL_RGBA,
-            true)),
-tmp_fbo_(*tmp_tex_, std::vector<GLenum>{GL_COLOR_ATTACHMENT0}),
-#endif
+    sm_shader_(ShaderResource("vsm.vert;vsm.frag")),
+    #ifdef __EXPERIMENTAL_VSM_BLUR__
+        ping_pong_(ShaderResource("blurpass.vert;blurpass.frag"),
+                   SHADOW_WIDTH/2,
+                   SHADOW_HEIGHT/2),
+    #endif
 #else
-sm_shader_(ShaderResource("shadowmap.vert;null.frag"))
+    sm_shader_(ShaderResource("shadowmap.vert;null.frag")),
 #endif
+sbuffer_(nullptr)
 {
     CONFIG.get(H_("root.render.shadowmap.width"), SHADOW_WIDTH);
     CONFIG.get(H_("root.render.shadowmap.height"), SHADOW_HEIGHT);
@@ -111,38 +103,13 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map()
     GFX::disable_face_culling();
     //sbuffer_->generate_mipmaps(0, 0, 1);
     vertex_array_.bind();
-    blur_pass_shader_.use();
-
-    // Horizontal pass
-    sbuffer_->bind_as_source();
-    tmp_fbo_.bind_as_render_target();
-
-    blur_pass_shader_.send_uniform(H_("v2_texOffset"), vec2(2.0f/SHADOW_WIDTH,
-                                                        2.0f/SHADOW_HEIGHT));
-    blur_pass_shader_.send_uniform(H_("horizontal"), true);
-    blur_pass_shader_.send_uniform(H_("f_alpha"), 1.0f);
-
-    GFX::clear_color();
-    buffer_unit_.draw(2, 0);
-
-    tmp_fbo_.unbind();
-    sbuffer_->unbind_as_source();
-
-    // Vertical pass
-    tmp_tex_->bind_all();
-    sbuffer_->bind_as_target();
-    blur_pass_shader_.send_uniform(H_("v2_texOffset"), vec2(1.0f/SHADOW_WIDTH,
-                                                        1.0f/SHADOW_HEIGHT));
-    blur_pass_shader_.send_uniform(H_("horizontal"), false);
-    blur_pass_shader_.send_uniform(H_("f_alpha"), 1.0f);
-
-    GFX::clear_color();
-    buffer_unit_.draw(2, 0);
-
-    sbuffer_->unbind_as_target();
-
-    blur_pass_shader_.unuse();
-    vertex_array_.unbind();
+    ping_pong_.run(*static_cast<BufferModule*>(sbuffer_),
+                   BlurPassPolicy(1, SHADOW_WIDTH, SHADOW_HEIGHT),
+                   [&]()
+                   {
+                        GFX::clear_color();
+                        buffer_unit_.draw(2, 0);
+                   });
 #endif //__EXPERIMENTAL_VSM_BLUR__
 
     // Restore state

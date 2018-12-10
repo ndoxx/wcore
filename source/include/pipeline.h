@@ -39,7 +39,6 @@ private:
     DebugRenderer*           debug_renderer_;
     DebugOverlayRenderer*    debug_overlay_renderer_;
 
-    bool ssao_enabled_;
     bool bloom_enabled_;
     bool forward_enabled_;
 

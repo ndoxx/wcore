@@ -3,7 +3,10 @@
 
 #include "renderer.hpp"
 #include "shader.h"
-#include "frame_buffer.h"
+
+#ifdef __EXPERIMENTAL_VSM_BLUR__
+    #include "ping_pong_buffer.h"
+#endif
 
 namespace wcore
 {
@@ -13,13 +16,11 @@ class ShadowBuffer;
 class ShadowMapRenderer : public Renderer<Vertex3P>
 {
 private:
-    ShadowBuffer* sbuffer_;
     Shader sm_shader_;
 #ifdef __EXPERIMENTAL_VSM_BLUR__
-    Shader blur_pass_shader_;
-    std::shared_ptr<Texture> tmp_tex_;
-    FrameBuffer tmp_fbo_;
+    PingPongBuffer ping_pong_;
 #endif
+    ShadowBuffer* sbuffer_;
 
     static uint32_t SHADOW_WIDTH;
     static uint32_t SHADOW_HEIGHT;

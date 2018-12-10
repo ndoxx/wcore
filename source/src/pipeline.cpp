@@ -29,7 +29,6 @@ namespace wcore
 {
 
 RenderPipeline::RenderPipeline():
-ssao_enabled_(false),
 bloom_enabled_(true),
 forward_enabled_(true)
 #ifdef __PROFILING_RENDERERS__
@@ -146,10 +145,9 @@ void RenderPipeline::generate_widget()
         ImGui::Columns(2, nullptr, false);
         ImGui::Checkbox("Lighting", &lighting_renderer_->get_lighting_enabled_flag());
         ImGui::Checkbox("Shadow Mapping", &lighting_renderer_->get_shadow_enabled_flag());
-        if(ImGui::Checkbox("SSAO", &ssao_enabled_))
+        if(ImGui::Checkbox("SSAO", &SSAO_renderer_->get_active()))
         {
-            SSAO_renderer_->set_enabled(ssao_enabled_);
-            lighting_renderer_->set_SSAO_enabled(ssao_enabled_);
+            lighting_renderer_->set_SSAO_enabled(SSAO_renderer_->is_active());
         }
         ImGui::NextColumn();
         if(ImGui::Checkbox("Bloom", &bloom_enabled_))
@@ -158,6 +156,17 @@ void RenderPipeline::generate_widget()
         }
         ImGui::Checkbox("Forward pass", &forward_enabled_);
         ImGui::EndChild();
+
+        // SSAO options
+        if(SSAO_renderer_->is_active())
+        {
+            ImGui::Text("SSAO parameters");
+            ImGui::SliderFloat("Radius",    &SSAO_renderer_->SSAO_radius_, 0.01f, 0.3f);
+            ImGui::SliderFloat("Bias",      &SSAO_renderer_->SSAO_bias_, 0.0f, 1.0f);
+            ImGui::SliderFloat("Intensity", &SSAO_renderer_->SSAO_intensity_, 0.0f, 3.0f);
+            ImGui::SliderFloat("Scale",     &SSAO_renderer_->SSAO_scale_, 0.1f, 1.0f);
+            ImGui::SliderInt("Blur passes", &SSAO_renderer_->blur_npass_, 0, 5);
+        }
     }
 
     // DEBUG DISPLAY

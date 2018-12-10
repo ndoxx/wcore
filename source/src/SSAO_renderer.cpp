@@ -26,14 +26,18 @@ uint32_t SSAORenderer::NOISE_SIZE_ = pow(SSAORenderer::NOISE_SQRSIZE_,2);
 SSAORenderer::SSAORenderer():
 Renderer<Vertex3P>(),
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
+ping_pong_(ShaderResource("blurpass.vert;blurpass.frag"),
+           SSAOBuffer::Instance().get_width()/2,
+           SSAOBuffer::Instance().get_height()/2),
 out_size_(SSAOBuffer::Instance().get_width(),
           SSAOBuffer::Instance().get_height()),
 noise_scale_(out_size_/(float(NOISE_SQRSIZE_))),
-SSAO_radius_(0.25),
+active_(false),
+SSAO_radius_(0.10),
 SSAO_bias_(0.025),
 SSAO_intensity_(1.0),
 SSAO_scale_(0.4),
-active_(false)
+blur_npass_(1)
 {
     load_geometry();
     generate_random_kernel();
@@ -91,7 +95,7 @@ void SSAORenderer::render()
     SSAO_shader_.send_uniform(H_("rd.f_bias"), SSAO_bias_);
     SSAO_shader_.send_uniform(H_("rd.f_intensity"), SSAO_intensity_);
     SSAO_shader_.send_uniform(H_("rd.f_scale"), SSAO_scale_);
-    //SSAO_shader_.send_uniform(H_("rd.b_invert_normals"), false);
+    SSAO_shader_.send_uniform(H_("rd.b_invert_normals"), true);
     // For position reconstruction
     SSAO_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
 
@@ -101,6 +105,23 @@ void SSAORenderer::render()
     gbuffer.unbind_as_source();
 
     SSAO_shader_.unuse();
+
+    if(blur_npass_)
+    {
+        // Blur pass on shadow map
+        GFX::disable_face_culling();
+        //sbuffer_->generate_mipmaps(0, 0, 1);
+        vertex_array_.bind();
+        ping_pong_.run(*static_cast<BufferModule*>(&ssaobuffer),
+                       BlurPassPolicy(blur_npass_,
+                                      SSAOBuffer::Instance().get_width(),
+                                      SSAOBuffer::Instance().get_height()),
+                       [&]()
+                       {
+                            GFX::clear_color();
+                            buffer_unit_.draw(2, 0);
+                       });
+    }
 }
 
 void SSAORenderer::generate_random_kernel()

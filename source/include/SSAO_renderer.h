@@ -3,6 +3,7 @@
 
 #include "renderer.hpp"
 #include "shader.h"
+#include "ping_pong_buffer.h"
 
 namespace wcore
 {
@@ -11,14 +12,12 @@ class SSAORenderer : public Renderer<Vertex3P>
 {
 private:
     Shader SSAO_shader_;
+    PingPongBuffer ping_pong_;
     math::vec2 out_size_;
 
     std::vector<math::vec3> ssao_kernel_;
     math::vec2 noise_scale_;
-    float SSAO_radius_;
-    float SSAO_bias_;
-    float SSAO_intensity_;
-    float SSAO_scale_;
+
     unsigned int noise_texture_;
     bool active_;
 
@@ -28,6 +27,12 @@ private:
     static uint32_t NOISE_SIZE_;
 
 public:
+    float SSAO_radius_;
+    float SSAO_bias_;
+    float SSAO_intensity_;
+    float SSAO_scale_;
+    int   blur_npass_;
+
     SSAORenderer();
     virtual ~SSAORenderer();
 
@@ -35,9 +40,10 @@ public:
 
     inline void toggle() { active_ = !active_; }
     inline void set_enabled(bool value) { active_ = value; }
+    inline bool is_active() const { return active_; }
+    inline bool& get_active() { return active_; }
 
     void generate_random_kernel();
-
 };
 
 }
