@@ -156,16 +156,20 @@ void RenderPipeline::generate_widget()
         }
         ImGui::Checkbox("Forward pass", &forward_enabled_);
         ImGui::EndChild();
+    }
 
-        // SSAO options
-        if(SSAO_renderer_->is_active())
+    // SSAO OPTIONS
+    if(SSAO_renderer_->is_active())
+    {
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::CollapsingHeader("SSAO control"))
         {
-            ImGui::Text("SSAO parameters");
-            ImGui::SliderFloat("Radius",    &SSAO_renderer_->SSAO_radius_, 0.01f, 0.3f);
-            ImGui::SliderFloat("Bias",      &SSAO_renderer_->SSAO_bias_, 0.0f, 1.0f);
-            ImGui::SliderFloat("Intensity", &SSAO_renderer_->SSAO_intensity_, 0.0f, 3.0f);
-            ImGui::SliderFloat("Scale",     &SSAO_renderer_->SSAO_scale_, 0.1f, 1.0f);
-            ImGui::SliderInt("Blur passes", &SSAO_renderer_->blur_npass_, 0, 5);
+            ImGui::SliderFloat("Radius",      &SSAO_renderer_->SSAO_radius_, 0.01f, 1.0f);
+            ImGui::SliderFloat("Scalar bias", &SSAO_renderer_->SSAO_bias_, 0.0f, 1.0f);
+            ImGui::SliderFloat("Vector bias", &SSAO_renderer_->SSAO_vbias_, 0.0f, 0.5f);
+            ImGui::SliderFloat("Intensity",   &SSAO_renderer_->SSAO_intensity_, 0.0f, 5.0f);
+            ImGui::SliderFloat("Scale",       &SSAO_renderer_->SSAO_scale_, 0.01f, 1.0f);
+            ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_npass_, 0, 5);
         }
     }
 
@@ -257,7 +261,7 @@ void RenderPipeline::generate_widget()
     {
         ImGui::PlotVar("Draw time", 1e3*last_render_time_, 0.0f, 16.66f);
         ImGui::PlotVar("Geometry pass", 1e3*geometry_dt_fifo_.last_element(), 0.0f, 16.66f);
-        if(ssao_enabled_)
+        if(SSAO_renderer_->is_active())
             ImGui::PlotVar("SSAO", 1e3*SSAO_dt_fifo_.last_element(), 0.0f, 16.66f);
         ImGui::PlotVar("Lighting pass", 1e3*lighting_dt_fifo_.last_element(), 0.0f, 16.66f);
         ImGui::PlotVar("Forward pass", 1e3*forward_dt_fifo_.last_element(), 0.0f, 16.66f);

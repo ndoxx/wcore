@@ -10,6 +10,7 @@ struct render_data
     float f_intensity;
     float f_scale;
     float f_bias;
+    float f_vbias;
 
     bool b_invert_normals;
     // Position reconstruction

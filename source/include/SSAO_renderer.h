@@ -29,6 +29,7 @@ private:
 public:
     float SSAO_radius_;
     float SSAO_bias_;
+    float SSAO_vbias_;
     float SSAO_intensity_;
     float SSAO_scale_;
     int   blur_npass_;

@@ -32,9 +32,10 @@ ping_pong_(ShaderResource("blurpass.vert;blurpass.frag"),
 out_size_(SSAOBuffer::Instance().get_width(),
           SSAOBuffer::Instance().get_height()),
 noise_scale_(out_size_/(float(NOISE_SQRSIZE_))),
-active_(false),
+active_(true),
 SSAO_radius_(0.10),
 SSAO_bias_(0.025),
+SSAO_vbias_(0.05),
 SSAO_intensity_(1.0),
 SSAO_scale_(0.4),
 blur_npass_(1)
@@ -93,9 +94,10 @@ void SSAORenderer::render()
         //SSAO_shader_.send_uniform(H_("rd.v3_lightDir"), V.submatrix(3,3)*dir_light->get_position());
     SSAO_shader_.send_uniform(H_("rd.f_radius"), SSAO_radius_);
     SSAO_shader_.send_uniform(H_("rd.f_bias"), SSAO_bias_);
+    SSAO_shader_.send_uniform(H_("rd.f_vbias"), SSAO_vbias_);
     SSAO_shader_.send_uniform(H_("rd.f_intensity"), SSAO_intensity_);
     SSAO_shader_.send_uniform(H_("rd.f_scale"), SSAO_scale_);
-    SSAO_shader_.send_uniform(H_("rd.b_invert_normals"), true);
+    //SSAO_shader_.send_uniform(H_("rd.b_invert_normals"), false);
     // For position reconstruction
     SSAO_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
 
@@ -106,11 +108,10 @@ void SSAORenderer::render()
 
     SSAO_shader_.unuse();
 
+    // Blur pass on occlusion texture
     if(blur_npass_)
     {
-        // Blur pass on shadow map
-        GFX::disable_face_culling();
-        //sbuffer_->generate_mipmaps(0, 0, 1);
+        //GFX::disable_face_culling();
         vertex_array_.bind();
         ping_pong_.run(*static_cast<BufferModule*>(&ssaobuffer),
                        BlurPassPolicy(blur_npass_,
@@ -127,7 +128,7 @@ void SSAORenderer::render()
 void SSAORenderer::generate_random_kernel()
 {
     std::uniform_real_distribution<float> rnd_f(0.0f, 1.0f);
-    std::default_random_engine rng;
+    std::default_random_engine rng(1);
 
     // Generate a random hemispherical distribution of vectors in tangent space
     for (uint32_t ii=0; ii<KERNEL_SIZE_; ++ii)
@@ -155,6 +156,7 @@ void SSAORenderer::generate_random_kernel()
         vec3 noise(rnd_f(rng) * 2.0f - 1.0f,
                    rnd_f(rng) * 2.0f - 1.0f,
                    0.0f);
+        noise.normalize();
         ssao_noise.push_back(noise);
     }
 
@@ -174,8 +176,8 @@ void SSAORenderer::generate_random_kernel()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, NOISE_SQRSIZE_, NOISE_SQRSIZE_, 0, GL_RGB, GL_FLOAT, &ssao_noise[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 }
 
 }

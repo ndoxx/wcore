@@ -21,7 +21,7 @@ lpass_dir_shader_(ShaderResource("lpass_exp.vert;lpass_exp.frag", "VARIANT_DIREC
 lpass_point_shader_(ShaderResource("lpass_exp.vert;lpass_exp.frag", "VARIANT_POINT")),
 null_shader_(ShaderResource("null.vert;null.frag")),
 smr_(smr),
-SSAO_enabled_(false),
+SSAO_enabled_(true),
 shadow_enabled_(true),
 lighting_enabled_(true)
 {
