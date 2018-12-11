@@ -32,6 +32,7 @@ public:
     float SSAO_vbias_;
     float SSAO_intensity_;
     float SSAO_scale_;
+    float SSAO_gamma_r_;
     int   blur_npass_;
 
     SSAORenderer();

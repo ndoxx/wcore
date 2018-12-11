@@ -26,7 +26,7 @@ uint32_t SSAORenderer::NOISE_SIZE_ = pow(SSAORenderer::NOISE_SQRSIZE_,2);
 SSAORenderer::SSAORenderer():
 Renderer<Vertex3P>(),
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
-ping_pong_(ShaderResource("blurpass.vert;blurpass.frag"),
+ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R"),
            SSAOBuffer::Instance().get_width()/2,
            SSAOBuffer::Instance().get_height()/2),
 out_size_(SSAOBuffer::Instance().get_width(),
@@ -38,6 +38,7 @@ SSAO_bias_(0.025),
 SSAO_vbias_(0.05),
 SSAO_intensity_(1.0),
 SSAO_scale_(0.4),
+SSAO_gamma_r_(1.0f),
 blur_npass_(1)
 {
     load_geometry();
@@ -116,7 +117,8 @@ void SSAORenderer::render()
         ping_pong_.run(*static_cast<BufferModule*>(&ssaobuffer),
                        BlurPassPolicy(blur_npass_,
                                       SSAOBuffer::Instance().get_width(),
-                                      SSAOBuffer::Instance().get_height()),
+                                      SSAOBuffer::Instance().get_height(),
+                                      SSAO_gamma_r_),
                        [&]()
                        {
                             GFX::clear_color();

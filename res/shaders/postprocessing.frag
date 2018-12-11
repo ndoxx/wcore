@@ -9,6 +9,8 @@ struct Renderer
     //PP
     vec3 v3_gamma;
     float f_saturation;
+    float f_vignette_falloff;
+    float f_vignette_bal;
     float f_exposure;
     //FXAA
     vec2 v2_frameBufSize;
@@ -83,7 +85,7 @@ void main()
     }
 
     // Exposure tone mapping
-    vec3 mapped = vec3(1.0f) - exp(-hdrColor * rd.f_exposure);
+    out_color = vec3(1.0f) - exp(-hdrColor * rd.f_exposure);
 
     // Fog
     if(rd.b_enableFog)
@@ -92,14 +94,16 @@ void main()
         float linearDepth = (2.0f * NEAR * FAR) / ((FAR + NEAR) - depthNDC * (FAR - NEAR));
         float fogFactor   = 1.0f/exp(pow((linearDepth * rd.f_fogDensity),3));
         fogFactor         = clamp(fogFactor, 0.0f, 1.0f);
-        mapped            = mix(rd.v3_fogColor, mapped, fogFactor);
+        out_color         = mix(rd.v3_fogColor, out_color, fogFactor);
     }
 
-    // Color saturation
-    mapped = saturate(mapped, rd.f_saturation);
+    // Vignetting & Color saturation
+    float vignette = mix(pow(16.0*texCoord.x*texCoord.y*(1.0-texCoord.x)*(1.0-texCoord.y), rd.f_vignette_falloff), 1.0f, rd.f_vignette_bal);
+    out_color = saturate(out_color, max(0.0f,rd.f_saturation + vignette - 1.0f));
+    out_color *= vignette;
 
     // Gamma correction
-    out_color = gamma_correct(mapped, rd.v3_gamma);
+    out_color = gamma_correct(out_color, rd.v3_gamma);
 }
 
 // Luminance calculated on R and G channels only (faster)

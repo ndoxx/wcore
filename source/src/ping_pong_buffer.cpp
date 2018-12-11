@@ -8,13 +8,18 @@ using namespace math;
 void BlurPassPolicy::update(Shader& shader, bool pass_direction)
 {
     float coeff = 1.0f;
-    if(pass_direction)
-        coeff = 2.0f;
+    /*if(pass_direction)
+        coeff = 2.0f;*/
 
     shader.send_uniform(H_("v2_texOffset"), vec2(coeff/target_width_,
                                                  coeff/target_height_));
     shader.send_uniform(H_("horizontal"), pass_direction);
     shader.send_uniform(H_("f_alpha"), 1.0f);
+
+    if(shader.is_variant(H_("VARIANT_COMPRESS_R")))
+    {
+        shader.send_uniform(H_("inv_gamma_r"), 1.0f/gamma_r_);
+    }
 }
 
 PingPongBuffer::PingPongBuffer(const ShaderResource& shader_res,

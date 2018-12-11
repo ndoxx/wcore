@@ -20,6 +20,8 @@ bloom_enabled_(true),
 fxaa_enabled_(true),
 gamma_(1),
 saturation_(1),
+vignette_falloff_(0.1f),
+vignette_balance_(0.25f),
 exposure_(1.8f),
 fog_color_(0),
 fog_density_(0.05)
@@ -39,6 +41,8 @@ void PostProcessingRenderer::render()
     // Post processing uniforms
     post_processing_shader_.send_uniform(H_("rd.v3_gamma"), gamma_);
     post_processing_shader_.send_uniform(H_("rd.f_saturation"), saturation_);
+    post_processing_shader_.send_uniform(H_("rd.f_vignette_falloff"), vignette_falloff_);
+    post_processing_shader_.send_uniform(H_("rd.f_vignette_bal"), vignette_balance_);
     post_processing_shader_.send_uniform(H_("rd.f_exposure"), exposure_);
     post_processing_shader_.send_uniform(H_("rd.v2_frameBufSize"), vec2(GLB.SCR_W, GLB.SCR_H));
     // Fog

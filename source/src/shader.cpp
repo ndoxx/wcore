@@ -243,6 +243,7 @@ void Shader::setup_defines(std::string& shader_source,
     for(const std::string& str: flags)
     {
         shader_source += "#define " + str + "\n";
+        defines_.push_back(H_(str.c_str()));
     }
 }
 

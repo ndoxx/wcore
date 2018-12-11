@@ -11,6 +11,8 @@ class PostProcessingRenderer : public Renderer<Vertex3P>
 {
 private:
     Shader post_processing_shader_;
+
+public:
     bool fog_enabled_;
     bool bloom_enabled_;
     bool fxaa_enabled_;
@@ -18,11 +20,12 @@ private:
     math::vec3 gamma_;
     float saturation_;
     float exposure_;
+    float vignette_falloff_;
+    float vignette_balance_;
 
     math::vec3 fog_color_;
     float fog_density_;
 
-public:
     PostProcessingRenderer();
     virtual ~PostProcessingRenderer() = default;
 

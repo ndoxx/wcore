@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <map>
 #include <filesystem>
 #include <GL/glew.h>
@@ -61,6 +62,7 @@ private:
     void program_active_report();
     void warn_uniform_unknown_type() const;
 
+    std::vector<hash_t> defines_;
     static std::vector<std::string> global_defines_;
 
 #ifdef __DEBUG__
@@ -79,6 +81,7 @@ public:
     inline void use() const        { glUseProgram(ProgramID_); }
     inline void unuse() const      { glUseProgram(0); }
     inline GLuint get_program_id() { return ProgramID_; }
+    inline bool is_variant(hash_t variant);
 
     template <typename T>
     bool send_uniform(hash_t name, const T& value) const
@@ -94,6 +97,13 @@ public:
     }
     bool send_uniforms(std::shared_ptr<const Light> plight) const;
 };
+
+inline bool Shader::is_variant(hash_t variant)
+{
+    auto it = std::find(defines_.begin(), defines_.end(), variant);
+    return (it!=defines_.end());
+}
+
 
 template <>
 bool Shader::send_uniform<bool>(hash_t name, const bool& value) const;

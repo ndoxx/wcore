@@ -170,6 +170,7 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Intensity",   &SSAO_renderer_->SSAO_intensity_, 0.0f, 5.0f);
             ImGui::SliderFloat("Scale",       &SSAO_renderer_->SSAO_scale_, 0.01f, 1.0f);
             ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_npass_, 0, 5);
+            ImGui::SliderFloat("Compression", &SSAO_renderer_->SSAO_gamma_r_, 0.5f, 2.0f);
         }
     }
 
@@ -232,22 +233,24 @@ void RenderPipeline::generate_widget()
     ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Post-processing"))
     {
-        ImGui::SliderFloat("Saturation", &post_processing_renderer_->get_saturation_nc(), 0.0f, 2.0f);
-        ImGui::SliderFloat3("Gamma", (float*)&post_processing_renderer_->get_gamma_nc(), 1.0f, 2.0f);
-        ImGui::SliderFloat("Exposure", (float*)&post_processing_renderer_->get_exposure_nc(), 0.1f, 5.0f);
+        ImGui::SliderFloat("Vignette falloff", &post_processing_renderer_->vignette_falloff_, 0.0f, 2.0f);
+        ImGui::SliderFloat("Vignette bal.", &post_processing_renderer_->vignette_balance_, 0.0f, 1.0f);
+        ImGui::SliderFloat("Saturation", &post_processing_renderer_->saturation_, 0.0f, 2.0f);
+        ImGui::SliderFloat3("Gamma", (float*)&post_processing_renderer_->gamma_, 1.0f, 2.0f);
+        ImGui::SliderFloat("Exposure", (float*)&post_processing_renderer_->exposure_, 0.1f, 5.0f);
 
         ImGui::Separator();
         ImGui::Text("Fog");
-        ImGui::Checkbox("Enable fog", &post_processing_renderer_->get_fog_enabled_flag());
+        ImGui::Checkbox("Enable fog", &post_processing_renderer_->fog_enabled_);
         if(post_processing_renderer_->get_fog_enabled_flag())
         {
-            ImGui::SliderFloat("Density", &post_processing_renderer_->get_fog_density_nc(), 0.0f, 0.1f);
-            ImGui::ColorEdit3("Color", (float*)&post_processing_renderer_->get_fog_color_nc());
+            ImGui::SliderFloat("Density", &post_processing_renderer_->fog_density_, 0.0f, 0.1f);
+            ImGui::ColorEdit3("Color", (float*)&post_processing_renderer_->fog_color_);
         }
 
         ImGui::Separator();
         ImGui::Text("FXAA");
-        ImGui::Checkbox("Enable FXAA", &post_processing_renderer_->get_fxaa_enabled_flag());
+        ImGui::Checkbox("Enable FXAA", &post_processing_renderer_->fxaa_enabled_);
         if(post_processing_renderer_->get_fxaa_enabled_flag())
         {
 
