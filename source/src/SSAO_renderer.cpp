@@ -6,6 +6,7 @@
 #include "gfx_driver.h"
 #include "SSAO_buffer.h"
 #include "g_buffer.h"
+#include "l_buffer.h"
 #include "scene.h"
 #include "logger.h"
 #include "camera.h"
@@ -61,6 +62,7 @@ void SSAORenderer::render()
     auto pgbuffer = Texture::get_named_texture(H_("gbuffer")).lock();
 
     GBuffer& gbuffer = GBuffer::Instance();
+    //LBuffer& lbuffer = LBuffer::Instance();
     SSAOBuffer& ssaobuffer = SSAOBuffer::Instance();
 
     SSAO_shader_.use();
@@ -74,6 +76,7 @@ void SSAORenderer::render()
     gbuffer.bind_as_source(2,2);  // depth
     //GFX::bind_texture2D(3, kernel_texture_); // random field (kernel)
     //gbuffer.bind_as_source(3,1);  // albedo
+    //lbuffer.bind_as_source(3,0); // last frame color
 
     SSAO_shader_.send_uniform<int>(H_("normalTex"), 0);
     SSAO_shader_.send_uniform<int>(H_("noiseTex"), 1);

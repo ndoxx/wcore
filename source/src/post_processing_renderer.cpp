@@ -18,6 +18,7 @@ post_processing_shader_(ShaderResource("postprocessing.vert;postprocessing.frag"
 fog_enabled_(true),
 bloom_enabled_(true),
 fxaa_enabled_(true),
+dithering_enabled_(false),
 gamma_(1),
 vibrance_bal_(1),
 vibrance_(0),
@@ -26,6 +27,8 @@ exposure_(1.8f),
 contrast_(1.0f),
 vignette_falloff_(0.1f),
 vignette_balance_(0.25f),
+acc_daltonize_mode_(0),
+acc_blindness_type_(0),
 fog_color_(0),
 fog_density_(0.05)
 {
@@ -61,6 +64,12 @@ void PostProcessingRenderer::render()
     post_processing_shader_.send_uniform(H_("rd.b_enableBloom"), bloom_enabled_);
     // FXAA
     post_processing_shader_.send_uniform(H_("rd.b_FXAA_enabled"), fxaa_enabled_);
+    // Dithering
+    post_processing_shader_.send_uniform(H_("rd.b_dither"), dithering_enabled_);
+    // Accessibility
+    post_processing_shader_.send_uniform(H_("rd.i_daltonize_mode"), acc_daltonize_mode_);
+    post_processing_shader_.send_uniform(H_("rd.i_blindness_type"), acc_blindness_type_);
+
 
     // Render textured quad to screen
     GFX::viewport(0,0,GLB.SCR_W,GLB.SCR_H);

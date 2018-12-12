@@ -267,6 +267,47 @@ void RenderPipeline::generate_widget()
         {
 
         }
+
+        ImGui::Separator();
+        ImGui::Text("Accessibility");
+        if(ImGui::Button("Daltonize"))
+        {
+            post_processing_renderer_->daltonize_next_mode();
+        }
+        ImGui::SameLine();
+        switch(post_processing_renderer_->acc_daltonize_mode_)
+        {
+            case 0:
+                ImGui::Text("Off");
+                break;
+            case 1:
+                ImGui::Text("Daltonize");
+                break;
+            case 2:
+                ImGui::Text("Apply correction");
+                break;
+        }
+        if(post_processing_renderer_->acc_daltonize_mode_)
+        {
+            ImGui::SliderInt("Blindness", &post_processing_renderer_->acc_blindness_type_, 0, 2);
+            switch(post_processing_renderer_->acc_blindness_type_)
+            {
+                case 0:
+                    ImGui::Text("Protanopia");
+                    break;
+                case 1:
+                    ImGui::Text("Deuteranopia");
+                    break;
+                case 2:
+                    ImGui::Text("Tritanopia");
+                    break;
+            }
+        }
+
+
+        ImGui::Separator();
+        ImGui::Text("Misc.");
+        ImGui::Checkbox("Enable dithering", &post_processing_renderer_->dithering_enabled_);
     }
 
 #ifdef __PROFILING_RENDERERS__

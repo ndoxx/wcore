@@ -24,3 +24,28 @@ vec3 gaussian_blur_5_rgb(sampler2D samp, vec2 texCoord, vec2 texOffset, bool hor
 
     return result;
 }
+
+vec4 gaussian_blur_5_rgba(sampler2D samp, vec2 texCoord, vec2 texOffset, bool horizontal)
+{
+    vec4 result = texture(samp, texCoord) * GB_WEIGHTS5[0]; // current fragment's contribution
+    if(horizontal)
+    {
+        for(int ii=1; ii<5; ++ii)
+        {
+            vec2 offset = vec2(texOffset.x * ii, 0.0f);
+            result += texture(samp, texCoord + offset) * GB_WEIGHTS5[ii];
+            result += texture(samp, texCoord - offset) * GB_WEIGHTS5[ii];
+        }
+    }
+    else
+    {
+        for(int ii=1; ii<5; ++ii)
+        {
+            vec2 offset = vec2(0.0f, texOffset.y * ii);
+            result += texture(samp, texCoord + offset) * GB_WEIGHTS5[ii];
+            result += texture(samp, texCoord - offset) * GB_WEIGHTS5[ii];
+        }
+    }
+
+    return result;
+}

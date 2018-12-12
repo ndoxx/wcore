@@ -22,7 +22,7 @@ struct render_data
 
 in vec2 frag_ray;
 
-layout(location = 0) out vec3 out_occlusion;
+layout(location = 0) out vec4 out_occlusion;
 
 uniform render_data rd;
 uniform sampler2D normalTex;
@@ -63,11 +63,13 @@ vec4 directional_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_
     vec3 v = normalize(diff);
     float d2 = dot(diff,diff)*rd.f_scale;
 
-    float occlusion_amount = max(0.0f, dot(frag_normal,v)-rd.f_bias)*(1.0f/(1.0f+d2));
+    float attenuation = 1.0f/(1.0f+d2);
+    float occlusion_amount = max(0.0f, dot(frag_normal,v)-rd.f_bias)*attenuation;
 
+    // GI approx
     vec3 sample_normal = decompress_normal(texture(normalTex, texCoord + offset).xy);
-    float bleeding = max(0.0f,dot(sample_normal, -frag_normal)); // Scale with distance
-    vec3 first_bounce = bleeding * texture(albedoTex, texCoord + offset).rgb;
+    float bleeding = max(0.0f, dot(sample_normal, -frag_normal))*attenuation;
+    vec3 first_bounce = (0.2+0.8*bleeding) * texture(albedoTex, texCoord + offset).rgb;
     return vec4(first_bounce, occlusion_amount);
 }
 
@@ -83,6 +85,7 @@ void main()
     vec2 randomVec = normalize(texture(noiseTex, texCoord*rd.v2_noiseScale).xy);
 
     float occlusion = 0.0f;
+    //vec4 occlusion = vec4(0);
     float rad = rd.f_radius/fragPos.z;
 
     int iterations = int(mix(4.0,1.0,fragPos.z*invFAR));
@@ -98,6 +101,8 @@ void main()
     }
     occlusion /= float(iterations*4);
     occlusion = max(1.0-(rd.f_intensity*occlusion), 0.0);
+    //occlusion.a = max(1.0-(rd.f_intensity*occlusion.a), 0.0);
 
     out_occlusion.r = occlusion;
+    //out_occlusion = occlusion;
 }

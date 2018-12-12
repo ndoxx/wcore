@@ -1,5 +1,7 @@
 #version 400 core
 
+#include "accessibility.glsl"
+
 in vec2 texCoord;
 layout(location = 0) out vec3 out_color;
 
@@ -28,6 +30,11 @@ struct Renderer
     bool b_enableFog;
     //Bloom
     bool b_enableBloom;
+    //Dithering
+    bool b_dither;
+    //Accessibility
+    int i_daltonize_mode;
+    int i_blindness_type;
 };
 
 // Relative luminance coefficients for sRGB primaries, values from Wikipedia
@@ -99,6 +106,21 @@ vec3 chromatic_aberration(vec3 color_in, vec2 texcoord)
     return mix(color_in, color, rd.f_ca_strength);
 }
 
+vec3 dither(vec2 texCoord)
+{
+    //float rnd = 42;
+    // Interleaved gradient noise by Jorge Jimenez
+    const vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
+    //#if (temporal_dither == 1)
+        //float xy_magic = (texCoord.x + rnd)*magic.x + (texCoord.y + rnd)*magic.y;
+    //#else
+        float xy_magic = dot(texCoord/rd.v2_frameBufSize, magic.xy);
+    //#endif
+    float noise = (fract(magic.z*fract(xy_magic)) - 0.5)/(exp2(8) - 1);
+
+    return vec3(-noise, noise, -noise);
+}
+
 vec3 FXAA(sampler2D samp, vec2 texCoords);
 vec3 light_scattering(vec2 texCoord, vec2 screenLightPos, float density, float weight, float decay, float exposure);
 
@@ -147,6 +169,16 @@ void main()
 
     // Gamma correction
     out_color = gamma_correct(out_color, rd.v3_gamma);
+
+    // Dithering
+    if(rd.b_dither)
+        out_color += dither(texCoord);
+
+    // Accessibility
+    if(rd.i_daltonize_mode == 1) // See what they see
+        out_color = daltonize(out_color, rd.i_blindness_type);
+    else if(rd.i_daltonize_mode == 2) // Apply correction
+        out_color = daltonize_correct(out_color, rd.i_blindness_type);
 }
 
 // Luminance calculated on R and G channels only (faster)

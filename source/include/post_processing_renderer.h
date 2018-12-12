@@ -16,6 +16,7 @@ public:
     bool fog_enabled_;
     bool bloom_enabled_;
     bool fxaa_enabled_;
+    bool dithering_enabled_;
 
     math::vec3 gamma_;
     math::vec3 vibrance_bal_;
@@ -27,6 +28,8 @@ public:
     float vignette_balance_;
     float aberration_shift_;
     float aberration_strength_;
+    int acc_daltonize_mode_;
+    int acc_blindness_type_;
 
     math::vec3 fog_color_;
     float fog_density_;
@@ -70,6 +73,7 @@ public:
     inline float get_fog_density() const { return fog_density_; }
     inline float& get_fog_density_nc()   { return fog_density_; }
 
+    inline void daltonize_next_mode() { acc_daltonize_mode_ = (++acc_daltonize_mode_)%3; }
 };
 
 }
