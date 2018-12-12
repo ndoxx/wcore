@@ -25,10 +25,10 @@ in vec2 frag_ray;
 layout(location = 0) out vec3 out_occlusion;
 
 uniform render_data rd;
-uniform sampler2D positionTex;
 uniform sampler2D normalTex;
 uniform sampler2D noiseTex;
 uniform sampler2D depthTex;
+uniform sampler2D albedoTex;
 //uniform sampler1D randomFieldTex;
 //uniform vec3 v3_samples[64];
 //const int KERNEL_SIZE = 64;
@@ -54,6 +54,21 @@ float ambiant_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_nor
     float d2 = dot(diff,diff)*rd.f_scale;
     //float d = length(diff)*rd.f_scale;
     return max(0.0f, dot(frag_normal,v)-rd.f_bias)*(1.0f/(1.0f+d2));
+}
+
+vec4 directional_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_normal)
+{
+    vec3 diff = get_position(texCoord + offset) - frag_pos;
+    diff = mix(diff, -frag_normal, rd.f_vbias);
+    vec3 v = normalize(diff);
+    float d2 = dot(diff,diff)*rd.f_scale;
+
+    float occlusion_amount = max(0.0f, dot(frag_normal,v)-rd.f_bias)*(1.0f/(1.0f+d2));
+
+    vec3 sample_normal = decompress_normal(texture(normalTex, texCoord + offset).xy);
+    float bleeding = max(0.0f,dot(sample_normal, -frag_normal)); // Scale with distance
+    vec3 first_bounce = bleeding * texture(albedoTex, texCoord + offset).rgb;
+    return vec4(first_bounce, occlusion_amount);
 }
 
 void main()

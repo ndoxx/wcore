@@ -233,11 +233,23 @@ void RenderPipeline::generate_widget()
     ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Post-processing"))
     {
-        ImGui::SliderFloat("Vignette falloff", &post_processing_renderer_->vignette_falloff_, 0.0f, 2.0f);
-        ImGui::SliderFloat("Vignette bal.", &post_processing_renderer_->vignette_balance_, 0.0f, 1.0f);
+        ImGui::Text("Chromatic aberration:");
+        ImGui::SliderFloat("Shift", &post_processing_renderer_->aberration_shift_, 0.0f, 10.0f);
+        ImGui::SliderFloat("Magnitude", &post_processing_renderer_->aberration_strength_, 0.0f, 1.0f);
+
+        ImGui::Text("Vignette:");
+        ImGui::SliderFloat("Falloff", &post_processing_renderer_->vignette_falloff_, 0.0f, 2.0f);
+        ImGui::SliderFloat("Balance", &post_processing_renderer_->vignette_balance_, 0.0f, 1.0f);
+
+        ImGui::Text("Vibrance:");
+        ImGui::SliderFloat("Strength", &post_processing_renderer_->vibrance_, -1.0f, 1.0f);
+        ImGui::SliderFloat3("Balance", (float*)&post_processing_renderer_->vibrance_bal_, 0.0f, 1.0f);
+
+        ImGui::Separator();
         ImGui::SliderFloat("Saturation", &post_processing_renderer_->saturation_, 0.0f, 2.0f);
         ImGui::SliderFloat3("Gamma", (float*)&post_processing_renderer_->gamma_, 1.0f, 2.0f);
-        ImGui::SliderFloat("Exposure", (float*)&post_processing_renderer_->exposure_, 0.1f, 5.0f);
+        ImGui::SliderFloat("Exposure", &post_processing_renderer_->exposure_, 0.1f, 5.0f);
+        ImGui::SliderFloat("Contrast", &post_processing_renderer_->contrast_, 0.0f, 2.0f);
 
         ImGui::Separator();
         ImGui::Text("Fog");

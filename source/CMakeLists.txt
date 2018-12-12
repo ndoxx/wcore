@@ -2,7 +2,7 @@
 
 subdirs(src tests sandbox)
 
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.10)
 project(wcore VERSION 1.0.1 DESCRIPTION "WCore engine shared library")
 
 SET (CMAKE_C_COMPILER             "/usr/bin/clang-7")

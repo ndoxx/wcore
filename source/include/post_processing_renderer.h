@@ -18,10 +18,15 @@ public:
     bool fxaa_enabled_;
 
     math::vec3 gamma_;
+    math::vec3 vibrance_bal_;
+    float vibrance_;
     float saturation_;
     float exposure_;
+    float contrast_;
     float vignette_falloff_;
     float vignette_balance_;
+    float aberration_shift_;
+    float aberration_strength_;
 
     math::vec3 fog_color_;
     float fog_density_;

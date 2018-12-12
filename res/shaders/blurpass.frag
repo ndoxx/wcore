@@ -17,7 +17,7 @@ uniform vec2 v2_texOffset;
 
 void main()
 {
-    vec3 result = gaussian_blur_5(inputTex, texCoord, v2_texOffset, horizontal);
+    vec3 result = gaussian_blur_5_rgb(inputTex, texCoord, v2_texOffset, horizontal);
     #ifdef VARIANT_COMPRESS_R
         result.r = pow(result.r, inv_gamma_r);
     #endif

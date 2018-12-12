@@ -73,10 +73,12 @@ void SSAORenderer::render()
     GFX::bind_texture2D(1, noise_texture_); // random rotations
     gbuffer.bind_as_source(2,2);  // depth
     //GFX::bind_texture2D(3, kernel_texture_); // random field (kernel)
+    //gbuffer.bind_as_source(3,1);  // albedo
 
     SSAO_shader_.send_uniform<int>(H_("normalTex"), 0);
     SSAO_shader_.send_uniform<int>(H_("noiseTex"), 1);
     SSAO_shader_.send_uniform<int>(H_("depthTex"), 2);
+    //SSAO_shader_.send_uniform<int>(H_("albedoTex"), 3);
 
     // Render SSAO texture
     ssaobuffer.bind_as_target();
@@ -116,8 +118,8 @@ void SSAORenderer::render()
         vertex_array_.bind();
         ping_pong_.run(*static_cast<BufferModule*>(&ssaobuffer),
                        BlurPassPolicy(blur_npass_,
-                                      SSAOBuffer::Instance().get_width(),
-                                      SSAOBuffer::Instance().get_height(),
+                                      SSAOBuffer::Instance().get_width()/2,
+                                      SSAOBuffer::Instance().get_height()/2,
                                       SSAO_gamma_r_),
                        [&]()
                        {

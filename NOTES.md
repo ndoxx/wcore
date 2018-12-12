@@ -5113,3 +5113,112 @@ exemples :
 >> make sandbox_unity
 
 Le build est monolithique (un seul fichier cpp sera compilé, le fichier unity). On ne peut plus suivre la progression et le compilo mouline longtemps sans rien afficher ce qui est déconcertant, mais la compilation est beaucoup plus rapide.
+
+#[12-12-18] Post-processing
+
+**ANNIV DE JESS DEMAIN**
+
+J'ai implémenté quelques goodies (low hanging fruits) dans le _PostProcessingRenderer_ :
+* Effet vignette
+    -> Consiste à assombrir et désaturer les bords et coins de l'écran pour émuler cet artéfact bien connu des caméras. Mon étape de saturation a été regroupée à cet endroit du shader :
+```c
+    float vignette = mix(pow(16.0*texCoord.x*texCoord.y*(1.0-texCoord.x)*(1.0-texCoord.y), rd.f_vignette_falloff), 1.0f, rd.f_vignette_bal);
+    out_color = saturate(out_color, max(0.0f,rd.f_saturation + vignette - 1.0f));
+    out_color *= vignette;
+```
+
+* Contraste
+    -> Transformation de dynamique. J'ai choisi un modèle linéaire rapide et simple :
+```c
+    out_color = ((out_color - 0.5f) * max(rd.f_contrast, 0)) + 0.5f;
+```
+
+* Vibrance
+    -> Sorte de saturation intelligente qui ne sursature pas les couleurs déjà saturées :
+```c
+vec3 vibrance_rgb(vec3 color_in)
+{
+    vec3 color = color_in;
+    float luma = dot(W, color);
+
+    float max_color = max(color.r, max(color.g, color.b)); // Find the strongest color
+    float min_color = min(color.r, min(color.g, color.b)); // Find the weakest color
+
+    float color_saturation = max_color - min_color; // The difference between the two is the saturation
+
+    // Extrapolate between luma and original by 1 + (1-saturation) - current
+    vec3 coeffVibrance = vec3(rd.v3_vibrance_bal * rd.f_vibrance);
+    color = mix(vec3(luma), color, 1.0 + (coeffVibrance * (1.0 - (sign(coeffVibrance) * color_saturation))));
+
+    return color;
+}
+```
+Un paramètre de force et un paramètre de balance pour chaque canal de couleur est disponible. Les balances servent à pomper légèrement un canal donné.
+
+* Aberration chromatique
+    -> Emule cet artéfact dû au stigmatisme approximatif des optiques de caméras :
+```c
+vec3 chromatic_aberration(vec3 color_in, vec2 texcoord)
+{
+    vec3 color;
+    // Sample the color components
+    color.r = texture(screenTex, texcoord + (rd.f_ca_shift / rd.v2_frameBufSize)).r;
+    color.g = color_in.g;
+    color.b = texture(screenTex, texcoord - (rd.f_ca_shift / rd.v2_frameBufSize)).b;
+
+    // Adjust the strength of the effect
+    return mix(color_in, color, rd.f_ca_strength);
+}
+```
+Essentiellement, on dédouble l'image avec un bord rouge à droite et bleu à gauche. Le shift et l'intensité de l'effet sont paramétrables. Cet effet est appliqué juste avant bloom.
+
+Tous ces effets sont configurables en temps réel dans l'UI.
+
+##[PingPongBuffer]
+J'ai enfin une nouvelle classe _PingPongBuffer_ capable depuis un _BufferModule_ en entrée/sortie et une politique d'update du shader sousjacent, d'exécuter un nombre arbitraire de passes aller et retour (ping pong). C'est comme ça qu'on peut implémenter une approx de flou Gaussien en O(2N) avec des filtres séparables (plutôt qu'en O(N^2)).
+Une politique d'update est une classe qui définit une fonction update avec cette signature :
+```cpp
+    void update(Shader& shader, bool pass_direction);
+```
+La classe _BlurPassPolicy_ permet de contrôler un shader *blurpass* (y-compris sa variante __VARIANT_COMPRESS_R__ utilisé par la SSAO).
+
+Cette classe est utilisée dans la branche expérimentale de Variance Shadow Mapping pour remplacer l'implémentation ad-hoc précédente.
+
+##[SSAO] Ajout d'un paramètre de biais vectoriel de la distribution d'échantillons
+Pour solutionner temporairement mon souci d'auto-occlusion (dont la cause est pour l'instant plus ou moins inconnue), j'ai ajouté un paramètre qui va plus ou moins tirer les échantillons en arrière de la normale. Ce faisant, les auto-occlusions sont les premières à disparaître.
+La SSAO est configurable en temps réel dans l'UI. Les paramètres sont les suivants :
+* Radius
+    -> Rayon de recherche d'occludeurs (mis en perspective via une division par z).
+* Scalar bias
+    -> Seuil du produit scalaire <positionSample | normaleFragment>
+* Vector bias
+    -> Paramètre de lerp pour pousser les échantillons dans le sens inverse de la normale, ainsi les échantillons d'auto-occlusion d'une même face seront annulés plus facilement par le seuil scalaire.
+* Intensity
+    -> Intensité de l'effet.
+* Scale
+    -> Contrôle le falloff de l'occlusion en fonction du carré de la distance.
+* Blur passes
+    -> Contrôle le nombre d'itérations de flou, rendu possible grâce à la nouvelle classe _PingPongBuffer_.
+* Compression
+    -> Contrôle de compression dynamique (gamma transform) sur l'occlusion pour contrebalancer la réduction d'intensité inhérente aux passes de flou.
+
+##[SSDO] Expérimentation avec l'occlusion directionnelle
+J'ai modifié légèrement le shader de SSAO pour aller capturer la couleur des occludeurs et selon leur orientation, déterminer un taux de "bleeding" :
+```c
+vec4 directional_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_normal)
+{
+    vec3 diff = get_position(texCoord + offset) - frag_pos;
+    diff = mix(diff, -frag_normal, rd.f_vbias);
+    vec3 v = normalize(diff);
+    float d2 = dot(diff,diff)*rd.f_scale;
+
+    float occlusion_amount = max(0.0f, dot(frag_normal,v)-rd.f_bias)*(1.0f/(1.0f+d2));
+
+    vec3 sample_normal = decompress_normal(texture(normalTex, texCoord + offset).xy);
+    float bleeding = max(0.0f,dot(sample_normal, -frag_normal)); // Scale with distance
+    vec3 first_bounce = bleeding * texture(albedoTex, texCoord + offset).rgb;
+    return vec4(first_bounce, occlusion_amount);
+}
+```
+J'ai abandonné l'idée assez vite car l'overhead est énorme chez-moi (je dois être fill-bound à cause des 3 canaux supplémentaires que cela requiert). De fait, l'implémentation est à l'arrache (même pas mis le bleeding à l'échelle en fonction de la distance, ni fait une intégration propre dans la pipeline PBR). Cependant j'ai pu observer un début d'approx de GI dans mon moteur et c'était rafraîchissant.
+On garde ça sous le coude au cas où.

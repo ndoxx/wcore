@@ -8,8 +8,8 @@ using namespace math;
 void BlurPassPolicy::update(Shader& shader, bool pass_direction)
 {
     float coeff = 1.0f;
-    /*if(pass_direction)
-        coeff = 2.0f;*/
+    if(pass_direction)
+        coeff = 2.0f;
 
     shader.send_uniform(H_("v2_texOffset"), vec2(coeff/target_width_,
                                                  coeff/target_height_));

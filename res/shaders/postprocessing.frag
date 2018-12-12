@@ -8,10 +8,15 @@ struct Renderer
 {
     //PP
     vec3 v3_gamma;
+    vec3 v3_vibrance_bal;
+    float f_vibrance;
     float f_saturation;
     float f_vignette_falloff;
     float f_vignette_bal;
     float f_exposure;
+    float f_contrast;
+    float f_ca_shift;
+    float f_ca_strength;
     //FXAA
     vec2 v2_frameBufSize;
     bool b_FXAA_enabled;
@@ -65,6 +70,35 @@ vec3 gamma_correct(vec3 color_in, vec3 gamma_factor)
     return pow(color_in, 1.0/gamma_factor);
 }
 
+vec3 vibrance_rgb(vec3 color_in)
+{
+    vec3 color = color_in;
+    float luma = dot(W, color);
+
+    float max_color = max(color.r, max(color.g, color.b)); // Find the strongest color
+    float min_color = min(color.r, min(color.g, color.b)); // Find the weakest color
+
+    float color_saturation = max_color - min_color; // The difference between the two is the saturation
+
+    // Extrapolate between luma and original by 1 + (1-saturation) - current
+    vec3 coeffVibrance = vec3(rd.v3_vibrance_bal * rd.f_vibrance);
+    color = mix(vec3(luma), color, 1.0 + (coeffVibrance * (1.0 - (sign(coeffVibrance) * color_saturation))));
+
+    return color;
+}
+
+vec3 chromatic_aberration(vec3 color_in, vec2 texcoord)
+{
+    vec3 color;
+    // Sample the color components
+    color.r = texture(screenTex, texcoord + (rd.f_ca_shift / rd.v2_frameBufSize)).r;
+    color.g = color_in.g;
+    color.b = texture(screenTex, texcoord - (rd.f_ca_shift / rd.v2_frameBufSize)).b;
+
+    // Adjust the strength of the effect
+    return mix(color_in, color, rd.f_ca_strength);
+}
+
 vec3 FXAA(sampler2D samp, vec2 texCoords);
 vec3 light_scattering(vec2 texCoord, vec2 screenLightPos, float density, float weight, float decay, float exposure);
 
@@ -76,6 +110,9 @@ void main()
         hdrColor = FXAA(screenTex, texCoord);
     else
         hdrColor = texture(screenTex, texCoord).rgb;
+
+    // Chromatic aberration
+    hdrColor = chromatic_aberration(hdrColor, texCoord);
 
     // texture for bloom effect
     if(rd.b_enableBloom)
@@ -97,10 +134,16 @@ void main()
         out_color         = mix(rd.v3_fogColor, out_color, fogFactor);
     }
 
+    // Vibrance
+    out_color = vibrance_rgb(out_color);
+
     // Vignetting & Color saturation
     float vignette = mix(pow(16.0*texCoord.x*texCoord.y*(1.0-texCoord.x)*(1.0-texCoord.y), rd.f_vignette_falloff), 1.0f, rd.f_vignette_bal);
     out_color = saturate(out_color, max(0.0f,rd.f_saturation + vignette - 1.0f));
     out_color *= vignette;
+
+    // Contrast
+    out_color = ((out_color - 0.5f) * max(rd.f_contrast, 0)) + 0.5f;
 
     // Gamma correction
     out_color = gamma_correct(out_color, rd.v3_gamma);

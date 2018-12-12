@@ -19,10 +19,13 @@ fog_enabled_(true),
 bloom_enabled_(true),
 fxaa_enabled_(true),
 gamma_(1),
+vibrance_bal_(1),
+vibrance_(0),
 saturation_(1),
+exposure_(1.8f),
+contrast_(1.0f),
 vignette_falloff_(0.1f),
 vignette_balance_(0.25f),
-exposure_(1.8f),
 fog_color_(0),
 fog_density_(0.05)
 {
@@ -39,11 +42,16 @@ void PostProcessingRenderer::render()
     post_processing_shader_.send_uniform<int>(H_("bloomTex"), 1);
     post_processing_shader_.send_uniform<int>(H_("depthStencilTex"), 2);
     // Post processing uniforms
+    post_processing_shader_.send_uniform(H_("rd.f_ca_shift"), aberration_shift_);
+    post_processing_shader_.send_uniform(H_("rd.f_ca_strength"), aberration_strength_);
     post_processing_shader_.send_uniform(H_("rd.v3_gamma"), gamma_);
+    post_processing_shader_.send_uniform(H_("rd.v3_vibrance_bal"), vibrance_bal_);
+    post_processing_shader_.send_uniform(H_("rd.f_vibrance"), vibrance_);
     post_processing_shader_.send_uniform(H_("rd.f_saturation"), saturation_);
     post_processing_shader_.send_uniform(H_("rd.f_vignette_falloff"), vignette_falloff_);
     post_processing_shader_.send_uniform(H_("rd.f_vignette_bal"), vignette_balance_);
     post_processing_shader_.send_uniform(H_("rd.f_exposure"), exposure_);
+    post_processing_shader_.send_uniform(H_("rd.f_contrast"), contrast_);
     post_processing_shader_.send_uniform(H_("rd.v2_frameBufSize"), vec2(GLB.SCR_W, GLB.SCR_H));
     // Fog
     post_processing_shader_.send_uniform(H_("rd.b_enableFog"), fog_enabled_);

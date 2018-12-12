@@ -121,6 +121,7 @@ void main()
                                        fragAO,
                                        visibility,
                                        lt.f_ambientStrength);
+            //total_light += 0.1f*texture(SSAOTex, texCoord).rgb;
         }
         else
         {
