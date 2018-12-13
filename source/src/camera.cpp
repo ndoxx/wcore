@@ -28,7 +28,8 @@ rot_speed_(30.0f),
 frustum_({-scr_width/(scr_height)*NEAR, scr_width/(scr_height)*NEAR, -NEAR, NEAR, NEAR, FAR}),
 proj_(),
 position_(0.0f,0.0f,0.0f),
-update_frustum_(true)
+update_frustum_(true),
+is_ortho_(false)
 {
     init_frustum(proj_, frustum_);
     compute_rays_perspective();
@@ -44,12 +45,14 @@ void Camera::set_perspective(float scr_width, float scr_height, float z_far)
     frustum_.f = z_far;
     init_frustum(proj_, frustum_);
     compute_rays_perspective();
+    is_ortho_ = false;
 }
 
 void Camera::set_orthographic(float extent[6])
 {
     frustum_.init(extent[0], extent[1], extent[2], extent[3], extent[4], extent[5]);
     init_ortho(proj_, frustum_);
+    is_ortho_ = true;
 }
 
 
@@ -57,6 +60,7 @@ void Camera::set_orthographic(float xmin, float xmax, float ymin, float ymax, fl
 {
     frustum_.init(xmin, xmax, ymin, ymax, zmin, zmax);
     init_ortho(proj_, frustum_);
+    is_ortho_ = true;
 }
 
 
@@ -66,6 +70,7 @@ void Camera::set_orthographic(float scr_width, float scr_height, float zoom)
     float h2 = 1.0f/zoom * scr_height/2.0f;
     frustum_.init(-w2, w2, -h2, h2, NEAR, FAR);
     init_ortho(proj_, frustum_);
+    is_ortho_ = true;
 }
 
 // If needed refactor so as to cache two matrices for persp instead of computing them each time
@@ -80,6 +85,7 @@ void Camera::set_hybrid_perspective(float scr_width, float scr_height, float alp
 
     // By convention alpha=0 is full ortho, alpha=1 is full perspective
     proj_ = lerp(Portho, Ppersp, alpha);
+    is_ortho_ = false;
 }
 
 void Camera::update(float dt)
@@ -151,14 +157,14 @@ void Camera::compute_rays_perspective()
 }
 
 // optimized shadow frustum fit for top viewed scenes
-void Camera::get_truncated_frustum_corners(float ymin, std::vector<math::vec3>& destination) const
+void Camera::get_truncated_frustum_corners(float ymin, std::array<vec3, 8>& destination) const
 {
     const std::array<vec3, 8>& corners = frusBox_.get_corners();
 
     // check right top far corner y, if y>ymin bail early with unaltered frustum
     if(corners[5].y()>ymin)
     {
-        destination.resize(corners.size());
+        //destination.resize(corners.size());
         std::copy(corners.begin(), corners.end(), destination.begin());
         return;
     }
@@ -171,14 +177,14 @@ void Camera::get_truncated_frustum_corners(float ymin, std::vector<math::vec3>& 
     float ratio  = dist_visible/(dist_visible-minimum);
 
     // Push corrected vertices
-    destination.push_back(corners[0]);
-    destination.push_back(math::lerp(corners[0], corners[1], ratio));
-    destination.push_back(math::lerp(corners[3], corners[2], ratio));
-    destination.push_back(corners[3]);
-    destination.push_back(corners[4]);
-    destination.push_back(math::lerp(corners[4], corners[5], ratio));
-    destination.push_back(math::lerp(corners[7], corners[6], ratio));
-    destination.push_back(corners[7]);
+    destination[0] = (corners[0]);
+    destination[1] = (math::lerp(corners[0], corners[1], ratio));
+    destination[2] = (math::lerp(corners[3], corners[2], ratio));
+    destination[3] = (corners[3]);
+    destination[4] = (corners[4]);
+    destination[5] = (math::lerp(corners[4], corners[5], ratio));
+    destination[6] = (math::lerp(corners[7], corners[6], ratio));
+    destination[7] = (corners[7]);
 }
 
 void Camera::set_orthographic_tight_fit(const Camera& other,
@@ -209,6 +215,15 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
     static float extent[6];
     math::compute_extent(corners_lightspace, extent);
 
+    /*BANG();
+    for(int ii=0; ii<8; ++ii)
+        std::cout << corners_world[ii] << " ";
+    std::cout << std::endl;*/
+
+    /*for(int ii=0; ii<6; ++ii)
+        std::cout << extent[ii] << " ";
+    std::cout << std::endl;*/
+
     // * Don't allow frustum to shrink below the size of other cam long diagonal
     float full_diagonal = other.get_frustum_diagonal();
     float diagonal = (corners_world[0]-corners_world[6]).norm();
@@ -228,7 +243,7 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
     }
 
     // [TMP] Zoom. This improves definition but can cause occluder clipping within the view frustum
-    float zoom = 1.0f/((!(diagonal<full_diagonal))?2.5f:1.2f);
+    float zoom = 1.0f/((!(diagonal<full_diagonal))?5.0f:1.2f);
     for(uint8_t ii=0; ii<4; ++ii)
     {
         extent[ii] *= zoom;
@@ -248,7 +263,6 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
         // to be [REPLACE]d with proper scene AABB query
         //extent[4] = -10.0f;
         //extent[5] = 150.0f;
-
         extent[5] = other.position_.y()+20;
     }
 

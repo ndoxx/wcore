@@ -84,10 +84,8 @@ bool InRange(float val)
     return val > 0.0f && val < 1.0f;
 }
 
-float shadow_amount(sampler2D shadowM, vec4 fragLightSpace, float bias, vec2 shadowTexelSize)
+float shadow_amount(sampler2D shadowM, vec3 shadowMapCoords, float bias, vec2 shadowTexelSize)
 {
-    vec3 shadowMapCoords = fragLightSpace.xyz / fragLightSpace.w;
-
     if(InRange(shadowMapCoords.z) && InRange(shadowMapCoords.x) && InRange(shadowMapCoords.y))
     {
         return clamp(sample_shadow_map_PCF(shadowM, shadowMapCoords.xy, shadowMapCoords.z-bias, shadowTexelSize),0.0f,1.0f);
@@ -116,33 +114,25 @@ float Chebyshev_upper_bound(sampler2D shadowM, vec2 coords, float distance)
 {
     vec2 moments = texture(shadowM, coords).xy;
 
-    // Surface is fully lit. as the current fragment is before the light occluder
-    if (distance <= moments.x)
-        return 1.0f;
-
     // The fragment is either in shadow or penumbra. We now use chebyshev's upperBound to check
     // How likely this pixel is to be lit (p_max)
-    float variance = -(moments.x*moments.x) + moments.y;
-    variance = clamp(variance, 0.00002f, 1.0f);
+    float variance = moments.x*moments.x - moments.y;
+    variance = clamp(variance, 0.002f, 1.0f);
 
     float d = distance - moments.x;
     float p_max = variance / (d*d + variance);
 
-    //return p_max;
-
-    // p_max is the probability of the fragment failing the depth test
-    // test fails -> shadow -> visibility==0
-    //p_max = clamp(p_max , 0.0f, 1.0f);
-    return -0.5f*pow(p_max, 0.25f) + 0.5f;
+    return max(1.0f-p_max, float(distance <= moments.x));
 }
 
-float shadow_variance(sampler2D shadowM, vec4 fragLightSpace)
+float shadow_variance(sampler2D shadowM, vec3 shadowMapCoords)
 {
-    vec3 shadowMapCoords = fragLightSpace.xyz / fragLightSpace.w;
-
     if(InRange(shadowMapCoords.z) && InRange(shadowMapCoords.x) && InRange(shadowMapCoords.y))
     {
-        return clamp(Chebyshev_upper_bound(shadowM, shadowMapCoords.xy, shadowMapCoords.z), 0.0f, 1.0f);
+        float visibility = Chebyshev_upper_bound(shadowM, shadowMapCoords.xy, shadowMapCoords.z);
+        //return 1.0f/(1.0f+exp(-50.0f*(visibility-0.9f)));
+        return visibility;
+        //return pow(visibility,5);
     }
     else
     {

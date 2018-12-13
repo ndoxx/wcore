@@ -103,11 +103,15 @@ void main()
         if(rd.b_shadow_enabled)
         {
             vec4 fragLightSpace = m4_LightSpace * vec4(fragPos, 1.0f);
+            vec3 shadowMapCoords = fragLightSpace.xyz / fragLightSpace.w;
             #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-                visibility = shadow_variance(shadowTex, fragLightSpace);
+                visibility = shadow_variance(shadowTex, shadowMapCoords);
             #else
-                visibility = shadow_amount(shadowTex, fragLightSpace, rd.f_shadowBias, rd.v2_shadowTexelSize);
+                visibility = shadow_amount(shadowTex, shadowMapCoords, rd.f_shadowBias, rd.v2_shadowTexelSize);
             #endif
+            // Falloff around map edges
+            float falloff = clamp(pow(16.0*shadowMapCoords.x*shadowMapCoords.y*(1.0-shadowMapCoords.x)*(1.0-shadowMapCoords.y), 0.4f),0.0f,1.0f);
+            visibility = mix(1.0f, visibility, falloff);
         }
         if(rd.b_lighting_enabled)
         {

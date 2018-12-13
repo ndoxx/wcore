@@ -22,8 +22,8 @@
             <uint name="load_distance" value="3"/>
         </chunk>
         <shadowmap>
-            <uint name="width"  value="2048"/>
-            <uint name="height" value="2048"/>
+            <uint name="width"  value="1920"/>
+            <uint name="height" value="1920"/>
         </shadowmap>
         <override>
             <bool name="allow_normal_mapping"   value="true"/>

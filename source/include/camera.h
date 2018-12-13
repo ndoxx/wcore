@@ -32,6 +32,7 @@ private:
 
     FrustumBox      frusBox_;
     bool            update_frustum_;
+    bool            is_ortho_;
 
     static float MAX_PITCH;
     static float NEAR;
@@ -55,6 +56,8 @@ public:
     void set_orthographic(float scr_width, float scr_height, float zoom=1.0f);
     inline void set_orthographic() { init_ortho(proj_, frustum_); }
     void set_hybrid_perspective(float scr_width, float scr_height, float alpha, float z_far=100.0f);
+
+    inline bool is_orthographic() { return is_ortho_; }
 
     inline const math::Frustum& get_frustum() const { return frustum_; }
 
@@ -95,7 +98,7 @@ public:
     inline math::vec3 get_frustum_split_center(uint32_t splitIndex) const;
 
     float get_frustum_diagonal() const;
-    void get_truncated_frustum_corners(float ymin, std::vector<math::vec3>& destination) const;
+    void get_truncated_frustum_corners(float ymin, std::array<math::vec3, 8>& destination) const;
     void set_orthographic_tight_fit(const Camera& other,
                                     const math::vec3& view_dir,
                                     float texel_size_x = 0.0f,

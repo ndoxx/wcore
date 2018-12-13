@@ -78,7 +78,7 @@ void Chunk::add_model(pLineModel model)
     line_models_.push_back(model);
 }
 
-// Sort models front to back with respect to camera position
+// Sort models with respect to camera position
 void Chunk::sort_models(pCamera camera)
 {
 #ifdef __PROFILING_CHUNKS__
@@ -86,7 +86,11 @@ void Chunk::sort_models(pCamera camera)
 #endif
 
     // Get camera position
-    const vec3& cam_pos = camera->get_position();
+    vec3 cam_pos(camera->get_position());
+    if(camera->is_orthographic())
+    {
+        cam_pos *= 1000.0f;
+    }
 
     // Sort order list according to models distance
     std::sort(models_order_.begin(), models_order_.end(),
@@ -145,9 +149,18 @@ void Chunk::traverse_models(ModelVisitor func,
             if(ifFunc(terrain_))
                 func(terrain_, index_);
         }
-        else
+        else if(order == wcore::ORDER::BACK_TO_FRONT)
         {
-            DLOGW("[Chunk] Traverse order not supported for opaque models.", "chunk", Severity::WARN);
+            // Sorted static models
+            for(auto rit=models_order_.rbegin(); rit != models_order_.rend(); ++rit)
+            {
+                pModel pmodel = models_[*rit];
+                if(ifFunc(pmodel))
+                    func(pmodel, index_);
+            }
+            // Terrain
+            if(ifFunc(terrain_))
+                func(terrain_, index_);
         }
     }
     else if(model_cat == wcore::MODEL_CATEGORY::TRANSPARENT)

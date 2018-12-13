@@ -105,6 +105,8 @@ public:
     virtual void update(const GameClock& clock) override;
     // Sort models within each chunk according to distance to camera
     void sort_models();
+    // Sort models within each chunk according to distance to light camera
+    void sort_models_light();
     // Sort chunks according to distance from their centers to camera
     void sort_chunks();
     // Visit the 4 cardinal neighbors of a given chunk

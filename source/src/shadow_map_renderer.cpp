@@ -15,8 +15,8 @@ namespace wcore
 
 using namespace math;
 
-uint32_t ShadowMapRenderer::SHADOW_WIDTH  = 1920;
-uint32_t ShadowMapRenderer::SHADOW_HEIGHT = 1920;
+uint32_t ShadowMapRenderer::SHADOW_WIDTH  = 1024;
+uint32_t ShadowMapRenderer::SHADOW_HEIGHT = 1024;
 
 vec2 ShadowMapRenderer::SHADOW_TEXEL_SIZE(1.0f/ShadowMapRenderer::SHADOW_WIDTH, 1.0f/ShadowMapRenderer::SHADOW_HEIGHT);
 
@@ -53,6 +53,10 @@ ShadowMapRenderer::~ShadowMapRenderer()
 math::mat4 ShadowMapRenderer::render_directional_shadow_map()
 {
     auto plcam = SCENE.get_light_camera();
+/*#ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
+    // TODO Find a way to cache scene sorting
+    SCENE.sort_models_light();
+#endif*/
 
     // Get camera matrices
     const math::mat4& Vl = plcam->get_view_matrix();       // Camera View matrix
@@ -63,9 +67,7 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map()
     sm_shader_.use();
     sbuffer_->bind_as_target();
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-    GFX::set_clear_color(vec4(1.0,1.0,0.0,0.0));
     GFX::clear_color();
-    GFX::set_clear_color(vec4(0.0,0.0,0.0,0.0));
 #else
     GFX::enable_depth_testing();
     GFX::unlock_depth_buffer();
@@ -88,30 +90,36 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map()
             default:
                 GFX::disable_face_culling();
         }
-
         // Get model matrix and compute products
         math::mat4 M = pmodel->get_model_matrix();
         math::mat4 MVP = PVl*M;
         sm_shader_.send_uniform(H_("m4_ModelViewProjection"), MVP);
-    });
+    }/*,
+    wcore::DEFAULT_MODEL_EVALUATOR,
+#ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
+    wcore::ORDER::BACK_TO_FRONT
+#else
+    wcore::ORDER::FRONT_TO_BACK
+#endif*/
+    );
 
     sbuffer_->unbind_as_target();
     sm_shader_.unuse();
-
+/*
 #ifdef __EXPERIMENTAL_VSM_BLUR__
     // Blur pass on shadow map
     GFX::disable_face_culling();
     //sbuffer_->generate_mipmaps(0, 0, 1);
     vertex_array_.bind();
     ping_pong_.run(*static_cast<BufferModule*>(sbuffer_),
-                   BlurPassPolicy(1, SHADOW_WIDTH, SHADOW_HEIGHT),
+                   BlurPassPolicy(1, SHADOW_WIDTH/2, SHADOW_HEIGHT/2),
                    [&]()
                    {
                         GFX::clear_color();
                         buffer_unit_.draw(2, 0);
                    });
 #endif //__EXPERIMENTAL_VSM_BLUR__
-
+*/
     // Restore state
     GFX::lock_depth_buffer();
     GFX::disable_depth_testing();

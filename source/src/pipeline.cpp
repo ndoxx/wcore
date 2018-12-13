@@ -281,7 +281,7 @@ void RenderPipeline::generate_widget()
                 ImGui::Text("Off");
                 break;
             case 1:
-                ImGui::Text("Daltonize");
+                ImGui::Text("Simulate");
                 break;
             case 2:
                 ImGui::Text("Apply correction");

@@ -80,6 +80,13 @@ void Scene::sort_models()
         chunk->sort_models(camera_);
 }
 
+void Scene::sort_models_light()
+{
+    for(auto&& [key, chunk]: chunks_)
+        chunk->sort_models(light_camera_);
+}
+
+
 void Scene::traverse_models(ModelVisitor func,
                             ModelEvaluator ifFunc,
                             wcore::ORDER order,
