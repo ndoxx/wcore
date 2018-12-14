@@ -6,6 +6,11 @@
 #include "config.h"
 #include "logger.h"
 
+#ifndef __DISABLE_EDITOR__
+    #include "imgui/imgui.h"
+    #include "gui_utils.h"
+#endif
+
 namespace wcore
 {
 
@@ -269,5 +274,14 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
     // * Set orthographic perspective
     set_orthographic(extent);
 }
+
+#ifndef __DISABLE_EDITOR__
+void Camera::generate_gui_element()
+{
+    ImGui::Text("Position: x=%f, y=%f, z=%f", position_.x(), position_.y(), position_.z());
+    ImGui::Text("Pitch: %f, Yaw: %f", pitch_, yaw_);
+    ImGui::Text("Velocity: %f, Rot speed: %f", speed_, rot_speed_);
+}
+#endif
 
 }

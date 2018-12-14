@@ -132,6 +132,7 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->register_editor_widget([&](){ dbg::LOG.generate_widget(); });
     eimpl_->game_loop->register_editor_widget([&](){ eimpl_->pipeline->generate_widget(); });
     eimpl_->game_loop->register_editor_widget([&](){ eimpl_->daylight->generate_widget(); });
+    eimpl_->game_loop->register_editor_widget([&](){ SCENE.generate_widget(); });
 #endif
 
     eimpl_->game_loop->register_updatable_system(*eimpl_->daylight);

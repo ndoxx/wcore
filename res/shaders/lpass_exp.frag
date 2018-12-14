@@ -4,6 +4,7 @@
 #include "shadow.glsl"
 #include "cook_torrance.glsl"
 #include "position.glsl"
+#include "math_utils.glsl"
 
 struct render_data
 {
@@ -110,7 +111,7 @@ void main()
                 visibility = shadow_amount(shadowTex, shadowMapCoords, rd.f_shadowBias, rd.v2_shadowTexelSize);
             #endif
             // Falloff around map edges
-            float falloff = clamp(pow(16.0*shadowMapCoords.x*shadowMapCoords.y*(1.0-shadowMapCoords.x)*(1.0-shadowMapCoords.y), 0.4f),0.0f,1.0f);
+            float falloff = square_falloff(shadowMapCoords.xy, 0.5f);
             visibility = mix(1.0f, visibility, falloff);
         }
         if(rd.b_lighting_enabled)

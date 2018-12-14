@@ -107,6 +107,10 @@ public:
     void look_at(const math::vec3& posLookAt);
     void update(float dt);
 
+#ifndef __DISABLE_EDITOR__
+    void generate_gui_element();
+#endif
+
 private:
     void compute_rays_perspective();
 };

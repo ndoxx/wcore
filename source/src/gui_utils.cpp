@@ -1,5 +1,6 @@
 #include <map>
 #include <cmath>
+#include <iostream>
 
 #include "gui_utils.h"
 #include "imgui/imgui.h"
@@ -74,4 +75,45 @@ void PlotVarFlushOldEntries()
             ++it;
     }
 }
+
+void WCombo(const char* combo_name, const char* text, int& current_index, int nitems, const char** items)
+{
+    ImGuiComboFlags flags = ImGuiComboFlags_NoArrowButton;
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    float w = ImGui::CalcItemWidth();
+    float spacing = style.ItemInnerSpacing.x;
+    float button_sz = ImGui::GetFrameHeight();
+    ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
+    if (ImGui::BeginCombo(combo_name, items[current_index], ImGuiComboFlags_NoArrowButton))
+    {
+        for (int n = 0; n < nitems; ++n)
+        {
+            bool is_selected = (current_index == n);
+            if (ImGui::Selectable(items[n], is_selected))
+                current_index = n;
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::PopItemWidth();
+    ImGui::SameLine(0, spacing);
+    if (ImGui::ArrowButton("##l", ImGuiDir_Left))
+    {
+        --current_index;
+        if(current_index<0)
+            current_index = nitems-1;
+    }
+    ImGui::SameLine(0, spacing);
+    if (ImGui::ArrowButton("##r", ImGuiDir_Right))
+    {
+        ++current_index;
+        if(current_index>nitems-1)
+            current_index = 0;
+    }
+    ImGui::SameLine(0, style.ItemInnerSpacing.x);
+    ImGui::Text(text);
+}
+
 }

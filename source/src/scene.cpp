@@ -18,6 +18,11 @@
 #include "config.h"
 #include "game_clock.h"
 
+#ifndef __DISABLE_EDITOR__
+    #include "imgui/imgui.h"
+    #include "gui_utils.h"
+#endif
+
 namespace wcore
 {
 
@@ -368,5 +373,30 @@ void Scene::get_loaded_chunks_coords(std::vector<math::i32vec2>& coord_list) con
     for(auto&& [key, chunk]: chunks_)
         coord_list.push_back(chunk->get_coordinates());
 }
+
+#ifndef __DISABLE_EDITOR__
+const char* items[] = {"Freefly", "Light"};
+static int current_index = 0;
+
+void Scene::generate_widget()
+{
+    // New window
+    //ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Once);
+    ImGui::Begin("Scene control");
+
+    // PIPELINE CONTROL SECTION
+    ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+    if(ImGui::CollapsingHeader("Camera"))
+    {
+        ImGui::WCombo("##camsel", "Cam selection", current_index, 2, items);
+        if(current_index==0)
+            camera_->generate_gui_element();
+        else if(current_index==1)
+            light_camera_->generate_gui_element();
+    }
+
+    ImGui::End();
+}
+#endif
 
 }

@@ -127,6 +127,10 @@ public:
                      ModelEvaluator evaluate=wcore::DEFAULT_MODEL_EVALUATOR,
                      wcore::ORDER order=wcore::ORDER::IRRELEVANT,
                      wcore::MODEL_CATEGORY model_cat=wcore::MODEL_CATEGORY::OPAQUE) const;
+
+#ifndef __DISABLE_EDITOR__
+    void generate_widget();
+#endif
 };
 
 inline void Scene::add_chunk(const math::i32vec2& coords)

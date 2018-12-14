@@ -1,6 +1,7 @@
 #version 400 core
 
 #include "accessibility.glsl"
+#include "math_utils.glsl"
 
 in vec2 texCoord;
 layout(location = 0) out vec3 out_color;
@@ -160,12 +161,18 @@ void main()
     out_color = vibrance_rgb(out_color);
 
     // Vignetting & Color saturation
-    float vignette = mix(pow(16.0*texCoord.x*texCoord.y*(1.0-texCoord.x)*(1.0-texCoord.y), rd.f_vignette_falloff), 1.0f, rd.f_vignette_bal);
+    float vignette = mix(square_falloff(texCoord, rd.f_vignette_falloff), 1.0f, rd.f_vignette_bal);
     out_color = saturate(out_color, max(0.0f,rd.f_saturation + vignette - 1.0f));
     out_color *= vignette;
 
     // Contrast
     out_color = ((out_color - 0.5f) * max(rd.f_contrast, 0)) + 0.5f;
+
+    // Accessibility
+    if(rd.i_daltonize_mode == 1) // See what they see
+        out_color = daltonize(out_color, rd.i_blindness_type);
+    else if(rd.i_daltonize_mode == 2) // Apply correction
+        out_color = daltonize_correct(out_color, rd.i_blindness_type);
 
     // Gamma correction
     out_color = gamma_correct(out_color, rd.v3_gamma);
@@ -173,12 +180,6 @@ void main()
     // Dithering
     if(rd.b_dither)
         out_color += dither(texCoord);
-
-    // Accessibility
-    if(rd.i_daltonize_mode == 1) // See what they see
-        out_color = daltonize(out_color, rd.i_blindness_type);
-    else if(rd.i_daltonize_mode == 2) // Apply correction
-        out_color = daltonize_correct(out_color, rd.i_blindness_type);
 }
 
 // Luminance calculated on R and G channels only (faster)
