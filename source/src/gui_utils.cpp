@@ -99,14 +99,19 @@ void WCombo(const char* combo_name, const char* text, int& current_index, int ni
     }
     ImGui::PopItemWidth();
     ImGui::SameLine(0, spacing);
-    if (ImGui::ArrowButton("##l", ImGuiDir_Left))
+    // Button names need be unique
+    std::string lbtn("##l");
+    std::string rbtn("##r");
+    lbtn += combo_name;
+    rbtn += combo_name;
+    if (ImGui::ArrowButton(lbtn.c_str(), ImGuiDir_Left))
     {
         --current_index;
         if(current_index<0)
             current_index = nitems-1;
     }
     ImGui::SameLine(0, spacing);
-    if (ImGui::ArrowButton("##r", ImGuiDir_Right))
+    if (ImGui::ArrowButton(rbtn.c_str(), ImGuiDir_Right))
     {
         ++current_index;
         if(current_index>nitems-1)

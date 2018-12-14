@@ -76,25 +76,10 @@ RenderPipeline::~RenderPipeline()
     delete geometry_renderer_;
 }
 
-void RenderPipeline::toggle_debug_info()
-{
-    DINFO.toggle();
-}
-
 void RenderPipeline::set_pp_gamma(const math::vec3& value)     { post_processing_renderer_->set_gamma(value); }
 void RenderPipeline::set_pp_fog_color(const math::vec3& value) { post_processing_renderer_->set_fog_color(value); }
 void RenderPipeline::set_pp_saturation(float value)            { post_processing_renderer_->set_saturation(value); }
 void RenderPipeline::set_pp_fog_density(float value)           { post_processing_renderer_->set_fog_density(value); }
-void RenderPipeline::toggle_fog()               { post_processing_renderer_->toggle_fog(); }
-void RenderPipeline::next_bb_display_mode()     { debug_renderer_->next_bb_display_mode(); }
-void RenderPipeline::next_light_display_mode()  { debug_renderer_->next_light_display_mode(); }
-void RenderPipeline::toggle_debug_overlay()     { debug_overlay_renderer_->toggle(); }
-void RenderPipeline::toggle_wireframe()         { geometry_renderer_->toggle_wireframe(); }
-
-void RenderPipeline::debug_overlay_next()
-{
-    debug_overlay_renderer_->next_mode();
-}
 
 void RenderPipeline::onKeyboardEvent(const WData& data)
 {
@@ -103,34 +88,39 @@ void RenderPipeline::onKeyboardEvent(const WData& data)
     switch(kbd.key_binding)
     {
         case H_("k_tg_fog"):
-    		toggle_fog();
+    		post_processing_renderer_->toggle_fog();
     		break;
         case H_("k_bb_next_mode"):
-    		next_bb_display_mode();
+    		debug_renderer_->next_bb_display_mode();
     		break;
         case H_("k_tg_line_models"):
     		debug_renderer_->toggle_line_models();
     		break;
         case H_("k_light_volumes_next_mode"):
-    		next_light_display_mode();
+    		debug_renderer_->next_light_display_mode();
     		break;
         case H_("k_tg_debug_overlay"):
-    		toggle_debug_overlay();
+    		debug_overlay_renderer_->toggle();
     		break;
         case H_("k_debug_overlay_next_mode"):
-    		debug_overlay_next();
+    		debug_overlay_renderer_->next_mode();
     		break;
         case H_("k_tg_debug_info"):
-    		toggle_debug_info();
+    		DINFO.toggle();
     		break;
         case H_("k_tg_wireframe"):
-    		toggle_wireframe();
+    		geometry_renderer_->toggle_wireframe();
     		break;
     }
 }
 
 #ifndef __DISABLE_EDITOR__
 static uint32_t frame_cnt = 0;
+const char* bb_mode_items[]       = {"Hidden", "AABB", "OBB"};
+const char* light_mode_items[]    = {"Hidden", "Location", "Scaled"};
+const char* acc_dalt_mode_items[] = {"Off", "Simulate", "Apply correction"};
+const char* acc_blindness_items[] = {"Protanopia", "Deuteranopia", "Tritanopia"};
+
 void RenderPipeline::generate_widget()
 {
     // New window
@@ -178,53 +168,20 @@ void RenderPipeline::generate_widget()
     ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Debug display"))
     {
-        if(ImGui::Button("Bounding box"))
-        {
-            next_bb_display_mode();
-        }
-        ImGui::SameLine();
-        switch(debug_renderer_->get_bb_display_mode())
-        {
-            case 0:
-                ImGui::Text("Hidden");
-                break;
-            case 1:
-                ImGui::Text("AABB");
-                break;
-            case 2:
-                ImGui::Text("OBB");
-                break;
-        }
+        ImGui::WCombo("##bbmodesel", "Bounding box", debug_renderer_->bb_display_mode_, 3, bb_mode_items);
+        ImGui::WCombo("##lightmodesel", "Light proxy", debug_renderer_->light_display_mode_, 3, light_mode_items);
 
-        ImGui::SameLine();
-        if(ImGui::Button("Light proxy"))
-        {
-            next_light_display_mode();
-        }
-        ImGui::SameLine();
-        switch(debug_renderer_->get_light_display_mode())
-        {
-            case 0:
-                ImGui::Text("Hidden");
-                break;
-            case 1:
-                ImGui::Text("Location");
-                break;
-            case 2:
-                ImGui::Text("Scaled");
-                break;
-        }
         ImGui::SliderFloat("Wireframe", (float*)&geometry_renderer_->get_wireframe_mix_nc(), 0.0f, 1.0f);
         if(ImGui::Button("Framebuffer Peek"))
         {
-            toggle_debug_overlay();
+            debug_overlay_renderer_->toggle();
         }
         if(debug_overlay_renderer_->get_enabled_flag())
         {
             ImGui::SameLine();
             if(ImGui::Button("Next pane"))
             {
-                debug_overlay_next();
+                debug_overlay_renderer_->next_mode();
             }
         }
     }
@@ -233,15 +190,17 @@ void RenderPipeline::generate_widget()
     ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Post-processing"))
     {
-        ImGui::Text("Chromatic aberration:");
+        ImGui::Text("Chromatic aberration");
         ImGui::SliderFloat("Shift", &post_processing_renderer_->aberration_shift_, 0.0f, 10.0f);
         ImGui::SliderFloat("Magnitude", &post_processing_renderer_->aberration_strength_, 0.0f, 1.0f);
 
-        ImGui::Text("Vignette:");
+        ImGui::Separator();
+        ImGui::Text("Vignette");
         ImGui::SliderFloat("Falloff", &post_processing_renderer_->vignette_falloff_, 0.0f, 2.0f);
         ImGui::SliderFloat("Balance", &post_processing_renderer_->vignette_balance_, 0.0f, 1.0f);
 
-        ImGui::Text("Vibrance:");
+        ImGui::Separator();
+        ImGui::Text("Vibrance");
         ImGui::SliderFloat("Strength", &post_processing_renderer_->vibrance_, -1.0f, 1.0f);
         ImGui::SliderFloat3("Balance", (float*)&post_processing_renderer_->vibrance_bal_, 0.0f, 1.0f);
 
@@ -270,40 +229,12 @@ void RenderPipeline::generate_widget()
 
         ImGui::Separator();
         ImGui::Text("Accessibility");
-        if(ImGui::Button("Daltonize"))
-        {
-            post_processing_renderer_->daltonize_next_mode();
-        }
-        ImGui::SameLine();
-        switch(post_processing_renderer_->acc_daltonize_mode_)
-        {
-            case 0:
-                ImGui::Text("Off");
-                break;
-            case 1:
-                ImGui::Text("Simulate");
-                break;
-            case 2:
-                ImGui::Text("Apply correction");
-                break;
-        }
+        ImGui::WCombo("##daltmodesel", "Daltonize", post_processing_renderer_->acc_daltonize_mode_, 3, acc_dalt_mode_items);
         if(post_processing_renderer_->acc_daltonize_mode_)
         {
-            ImGui::SliderInt("Blindness", &post_processing_renderer_->acc_blindness_type_, 0, 2);
-            switch(post_processing_renderer_->acc_blindness_type_)
-            {
-                case 0:
-                    ImGui::Text("Protanopia");
-                    break;
-                case 1:
-                    ImGui::Text("Deuteranopia");
-                    break;
-                case 2:
-                    ImGui::Text("Tritanopia");
-                    break;
-            }
+            ImGui::Indent();
+            ImGui::WCombo("##blindnesssel", "Blindness", post_processing_renderer_->acc_blindness_type_, 3, acc_blindness_items);
         }
-
 
         ImGui::Separator();
         ImGui::Text("Misc.");

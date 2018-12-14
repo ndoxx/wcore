@@ -495,7 +495,7 @@
 
     <Ambient>
         <Directional>
-            <ShadowBias>0.1</ShadowBias>
+            <ShadowBias>0.05</ShadowBias>
             <Color>
                 <CSpline base="vec3" tangentPolicy="CatmullRom">
                     <Control locus="0.0" value="(0.10,0.25,0.85)"/>

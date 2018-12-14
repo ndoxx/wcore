@@ -167,12 +167,12 @@ void Camera::get_truncated_frustum_corners(float ymin, std::array<vec3, 8>& dest
     const std::array<vec3, 8>& corners = frusBox_.get_corners();
 
     // check right top far corner y, if y>ymin bail early with unaltered frustum
-    if(corners[5].y()>ymin)
+    /*if(corners[5].y()>ymin)
     {
         //destination.resize(corners.size());
         std::copy(corners.begin(), corners.end(), destination.begin());
         return;
-    }
+    }*/
 
     // Right bottom far corner will have the minimal y value
     float minimum = corners[1].y();
@@ -198,17 +198,17 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
                                         float texel_size_y)
 {
     // Get other camera frustum corners in world space
-    const std::array<vec3, 8>& corners_world = other.get_frustum_corners();
-    //std::vector<math::vec3> corners_world;
-    //other.get_truncated_frustum_corners(10, corners_world);
+    //const std::array<vec3, 8>& corners_world = other.get_frustum_corners();
+    std::array<vec3, 8> corners_world;
+    other.get_truncated_frustum_corners(10, corners_world);
 
     // Get center of view frustum
     /*vec3 frus_center(math::lerp(corners_world[0], corners_world[6], 0.5f));*/
 
-    // Move camera to position with an offset (view direction)
-    set_position(view_dir+other.position_);
+    // Move camera along view direction
+    set_position(100.0f*view_dir/*+other.position_*/);
     // Look at target position
-    look_at(other.position_);
+    look_at(vec3(0)/*+other.position_*/);
 
     // Transform corners from world to view space
     static std::array<vec3, 8> corners_lightspace;
@@ -248,11 +248,11 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
     }
 
     // [TMP] Zoom. This improves definition but can cause occluder clipping within the view frustum
-    float zoom = 1.0f/((!(diagonal<full_diagonal))?5.0f:1.2f);
+    /*float zoom = 1.0f/((!(diagonal<full_diagonal))?1.5f:1.2f);
     for(uint8_t ii=0; ii<4; ++ii)
     {
         extent[ii] *= zoom;
-    }
+    }*/
 
     if(texel_size_x && texel_size_y)
     {
@@ -266,9 +266,9 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
 
         // fixed-Z, because tight fit z-bounds would cause occluder clipping
         // to be [REPLACE]d with proper scene AABB query
-        //extent[4] = -10.0f;
-        //extent[5] = 150.0f;
-        extent[5] = other.position_.y()+20;
+        extent[4] = -10.0f;
+        extent[5] = 200.0f;
+        //extent[5] = other.position_.y()+20;
     }
 
     // * Set orthographic perspective

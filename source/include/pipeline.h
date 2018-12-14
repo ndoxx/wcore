@@ -63,14 +63,6 @@ public:
     void set_pp_saturation(float value);
     void set_pp_fog_density(float value);
 
-    void toggle_fog();
-    void next_bb_display_mode();
-    void next_light_display_mode();
-    void toggle_debug_overlay();
-    void toggle_wireframe();
-    void toggle_debug_info();
-    void debug_overlay_next();
-
     void onKeyboardEvent(const WData& data);
     void render();
     void dbg_show_statistics();
