@@ -90,6 +90,12 @@ public:
         return false;
     }
     template <typename T>
+    bool send_uniform_array(hash_t name, T* array, int size) const
+    {
+        warn_uniform_unknown_type();
+        return false;
+    }
+    template <typename T>
     bool send_uniforms(const T& value) const
     {
         warn_uniform_unknown_type();
@@ -129,6 +135,9 @@ template <>
 bool Shader::send_uniforms<Texture>(const Texture& texture) const;
 template <>
 bool Shader::send_uniforms<Material>(const Material& material) const;
+
+template <>
+bool Shader::send_uniform_array<float>(hash_t name, float* array, int size) const;
 
 }
 

@@ -1,5 +1,5 @@
 #include "ping_pong_buffer.h"
-
+#include <iostream>
 namespace wcore
 {
 
@@ -11,6 +11,10 @@ void BlurPassPolicy::update(Shader& shader, bool pass_direction)
                                                  1.0f/target_height_));
     shader.send_uniform(H_("horizontal"), pass_direction);
     shader.send_uniform(H_("f_alpha"), 1.0f);
+
+    // send Gaussian kernel
+    shader.send_uniform<int>(H_("kernel.i_half_size"), kernel_.get_half_size());
+    shader.send_uniform_array(H_("kernel.f_weight[0]"), kernel_.data(), kernel_.get_half_size());
 
     if(shader.is_variant(H_("VARIANT_COMPRESS_R")))
     {

@@ -19,11 +19,13 @@ public:
 
     void update_kernel(uint32_t size, float sigma);
 
+    inline uint32_t get_half_size() const { return half_kernel_size_; }
     inline float operator[](int index) const
     {
         assert(index<half_kernel_size_ && "[GaussianKernel] index out of bounds.");
         return weights_[index];
     }
+    inline float* data() { return weights_.data(); }
 
 #ifdef __DEBUG__
     friend std::ostream& operator<<(std::ostream& stream, const GaussianKernel& gk);

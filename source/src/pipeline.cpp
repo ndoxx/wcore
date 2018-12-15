@@ -114,12 +114,18 @@ void RenderPipeline::onKeyboardEvent(const WData& data)
     }
 }
 
-#ifndef __DISABLE_EDITOR__
+#ifdef __PROFILING_RENDERERS__
 static uint32_t frame_cnt = 0;
+#endif
+
+#ifndef __DISABLE_EDITOR__
 const char* bb_mode_items[]       = {"Hidden", "AABB", "OBB"};
 const char* light_mode_items[]    = {"Hidden", "Location", "Scaled"};
 const char* acc_dalt_mode_items[] = {"Off", "Simulate", "Apply correction"};
 const char* acc_blindness_items[] = {"Protanopia", "Deuteranopia", "Tritanopia"};
+
+static int SSAO_kernel_half_size = 3;
+static float SSAO_sigma = 1.8f;
 
 void RenderPipeline::generate_widget()
 {
@@ -159,8 +165,19 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Vector bias", &SSAO_renderer_->SSAO_vbias_, 0.0f, 0.5f);
             ImGui::SliderFloat("Intensity",   &SSAO_renderer_->SSAO_intensity_, 0.0f, 5.0f);
             ImGui::SliderFloat("Scale",       &SSAO_renderer_->SSAO_scale_, 0.01f, 1.0f);
-            ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_npass_, 0, 5);
-            ImGui::SliderFloat("Compression", &SSAO_renderer_->SSAO_gamma_r_, 0.5f, 2.0f);
+
+            ImGui::Separator();
+            int ker_size = 2*SSAO_kernel_half_size-1;
+            ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
+            bool update_kernel = ImGui::SliderInt("Half-size", &SSAO_kernel_half_size, 3, 8);
+            update_kernel     |= ImGui::SliderFloat("Sigma",     &SSAO_sigma, 0.5f, 2.0f);
+            if(update_kernel)
+            {
+                SSAO_renderer_->blur_policy_.kernel_.update_kernel(2*SSAO_kernel_half_size-1, SSAO_sigma);
+            }
+
+            ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_policy_.n_pass_, 0, 5);
+            ImGui::SliderFloat("Compression", &SSAO_renderer_->blur_policy_.gamma_r_, 0.5f, 2.0f);
         }
     }
 

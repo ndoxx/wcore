@@ -39,8 +39,10 @@ SSAO_bias_(0.025),
 SSAO_vbias_(0.05),
 SSAO_intensity_(1.0),
 SSAO_scale_(0.4),
-SSAO_gamma_r_(1.0f),
-blur_npass_(1)
+blur_policy_(1,
+             SSAOBuffer::Instance().get_width()/2,
+             SSAOBuffer::Instance().get_height()/2,
+             1.0f)
 {
     load_geometry();
     generate_random_kernel();
@@ -115,15 +117,12 @@ void SSAORenderer::render()
     SSAO_shader_.unuse();
 
     // Blur pass on occlusion texture
-    if(blur_npass_)
+    if(blur_policy_.n_pass_)
     {
         //GFX::disable_face_culling();
         vertex_array_.bind();
         ping_pong_.run(*static_cast<BufferModule*>(&ssaobuffer),
-                       BlurPassPolicy(blur_npass_,
-                                      SSAOBuffer::Instance().get_width()/2,
-                                      SSAOBuffer::Instance().get_height()/2,
-                                      SSAO_gamma_r_),
+                       blur_policy_,
                        [&]()
                        {
                             GFX::clear_color();

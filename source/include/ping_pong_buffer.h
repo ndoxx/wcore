@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "frame_buffer.h"
 #include "buffer_module.h"
+#include "gaussian.h"
 
 namespace wcore
 {
@@ -19,17 +20,19 @@ public:
     n_pass_(n_pass),
     target_width_(target_width),
     target_height_(target_height),
-    gamma_r_(gamma_r)
+    gamma_r_(gamma_r),
+    kernel_(7,1.0f)
     {
 
     }
 
     void update(Shader& shader, bool pass_direction);
 
-    uint32_t n_pass_;
+    int n_pass_;
     uint32_t target_width_;
     uint32_t target_height_;
     float gamma_r_;
+    math::GaussianKernel kernel_;
 };
 
 class PingPongBuffer

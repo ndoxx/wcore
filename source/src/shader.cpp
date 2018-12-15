@@ -627,4 +627,21 @@ bool Shader::send_uniforms(std::shared_ptr<const Light> plight) const
     return true;
 }
 
+template<>
+bool Shader::send_uniform_array<float>(hash_t name, float* array, int size) const
+{
+    auto it = uniform_locations_.find(name);
+    if(it == uniform_locations_.end())
+    {
+#ifdef __DEBUG__
+        warn_unknown_uniform(name_, name);
+#endif
+        return false;
+    }
+
+    glUniform1fv(it->second, size, array);
+    return true;
+}
+
+
 }
