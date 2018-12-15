@@ -9,7 +9,7 @@ in vec2 texCoord;
 uniform sampler2D inputTex;
 uniform bool horizontal;
 uniform float f_alpha;
-uniform vec2 v2_texOffset;
+uniform vec2 v2_texelSize;
 
 #ifdef VARIANT_COMPRESS_R
     uniform float inv_gamma_r;
@@ -17,7 +17,7 @@ uniform vec2 v2_texOffset;
 
 void main()
 {
-    vec3 result = gaussian_blur_5_rgb(inputTex, texCoord, v2_texOffset, horizontal);
+    vec3 result = gaussian_blur_9_rgb(inputTex, texCoord, v2_texelSize, horizontal);
     #ifdef VARIANT_COMPRESS_R
         result.r = pow(result.r, inv_gamma_r);
     #endif

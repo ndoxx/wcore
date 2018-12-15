@@ -3,7 +3,7 @@
 
 #include "math3d.h"
 
-using namespace math;
+using namespace wcore::math;
 
 static bool FloatNear(float expected, float result, float delta)
 {

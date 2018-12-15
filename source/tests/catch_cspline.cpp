@@ -4,8 +4,6 @@
 
 #include "cspline.h"
 
-using namespace math;
-
 static const float precision = 1e-4;
 
 TEST_CASE("CSpline float interpolation.", "[cspline]")

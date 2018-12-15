@@ -27,6 +27,7 @@ set(CMAKE_BUILD_TYPE Release)
 # set(CMAKE_BUILD_TYPE MinSizeRel)
 # set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
+include_directories(${CMAKE_SOURCE_DIR}/source)
 include_directories(${CMAKE_SOURCE_DIR}/source/include)
 include_directories(${CMAKE_SOURCE_DIR}/source/vendor)
 
@@ -35,12 +36,15 @@ set(SRC_MATHS_TEST
     ${CMAKE_SOURCE_DIR}/source/src/quaternion.cpp
     ${CMAKE_SOURCE_DIR}/source/src/math3d.cpp
     ${CMAKE_SOURCE_DIR}/source/src/bezier.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/numeric.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/gaussian.cpp
     ${CMAKE_SOURCE_DIR}/source/src/algorithms.cpp)
 
 set(SRC_CORE_TEST
     ${CMAKE_SOURCE_DIR}/source/src/informer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/listener.cpp
     ${CMAKE_SOURCE_DIR}/source/src/logger.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/colors.cpp
     ${CMAKE_SOURCE_DIR}/source/src/wentity.cpp
     ${CMAKE_SOURCE_DIR}/source/src/wcomponent.cpp)
 
@@ -71,7 +75,9 @@ add_executable(test_math
                catch_bezier.cpp
                catch_cspline.cpp
                catch_algo.cpp
-               ${SRC_MATHS_TEST})
+               catch_numeric.cpp
+               ${SRC_MATHS_TEST}
+               ${SRC_CORE_TEST})
 
 set_target_properties(test_math
     PROPERTIES

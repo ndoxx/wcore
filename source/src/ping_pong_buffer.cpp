@@ -7,12 +7,8 @@ using namespace math;
 
 void BlurPassPolicy::update(Shader& shader, bool pass_direction)
 {
-    float coeff = 1.0f;
-    if(pass_direction)
-        coeff = 2.0f;
-
-    shader.send_uniform(H_("v2_texOffset"), vec2(coeff/target_width_,
-                                                 coeff/target_height_));
+    shader.send_uniform(H_("v2_texelSize"), vec2(1.0f/target_width_,
+                                                 1.0f/target_height_));
     shader.send_uniform(H_("horizontal"), pass_direction);
     shader.send_uniform(H_("f_alpha"), 1.0f);
 

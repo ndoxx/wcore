@@ -4,8 +4,6 @@
 #include "quaternion.h"
 #include "catch_math_common.h"
 
-using namespace math;
-
 static const float precision = 1e-4;
 
 

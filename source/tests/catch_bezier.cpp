@@ -4,13 +4,11 @@
 
 #include "bezier.h"
 
-using namespace math;
-
 static const float precision = 1e-4;
 
 TEST_CASE("Bezier curve order 3 interpolation.", "[bez]")
 {
-    math::Bezier curve(vec3(0.0,0.0,0.0),
+    Bezier curve(vec3(0.0,0.0,0.0),
                        vec3(1.0,0.2,0.0),
                        vec3(1.0,0.4,1.0),
                        vec3(0.0,0.6,1.0));
@@ -22,7 +20,7 @@ TEST_CASE("Bezier curve order 3 interpolation.", "[bez]")
 
 TEST_CASE("Update control point.", "[bez]")
 {
-    math::Bezier curve(vec3(0.0,0.0,0.0),
+    Bezier curve(vec3(0.0,0.0,0.0),
                        vec3(1.0,0.2,0.0),
                        vec3(1.0,0.4,1.0),
                        vec3(0.0,0.6,1.0));
@@ -33,13 +31,13 @@ TEST_CASE("Update control point.", "[bez]")
 
 TEST_CASE("De Casteljau's algorithm.", "[bez]")
 {
-    vec3 p = math::Bezier::interpolate(0.5,
+    vec3 p = Bezier::interpolate(0.5,
                         vec3(0.0,0.0,0.0),
                         vec3(1.0,0.2,0.0),
                         vec3(1.0,0.4,1.0),
                         vec3(8.0,0.6,1.0));
 
-    math::Bezier curve(vec3(0.0,0.0,0.0),
+    Bezier curve(vec3(0.0,0.0,0.0),
                        vec3(1.0,0.2,0.0),
                        vec3(1.0,0.4,1.0),
                        vec3(8.0,0.6,1.0));

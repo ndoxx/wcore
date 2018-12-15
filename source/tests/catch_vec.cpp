@@ -3,8 +3,6 @@
 #include "math3d.h"
 #include "catch_math_common.h"
 
-using namespace math;
-
 static const float precision = 1e-4;
 
 TEST_CASE("Default ctor is used to create vecs.", "[vec]")

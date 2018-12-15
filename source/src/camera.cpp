@@ -166,20 +166,32 @@ void Camera::get_truncated_frustum_corners(float ymin, std::array<vec3, 8>& dest
 {
     const std::array<vec3, 8>& corners = frusBox_.get_corners();
 
-    // check right top far corner y, if y>ymin bail early with unaltered frustum
-    /*if(corners[5].y()>ymin)
+    // check right bottom far corner y, if y>ymin bail early with unaltered frustum
+    if(corners[1].y()>ymin)
     {
-        //destination.resize(corners.size());
         std::copy(corners.begin(), corners.end(), destination.begin());
         return;
-    }*/
+    }
 
-    // Right bottom far corner will have the minimal y value
-    float minimum = corners[1].y();
-    // and right bottom near corner norm is the visible portion of edge
-    float dist_visible = sqrt(corners[0].x()*corners[0].x() + corners[0].y()*corners[0].y());
-    // Compute ratio of visible portion of frustum
-    float ratio  = dist_visible/(dist_visible-minimum);
+    // Find parameter of bottom right line such that y=ymin
+    float y_rbn = corners[0].y();
+    float y_rbf = corners[1].y();
+    float ratio = (ymin - y_rbn) / (y_rbf - y_rbn);
+
+    // THIS IS THE RIGHT WAY TO DO IT if we have parallel split frusta
+    /*vec3 cnear(math::lerp(corners[0], corners[7], 0.5f));
+    vec3 cfar (math::lerp(corners[1], corners[6], 0.5f));
+
+    if(cfar.y()>ymin)
+    {
+        std::copy(corners.begin(), corners.end(), destination.begin());
+        return;
+    }
+
+    // Find parameter of view line such that y=ymin
+    float y_n = cnear.y();
+    float y_f = cfar.y();
+    float ratio = (ymin - y_n) / (y_f - y_n);*/
 
     // Push corrected vertices
     destination[0] = (corners[0]);
@@ -200,13 +212,14 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
     // Get other camera frustum corners in world space
     //const std::array<vec3, 8>& corners_world = other.get_frustum_corners();
     std::array<vec3, 8> corners_world;
-    other.get_truncated_frustum_corners(10, corners_world);
+    other.get_truncated_frustum_corners(-10, corners_world);
 
     // Get center of view frustum
-    /*vec3 frus_center(math::lerp(corners_world[0], corners_world[6], 0.5f));*/
+    //vec3 frus_center(math::lerp(corners_world[0], corners_world[6], 0.5f));
 
     // Move camera along view direction
     set_position(100.0f*view_dir/*+other.position_*/);
+
     // Look at target position
     look_at(vec3(0)/*+other.position_*/);
 
@@ -256,7 +269,7 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
 
     if(texel_size_x && texel_size_y)
     {
-        // * Round to the nearest texel (avoids shadow flickering)
+        // * Round to the nearest texel (limits shadow flickering)
         vec2 units_per_texel = 2.0f * vec2((extent[1]-extent[0])*texel_size_x,
                                            (extent[3]-extent[2])*texel_size_y);
         extent[0] = floor(extent[0]/units_per_texel.x()) * units_per_texel.x();
@@ -268,7 +281,7 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
         // to be [REPLACE]d with proper scene AABB query
         extent[4] = -10.0f;
         extent[5] = 200.0f;
-        //extent[5] = other.position_.y()+20;
+        //extent[5] = 100.0f + (100.0f-other.position_.y());
     }
 
     // * Set orthographic perspective
