@@ -23,18 +23,9 @@ void BlurPassPolicy::update(Shader& shader, bool pass_direction)
 }
 
 PingPongBuffer::PingPongBuffer(const ShaderResource& shader_res,
-                               uint32_t width,
-                               uint32_t height):
+                               std::unique_ptr<Texture> texture):
 shader_(shader_res),
-texture_(std::make_shared<Texture>(
-            std::vector<hash_t>{H_("tmp0Tex")},
-            width,
-            height,
-            GL_TEXTURE_2D,
-            GL_LINEAR,
-            GL_RGBA32F,
-            GL_RGBA,
-            true)),
+texture_(std::move(texture)),
 fbo_(*texture_, std::vector<GLenum>{GL_COLOR_ATTACHMENT0})
 {
 

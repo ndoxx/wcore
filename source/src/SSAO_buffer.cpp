@@ -9,7 +9,7 @@ SSAOBuffer::SSAOBuffer(unsigned int width,
 BufferModule("SSAObuffer",
 std::make_shared<Texture>(
     std::vector<hash_t>{H_("SSAOTex")},
-    std::vector<GLenum>{GL_NEAREST},
+    std::vector<GLenum>{GL_LINEAR},
     std::vector<GLenum>{GL_RED},
     std::vector<GLenum>{GL_RGB},
     width,

@@ -39,13 +39,12 @@ class PingPongBuffer
 {
 private:
     Shader shader_;
-    std::shared_ptr<Texture> texture_;
+    std::unique_ptr<Texture> texture_;
     FrameBuffer fbo_;
 
 public:
     PingPongBuffer(const ShaderResource& shader_res,
-                   uint32_t width,
-                   uint32_t height);
+                   std::unique_ptr<Texture> texture);
 
     template <typename PassPolicyT>
     void run(BufferModule& inout_buffer,

@@ -2,6 +2,7 @@
 
 #include "normal_compression.glsl"
 #include "position.glsl"
+#include "math_utils.glsl"
 
 struct render_data
 {
@@ -82,6 +83,7 @@ void main()
     vec3 fragNormal = decompress_normal(texture(normalTex, texCoord).xy);
 
     // Tangent space
+    //vec2 randomVec = vec2(rand(texCoord.x), rand(texCoord.y));
     vec2 randomVec = normalize(texture(noiseTex, texCoord*rd.v2_noiseScale).xy);
 
     float occlusion = 0.0f;

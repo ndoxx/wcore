@@ -5222,3 +5222,59 @@ vec4 directional_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_
 ```
 J'ai abandonné l'idée assez vite car l'overhead est énorme chez-moi (je dois être fill-bound à cause des 3 canaux supplémentaires que cela requiert). De fait, l'implémentation est à l'arrache (même pas mis le bleeding à l'échelle en fonction de la distance, ni fait une intégration propre dans la pipeline PBR). Cependant j'ai pu observer un début d'approx de GI dans mon moteur et c'était rafraîchissant.
 On garde ça sous le coude au cas où.
+
+#[15-12-18]
+
+## Toolchain
+Une toolchain alternative utilisant clang 6 (au lieu de 7) peut être utilisée par CMake via :
+
+>> cmake -DCLANG6=1 ..
+
+Les instructions relatives aux paths sont regroupées dans les fichiers toolchain_clang6.cmake et toolchain_clang7.cmake. Ces fichiers sont simplement inclus (c'est sûrement très mal) via
+
+```cmake
+if(DEFINED CLANG6)
+  include(toolchain_clang6)
+else()
+  include(toolchain_clang7)
+endif()
+```
+J'ai essayé avec un SET(-DCMAKE_TOOLCHAIN_FILE /path/to/file) mais ça n'a rien donné. A retenter, c'est a priori comme ça qu'on fait (cross compilation). Mais les serveurs de chez CMake sont down, donc pas de docu pour moi pour l'instant :p
+
+## On the fly Gaussian kernels
+L'include gaussian_blur.glsl définit une nouvelle fonction convolve_kernel_separable() qui permet une convolution avec un filtre séparable dont les coefficients du noyau (supposé symétrique) et le nombre de coefficients sont précisés en argument.
+Du coup blurpass.frag a subi un petit lifting :
+
+```c
+struct GaussianKernel
+{
+    float f_weight[KERNEL_MAX_WEIGHTS];
+    int i_half_size;
+};
+uniform GaussianKernel kernel;
+
+void main()
+{
+    vec3 result = convolve_kernel_separable(kernel.f_weight, kernel.i_half_size,
+                                            inputTex, texCoord,
+                                            v2_texelSize, horizontal);
+    // ...
+}
+```
+
+Pour envoyer les uniforms, c'est dans BlurPassPolicy::update():
+```cpp
+    shader.send_uniform<int>(H_("kernel.i_half_size"), kernel_.get_half_size());
+    shader.send_uniform_array(H_("kernel.f_weight[0]"), kernel_.data(), kernel_.get_half_size());
+
+```
+
+_BlurPassPolicy_ contient un nouveau membre kernel_ de type _GaussianKernel_ (voir gaussian.h).
+
+_GaussianKernel_ implémente les moyens de calcul d'un noyau Gaussien depuis une taille de noyau et un écart-type sigma.
+Le calcul des coefficients du noyau se fait par intégration d'une distribution normale sur n intervalles avec n = (k+1)/2 et k la taille du noyau. Le noyau Gaussien étant symétrique de part et d'autre de x=0, on a en effet besoin que des coefficients des bins positifs.
+L'intégrale est approchée par la méthode de Simpson (voir mes notes dans le cahier), dans numeric.h/cpp: integrate_simpson() (optimisée).
+
+Le noyau Gaussien et la fonction d'intégration sont unit testés dans catch_numeric.cpp -> target test_math.
+
+Il s'ensuit que la taille du noyau Gaussien et le sigma sont aisément configurables dans le GUI section SSAO/blur.

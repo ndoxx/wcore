@@ -18,7 +18,7 @@ namespace wcore
 
 using namespace math;
 
-uint32_t SSAORenderer::NOISE_SQRSIZE_ = 8;
+uint32_t SSAORenderer::NOISE_SQRSIZE_ = 16;
 uint32_t SSAORenderer::KERNEL_SQRSIZE_ = 8;
 uint32_t SSAORenderer::KERNEL_SIZE_ = pow(SSAORenderer::KERNEL_SQRSIZE_,2);
 uint32_t SSAORenderer::NOISE_SIZE_ = pow(SSAORenderer::NOISE_SQRSIZE_,2);
@@ -28,8 +28,15 @@ SSAORenderer::SSAORenderer():
 Renderer<Vertex3P>(),
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
 ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R"),
-           SSAOBuffer::Instance().get_width()/2,
-           SSAOBuffer::Instance().get_height()/2),
+           std::make_unique<Texture>(
+                       std::vector<hash_t>{H_("SSAOtmpTex")},
+                       SSAOBuffer::Instance().get_width()/2,
+                       SSAOBuffer::Instance().get_height()/2,
+                       GL_TEXTURE_2D,
+                       GL_LINEAR,
+                       GL_RED,
+                       GL_RGB,
+                       true)),
 out_size_(SSAOBuffer::Instance().get_width(),
           SSAOBuffer::Instance().get_height()),
 noise_scale_(out_size_/(float(NOISE_SQRSIZE_))),
@@ -134,7 +141,7 @@ void SSAORenderer::render()
 void SSAORenderer::generate_random_kernel()
 {
     std::uniform_real_distribution<float> rnd_f(0.0f, 1.0f);
-    std::default_random_engine rng(1);
+    std::default_random_engine rng(42);
 
     // Generate a random hemispherical distribution of vectors in tangent space
     for (uint32_t ii=0; ii<KERNEL_SIZE_; ++ii)
@@ -179,7 +186,7 @@ void SSAORenderer::generate_random_kernel()
     // Push noise to a GL texture that tiles the screen (GL_REPEAT)
     glGenTextures(1, &noise_texture_);
     glBindTexture(GL_TEXTURE_2D, noise_texture_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, NOISE_SQRSIZE_, NOISE_SQRSIZE_, 0, GL_RGB, GL_FLOAT, &ssao_noise[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, NOISE_SQRSIZE_, NOISE_SQRSIZE_, 0, GL_RGB, GL_FLOAT, &ssao_noise[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
