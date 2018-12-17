@@ -29,6 +29,9 @@ private:
     bool lighting_enabled_;
 
 public:
+    float bright_threshold_;
+    float bright_knee_;
+
     LightingRenderer(ShadowMapRenderer& smr);
     virtual ~LightingRenderer() = default;
 

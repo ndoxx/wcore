@@ -2,7 +2,7 @@
 
 struct render_data
 {
-    vec2 v2_screenSize;
+    vec2 v2_texelSize;
     vec2 v2_noiseScale;
     vec3 v3_lightDir;
 

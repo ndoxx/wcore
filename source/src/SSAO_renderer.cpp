@@ -47,8 +47,8 @@ SSAO_vbias_(0.05),
 SSAO_intensity_(1.0),
 SSAO_scale_(0.4),
 blur_policy_(1,
-             SSAOBuffer::Instance().get_width()/2,
-             SSAOBuffer::Instance().get_height()/2,
+             SSAOBuffer::Instance().get_width(),
+             SSAOBuffer::Instance().get_height(),
              1.0f)
 {
     load_geometry();
@@ -75,7 +75,7 @@ void SSAORenderer::render()
     SSAOBuffer& ssaobuffer = SSAOBuffer::Instance();
 
     SSAO_shader_.use();
-    SSAO_shader_.send_uniform(H_("rd.v2_screenSize"), out_size_);
+    SSAO_shader_.send_uniform(H_("rd.v2_texelSize"), vec2(1.0f/out_size_.x(),1.0f/out_size_.y()));
     // Render textured quad to screen
     glViewport(0,0,out_size_.x(),out_size_.y());
 

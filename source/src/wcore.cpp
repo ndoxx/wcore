@@ -12,7 +12,6 @@
 #include "daylight.h"
 #include "globals.h"
 
-
 namespace wcore
 {
 

@@ -6,7 +6,7 @@
 
 struct render_data
 {
-    vec2 v2_screenSize;
+    vec2 v2_texelSize;
     vec2 v2_noiseScale;
     vec3 v3_lightDir;
 
@@ -37,9 +37,9 @@ uniform sampler2D albedoTex;
 #define PHI 0.707106f
 const vec2 SAMPLES[4] = vec2[](vec2(1,0),vec2(-1,0),
                                vec2(0,1),vec2(0,-1));
-const float FAR = 100.0;
-const float invFAR = 0.01;
-const float f_occlusion_threshold = 0.5;
+const float FAR = 100.0f;
+const float invFAR = 0.01f;
+const float f_occlusion_threshold = 0.5f;
 
 vec3 get_position(vec2 uv)
 {
@@ -76,7 +76,7 @@ vec4 directional_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_
 
 void main()
 {
-    vec2 texCoord = gl_FragCoord.xy / rd.v2_screenSize;
+    vec2 texCoord = gl_FragCoord.xy * rd.v2_texelSize;
 
     // View space
     vec3 fragPos = get_position(texCoord);
@@ -86,15 +86,19 @@ void main()
     //vec2 randomVec = vec2(rand(texCoord.x), rand(texCoord.y));
     vec2 randomVec = normalize(texture(noiseTex, texCoord*rd.v2_noiseScale).xy);
 
+    /*vec3 tangent = normalize(randomVec - fragNormal * dot(randomVec, fragNormal));
+    vec3 bitangent = cross(fragNormal, tangent);
+    mat3 TBN = mat3(tangent, bitangent, fragNormal);*/
+
     float occlusion = 0.0f;
     //vec4 occlusion = vec4(0);
-    float rad = rd.f_radius/fragPos.z;
+    float rad = rd.f_radius/max(0.1f,-fragPos.z);
 
     int iterations = int(mix(4.0,1.0,fragPos.z*invFAR));
     for (int jj=0; jj<iterations; ++jj)
     {
         vec2 coord1 = reflect(SAMPLES[jj],randomVec)*rad;
-        vec2 coord2 = vec2(coord1.x*0.707f - coord1.y*0.707f, coord1.x*0.707f + coord1.y*0.707f);
+        vec2 coord2 = vec2(coord1.x*PHI - coord1.y*PHI, coord1.x*PHI + coord1.y*PHI);
 
         occlusion += ambiant_occlusion(texCoord, coord1*0.25f, fragPos, fragNormal);
         occlusion += ambiant_occlusion(texCoord, coord2*0.5f,  fragPos, fragNormal);

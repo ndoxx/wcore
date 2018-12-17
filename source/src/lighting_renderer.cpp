@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "lighting_renderer.h"
 #include "gfx_driver.h"
 #include "config.h"
@@ -23,7 +25,9 @@ null_shader_(ShaderResource("null.vert;null.frag")),
 smr_(smr),
 SSAO_enabled_(true),
 shadow_enabled_(true),
-lighting_enabled_(true)
+lighting_enabled_(true),
+bright_threshold_(1.0f),
+bright_knee_(0.1f)
 {
     CONFIG.get(H_("root.render.override.allow_shadow_mapping"), shadow_enabled_);
     load_geometry();
@@ -133,7 +137,8 @@ void LightingRenderer::render()
             // G-Buffer texture samplers
             lpass_point_shader_.send_uniforms(*pgbuffer);
             // Bright pass threshold
-            lpass_point_shader_.send_uniform(H_("rd.f_bright_threshold"), 1.0f);
+            lpass_point_shader_.send_uniform(H_("rd.f_bright_threshold"), std::max(bright_threshold_, bright_knee_));
+            lpass_point_shader_.send_uniform(H_("rd.f_bright_knee"), bright_knee_);
             // Screen size
             lpass_point_shader_.send_uniform(H_("rd.v2_screenSize"),
                                                math::vec2(gbuffer.get_width(),gbuffer.get_height()));

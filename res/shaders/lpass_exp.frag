@@ -10,6 +10,7 @@ struct render_data
 {
     float f_wireframe_mix;    // Wireframe blend factor in[0,1]
     float f_bright_threshold; // For bloom bright pass
+    float f_bright_knee;      // For bloom bright pass
     vec3 v3_viewPos;
     vec2 v2_screenSize;
     // Shadow
@@ -161,7 +162,7 @@ void main()
     //float brightnessMask = float(luminance > rd.f_bright_threshold); // Step function
     //float brightnessMask = 1/(1+exp(-20*(luminance-rd.f_bright_threshold))); // Sigmoid logistic function
     //float brightnessMask = (1+tanh(30*(luminance-rd.f_bright_threshold)))/2; // Sigmoid hyperbolic tangent
-    float brightnessMask = smoothstep(rd.f_bright_threshold-BP_STEP_WIDTH, rd.f_bright_threshold, luminance);
+    float brightnessMask = smoothstep(rd.f_bright_threshold-rd.f_bright_knee, rd.f_bright_threshold, luminance);
 
     out_bright_color = brightnessMask*out_color;
 }

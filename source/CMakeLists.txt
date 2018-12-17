@@ -56,7 +56,7 @@ add_definitions(-D__DEBUG__)
 # add_definitions(-D__PRESERVE_STRS__)
 # add_definitions(-D__DEBUG_EXPORT_SPLINES__)
 # add_definitions(-D__PROFILING_GAMELOOP__)
-# add_definitions(-D__PROFILING_RENDERERS__)
+add_definitions(-D__PROFILING_RENDERERS__)
 # add_definitions(-D__PROFILING_CHUNKS__)
 # add_definitions(-D__PROFILING_STOP_AFTER_X_SAMPLES__)
 # add_definitions(-D__PROFILING_SET_1x1_VIEWPORT__)
@@ -67,6 +67,10 @@ add_definitions(-D__DEBUG__)
 # add_definitions(-D__OPTIM_LIGHT_VOLUMES_STENCIL_INVERT__)
 
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
+
+if(DEFINED __DEBUG__)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--export-dynamic")
+endif()
 
 target_link_libraries(wcore
                       m

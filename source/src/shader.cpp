@@ -1,4 +1,5 @@
 #include <cstring>
+#include <set>
 
 #include "shader.h"
 #include "lights.h"
@@ -170,8 +171,11 @@ void Shader::program_active_report()
 
             glGetActiveUniformName(ProgramID_, ii, 32, &length, name);
             GLint loc = glGetUniformLocation(ProgramID_, name);
-
-            DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(ii) + "] loc=" + std::to_string(loc), "shader", Severity::DET);
+            #ifdef __PRESERVE_STRS__
+                DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(loc) + "] ", "shader", Severity::DET);
+            #else
+                DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(loc) + "] " + std::to_string(H_(name)), "shader", Severity::DET);
+            #endif
         }
     #endif // __DEBUG__
 }
@@ -371,11 +375,23 @@ void Shader::program_error_report()
 }
 
 #ifdef __DEBUG__
+static std::set<hashstr_t> marked; // So that we don't warn twice for the same uniform
 static inline void warn_unknown_uniform(const std::string& shaderName, hash_t name)
 {
-    std::stringstream ss;
-    ss << "[Shader] [<n>" << shaderName << "</n>] Unknown uniform name: <u>" << name << "</u>";
-    DLOGW(ss.str(), "shader", Severity::WARN);
+    hashstr_t shname = H_(shaderName.c_str());
+    #ifdef __PRESERVE_STRS__
+        hashstr_t hname = H_(name.c_str());
+        hashstr_t id = shname ^ hname;
+    #else
+        hashstr_t id = shname ^ name;
+    #endif
+    if(marked.find(id) == marked.end())
+    {
+        std::stringstream ss;
+        ss << "[Shader] [<n>" << shaderName << "</n>] Unknown uniform name: <u>" << name << "</u>";
+        DLOGW(ss.str(), "shader", Severity::WARN);
+        marked.insert(id);
+    }
 }
 #endif
 

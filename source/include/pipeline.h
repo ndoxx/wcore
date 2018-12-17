@@ -55,6 +55,7 @@ private:
 #endif
 
 public:
+
     RenderPipeline();
     ~RenderPipeline();
 

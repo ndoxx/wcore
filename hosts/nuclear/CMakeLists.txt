@@ -7,7 +7,7 @@ include(toolchain_clang7)
 add_definitions(-std=c++17)
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 add_definitions(-D__DEBUG__)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wl,--export-dynamic")
 
 # include_directories(BEFORE "/usr/include/c++/8/")
 # include_directories(AFTER "/usr/include/x86_64-linux-gnu/c++/8/")

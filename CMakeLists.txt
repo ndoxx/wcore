@@ -21,6 +21,7 @@ set(SRC_CORE
     ${CMAKE_SOURCE_DIR}/source/src/engine_core.cpp
     ${CMAKE_SOURCE_DIR}/source/src/context.cpp
     ${CMAKE_SOURCE_DIR}/source/src/error.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/stack_trace.cpp
     ${CMAKE_SOURCE_DIR}/source/src/config.cpp
     ${CMAKE_SOURCE_DIR}/source/src/io_utils.cpp
     ${CMAKE_SOURCE_DIR}/source/src/globals.cpp

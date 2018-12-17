@@ -5,6 +5,7 @@ struct render_data
 {
     float f_wireframe_mix;    // Wireframe blend factor in[0,1]
     float f_bright_threshold; // For bloom bright pass
+    float f_bright_knee;
     vec3 v3_viewPos;
     vec2 v2_screenSize;
     // Shadow

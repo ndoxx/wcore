@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "informer.h"
 #include "colors.h"
+#include "stack_trace.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -225,6 +226,8 @@ void Logger::operator ()(const LogMessage& log_message)
         if(cur_verbosity >= log_message.verbosity_level)
         {
             print_console(log_message);
+            if(log_message.verbosity_level < 2)
+                print_backtrace();
         }
     }
 }

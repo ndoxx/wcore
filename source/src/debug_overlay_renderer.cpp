@@ -13,6 +13,11 @@
 #include "l_buffer.h"
 #include "SSAO_buffer.h"
 
+#ifndef __DISABLE_EDITOR__
+    #include "imgui/imgui.h"
+    #include "gui_utils.h"
+#endif
+
 namespace wcore
 {
 
@@ -136,5 +141,30 @@ void DebugOverlayRenderer::render()
     passthrough_shader_.unuse();
     vertex_array_.unbind();
 }
+
+#ifndef __DISABLE_EDITOR__
+static int current_pane = 0;
+static int current_tex = 0;
+
+void DebugOverlayRenderer::generate_widget()
+{
+    if(!ImGui::Begin("Framebuffer peek"))
+    {
+        ImGui::End();
+        return;
+    }
+    if(ImGui::SliderInt("Panel", &current_pane, 0, debug_panes_.size()-1))
+    {
+        current_tex = 0;
+    }
+    int ntex = debug_panes_[current_pane].size();
+    ImGui::SliderInt("Texture", &current_tex, 0, ntex-1);
+    dbg::DebugTextureProperties& props = debug_panes_[current_pane][current_tex];
+    ImGui::Text("name: %s", props.sampler_name.c_str());
+
+    ImGui::Image((void*)props.texture_index, ImVec2(ImGui::CalcItemWidth(),ImGui::CalcItemWidth()*GLB.SCR_H/GLB.SCR_W));
+    ImGui::End();
+}
+#endif
 
 }

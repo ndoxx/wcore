@@ -57,6 +57,10 @@ public:
                              std::vector<bool>&& is_depth);
     void register_debug_pane(BufferModule& buffer_module);
     void render_pane(uint32_t index);
+
+#ifndef __DISABLE_EDITOR__
+    void generate_widget();
+#endif
 };
 
 }

@@ -18,7 +18,6 @@ void PlotVarFlushOldEntries();
 
 void WCombo(const char* combo_name, const char* text, int& current_index, int nitems, const char** items);
 
-
 }
 
 #endif // GUI_UTILS_H

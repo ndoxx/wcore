@@ -14,7 +14,8 @@ using namespace math;
 
 BloomRenderer::BloomRenderer():
 Renderer<Vertex3P>(),
-blur_pass_shader_(ShaderResource("blurpass.vert;blurpass.frag"))
+blur_pass_shader_(ShaderResource("blurpass.vert;blurpass.frag")),
+kernel_(9,1.8f)
 {
     load_geometry();
 
@@ -79,11 +80,13 @@ void BloomRenderer::render()
     // Bind bright map texture to texture unit 0
     pscreen->bind(0,1);
 
-    blur_pass_shader_.send_uniform(H_("v2_texOffset"), vec2(1.0f/pscreen->get_width(),
-                                                        1.0f/pscreen->get_height()));
-
     // HORIZONTAL BLUR PASS
     blur_pass_shader_.send_uniform(H_("horizontal"), true);
+    blur_pass_shader_.send_uniform(H_("v2_texelSize"), vec2(2.0f/GLB.SCR_W,
+                                                            2.0f/GLB.SCR_H));
+    // send Gaussian kernel
+    blur_pass_shader_.send_uniform<int>(H_("kernel.i_half_size"), kernel_.get_half_size());
+    blur_pass_shader_.send_uniform_array(H_("kernel.f_weight[0]"), kernel_.data(), kernel_.get_half_size());
     for(int ii=0; ii<fbo_h_.size(); ++ii)
     {
         fbo_h_[ii]->with_render_target([&]()
@@ -108,6 +111,9 @@ void BloomRenderer::render()
             // Bind horizontal blur pass texture to texture unit 0
             bloom_h_tex_[ii]->bind(0, 0);
             blur_pass_shader_.send_uniform(H_("f_alpha"), bloom_alpha(ii, fbo_h_.size()));
+            blur_pass_shader_.send_uniform(H_("v2_texelSize"), vec2(1.0f/bloom_h_tex_[ii]->get_width(),
+                                                                    1.0f/bloom_h_tex_[ii]->get_height()));
+
             buffer_unit_.draw(2, 0);
         }
     });

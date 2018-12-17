@@ -42,7 +42,7 @@
             <uint name="texture"  value="0"/>
             <uint name="material" value="0"/>
             <uint name="model"    value="0"/>
-            <uint name="shader"   value="0"/>
+            <uint name="shader"   value="3"/>
             <uint name="text"     value="0"/>
             <uint name="input"    value="3"/>
             <uint name="buffer"   value="0"/>

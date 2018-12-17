@@ -126,6 +126,9 @@ const char* acc_blindness_items[] = {"Protanopia", "Deuteranopia", "Tritanopia"}
 
 static int SSAO_kernel_half_size = 3;
 static float SSAO_sigma = 1.8f;
+static int bloom_kernel_half_size = 3;
+static float bloom_sigma = 1.8f;
+static bool framebuffer_peek = false;
 
 void RenderPipeline::generate_widget()
 {
@@ -157,7 +160,7 @@ void RenderPipeline::generate_widget()
     // SSAO OPTIONS
     if(SSAO_renderer_->is_active())
     {
-        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("SSAO control"))
         {
             ImGui::SliderFloat("Radius",      &SSAO_renderer_->SSAO_radius_, 0.01f, 1.0f);
@@ -170,7 +173,7 @@ void RenderPipeline::generate_widget()
             int ker_size = 2*SSAO_kernel_half_size-1;
             ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
             bool update_kernel = ImGui::SliderInt("Half-size", &SSAO_kernel_half_size, 3, 8);
-            update_kernel     |= ImGui::SliderFloat("Sigma",     &SSAO_sigma, 0.5f, 2.0f);
+            update_kernel     |= ImGui::SliderFloat("Sigma",   &SSAO_sigma, 0.5f, 2.0f);
             if(update_kernel)
             {
                 SSAO_renderer_->blur_policy_.kernel_.update_kernel(2*SSAO_kernel_half_size-1, SSAO_sigma);
@@ -178,6 +181,25 @@ void RenderPipeline::generate_widget()
 
             ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_policy_.n_pass_, 0, 5);
             ImGui::SliderFloat("Compression", &SSAO_renderer_->blur_policy_.gamma_r_, 0.5f, 2.0f);
+        }
+    }
+
+    // BLOOM OPTIONS
+    if(bloom_enabled_)
+    {
+        ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
+        if(ImGui::CollapsingHeader("Bloom control"))
+        {
+            ImGui::SliderFloat("Threshold", &lighting_renderer_->bright_threshold_, 0.5f, 2.0f);
+            ImGui::SliderFloat("Knee", &lighting_renderer_->bright_knee_, 0.01f, 1.0f);
+            int ker_size = 2*bloom_kernel_half_size-1;
+            ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
+            bool update_kernel = ImGui::SliderInt("Half-size ", &bloom_kernel_half_size, 3, 8);
+            update_kernel     |= ImGui::SliderFloat("Sigma ",   &bloom_sigma, 0.5f, 3.0f);
+            if(update_kernel)
+            {
+                bloom_renderer_->update_blur_kernel(2*bloom_kernel_half_size-1, bloom_sigma);
+            }
         }
     }
 
@@ -191,16 +213,17 @@ void RenderPipeline::generate_widget()
         ImGui::SliderFloat("Wireframe", (float*)&geometry_renderer_->get_wireframe_mix_nc(), 0.0f, 1.0f);
         if(ImGui::Button("Framebuffer Peek"))
         {
-            debug_overlay_renderer_->toggle();
+            //debug_overlay_renderer_->toggle();
+            framebuffer_peek = !framebuffer_peek;
         }
-        if(debug_overlay_renderer_->get_enabled_flag())
+        /*if(debug_overlay_renderer_->get_enabled_flag())
         {
             ImGui::SameLine();
             if(ImGui::Button("Next pane"))
             {
                 debug_overlay_renderer_->next_mode();
             }
-        }
+        }*/
     }
 
     // POST PROCESSING CONTROL
@@ -251,6 +274,7 @@ void RenderPipeline::generate_widget()
         {
             ImGui::Indent();
             ImGui::WCombo("##blindnesssel", "Blindness", post_processing_renderer_->acc_blindness_type_, 3, acc_blindness_items);
+            ImGui::Unindent();
         }
 
         ImGui::Separator();
@@ -282,6 +306,9 @@ void RenderPipeline::generate_widget()
 #endif
 
     ImGui::End();
+
+    if(framebuffer_peek)
+        debug_overlay_renderer_->generate_widget();
 }
 #endif //__DISABLE_EDITOR__
 
