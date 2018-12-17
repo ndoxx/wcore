@@ -69,14 +69,14 @@ float sample_shadow_map_PCF_Poisson(sampler2D shadowM, vec2 coords, vec3 world_c
 {
     float result = 0.0f;
 
-    for(int ii=0; ii<16; ++ii)
+    for(int ii=0; ii<NUM_SAMPLES; ++ii)
     {
-        int index = int(16.0*random(world_coords.xyy, ii))%16;
+        int index = int(16.0f*random(world_coords.xyy, ii))%16;
         vec2 coordsOffset = poissonDisk[index]*texelSize;
         result += sample_shadow_map(shadowM, coords + coordsOffset, compare);
     }
 
-    return result/16.0f;
+    return result/NUM_SAMPLES;
 }
 
 bool InRange(float val)
@@ -96,10 +96,8 @@ float shadow_amount(sampler2D shadowM, vec3 shadowMapCoords, float bias, vec2 sh
     }
 }
 
-float shadow_amount_Poisson(sampler2D shadowM, vec4 fragLightSpace, vec3 fragWorld, float bias, vec2 shadowTexelSize)
+float shadow_amount_Poisson(sampler2D shadowM, vec3 shadowMapCoords, vec3 fragWorld, float bias, vec2 shadowTexelSize)
 {
-    vec3 shadowMapCoords = fragLightSpace.xyz / fragLightSpace.w;
-
     if(InRange(shadowMapCoords.z) && InRange(shadowMapCoords.x) && InRange(shadowMapCoords.y))
     {
         return clamp(sample_shadow_map_PCF_Poisson(shadowM, shadowMapCoords.xy, fragWorld, shadowMapCoords.z-bias, shadowTexelSize),0.0f,1.0f);

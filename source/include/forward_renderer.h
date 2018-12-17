@@ -17,6 +17,8 @@ private:
     Shader forward_stage_shader_;
 
 public:
+    bool active_;
+
     ForwardRenderer();
     virtual ~ForwardRenderer() = default;
 

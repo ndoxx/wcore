@@ -27,7 +27,9 @@ SSAO_enabled_(true),
 shadow_enabled_(true),
 lighting_enabled_(true),
 bright_threshold_(1.0f),
-bright_knee_(0.1f)
+bright_knee_(0.1f),
+shadow_slope_bias_(0.1f),
+normal_offset_(-0.03f)
 {
     CONFIG.get(H_("root.render.override.allow_shadow_mapping"), shadow_enabled_);
     load_geometry();
@@ -141,7 +143,7 @@ void LightingRenderer::render()
             lpass_point_shader_.send_uniform(H_("rd.f_bright_knee"), bright_knee_);
             // Screen size
             lpass_point_shader_.send_uniform(H_("rd.v2_screenSize"),
-                                               math::vec2(gbuffer.get_width(),gbuffer.get_height()));
+                                             math::vec2(gbuffer.get_width(),gbuffer.get_height()));
             // Light uniforms
             lpass_point_shader_.send_uniform(H_("lt.v3_lightPosition"), V*plight->get_position());
             lpass_point_shader_.send_uniforms(plight);
@@ -183,7 +185,7 @@ void LightingRenderer::render()
         // Render shadow map
         math::mat4 lightMatrix;
         if(shadow_enabled_)
-            lightMatrix = math::mat4(biasMatrix*smr_.render_directional_shadow_map()*V_inv);
+            lightMatrix = math::mat4(biasMatrix*smr_.render_directional_shadow_map(normal_offset_)*V_inv);
 
     // ---- DIRECTIONAL LIGHT PASS
         gbuffer.bind_as_source();
@@ -227,7 +229,7 @@ void LightingRenderer::render()
             pshadow->generate_mipmaps(0);
 #else
             lpass_dir_shader_.send_uniform(H_("rd.v2_shadowTexelSize"), ShadowMapRenderer::SHADOW_TEXEL_SIZE);
-            lpass_dir_shader_.send_uniform(H_("rd.f_shadowBias"), SCENE.get_shadow_bias() * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
+            lpass_dir_shader_.send_uniform(H_("rd.f_shadowBias"), SCENE.shadow_bias_ * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
 #endif
         }
 

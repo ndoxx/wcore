@@ -53,10 +53,10 @@ set_target_properties(freetype PROPERTIES
 
 # add_definitions(-D__DISABLE_EDITOR__)
 add_definitions(-D__DEBUG__)
+add_definitions(-D__PROFILE__)
 # add_definitions(-D__PRESERVE_STRS__)
 # add_definitions(-D__DEBUG_EXPORT_SPLINES__)
 # add_definitions(-D__PROFILING_GAMELOOP__)
-add_definitions(-D__PROFILING_RENDERERS__)
 # add_definitions(-D__PROFILING_CHUNKS__)
 # add_definitions(-D__PROFILING_STOP_AFTER_X_SAMPLES__)
 # add_definitions(-D__PROFILING_SET_1x1_VIEWPORT__)

@@ -92,7 +92,7 @@ void main()
 
     float occlusion = 0.0f;
     //vec4 occlusion = vec4(0);
-    float rad = rd.f_radius/max(0.1f,-fragPos.z);
+    float rad = max(rd.v2_texelSize.x, rd.f_radius/max(0.1f,-fragPos.z));
 
     int iterations = int(mix(4.0,1.0,fragPos.z*invFAR));
     for (int jj=0; jj<iterations; ++jj)

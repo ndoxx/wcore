@@ -4,12 +4,6 @@
 #include "math3d.h"
 #include "listener.h"
 
-#ifdef __PROFILING_RENDERERS__
-    #include "clock.hpp"
-    #include "moving_average.h"
-    #define PROFILING_MAX_SAMPLES 1000
-#endif
-
 namespace wcore
 {
 
@@ -40,19 +34,6 @@ private:
     DebugOverlayRenderer*    debug_overlay_renderer_;
 
     bool bloom_enabled_;
-    bool forward_enabled_;
-
-#ifdef __PROFILING_RENDERERS__
-    nanoClock frame_clock_;
-    nanoClock profile_clock_;
-    MovingAverage geometry_dt_fifo_;
-    MovingAverage SSAO_dt_fifo_;
-    MovingAverage lighting_dt_fifo_;
-    MovingAverage forward_dt_fifo_;
-    MovingAverage bloom_dt_fifo_;
-    MovingAverage pp_dt_fifo_;
-    float last_render_time_;
-#endif
 
 public:
 

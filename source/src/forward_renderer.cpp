@@ -18,7 +18,8 @@ using namespace math;
 
 ForwardRenderer::ForwardRenderer():
 Renderer<Vertex3P3N3T2U>(),
-forward_stage_shader_(ShaderResource("forwardstage.vert;forwardstage.frag"))
+forward_stage_shader_(ShaderResource("forwardstage.vert;forwardstage.frag")),
+active_(true)
 {
 
 }
@@ -31,7 +32,9 @@ void ForwardRenderer::load_geometry()
 
 void ForwardRenderer::render()
 {
-    GBuffer& gbuffer = GBuffer::Instance();
+    if(!active_)
+        return;
+
     LBuffer& lbuffer = LBuffer::Instance();
 
     // Get camera matrices

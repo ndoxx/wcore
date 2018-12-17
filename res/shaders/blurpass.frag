@@ -1,6 +1,6 @@
 #version 400 core
 
-#include "gaussian_blur.glsl"
+#include "convolution.glsl"
 
 layout(location = 0) out vec4 out_color;
 
@@ -24,7 +24,6 @@ uniform GaussianKernel kernel;
 
 void main()
 {
-    //vec3 result = gaussian_blur_9_rgb(inputTex, texCoord, v2_texelSize, horizontal);
     vec3 result = convolve_kernel_separable(kernel.f_weight, kernel.i_half_size,
                                             inputTex, texCoord,
                                             v2_texelSize, horizontal);

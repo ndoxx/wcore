@@ -31,6 +31,8 @@ private:
 public:
     float bright_threshold_;
     float bright_knee_;
+    float shadow_slope_bias_;
+    float normal_offset_;
 
     LightingRenderer(ShadowMapRenderer& smr);
     virtual ~LightingRenderer() = default;

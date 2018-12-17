@@ -50,7 +50,7 @@ ShadowMapRenderer::~ShadowMapRenderer()
     delete sbuffer_;
 }
 
-math::mat4 ShadowMapRenderer::render_directional_shadow_map()
+math::mat4 ShadowMapRenderer::render_directional_shadow_map(float normal_offset)
 {
     auto plcam = SCENE.get_light_camera();
 /*#ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
@@ -73,7 +73,8 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map()
     GFX::unlock_depth_buffer();
     GFX::clear_depth();
 #endif
-    //sm_shader_.send_uniform(H_("lt.v3_lightPosition"), SCENE.get_directional_light()->get_position());
+    //sm_shader_.send_uniform(H_("lt.v3_lightPosition"), SCENE.get_directional_light().lock()->get_position());
+    sm_shader_.send_uniform(H_("f_normalOffset"), normal_offset);
     SCENE.draw_models([&](std::shared_ptr<Model> pmodel)
     {
         uint32_t cull_face = pmodel->shadow_cull_face();
@@ -92,8 +93,10 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map()
         }
         // Get model matrix and compute products
         math::mat4 M = pmodel->get_model_matrix();
+        //math::mat4 MV = Vl*M;
         math::mat4 MVP = PVl*M;
         sm_shader_.send_uniform(H_("m4_ModelViewProjection"), MVP);
+        //sm_shader_.send_uniform(H_("m3_Normal"), MV.submatrix(3,3));
     }/*,
     wcore::DEFAULT_MODEL_EVALUATOR,
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__

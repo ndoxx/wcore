@@ -106,11 +106,18 @@ void main()
         {
             vec4 fragLightSpace = m4_LightSpace * vec4(fragPos, 1.0f);
             vec3 shadowMapCoords = fragLightSpace.xyz / fragLightSpace.w;
+
+            // Calculate slope factor for slope-scaled depth bias
+            float slopebias = clamp(dot(fragNormal,lt.v3_lightPosition),0.0f,1.0f);
+            slopebias = sqrt(1.0f-slopebias*slopebias)/slopebias; // = tan(acos(slopebias));
+
             #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
                 visibility = shadow_variance(shadowTex, shadowMapCoords);
             #else
-                visibility = shadow_amount(shadowTex, shadowMapCoords, rd.f_shadowBias, rd.v2_shadowTexelSize);
+                //visibility = shadow_amount(shadowTex, shadowMapCoords, rd.f_shadowBias, rd.v2_shadowTexelSize);
+                visibility = shadow_amount_Poisson(shadowTex, shadowMapCoords, fragPos, rd.f_shadowBias*slopebias, rd.v2_shadowTexelSize);
             #endif
+
             // Falloff around map edges
             float falloff = square_falloff(shadowMapCoords.xy, 0.5f);
             visibility = mix(1.0f, visibility, falloff);

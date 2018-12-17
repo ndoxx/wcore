@@ -36,7 +36,6 @@ private:
     math::i32vec2 current_chunk_coords_;    // Coordinates of the chunk the camera is in
     std::vector<uint32_t> chunks_order_;    // Permutation vector for chunk ordering
 
-    float shadow_bias_;                     // Bias parameter for PCF shadow mapping
     static uint32_t SHADOW_WIDTH;           // Width of shadow map
     static uint32_t SHADOW_HEIGHT;          // Height of shadow map
 
@@ -45,6 +44,8 @@ private:
    ~Scene();
 
 public:
+    float shadow_bias_;                     // Bias parameter for PCF shadow mapping
+
     friend Scene& Singleton<Scene>::Instance();
     friend void Singleton<Scene>::Kill();
 
@@ -55,7 +56,6 @@ public:
     inline pcCamera get_light_camera() const        { return light_camera_; }
     inline wpLight get_directional_light_nc()       { return wpLight(directional_light_); }
     inline wpcLight get_directional_light() const   { return wpcLight(directional_light_); }
-    inline float get_shadow_bias() const            { return shadow_bias_; }
 
     inline pLight get_light(uint32_t index, uint32_t chunk_index)   { return chunks_.at(chunk_index)->lights_[index]; }
     inline uint32_t get_chunk_size_meters() const                   { return chunk_size_m_; }
@@ -77,7 +77,6 @@ public:
     inline uint32_t get_triangles_count() const;
 
     // Setters
-    inline void set_shadow_bias(float shadow_bias)                  { shadow_bias_ = shadow_bias; }
     inline void add_directional_light(pLight light)                 { directional_light_ = light; }
 
     inline void set_chunk_size_meters(uint32_t chunk_size_m)        { chunk_size_m_ = chunk_size_m; }

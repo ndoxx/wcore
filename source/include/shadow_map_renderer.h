@@ -30,7 +30,7 @@ public:
     virtual ~ShadowMapRenderer();
 
     virtual void render() override {}
-    math::mat4 render_directional_shadow_map();
+    math::mat4 render_directional_shadow_map(float normal_offset);
 
     static math::vec2 SHADOW_TEXEL_SIZE;
 };

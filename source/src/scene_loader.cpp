@@ -150,7 +150,7 @@ void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)
 
     float shadow_bias = 0.1f;
     if(xml::parse_node(dir_node, "ShadowBias", shadow_bias))
-        SCENE.set_shadow_bias(shadow_bias);
+        SCENE.shadow_bias_ = shadow_bias;
 }
 
 void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
