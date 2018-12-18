@@ -22,7 +22,8 @@ Renderer<Vertex3P>(GL_LINES),
 line_shader_(ShaderResource("line.vert;line.frag")),
 display_line_models_(true),
 light_display_mode_(0),
-bb_display_mode_(0)
+bb_display_mode_(0),
+enable_depth_test_(true)
 {
     load_geometry();
 }
@@ -57,42 +58,34 @@ void DebugRenderer::render()
     mat4 PV = P*V;
 
     GBuffer::Instance().blit_depth_to_screen(GLB.SCR_W, GLB.SCR_H);
-    GFX::enable_depth_testing();
+    if(enable_depth_test_)
+        GFX::enable_depth_testing();
 
     line_shader_.use();
     vertex_array_.bind();
-    if(bb_display_mode_ == 1)
+    if(bb_display_mode_)
     {
         SCENE.traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
         {
             // Get model matrix and compute products
-            AABB& aabb = pmodel->get_AABB();
-            if(!SCENE.get_camera()->frustum_collides(aabb)) return;
-
-            mat4 M = aabb.get_model_matrix();
+            mat4 M;
+            if(bb_display_mode_ == 1)   // NOTE(ndx) retracted this test inside so that we can handle per model check later
+            {
+                AABB& aabb = pmodel->get_AABB();
+                if(!SCENE.get_camera()->frustum_collides(aabb)) return;
+                M = aabb.get_model_matrix();
+                line_shader_.send_uniform(H_("v4_line_color"), vec4(0,1,0,0));
+            }
+            else if(bb_display_mode_ == 2)
+            {
+                OBB& obb = pmodel->get_OBB();
+                if(!SCENE.get_camera()->frustum_collides(obb)) return;
+                M = obb.get_model_matrix();
+                line_shader_.send_uniform(H_("v4_line_color"), vec4(0,0,1,0));
+            }
             mat4 MVP = PV*M;
 
             line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,1,0,0));
-            buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
-        },
-        wcore::DEFAULT_MODEL_EVALUATOR,
-        wcore::ORDER::IRRELEVANT,
-        wcore::MODEL_CATEGORY::OPAQUE);
-    }
-    else if(bb_display_mode_ == 2)
-    {
-        SCENE.traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
-        {
-            // Get model matrix and compute products
-            OBB& obb = pmodel->get_OBB();
-            if(!SCENE.get_camera()->frustum_collides(obb)) return;
-
-            mat4 M = obb.get_model_matrix();
-            mat4 MVP = PV*M;
-
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,0,1,0));
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
         },
         wcore::DEFAULT_MODEL_EVALUATOR,
@@ -131,7 +124,8 @@ void DebugRenderer::render()
     }
     line_shader_.unuse();
 
-    GFX::disable_depth_testing();
+    if(enable_depth_test_)
+        GFX::disable_depth_testing();
 }
 
 }

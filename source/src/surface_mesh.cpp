@@ -13,9 +13,9 @@ void FaceMesh::build_normals()
     for(size_t ii=0; ii+2<indices_.size(); ii+=3)
     {
         // For each triangle in indices list
-        const math::vec3& p1 = vertices_[indices_[ii+0]].get_position();
-        const math::vec3& p2 = vertices_[indices_[ii+1]].get_position();
-        const math::vec3& p3 = vertices_[indices_[ii+2]].get_position();
+        const math::vec3& p1 = vertices_[indices_[ii+0]].position_;
+        const math::vec3& p2 = vertices_[indices_[ii+1]].position_;
+        const math::vec3& p3 = vertices_[indices_[ii+2]].position_;
 
         // Compute local normal using cross product
         math::vec3 U(p2-p1);
@@ -23,9 +23,9 @@ void FaceMesh::build_normals()
         math::vec3 normal = math::normalize(math::cross(U,V));
 
         // Assign normal to each vertex
-        vertices_[indices_[ii+0]].set_normal(normal);
-        vertices_[indices_[ii+1]].set_normal(normal);
-        vertices_[indices_[ii+2]].set_normal(normal);
+        vertices_[indices_[ii+0]].normal_ = normal;
+        vertices_[indices_[ii+1]].normal_ = normal;
+        vertices_[indices_[ii+2]].normal_ = normal;
     }
 }
 
@@ -38,9 +38,9 @@ void FaceMesh::build_normals_and_tangents()
     {
         // Compute normals
         // Get positions
-        const math::vec3& p1 = vertices_[indices_[ii+0]].get_position();
-        const math::vec3& p2 = vertices_[indices_[ii+1]].get_position();
-        const math::vec3& p3 = vertices_[indices_[ii+2]].get_position();
+        const math::vec3& p1 = vertices_[indices_[ii+0]].position_;
+        const math::vec3& p2 = vertices_[indices_[ii+1]].position_;
+        const math::vec3& p3 = vertices_[indices_[ii+2]].position_;
 
         // Compute local normal using cross product
         math::vec3 e1(p2-p1);
@@ -48,15 +48,15 @@ void FaceMesh::build_normals_and_tangents()
         math::vec3 normal = math::normalize(math::cross(e1,e2));
 
         // Assign normal to each vertex
-        vertices_[indices_[ii+0]].set_normal(normal);
-        vertices_[indices_[ii+1]].set_normal(normal);
-        vertices_[indices_[ii+2]].set_normal(normal);
+        vertices_[indices_[ii+0]].normal_ = normal;
+        vertices_[indices_[ii+1]].normal_ = normal;
+        vertices_[indices_[ii+2]].normal_ = normal;
 
         // Compute tangents
         // Get UVs and compute deltas
-        const math::vec2& uv1 = vertices_[indices_[ii+0]].get_uv();
-        const math::vec2& uv2 = vertices_[indices_[ii+1]].get_uv();
-        const math::vec2& uv3 = vertices_[indices_[ii+2]].get_uv();
+        const math::vec2& uv1 = vertices_[indices_[ii+0]].uv_;
+        const math::vec2& uv2 = vertices_[indices_[ii+1]].uv_;
+        const math::vec2& uv3 = vertices_[indices_[ii+2]].uv_;
         math::vec2 deltaUV1(uv2-uv1);
         math::vec2 deltaUV2(uv3-uv1);
 
@@ -65,9 +65,9 @@ void FaceMesh::build_normals_and_tangents()
         tangent *= det_inv;
 
         // Assign tangent to each vertex
-        vertices_[indices_[ii+0]].set_tangent(tangent);
-        vertices_[indices_[ii+1]].set_tangent(tangent);
-        vertices_[indices_[ii+2]].set_tangent(tangent);
+        vertices_[indices_[ii+0]].tangent_ = tangent;
+        vertices_[indices_[ii+1]].tangent_ = tangent;
+        vertices_[indices_[ii+2]].tangent_ = tangent;
     }
 }
 
@@ -79,7 +79,7 @@ void FaceMesh::smooth_normals(SmoothFunc Func)
     for(size_t ii=0; ii<vertices_.size(); ++ii)
     {
         // Get vertex position
-        const math::vec3& position = vertices_[ii].get_position();
+        const math::vec3& position = vertices_[ii].position_;
 
         // Compute position hash
         uint32_t pos_hash = std::hash<math::vec3>()(position);
@@ -98,16 +98,16 @@ void FaceMesh::smooth_normals(SmoothFunc Func)
             for(auto it = range.first; it != range.second; ++it)
             {
                 // Sum up all normals
-                normal0 += vertices_[it->second].get_normal();
+                normal0 += vertices_[it->second].normal_;
             }
             normal0.normalize();
             for(auto it = range.first; it != range.second; ++it)
             {
-                const math::vec3& normal_i = vertices_[it->second].get_normal();
+                const math::vec3& normal_i = vertices_[it->second].normal_;
                 float alpha = Func(math::dot(normal_i, normal0));
                 math::vec3 new_normal(math::lerp(normal_i, normal0, alpha));
                 // Update normal for each vertex from the list
-                vertices_[it->second].set_normal(new_normal);
+                vertices_[it->second].normal_ = new_normal;
             }
             //The new normal value for V is the mean of these triangles' normals
         });
@@ -122,7 +122,7 @@ void FaceMesh::smooth_normals_and_tangents(SmoothFunc Func)
     for(size_t ii=0; ii<vertices_.size(); ++ii)
     {
         // Get vertex position
-        const math::vec3& position = vertices_[ii].get_position();
+        const math::vec3& position = vertices_[ii].position_;
 
         // Compute position hash
         uint32_t pos_hash = std::hash<math::vec3>()(position);
@@ -142,8 +142,8 @@ void FaceMesh::smooth_normals_and_tangents(SmoothFunc Func)
             {
                 auto&& vert = vertices_[it->second];
                 // Sum up all normals
-                normal0  += vert.get_normal();
-                tangent0 += vert.get_tangent();
+                normal0  += vert.normal_;
+                tangent0 += vert.tangent_;
             }
             normal0.normalize();
             tangent0.normalize();
@@ -151,19 +151,19 @@ void FaceMesh::smooth_normals_and_tangents(SmoothFunc Func)
             {
                 auto&& vert = vertices_[it->second];
                 // Smooth normal
-                const math::vec3& normal_i  = vert.get_normal();
+                const math::vec3& normal_i  = vert.normal_;
                 float alpha = Func(math::dot(normal_i, normal0));
                 math::vec3 new_normal(math::lerp(normal_i, normal0, alpha));
 
                 // Update normal for each vertex from the list
-                vert.set_normal(new_normal);
+                vert.normal_ = new_normal;
 
                 // Smooth tangent
-                const math::vec3& tangent_i = vert.get_tangent();
+                const math::vec3& tangent_i = vert.tangent_;
                 alpha = Func(math::dot(tangent_i, tangent0));
                 math::vec3 new_tangent(math::lerp(tangent_i, tangent0, alpha));
                 // Update tangent for each vertex from the list
-                vert.set_tangent(new_tangent);
+                vert.tangent_ = new_tangent;
             }
         });
     }
@@ -183,9 +183,9 @@ void TriangularMesh::build_normals()
             {
                 uint32_t tri_index = it->second;
                 // Get positions
-                const math::vec3& p1 = vertices_[indices_[tri_index+0]].get_position();
-                const math::vec3& p2 = vertices_[indices_[tri_index+1]].get_position();
-                const math::vec3& p3 = vertices_[indices_[tri_index+2]].get_position();
+                const math::vec3& p1 = vertices_[indices_[tri_index+0]].position_;
+                const math::vec3& p2 = vertices_[indices_[tri_index+1]].position_;
+                const math::vec3& p3 = vertices_[indices_[tri_index+2]].position_;
                 // Compute local normal using cross product
                 math::vec3 e1(p2-p1);
                 math::vec3 e2(p3-p1);
@@ -195,7 +195,7 @@ void TriangularMesh::build_normals()
         });
 
         // Assign mean normal to vertex
-        vertices_[ii].set_normal(normal0.normalized());
+        vertices_[ii].normal_ = normal0.normalized();
     }
 }
 
@@ -214,9 +214,9 @@ void TriangularMesh::build_normals_and_tangents()
                 uint32_t tri_index = it->second;
 
                 // Get positions
-                const math::vec3& p1 = vertices_[indices_[tri_index+0]].get_position();
-                const math::vec3& p2 = vertices_[indices_[tri_index+1]].get_position();
-                const math::vec3& p3 = vertices_[indices_[tri_index+2]].get_position();
+                const math::vec3& p1 = vertices_[indices_[tri_index+0]].position_;
+                const math::vec3& p2 = vertices_[indices_[tri_index+1]].position_;
+                const math::vec3& p3 = vertices_[indices_[tri_index+2]].position_;
                 // Compute local normal using cross product
                 math::vec3 e1(p2-p1);
                 math::vec3 e2(p3-p1);
@@ -224,9 +224,9 @@ void TriangularMesh::build_normals_and_tangents()
                 normal0 += normal;
 
                 // Get UVs
-                const math::vec2& uv1 = vertices_[indices_[tri_index+0]].get_uv();
-                const math::vec2& uv2 = vertices_[indices_[tri_index+1]].get_uv();
-                const math::vec2& uv3 = vertices_[indices_[tri_index+2]].get_uv();
+                const math::vec2& uv1 = vertices_[indices_[tri_index+0]].uv_;
+                const math::vec2& uv2 = vertices_[indices_[tri_index+1]].uv_;
+                const math::vec2& uv3 = vertices_[indices_[tri_index+2]].uv_;
                 // Compute deltas
                 math::vec2 deltaUV1(uv2-uv1);
                 math::vec2 deltaUV2(uv3-uv1);
@@ -239,8 +239,8 @@ void TriangularMesh::build_normals_and_tangents()
         });
 
         // Assign mean normal to vertex
-        vertices_[ii].set_normal(normal0.normalized());
-        vertices_[ii].set_tangent(tangent0.normalized());
+        vertices_[ii].normal_ = normal0.normalized();
+        vertices_[ii].tangent_ = tangent0.normalized();
     }
 }
 

@@ -5278,3 +5278,18 @@ L'intégrale est approchée par la méthode de Simpson (voir mes notes dans le c
 Le noyau Gaussien et la fonction d'intégration sont unit testés dans catch_numeric.cpp -> target test_math.
 
 Il s'ensuit que la taille du noyau Gaussien et le sigma sont aisément configurables dans le GUI section SSAO/blur.
+
+
+#[17-12-18]
+
+* Shadow map:
+    - Slope-scaled depth bias
+    - Normal offset
+        -> Beaucoup moins de Peter-Panning
+    - GUI control
+* Better Bloom
+    - GUI control
+
+* TODO :
+    - UBO
+voir : https://github.com/TReed0803/QtOpenGL/blob/master/resources/shaders/ubo/GlobalBuffer.ubo

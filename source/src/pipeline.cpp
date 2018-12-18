@@ -228,6 +228,7 @@ void RenderPipeline::generate_widget()
     if(ImGui::CollapsingHeader("Debug"))
     {
         ImGui::Text("Primitives");
+        ImGui::Checkbox("Depth test", &debug_renderer_->enable_depth_test_);
         ImGui::WCombo("##bbmodesel", "Bounding box", debug_renderer_->bb_display_mode_, 3, bb_mode_items);
         ImGui::WCombo("##lightmodesel", "Light proxy", debug_renderer_->light_display_mode_, 3, light_mode_items);
         ImGui::SliderFloat("Wireframe", (float*)&geometry_renderer_->get_wireframe_mix_nc(), 0.0f, 1.0f);

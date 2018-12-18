@@ -16,12 +16,13 @@ public:
     BlurPassPolicy(uint32_t n_pass,
                    uint32_t target_width,
                    uint32_t target_height,
+                   float sigma = 1.0f,
                    float gamma_r = 1.0f):
     n_pass_(n_pass),
     target_width_(target_width),
     target_height_(target_height),
     gamma_r_(gamma_r),
-    kernel_(7,1.0f)
+    kernel_(7,sigma)
     {
 
     }

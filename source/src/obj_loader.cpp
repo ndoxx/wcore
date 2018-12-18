@@ -215,7 +215,7 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
     {
         for(uint32_t jj=0; jj<3; ++jj)
         {
-            (*pmesh)[triangles[ii].indices[jj]].set_uv(triangles[ii].uvs[jj].xy());
+            (*pmesh)[triangles[ii].indices[jj]].uv_ = triangles[ii].uvs[jj].xy();
         }
         pmesh->push_triangle(triangles[ii].indices);
     }

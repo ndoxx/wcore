@@ -104,6 +104,36 @@ MeshP* make_cube_3P()
     return pmesh;
 }
 
+MeshPC* make_cube_3P_3C()
+{
+    MeshPC* pmesh = new MeshPC;
+    // BOTTOM
+    pmesh->_emplace_vertex(vec3( 0.5f,  -0.5f, 0.5f), vec3(1.0f));   // 0
+    pmesh->_emplace_vertex(vec3( 0.5f,  -0.5f, -0.5f), vec3(1.0f));  // 1
+    pmesh->_emplace_vertex(vec3( -0.5f, -0.5f, -0.5f), vec3(1.0f)); // 2
+    pmesh->_emplace_vertex(vec3( -0.5f, -0.5f, 0.5f), vec3(1.0f));  // 3
+    // TOP
+    pmesh->_emplace_vertex(vec3( 0.5f,  0.5f, 0.5f), vec3(1.0f));   // 4
+    pmesh->_emplace_vertex(vec3( 0.5f,  0.5f, -0.5f), vec3(1.0f));  // 5
+    pmesh->_emplace_vertex(vec3( -0.5f, 0.5f, -0.5f), vec3(1.0f));  // 6
+    pmesh->_emplace_vertex(vec3( -0.5f, 0.5f, 0.5f), vec3(1.0f));   // 7
+
+    pmesh->push_line(0, 1);
+    pmesh->push_line(0, 3);
+    pmesh->push_line(0, 4);
+    pmesh->push_line(6, 5);
+    pmesh->push_line(6, 2);
+    pmesh->push_line(6, 7);
+    pmesh->push_line(4, 5);
+    pmesh->push_line(4, 7);
+    pmesh->push_line(2, 1);
+    pmesh->push_line(2, 3);
+    pmesh->push_line(7, 3);
+    pmesh->push_line(5, 1);
+
+    return pmesh;
+}
+
 MeshP* make_cube_NDC_3P()
 {
     MeshP* pmesh = new MeshP;

@@ -32,7 +32,7 @@ public:
     {
         assert(index<get_nv() && "Index out of bounds during vertex assignment operation.");
         // Remove old position class association
-        IndexRange range = position_classes_.equal_range(vertices_[index].get_position());
+        IndexRange range = position_classes_.equal_range(vertices_[index].position_);
         for(auto it = range.first; it != range.second; ++it)
         {
             if(it->second == index)
@@ -44,14 +44,14 @@ public:
         // Update vertex
         _set_vertex(index, vertex);
         // Associate position to this index
-        position_classes_.insert(VertexHashMap::value_type(vertex.get_position(),index));
+        position_classes_.insert(VertexHashMap::value_type(vertex.position_,index));
     }
 
     template <typename... Args>
     inline size_t emplace_vertex(Args&&... args)
     {
         size_t index = _emplace_vertex(std::forward<Args>(args)...);
-        position_classes_.insert(VertexHashMap::value_type(vertices_.back().get_position(),vertices_.size()-1));
+        position_classes_.insert(VertexHashMap::value_type(vertices_.back().position_,vertices_.size()-1));
         return index;
     }
 
@@ -132,12 +132,12 @@ public:
 
     inline math::vec3 mid_position(uint32_t P1, uint32_t P2)
     {
-        return math::lerp(vertices_.at(P1).get_position(), vertices_.at(P2).get_position(), 0.5f);
+        return math::lerp(vertices_.at(P1).position_, vertices_.at(P2).position_, 0.5f);
     }
 
     inline math::vec2 mid_uv(uint32_t P1, uint32_t P2)
     {
-        return math::lerp(vertices_.at(P1).get_uv(), vertices_.at(P2).get_uv(), 0.5f);
+        return math::lerp(vertices_.at(P1).uv_, vertices_.at(P2).uv_, 0.5f);
     }
 
     // index triangle class traversal

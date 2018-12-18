@@ -26,6 +26,12 @@ namespace wcore
 struct Vertex3P3N2U4C
 {
 public:
+    math::vec3 position_;
+    math::vec3 normal_;
+    math::vec2 uv_;
+    math::vec4 color_;
+
+
     Vertex3P3N2U4C(const math::vec3& position,
                    const math::vec3& normal,
                    const math::vec2& uv,
@@ -43,20 +49,6 @@ public:
     , normal_(std::move(normal))
     , uv_(std::move(uv))
     , color_(std::move(color)) {}
-
-    inline void set_position(const math::vec3& value) { position_=value; }
-    inline void set_normal(const math::vec3& value)   { normal_=value; }
-    inline void set_uv(const math::vec2& value)       { uv_=value; }
-    inline void set_color(const math::vec4& value)    { color_=value; }
-    inline void set_position(math::vec3&& value)      { std::swap(position_, value); }
-    inline void set_normal(math::vec3&& value)        { std::swap(normal_, value); }
-    inline void set_uv(math::vec2&& value)            { std::swap(uv_, value); }
-    inline void set_color(math::vec4&& value)         { std::swap(color_, value); }
-
-    inline const math::vec3& get_position() const { return position_; }
-    inline const math::vec3& get_normal()   const { return normal_; }
-    inline const math::vec2& get_uv()       const { return uv_; }
-    inline const math::vec4& get_color()    const { return color_; }
 
     inline std::size_t get_pos_hash() const
     {
@@ -81,13 +73,6 @@ public:
         glEnableVertexAttribArray(3);
     }
 
-private:
-    math::vec3 position_;
-    math::vec3 normal_;
-    math::vec2 uv_;
-    math::vec4 color_;
-
-public:
     friend std::ostream& operator<<(std::ostream& stream, const Vertex3P3N2U4C& vf)
     {
         stream << "<p" << vf.position_ << "|n" << vf.normal_
@@ -100,6 +85,12 @@ public:
 struct Vertex3P3N3T2U
 {
 public:
+    math::vec3 position_;
+    math::vec3 normal_;
+    math::vec3 tangent_;
+    math::vec2 uv_;
+
+
     Vertex3P3N3T2U(const math::vec3& position,
                    const math::vec3& normal,
                    const math::vec3& tangent,
@@ -132,20 +123,6 @@ public:
     , tangent_()
     , uv_(std::move(uv)) {}
 
-    inline void set_position(const math::vec3& value) { position_=value; }
-    inline void set_normal(const math::vec3& value)   { normal_=value; }
-    inline void set_tangent(const math::vec3& value)  { tangent_=value; }
-    inline void set_uv(const math::vec2& value)       { uv_=value; }
-    inline void set_position(math::vec3&& value)      { std::swap(position_, value); }
-    inline void set_normal(math::vec3&& value)        { std::swap(normal_, value); }
-    inline void set_tangent(math::vec3&& value)       { std::swap(tangent_, value); }
-    inline void set_uv(math::vec2&& value)            { std::swap(uv_, value); }
-
-    inline const math::vec3& get_position() const { return position_; }
-    inline const math::vec3& get_normal()   const { return normal_; }
-    inline const math::vec3& get_tangent()  const { return tangent_; }
-    inline const math::vec2& get_uv()       const { return uv_; }
-
     inline std::size_t get_pos_hash() const
     {
         return std::hash<math::vec3>()(position_);
@@ -169,13 +146,6 @@ public:
         glEnableVertexAttribArray(3);
     }
 
-private:
-    math::vec3 position_;
-    math::vec3 normal_;
-    math::vec3 tangent_;
-    math::vec2 uv_;
-
-public:
     friend std::ostream& operator<<(std::ostream& stream, const Vertex3P3N3T2U& vf)
     {
         stream << "<p" << vf.position_ << "|n" << vf.normal_ << "|t" << vf.tangent_
@@ -188,6 +158,11 @@ public:
 struct Vertex3P3N2U
 {
 public:
+    math::vec3 position_;
+    math::vec3 normal_;
+    math::vec2 uv_;
+
+
     Vertex3P3N2U(const math::vec3& position,
                  const math::vec3& normal,
                  const math::vec2& uv)
@@ -201,17 +176,6 @@ public:
     : position_(std::move(position))
     , normal_(std::move(normal))
     , uv_(std::move(uv)) {}
-
-    inline void set_position(const math::vec3& value) { position_=value; }
-    inline void set_normal(const math::vec3& value)   { normal_=value; }
-    inline void set_uv(const math::vec2& value)       { uv_=value; }
-    inline void set_position(math::vec3&& value)      { std::swap(position_, value); }
-    inline void set_normal(math::vec3&& value)        { std::swap(normal_, value); }
-    inline void set_uv(math::vec2&& value)            { std::swap(uv_, value); }
-
-    inline const math::vec3& get_position() const { return position_; }
-    inline const math::vec3& get_normal()   const { return normal_; }
-    inline const math::vec2& get_uv()       const { return uv_; }
 
     inline std::size_t get_pos_hash() const
     {
@@ -234,12 +198,6 @@ public:
         glEnableVertexAttribArray(2);
     }
 
-private:
-    math::vec3 position_;
-    math::vec3 normal_;
-    math::vec2 uv_;
-
-public:
     friend std::ostream& operator<<(std::ostream& stream, const Vertex3P3N2U& vf)
     {
         stream << "<p" << vf.position_ << "|n" << vf.normal_
@@ -252,6 +210,10 @@ public:
 struct Vertex3P3N
 {
 public:
+    math::vec3 position_;
+    math::vec3 normal_;
+
+
     Vertex3P3N(const math::vec3& position,
                const math::vec3& normal)
     : position_(position)
@@ -261,14 +223,6 @@ public:
                math::vec3&& normal)
     : position_(std::move(position))
     , normal_(std::move(normal)) {}
-
-    inline void set_position(const math::vec3& value) { position_=value; }
-    inline void set_normal(const math::vec3& value)   { normal_=value; }
-    inline void set_position(math::vec3&& value)      { std::swap(position_, value); }
-    inline void set_normal(math::vec3&& value)        { std::swap(normal_, value); }
-
-    inline const math::vec3& get_position() const { return position_; }
-    inline const math::vec3& get_normal()   const { return normal_; }
 
     inline std::size_t get_pos_hash() const
     {
@@ -289,11 +243,6 @@ public:
         glEnableVertexAttribArray(1);
     }
 
-private:
-    math::vec3 position_;
-    math::vec3 normal_;
-
-public:
     friend std::ostream& operator<<(std::ostream& stream, const Vertex3P3N& vf)
     {
         stream << "<p" << vf.position_ << "|n" << vf.normal_ << ">" << std::endl;
@@ -305,6 +254,10 @@ public:
 struct Vertex3P2U
 {
 public:
+    math::vec3 position_;
+    math::vec2 uv_;
+
+
     Vertex3P2U(const math::vec3& position,
                const math::vec2& uv)
     : position_(position)
@@ -315,14 +268,6 @@ public:
     : position_(std::move(position))
     , uv_(std::move(uv)) {}
 
-    inline void set_position(const math::vec3& value) { position_=value; }
-    inline void set_uv(const math::vec2& value)       { uv_=value; }
-    inline void set_position(math::vec3&& value)      { std::swap(position_, value); }
-    inline void set_uv(math::vec2&& value)            { std::swap(uv_, value); }
-
-    inline const math::vec3& get_position() const { return position_; }
-    inline const math::vec2& get_uv()       const { return uv_; }
-
     static void enable_vertex_attrib_array()
     {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P2U), nullptr);
@@ -332,11 +277,6 @@ public:
         glEnableVertexAttribArray(1);
     }
 
-private:
-    math::vec3 position_;
-    math::vec2 uv_;
-
-public:
     friend std::ostream& operator<<(std::ostream& stream, const Vertex3P2U& vf)
     {
         stream << "<p" << vf.position_ << "|u" << vf.uv_ << ">" << std::endl;
@@ -347,16 +287,14 @@ public:
 struct Vertex3P
 {
 public:
+    math::vec3 position_;
+
+
     Vertex3P(const math::vec3& position)
     : position_(position){}
 
     Vertex3P(math::vec3&& position)
     : position_(std::move(position)){}
-
-    inline void set_position(const math::vec3& value) { position_=value; }
-    inline void set_position(math::vec3&& value)      { std::swap(position_, value); }
-
-    inline const math::vec3& get_position() const { return position_; }
 
     static void enable_vertex_attrib_array()
     {
@@ -365,13 +303,42 @@ public:
         glEnableVertexAttribArray(0);
     }
 
-private:
-    math::vec3 position_;
-
-public:
     friend std::ostream& operator<<(std::ostream& stream, const Vertex3P& vf)
     {
-        stream << "<p" << vf.position_ << std::endl;
+        stream << "<p" << vf.position_ << ">" << std::endl;
+        return stream;
+    }
+};
+
+struct Vertex3P3C
+{
+public:
+    math::vec3 position_;
+    math::vec3 color_;
+
+
+    Vertex3P3C(const math::vec3& position,
+               const math::vec3& color)
+    : position_(position)
+    , color_(color){}
+
+    Vertex3P3C(math::vec3&& position,
+               math::vec3&& color)
+    : position_(std::move(position))
+    , color_(std::move(color)){}
+
+    static void enable_vertex_attrib_array()
+    {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3C), nullptr);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3C), (const GLvoid*)(3*sizeof(float)));
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+    }
+
+    friend std::ostream& operator<<(std::ostream& stream, const Vertex3P3C& vf)
+    {
+        stream << "<p" << vf.position_ << "|u" << vf.color_ << ">" << std::endl;
         return stream;
     }
 };
@@ -379,6 +346,10 @@ public:
 struct Vertex2P2U
 {
 public:
+    math::vec2 position_;
+    math::vec2 uv_;
+
+
     Vertex2P2U(const math::vec2& position,
                const math::vec2& uv)
     : position_(position)
@@ -389,16 +360,6 @@ public:
     : position_(std::move(position))
     , uv_(std::move(uv)) {}
 
-
-    inline void set_position(const math::vec2& value) { position_=value; }
-    inline void set_uv(const math::vec2& value)       { uv_=value; }
-    inline void set_position(math::vec2&& value)      { std::swap(position_, value); }
-    inline void set_uv(math::vec2&& value)            { std::swap(uv_, value); }
-
-
-    inline const math::vec2& get_position() const { return position_; }
-    inline const math::vec2& get_uv()       const { return uv_; }
-
     static void enable_vertex_attrib_array()
     {
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2P2U), nullptr);
@@ -408,11 +369,6 @@ public:
         glEnableVertexAttribArray(1);
     }
 
-private:
-    math::vec2 position_;
-    math::vec2 uv_;
-
-public:
     friend std::ostream& operator<<(std::ostream& stream, const Vertex2P2U& vf)
     {
         stream << "<p" << vf.position_ << "|u" << vf.uv_ << ">" << std::endl;

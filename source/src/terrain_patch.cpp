@@ -45,8 +45,8 @@ void stitch_terrain_edges(std::shared_ptr<TerrainChunk> terrain,
             {
                 for(uint32_t ii=0; ii<chunk_size; ++ii)
                 {
-                    terrain->south(ii).set_normal(nei_terrain->north(ii).get_normal());
-                    terrain->south(ii).set_tangent(nei_terrain->north(ii).get_tangent());
+                    terrain->south(ii).normal_ = nei_terrain->north(ii).normal_;
+                    terrain->south(ii).tangent_ = nei_terrain->north(ii).tangent_;
                 }
                 break;
             }
@@ -54,8 +54,8 @@ void stitch_terrain_edges(std::shared_ptr<TerrainChunk> terrain,
             {
                 for(uint32_t ii=0; ii<chunk_size; ++ii)
                 {
-                    terrain->north(ii).set_normal(nei_terrain->south(ii).get_normal());
-                    terrain->north(ii).set_tangent(nei_terrain->south(ii).get_tangent());
+                    terrain->north(ii).normal_ = nei_terrain->south(ii).normal_;
+                    terrain->north(ii).tangent_ = nei_terrain->south(ii).tangent_;
                 }
                 break;
             }
@@ -63,8 +63,8 @@ void stitch_terrain_edges(std::shared_ptr<TerrainChunk> terrain,
             {
                 for(uint32_t ii=0; ii<chunk_size; ++ii)
                 {
-                    terrain->east(ii).set_normal(nei_terrain->west(ii).get_normal());
-                    terrain->east(ii).set_tangent(nei_terrain->west(ii).get_tangent());
+                    terrain->east(ii).normal_ = nei_terrain->west(ii).normal_;
+                    terrain->east(ii).tangent_ = nei_terrain->west(ii).tangent_;
                 }
                 break;
             }
@@ -72,8 +72,8 @@ void stitch_terrain_edges(std::shared_ptr<TerrainChunk> terrain,
             {
                 for(uint32_t ii=0; ii<chunk_size; ++ii)
                 {
-                    terrain->west(ii).set_normal(nei_terrain->east(ii).get_normal());
-                    terrain->west(ii).set_tangent(nei_terrain->east(ii).get_tangent());
+                    terrain->west(ii).normal_ = nei_terrain->east(ii).normal_;
+                    terrain->west(ii).tangent_ = nei_terrain->east(ii).tangent_;
                 }
                 break;
             }

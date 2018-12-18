@@ -152,7 +152,7 @@ public:
         float zmax=-std::numeric_limits<float>::max();
         traverse_vertices([&](const VertexT& vertex)
         {
-            const math::vec3& pos = vertex.get_position();
+            const math::vec3& pos = vertex.position_;
 
             xmin = fmin(xmin, pos.x());
             xmax = fmax(xmax, pos.x());
@@ -179,9 +179,11 @@ private:
 
 struct Vertex3P3N3T2U;
 struct Vertex3P2U;
+struct Vertex3P3C;
 struct Vertex3P;
 using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
 using MeshPU = Mesh<Vertex3P2U>;
+using MeshPC = Mesh<Vertex3P3C>;
 using MeshP = Mesh<Vertex3P>;
 
 }

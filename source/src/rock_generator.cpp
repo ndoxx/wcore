@@ -57,7 +57,7 @@ Mesh<Vertex3P3N3T2U>* RockGenerator::generate_rock(const RockProps& props)
     pmesh->traverse_vertices_mut([&](Vertex3P3N3T2U& vertex)
     {
         // Get vertex position
-        const vec3& pos(vertex.get_position());
+        const vec3& pos(vertex.position_);
         // From position, calculate spherical coordinates
         float theta = acos(pos.y());
         float phi   = atan2(pos.z(), pos.x());
@@ -73,7 +73,7 @@ Mesh<Vertex3P3N3T2U>* RockGenerator::generate_rock(const RockProps& props)
         samp *= (props.hiBound - props.loBound)/2;
         samp += (props.hiBound + props.loBound)/2;
         // Set new coordinates
-        vertex.set_position(samp*pos);
+        vertex.position_ = samp*pos;
     });
 
     // * Finalize mesh

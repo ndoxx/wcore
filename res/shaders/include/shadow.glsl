@@ -58,11 +58,13 @@ vec2 poissonDisk[16] = vec2[](
    vec2( 0.14383161, -0.14100790 )
 );
 
-float random(vec3 seed, int i)
+vec2 random_sample(vec3 seed, int i)
 {
     vec4 seed4 = vec4(seed,i);
     float dot_product = dot(seed4, vec4(12.9898,78.233,45.164,94.673));
-    return fract(sin(dot_product) * 43758.5453);
+    float rnd = fract(sin(dot_product) * 43758.5453);
+    int index = int(16.0f*rnd)%16;
+    return poissonDisk[index];
 }
 
 float sample_shadow_map_PCF_Poisson(sampler2D shadowM, vec2 coords, vec3 world_coords, float compare, vec2 texelSize)
@@ -71,8 +73,7 @@ float sample_shadow_map_PCF_Poisson(sampler2D shadowM, vec2 coords, vec3 world_c
 
     for(int ii=0; ii<NUM_SAMPLES; ++ii)
     {
-        int index = int(16.0f*random(world_coords.xyy, ii))%16;
-        vec2 coordsOffset = poissonDisk[index]*texelSize;
+        vec2 coordsOffset = random_sample(world_coords.xyy, ii)*texelSize;
         result += sample_shadow_map(shadowM, coords + coordsOffset, compare);
     }
 

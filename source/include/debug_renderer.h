@@ -18,6 +18,7 @@ private:
 public:
     int light_display_mode_; // 0=disabled, 1=mini-spheres, 2=full-scale spheres
     int bb_display_mode_;    // 0=disabled, 1=OBB, 2=AABB
+    bool enable_depth_test_;
 
     DebugRenderer();
     virtual ~DebugRenderer() = default;

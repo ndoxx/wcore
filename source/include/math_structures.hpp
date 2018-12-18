@@ -83,7 +83,10 @@ public:
     {
         std::copy(right.value_,right.value_+N,value_);
     }
-
+    vec(vec&& right)
+    {
+        std::swap(value_, right.value_);
+    }
     explicit vec(const vec<N-1,T>& right)
     {
         for(unsigned ii=0; ii<N-1; ++ii)
@@ -195,6 +198,18 @@ public:
     }
 
     // Assignment
+    inline const vec& operator=(const vec& right)
+    {
+        std::copy(right.value_,right.value_+N,value_);
+        return *this;
+    }
+
+    inline const vec& operator=(vec&& right)
+    {
+        std::swap(right.value_,value_);
+        return *this;
+    }
+
     template <unsigned M>
     inline const vec& operator=(const vec<M>& right)
     {
