@@ -54,9 +54,8 @@ public:
     void imgui_new_frame();
 #endif
 
-    inline void toggle_cursor() { context_.toggle_cursor(); }
-
     void onKeyboardEvent(const WData& data);
+    void onMouseFocus(const WData& data);
     void handle_events();
     int run();
 };

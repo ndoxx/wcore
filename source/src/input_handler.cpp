@@ -6,6 +6,8 @@
 #include "logger.h"
 #include "keymap.h"
 #include "context.h"
+#include "globals.h"
+#include "config.h"
 
 namespace wcore
 {
@@ -13,7 +15,6 @@ namespace wcore
 using namespace rapidxml;
 
 InputHandler::InputHandler():
-last_mouse_button_state_(0),
 mouse_lock_(true)
 {
     import_key_bindings();
@@ -198,6 +199,11 @@ void InputHandler::handle_keybindings(Context& context)
     }
 }
 
+static uint8_t last_mouse_button_state = 0;
+static bool last_mouse_out = false;
+static bool last_mouse_locked = true;
+static double last_x = 0, last_y = 0;
+
 void InputHandler::handle_mouse(Context& context)
 {
     uint8_t buttons = (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_LEFT)   << MouseButton::LMB)
@@ -212,6 +218,9 @@ void InputHandler::handle_mouse(Context& context)
     double xpos, ypos;
     glfwGetCursorPos(context.window_, &xpos, &ypos);
 
+    // Check that cursor is in window
+    bool mouse_out = (xpos<0 || xpos>win_width || ypos<0 || ypos>win_height);
+
     // Cursor is locked -> mouse movement tracked to update camera orientation
     if(mouse_lock_)
     {
@@ -224,7 +233,7 @@ void InputHandler::handle_mouse(Context& context)
         // Calculate deltas from last frame
         int dxi = xpos-win_width/2;
         int dyi = ypos-win_height/2;
-        if(dxi!=0 || dyi!=0 || buttons!=last_mouse_button_state_)
+        if(dxi!=0 || dyi!=0 || buttons!=last_mouse_button_state)
         {
             float dx = float(dxi)/win_width;
             float dy = float(dyi)/win_height;
@@ -233,12 +242,31 @@ void InputHandler::handle_mouse(Context& context)
         }
     }
     // Cursor is unlocked -> edit mode
-    else
+    else if(CONFIG.is(H_("root.gui.cursor.custom")))
     {
-        post(H_("input.mouse.unlocked"), MouseData(2.0f*float(xpos), 2.0f*(win_height-float(ypos)), buttons));
+        // Windowed mode
+        if(!GLB.SCR_FULL)
+        {
+            // Cursor has moved out of the window
+            if(mouse_out && !last_mouse_out)
+            {
+                post(H_("input.mouse.focus"), MouseFocusData(true));
+            }
+            // Cursor has moved into the window
+            else if(!mouse_out && last_mouse_out)
+            {
+                post(H_("input.mouse.focus"), MouseFocusData(false));
+            }
+        }
+        if((!mouse_out && (xpos != last_x || ypos != last_y)) || last_mouse_locked)
+            post(H_("input.mouse.unlocked"), MouseData(float(xpos), win_height-float(ypos), buttons));
     }
 
-    last_mouse_button_state_ = buttons;
+    last_mouse_button_state = buttons;
+    last_mouse_out = mouse_out;
+    last_mouse_locked = mouse_lock_;
+    last_x = xpos;
+    last_y = ypos;
 }
 
 }

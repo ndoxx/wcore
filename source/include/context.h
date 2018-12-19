@@ -17,7 +17,10 @@ public:
     void swap_buffers();
     void poll_events();
 
-    void toggle_cursor();
+    void toggle_hard_cursor();
+    void hide_hard_cursor();
+    void show_hard_cursor();
+    void center_cursor();
     bool window_required();
 
 #ifndef __DISABLE_EDITOR__

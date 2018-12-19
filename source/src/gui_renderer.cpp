@@ -3,8 +3,11 @@
 #include "vertex_format.h"
 #include "material.h"
 #include "material_factory.h"
+#include "config.h"
 #include "globals.h"
 #include "colors.h"
+
+#include "logger.h"
 
 namespace wcore
 {
@@ -20,7 +23,7 @@ GuiRenderer::GuiRenderer():
 Renderer<Vertex2P2U>(),
 cursor_shader_(ShaderResource("cursor.vert;cursor.frag")),
 material_factory_(new MaterialFactory("gui_assets.xml")),
-cursor_props_(true, material_factory_->make_material(H_("cursor")))
+cursor_props_(false, material_factory_->make_material(H_("cursor")))
 {
     load_geometry();
 }
@@ -63,15 +66,15 @@ void GuiRenderer::render()
     vertex_array_.bind();
 
     // Render cursor if needed
-    if(cursor_props_.active)
+    if(cursor_props_.active && CONFIG.is(H_("root.gui.cursor.custom")))
     {
         // Screen-space scale and translate
         float cursor_size = 64.0f * cursor_props_.scale;
         float aspect = GLB.SCR_H/(1.0f*GLB.SCR_W);
         float w = cursor_size/GLB.SCR_H;
         float h = cursor_size*aspect/GLB.SCR_H;
-        float xpos = cursor_props_.position.x()/GLB.SCR_W -1.0f;
-        float ypos = (cursor_props_.position.y() - 0.5f * cursor_size)/GLB.SCR_H -1.0f;
+        float xpos = (2.0f*cursor_props_.position.x())/GLB.SCR_W -1.0f;
+        float ypos = (2.0f*cursor_props_.position.y() - 0.5f * cursor_size)/GLB.SCR_H -1.0f;
         mat4 transform(w, 0, 0, xpos,
                        0, h, 0, ypos,
                        0, 0, 1, 0,

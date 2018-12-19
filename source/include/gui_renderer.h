@@ -17,7 +17,7 @@ struct CursorProperties
     CursorProperties(bool active, Material* material):
     active(active),
     material(material),
-    color(1.0f,0.6f,0.0f),
+    color(0.2f,0.8f,1.0f),
     position(500),
     scale(1.0f)
     {
@@ -40,6 +40,7 @@ public:
 
     virtual void render() override;
     inline void render_cursor(bool value)  { cursor_props_.active = value; }
+    inline void toggle_cursor()  { cursor_props_.active = !cursor_props_.active; }
     inline bool is_cursor_rendered() const { return cursor_props_.active; }
     inline void set_cursor_position(float x, float y) { cursor_props_.position = math::vec2(x,y); }
 

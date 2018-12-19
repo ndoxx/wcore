@@ -69,6 +69,27 @@ struct MouseData : public WData
     std::bitset<4> button_pressed;
 };
 
+struct MouseFocusData : public WData
+{
+    MouseFocusData(bool leaving_window):
+    leaving_window(leaving_window)
+    {
+
+    }
+
+#ifdef __DEBUG__
+    virtual std::string to_string() const override
+    {
+        if(leaving_window)
+            return "Mouse leaving window.";
+        else
+            return "Mouse entering window.";
+    }
+#endif
+
+    bool leaving_window;
+};
+
 struct NullData : public WData {};
 
 typedef std::function<void(const WData&)> WpFunc;

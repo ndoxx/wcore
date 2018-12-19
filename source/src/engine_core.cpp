@@ -86,6 +86,7 @@ render_editor_GUI_(false)
     init_imgui();
     subscribe(H_("input.keyboard"), handler_, &GameLoop::onKeyboardEvent);
 #endif
+    subscribe(H_("input.mouse.focus"), handler_, &GameLoop::onMouseFocus);
 }
 
 GameLoop::~GameLoop()
@@ -144,7 +145,11 @@ void GameLoop::onKeyboardEvent(const WData& data)
         case H_("k_tg_editor"):
             handler_.toggle_mouse_lock();
             toggle_editor_GUI_rendering();
-            toggle_cursor();
+            context_.center_cursor();
+            if(!CONFIG.is(H_("root.gui.cursor.custom")))
+            {
+                context_.toggle_hard_cursor();
+            }
         break;
 #endif
         case H_("k_tg_pause"):
@@ -161,6 +166,16 @@ void GameLoop::onKeyboardEvent(const WData& data)
     		break;
     }
 }
+
+void GameLoop::onMouseFocus(const WData& data)
+{
+    const MouseFocusData& mfd = static_cast<const MouseFocusData&>(data);
+    if(mfd.leaving_window)
+        context_.show_hard_cursor();
+    else
+        context_.hide_hard_cursor();
+}
+
 
 void GameLoop::handle_events()
 {

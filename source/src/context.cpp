@@ -104,12 +104,33 @@ void Context::poll_events()
     glfwPollEvents();
 }
 
-void Context::toggle_cursor()
+void Context::toggle_hard_cursor()
 {
     cursor_hidden_ = !cursor_hidden_;
     if(cursor_hidden_)
     {
         glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+    else
+        glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void Context::show_hard_cursor()
+{
+    cursor_hidden_ = false;
+    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void Context::hide_hard_cursor()
+{
+    cursor_hidden_ = true;
+    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void Context::center_cursor()
+{
+    //if(cursor_hidden_)
+    //{
         // Get window size
         int win_width, win_height;
         glfwGetWindowSize(window_, &win_width, &win_height);
@@ -117,9 +138,7 @@ void Context::toggle_cursor()
         glfwSetCursorPos(window_,
                          win_width/2,
                          win_height/2);
-    }
-    else
-        glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    //}
 }
 
 bool Context::window_required()

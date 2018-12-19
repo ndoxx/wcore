@@ -8,6 +8,6 @@ uniform vec3 v3_color;
 void main()
 {
     float value = texture(inputTex, texCoord).r;
-    float solid = step(0.1f, value);
-    out_color = vec4(v3_color, value+0.45f) * solid;
+    float solid = step(0.5f, value);
+    out_color = vec4(v3_color, value) * solid;
 }

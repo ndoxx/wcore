@@ -45,7 +45,6 @@ private:
     std::map<hash_t, KeyBindingProperties>      key_bindings_; // Associate binding name to properties
     std::map<hash_t, std::function<void(void)>> action_map_;   // Associate key binding to action
 
-    uint8_t last_mouse_button_state_;
     bool mouse_lock_;
 
 public:

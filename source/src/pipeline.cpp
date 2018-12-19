@@ -87,6 +87,9 @@ void RenderPipeline::onKeyboardEvent(const WData& data)
 
     switch(kbd.key_binding)
     {
+        case H_("k_tg_editor"):
+            gui_renderer_->toggle_cursor();
+            break;
         case H_("k_tg_fog"):
     		post_processing_renderer_->toggle_fog();
     		break;

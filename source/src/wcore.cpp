@@ -11,6 +11,7 @@
 #include "pipeline.h"
 #include "daylight.h"
 #include "globals.h"
+#include "logger.h"
 
 namespace wcore
 {
@@ -127,6 +128,10 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->daylight->subscribe(H_("input.keyboard"), input_handler, &DaylightSystem::onKeyboardEvent);
     eimpl_->scene_loader->subscribe(H_("input.keyboard"), input_handler, &SceneLoader::onKeyboardEvent);
     eimpl_->chunk_manager->subscribe(H_("input.keyboard"), input_handler, &ChunkManager::onKeyboardEvent);
+
+    //dbg::LOG.track(H_("input.mouse.locked"), input_handler);
+    //dbg::LOG.track(H_("input.mouse.unlocked"), input_handler);
+    //dbg::LOG.track(H_("input.mouse.focus"), input_handler);
 
     // Editor widgets
 #ifndef __DISABLE_EDITOR__
