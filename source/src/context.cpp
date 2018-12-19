@@ -74,6 +74,8 @@ cursor_hidden_(true)
 
     if(CONFIG.is(H_("root.display.vsync")))
         glfwSwapInterval(1); // Enable vsync
+
+    glfwGetWindowSize(window_, &GLB.WIN_W, &GLB.WIN_H);
 }
 
 Context::~Context()

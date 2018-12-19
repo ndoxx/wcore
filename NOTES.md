@@ -5294,3 +5294,11 @@ Il s'ensuit que la taille du noyau Gaussien et le sigma sont aisément configura
     - UBO
 voir : https://github.com/TReed0803/QtOpenGL/blob/master/resources/shaders/ubo/GlobalBuffer.ubo
     - Unproject click
+
+#[19-12-18]
+
+## Custom cursor
+La nouvelle classe _GuiRenderer_ se charge pour l'instant uniquement de l'affichage du curseur custom. Cet affichage a lieu après celui du GUI debug (plus tard, seul le curseur sera affiché après le GUI debug, mais d'autres éléments de _GuiRenderer_ pourraient être affichés avant).
+
+Le curseur est au stade expérimental. En mode windowed, je peux détecter la sortie du curseur de l'écran alors un event mouse focus est lancé. Alors _GameLoop_ en réponse à l'event va rétablir l'affichage du curseur hardware. Le problème c'est que le curseur apparaît DANS la fenêtre à une position que je ne contrôle pas (genre dernière position de sortie d'écran), alors un autre event mouse focus est lancé, et _GameLoop_ croit que le curseur est re-rentré dans la fenêtre. C'est très certainement dû au curseur virtuel de GLFW qui n'est pas synchronisé avec le curseur réel. Bref, c'est délicat à régler, d'autant plus que le comportement des systèmes relativement aux inputs est très largement event driven.
+C'est pour ça que le curseur custom est désactivé par défaut. L'option *root.gui.cursor.custom* de config.xml permet d'activer ce feature.

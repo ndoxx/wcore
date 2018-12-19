@@ -60,7 +60,7 @@ void GuiRenderer::set_cursor_hue(float hue)
 void GuiRenderer::render()
 {
     GFX::bind_default_frame_buffer();
-    GFX::viewport(0,0,GLB.SCR_W,GLB.SCR_H);
+    GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
     GFX::enable_blending();
     GFX::set_std_blending();
     vertex_array_.bind();
@@ -69,12 +69,12 @@ void GuiRenderer::render()
     if(cursor_props_.active && CONFIG.is(H_("root.gui.cursor.custom")))
     {
         // Screen-space scale and translate
-        float cursor_size = 64.0f * cursor_props_.scale;
-        float aspect = GLB.SCR_H/(1.0f*GLB.SCR_W);
-        float w = cursor_size/GLB.SCR_H;
-        float h = cursor_size*aspect/GLB.SCR_H;
-        float xpos = (2.0f*cursor_props_.position.x())/GLB.SCR_W -1.0f;
-        float ypos = (2.0f*cursor_props_.position.y() - 0.5f * cursor_size)/GLB.SCR_H -1.0f;
+        float cursor_size = 64.0f * cursor_props_.scale / GLB.WIN_H;
+        float aspect = GLB.WIN_W/(1.0f*GLB.WIN_H);
+        float w = cursor_size;
+        float h = cursor_size/aspect;
+        float xpos = (2.0f*cursor_props_.position.x()) -1.0f;
+        float ypos = (2.0f*cursor_props_.position.y() - cursor_size/aspect) -1.0f;
         mat4 transform(w, 0, 0, xpos,
                        0, h, 0, ypos,
                        0, 0, 1, 0,

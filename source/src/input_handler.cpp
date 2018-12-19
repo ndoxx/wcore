@@ -7,7 +7,6 @@
 #include "keymap.h"
 #include "context.h"
 #include "globals.h"
-#include "config.h"
 
 namespace wcore
 {
@@ -242,7 +241,7 @@ void InputHandler::handle_mouse(Context& context)
         }
     }
     // Cursor is unlocked -> edit mode
-    else if(CONFIG.is(H_("root.gui.cursor.custom")))
+    else
     {
         // Windowed mode
         if(!GLB.SCR_FULL)
@@ -259,7 +258,9 @@ void InputHandler::handle_mouse(Context& context)
             }
         }
         if((!mouse_out && (xpos != last_x || ypos != last_y)) || last_mouse_locked)
-            post(H_("input.mouse.unlocked"), MouseData(float(xpos), win_height-float(ypos), buttons));
+        {
+            post(H_("input.mouse.unlocked"), MouseData(float(xpos/GLB.SCR_W), 1.0f-float(ypos/GLB.SCR_H), buttons));
+        }
     }
 
     last_mouse_button_state = buttons;

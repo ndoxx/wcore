@@ -146,10 +146,10 @@ void GameLoop::onKeyboardEvent(const WData& data)
             handler_.toggle_mouse_lock();
             toggle_editor_GUI_rendering();
             context_.center_cursor();
-            if(!CONFIG.is(H_("root.gui.cursor.custom")))
-            {
+            /*if(!CONFIG.is(H_("root.gui.cursor.custom")))
+            {*/
                 context_.toggle_hard_cursor();
-            }
+            //}
         break;
 #endif
         case H_("k_tg_pause"):
@@ -169,13 +169,15 @@ void GameLoop::onKeyboardEvent(const WData& data)
 
 void GameLoop::onMouseFocus(const WData& data)
 {
-    const MouseFocusData& mfd = static_cast<const MouseFocusData&>(data);
-    if(mfd.leaving_window)
-        context_.show_hard_cursor();
-    else
-        context_.hide_hard_cursor();
+    if(CONFIG.is(H_("root.gui.cursor.custom")))
+    {
+        const MouseFocusData& mfd = static_cast<const MouseFocusData&>(data);
+        if(mfd.leaving_window)
+            context_.show_hard_cursor();
+        else
+            context_.hide_hard_cursor();
+    }
 }
-
 
 void GameLoop::handle_events()
 {
