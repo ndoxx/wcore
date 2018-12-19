@@ -66,6 +66,14 @@ float attenuate(float distance, float radius, float compression=1.0f)
     return pow(smoothstep(radius, 0, distance), compression);
 }
 
+vec3 brightness_prefilter(vec3 color, float threshold)
+{
+    float brightness = max(color.r, max(color.g, color.b));
+    float contribution = max(0, brightness - threshold);
+    contribution /= max(brightness, 0.00001);
+    return color * contribution;
+}
+
 void main()
 {
     vec2 texCoord = gl_FragCoord.xy / rd.v2_screenSize;
@@ -170,6 +178,7 @@ void main()
     //float brightnessMask = 1/(1+exp(-20*(luminance-rd.f_bright_threshold))); // Sigmoid logistic function
     //float brightnessMask = (1+tanh(30*(luminance-rd.f_bright_threshold)))/2; // Sigmoid hyperbolic tangent
     float brightnessMask = smoothstep(rd.f_bright_threshold-rd.f_bright_knee, rd.f_bright_threshold, luminance);
+    //out_bright_color = brightness_prefilter(out_color, rd.f_bright_threshold);
 
     out_bright_color = brightnessMask*out_color;
 }

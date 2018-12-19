@@ -24,6 +24,7 @@ private:
     bool render_editor_GUI_;
 
     std::function<void(void)> render_func_;
+    std::function<void(void)> render_gui_func_;
 
     std::list<std::function<void(void)>> editor_widget_generators_;
     std::list<Updatable*> updatables_;
@@ -39,6 +40,7 @@ public:
 
     inline InputHandler& get_input_handler() { return handler_; }
     inline void set_render_func(std::function<void(void)> render_func) { render_func_ = render_func;}
+    inline void set_render_gui_func(std::function<void(void)> render_func) { render_gui_func_ = render_func;}
 
     template <class T>
     inline void register_updatable_system(T& system)

@@ -68,25 +68,30 @@ void DebugRenderer::render()
         SCENE.traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
         {
             // Get model matrix and compute products
-            mat4 M;
-            if(bb_display_mode_ == 1)   // NOTE(ndx) retracted this test inside so that we can handle per model check later
+            if(bb_display_mode_ == 1 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::AABB))
             {
                 AABB& aabb = pmodel->get_AABB();
                 if(!SCENE.get_camera()->frustum_collides(aabb)) return;
-                M = aabb.get_model_matrix();
+                mat4 M = aabb.get_model_matrix();
                 line_shader_.send_uniform(H_("v4_line_color"), vec4(0,1,0,0));
+                mat4 MVP = PV*M;
+                line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+                buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
             }
-            else if(bb_display_mode_ == 2)
+            if(bb_display_mode_ == 2 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::OBB))
             {
                 OBB& obb = pmodel->get_OBB();
                 if(!SCENE.get_camera()->frustum_collides(obb)) return;
-                M = obb.get_model_matrix();
+                mat4 M = obb.get_model_matrix();
                 line_shader_.send_uniform(H_("v4_line_color"), vec4(0,0,1,0));
+                mat4 MVP = PV*M;
+                line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+                buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
             }
-            mat4 MVP = PV*M;
+            /*if(pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
+            {
 
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+            }*/
         },
         wcore::DEFAULT_MODEL_EVALUATOR,
         wcore::ORDER::IRRELEVANT,

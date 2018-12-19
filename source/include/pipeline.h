@@ -17,6 +17,7 @@ class PostProcessingRenderer;
 class TextRenderer;
 class DebugRenderer;
 class DebugOverlayRenderer;
+class GuiRenderer;
 class InputHandler;
 
 class RenderPipeline : public Listener
@@ -32,6 +33,7 @@ private:
     TextRenderer*            text_renderer_;
     DebugRenderer*           debug_renderer_;
     DebugOverlayRenderer*    debug_overlay_renderer_;
+    GuiRenderer*             gui_renderer_;
 
     bool bloom_enabled_;
 
@@ -46,7 +48,9 @@ public:
     void set_pp_fog_density(float value);
 
     void onKeyboardEvent(const WData& data);
+    void onMouseEvent(const WData& data);
     void render();
+    void render_gui();
     void dbg_show_statistics();
 
 #ifndef __DISABLE_EDITOR__

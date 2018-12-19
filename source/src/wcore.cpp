@@ -117,10 +117,12 @@ void Engine::Init(int argc, char const *argv[],
     // Initialize game_loop
     auto&& input_handler = eimpl_->game_loop->get_input_handler();
     eimpl_->game_loop->set_render_func([&]() { eimpl_->pipeline->render(); });
+    eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
 
     // User input (debug)
-    SCENE.subscribe(H_("input.mouse"), input_handler, &Scene::onMouseEvent);
+    SCENE.subscribe(H_("input.mouse.locked"), input_handler, &Scene::onMouseEvent);
     SCENE.subscribe(H_("input.keyboard"), input_handler, &Scene::onKeyboardEvent);
+    eimpl_->pipeline->subscribe(H_("input.mouse.unlocked"), input_handler, &RenderPipeline::onMouseEvent);
     eimpl_->pipeline->subscribe(H_("input.keyboard"), input_handler, &RenderPipeline::onKeyboardEvent);
     eimpl_->daylight->subscribe(H_("input.keyboard"), input_handler, &DaylightSystem::onKeyboardEvent);
     eimpl_->scene_loader->subscribe(H_("input.keyboard"), input_handler, &SceneLoader::onKeyboardEvent);

@@ -11,7 +11,7 @@ BufferModule("lbuffer",
 std::make_shared<Texture>(
     std::vector<hash_t>{H_("screenTex"), H_("brightTex"),         H_("ldepthStencilTex")},
     std::vector<GLenum> {GL_NEAREST,     GL_LINEAR_MIPMAP_LINEAR, GL_NONE},
-    std::vector<GLenum> {GL_RGB16F,      GL_RGB16F,               GL_DEPTH24_STENCIL8},
+    std::vector<GLenum> {GL_RGB16F,      GL_RGB,                  GL_DEPTH24_STENCIL8},
     std::vector<GLenum> {GL_RGB,         GL_RGB,                  GL_DEPTH_STENCIL},
     screenWidth,            // brightTex will contain the bright map.
     screenHeight,           // We use the multiple render target scheme

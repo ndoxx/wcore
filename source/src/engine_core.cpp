@@ -254,6 +254,7 @@ int GameLoop::run()
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
 #endif
+        render_gui_func_(); // Game GUI
 
 #ifdef __PROFILING_GAMELOOP__
         {

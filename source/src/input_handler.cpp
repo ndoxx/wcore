@@ -204,23 +204,24 @@ void InputHandler::handle_mouse(Context& context)
                     + (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_RIGHT)  << MouseButton::RMB)
                     + (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_MIDDLE) << MouseButton::MMB);
 
+    // Get window size
+    int win_width, win_height;
+    glfwGetWindowSize(context.window_, &win_width, &win_height);
+
+    // Get mouse position
+    double xpos, ypos;
+    glfwGetCursorPos(context.window_, &xpos, &ypos);
+
+    // Cursor is locked -> mouse movement tracked to update camera orientation
     if(mouse_lock_)
     {
-        // Get window size
-        int win_width, win_height;
-        glfwGetWindowSize(context.window_, &win_width, &win_height);
-
-        // Get mouse position
-        double xpos, ypos;
-        glfwGetCursorPos(context.window_, &xpos, &ypos);
-
         // Reset mouse position for next frame
         glfwSetCursorPos(context.window_,
                          win_width/2,
                          win_height/2);
 
 
-        // Compute new orientation
+        // Calculate deltas from last frame
         int dxi = xpos-win_width/2;
         int dyi = ypos-win_height/2;
         if(dxi!=0 || dyi!=0 || buttons!=last_mouse_button_state_)
@@ -228,8 +229,13 @@ void InputHandler::handle_mouse(Context& context)
             float dx = float(dxi)/win_width;
             float dy = float(dyi)/win_height;
 
-            post(H_("input.mouse"), MouseData(dx, dy, buttons));
+            post(H_("input.mouse.locked"), MouseData(dx, dy, buttons));
         }
+    }
+    // Cursor is unlocked -> edit mode
+    else
+    {
+        post(H_("input.mouse.unlocked"), MouseData(2.0f*float(xpos), 2.0f*(win_height-float(ypos)), buttons));
     }
 
     last_mouse_button_state_ = buttons;

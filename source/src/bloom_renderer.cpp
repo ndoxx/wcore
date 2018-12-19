@@ -32,7 +32,7 @@ kernel_(9,1.8f)
 #endif // __OPTIM_BLOOM_USE_PP2__
                     GL_TEXTURE_2D,
                     GL_LINEAR,
-                    GL_RGB16F,
+                    GL_RGB,
                     GL_RGB,
                     true)); // Clamp to avoid side artifacts
 
@@ -45,7 +45,7 @@ kernel_(9,1.8f)
                             GLB.SCR_H/2,
                             GL_TEXTURE_2D,
                             GL_LINEAR,
-                            GL_RGB16F,
+                            GL_RGB,
                             GL_RGB,
                             true);
     Texture::register_named_texture(H_("bloom"), bloom_tex);

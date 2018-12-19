@@ -12,6 +12,7 @@
 #include "debug_renderer.h"
 #include "debug_overlay_renderer.h"
 #include "shadow_map_renderer.h"
+#include "gui_renderer.h"
 
 #include "l_buffer.h"
 #include "g_buffer.h"
@@ -55,6 +56,7 @@ bloom_enabled_(true)
     text_renderer_            = new TextRenderer();
     debug_renderer_           = new DebugRenderer();
     debug_overlay_renderer_   = new DebugOverlayRenderer(*text_renderer_);
+    gui_renderer_             = new GuiRenderer();
 
     DINFO.register_text_renderer(text_renderer_);
     text_renderer_->load_face("arial");
@@ -110,6 +112,12 @@ void RenderPipeline::onKeyboardEvent(const WData& data)
     		geometry_renderer_->toggle_wireframe();
     		break;
     }
+}
+
+void RenderPipeline::onMouseEvent(const WData& data)
+{
+    const MouseData& md = static_cast<const MouseData&>(data);
+    gui_renderer_->set_cursor_position(md.dx, md.dy);
 }
 
 #ifdef __PROFILE__
@@ -486,6 +494,12 @@ void RenderPipeline::render()
     }
     #endif
 }
+
+void RenderPipeline::render_gui()
+{
+    gui_renderer_->render();    // Cursor...
+}
+
 
 void RenderPipeline::dbg_show_statistics()
 {

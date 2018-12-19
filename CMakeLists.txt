@@ -76,6 +76,7 @@ set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/post_processing_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/debug_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/text_renderer.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/gui_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/debug_overlay_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/daylight.cpp
     ${CMAKE_SOURCE_DIR}/source/src/pipeline.cpp)

@@ -27,15 +27,15 @@ uint32_t SSAORenderer::NOISE_SIZE_ = pow(SSAORenderer::NOISE_SQRSIZE_,2);
 SSAORenderer::SSAORenderer():
 Renderer<Vertex3P>(),
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
-ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R"),
+ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VARIANT_R_ONLY"),
            std::make_unique<Texture>(
                        std::vector<hash_t>{H_("SSAOtmpTex")},
                        SSAOBuffer::Instance().get_width()/2,
                        SSAOBuffer::Instance().get_height()/2,
                        GL_TEXTURE_2D,
                        GL_LINEAR,
+                       GL_R8,
                        GL_RED,
-                       GL_RGB,
                        true)),
 out_size_(SSAOBuffer::Instance().get_width(),
           SSAOBuffer::Instance().get_height()),

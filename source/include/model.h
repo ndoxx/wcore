@@ -1,6 +1,9 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <bitset>
+#include <cassert>
+
 #include "transformation.h"
 #include "mesh.hpp"
 #include "bounding_boxes.h"
@@ -10,8 +13,43 @@ namespace wcore
 
 struct Vertex3P3N3T2U;
 struct Vertex3P;
-
 class Material;
+
+#ifdef __DEBUG__
+struct DebugDisplayOptions
+{
+    enum : uint8_t
+    {
+        AABB,
+        OBB,
+        ORIGIN,
+        N_OPTIONS,
+    };
+
+    std::bitset<3> flags_;
+
+    inline void enable(uint8_t value)
+    {
+        assert(value < N_OPTIONS && "[DebugDisplayOptions] Index out of bounds.");
+        flags_.set(value);
+    }
+    inline void disable(uint8_t value)
+    {
+        assert(value < N_OPTIONS && "[DebugDisplayOptions] Index out of bounds.");
+        flags_.set(value, 0);
+    }
+    inline bool is_enabled(uint8_t value)
+    {
+        assert(value < N_OPTIONS && "[DebugDisplayOptions] Index out of bounds.");
+        return flags_[value];
+    }
+    inline void clear()
+    {
+        flags_.reset();
+    }
+};
+#endif
+
 class Model
 {
 protected:
@@ -25,6 +63,10 @@ protected:
     uint32_t              shadow_cull_face_;
 
 public:
+#ifdef __DEBUG__
+    DebugDisplayOptions debug_display_opts_;
+#endif
+
     Model(Mesh<Vertex3P3N3T2U>* pmesh, Material* material);
     ~Model();
 

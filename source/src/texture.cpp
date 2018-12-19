@@ -38,6 +38,8 @@ static std::map<GLenum, GLenum> DATA_TYPES =
     {GL_RGB16_SNORM, GL_UNSIGNED_BYTE},
     {GL_DEPTH32F_STENCIL8, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
     {GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8},
+    {GL_RGB8, GL_BYTE},
+    {GL_R8, GL_BYTE},
 };
 
 static GLenum internal_format_to_data_type(GLenum iformat)

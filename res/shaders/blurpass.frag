@@ -24,11 +24,18 @@ uniform GaussianKernel kernel;
 
 void main()
 {
-    vec3 result = convolve_kernel_separable(kernel.f_weight, kernel.i_half_size,
-                                            inputTex, texCoord,
-                                            v2_texelSize, horizontal);
-    #ifdef VARIANT_COMPRESS_R
-        result.r = pow(result.r, inv_gamma_r);
+    #ifdef VARIANT_R_ONLY
+    out_color.r = convolve_kernel_separable_r(kernel.f_weight, kernel.i_half_size,
+                                              inputTex, texCoord,
+                                              v2_texelSize, horizontal);
+    #else
+    out_color.rgb = convolve_kernel_separable(kernel.f_weight, kernel.i_half_size,
+                                              inputTex, texCoord,
+                                              v2_texelSize, horizontal);
+    out_color.a = f_alpha;
     #endif
-    out_color = vec4(result, f_alpha);
+
+    #ifdef VARIANT_COMPRESS_R
+        out_color.r = pow(out_color.r, inv_gamma_r);
+    #endif
 }

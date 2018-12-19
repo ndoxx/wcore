@@ -5293,3 +5293,4 @@ Il s'ensuit que la taille du noyau Gaussien et le sigma sont aisément configura
 * TODO :
     - UBO
 voir : https://github.com/TReed0803/QtOpenGL/blob/master/resources/shaders/ubo/GlobalBuffer.ubo
+    - Unproject click
