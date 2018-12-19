@@ -138,7 +138,7 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
     x *= 2;
     y *= 2;
     GFX::bind_default_frame_buffer();
-    GFX::viewport(0,0,GLB.SCR_W,GLB.SCR_H);
+    GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
     text_shader_.use();
     text_shader_.send_uniform(H_("v3_textColor"), color);
 
@@ -151,11 +151,11 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
     {
         const Character& ch = charsets_[current_face_][char(*itc)];
 
-        float xpos = (x + ch.bearing_x * scale)/GLB.SCR_W -1.0f;
-        float ypos = (y - (ch.size_h - ch.bearing_y) * scale)/GLB.SCR_H -1.0f;
+        float xpos = (x + ch.bearing_x * scale)/GLB.WIN_W -1.0f;
+        float ypos = (y - (ch.size_h - ch.bearing_y) * scale)/GLB.WIN_H -1.0f;
 
-        float w = (ch.size_w * scale)/GLB.SCR_W;
-        float h = (ch.size_h * scale)/GLB.SCR_H;
+        float w = (ch.size_w * scale)/GLB.WIN_W;
+        float h = (ch.size_h * scale)/GLB.WIN_H;
 
         mat4 projection(w, 0, 0, xpos,
                         0, h, 0, ypos,

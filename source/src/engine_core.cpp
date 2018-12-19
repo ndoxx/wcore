@@ -146,10 +146,10 @@ void GameLoop::onKeyboardEvent(const WData& data)
             handler_.toggle_mouse_lock();
             toggle_editor_GUI_rendering();
             context_.center_cursor();
-            /*if(!CONFIG.is(H_("root.gui.cursor.custom")))
-            {*/
+            if(!CONFIG.is(H_("root.gui.cursor.custom")))
+            {
                 context_.toggle_hard_cursor();
-            //}
+            }
         break;
 #endif
         case H_("k_tg_pause"):

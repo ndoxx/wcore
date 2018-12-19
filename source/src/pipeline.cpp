@@ -40,11 +40,11 @@ RenderPipeline::RenderPipeline():
 bloom_enabled_(true)
 {
     // Buffer with facilities for Geometry pass
-    GBuffer::Init(GLB.SCR_W, GLB.SCR_H);
+    GBuffer::Init(GLB.WIN_W, GLB.WIN_H);
     // Buffer with facilities for Lighting pass
-    LBuffer::Init(GLB.SCR_W, GLB.SCR_H);
+    LBuffer::Init(GLB.WIN_W, GLB.WIN_H);
     // Buffer for SSAO
-    SSAOBuffer::Init(GLB.SCR_W/2, GLB.SCR_H/2);
+    SSAOBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
 
     geometry_renderer_        = new GeometryRenderer();
     shadow_map_renderer_      = new ShadowMapRenderer();

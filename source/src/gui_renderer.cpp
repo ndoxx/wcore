@@ -73,8 +73,8 @@ void GuiRenderer::render()
         float aspect = GLB.WIN_W/(1.0f*GLB.WIN_H);
         float w = cursor_size;
         float h = cursor_size/aspect;
-        float xpos = (2.0f*cursor_props_.position.x()) -1.0f;
-        float ypos = (2.0f*cursor_props_.position.y() - cursor_size/aspect) -1.0f;
+        float xpos = (2.0f*cursor_props_.position.x()) - 1.0f;
+        float ypos = (2.0f*cursor_props_.position.y() - cursor_size/aspect) - 1.0f;
         mat4 transform(w, 0, 0, xpos,
                        0, h, 0, ypos,
                        0, 0, 1, 0,

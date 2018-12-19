@@ -55,7 +55,7 @@ void PostProcessingRenderer::render()
     post_processing_shader_.send_uniform(H_("rd.f_vignette_bal"), vignette_balance_);
     post_processing_shader_.send_uniform(H_("rd.f_exposure"), exposure_);
     post_processing_shader_.send_uniform(H_("rd.f_contrast"), contrast_);
-    post_processing_shader_.send_uniform(H_("rd.v2_frameBufSize"), vec2(GLB.SCR_W, GLB.SCR_H));
+    post_processing_shader_.send_uniform(H_("rd.v2_frameBufSize"), vec2(GLB.WIN_W, GLB.WIN_H));
     // Fog
     post_processing_shader_.send_uniform(H_("rd.b_enableFog"), fog_enabled_);
     post_processing_shader_.send_uniform(H_("rd.f_fogDensity"), fog_density_);
@@ -72,7 +72,7 @@ void PostProcessingRenderer::render()
 
 
     // Render textured quad to screen
-    GFX::viewport(0,0,GLB.SCR_W,GLB.SCR_H);
+    GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
 
     // Bind relevant textures
     auto pbloom = Texture::get_named_texture(H_("bloom")).lock();

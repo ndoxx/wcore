@@ -107,8 +107,8 @@ void DebugOverlayRenderer::render_pane(uint32_t index)
     // Calculate positioning
     size_t ntex = debug_panes_[index].size();
     float gap = 10.0f;
-    float vpw = fmin((GLB.SCR_W-(ntex+1)*gap)/ntex, GLB.SCR_W/5.0f);
-    float vph = fmin(vpw*GLB.SCR_W/GLB.SCR_H, GLB.SCR_H/5.0f);
+    float vpw = fmin((GLB.WIN_W-(ntex+1)*gap)/ntex, GLB.WIN_W/5.0f);
+    float vph = fmin(vpw*GLB.WIN_W/GLB.WIN_H, GLB.WIN_H/5.0f);
 
     // Loop through registered textures
     for(int ii=0; ii<ntex; ++ii)
@@ -162,7 +162,7 @@ void DebugOverlayRenderer::generate_widget()
     dbg::DebugTextureProperties& props = debug_panes_[current_pane][current_tex];
     ImGui::Text("name: %s", props.sampler_name.c_str());
 
-    ImGui::Image((void*)props.texture_index, ImVec2(ImGui::CalcItemWidth(),ImGui::CalcItemWidth()*GLB.SCR_H/GLB.SCR_W));
+    ImGui::Image((void*)props.texture_index, ImVec2(ImGui::CalcItemWidth(),ImGui::CalcItemWidth()*GLB.WIN_H/GLB.WIN_W));
     ImGui::End();
 }
 #endif

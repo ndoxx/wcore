@@ -17,7 +17,7 @@ struct CursorProperties
     CursorProperties(bool active, Material* material):
     active(active),
     material(material),
-    color(0.2f,0.8f,1.0f),
+    color(0.5f,0.9f,1.0f),
     position(500),
     scale(1.0f)
     {

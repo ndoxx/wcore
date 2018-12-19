@@ -32,7 +32,7 @@ uint32_t Scene::SHADOW_HEIGHT = 1024;
 uint32_t Scene::SHADOW_WIDTH  = 1024;
 
 Scene::Scene():
-camera_(std::make_shared<Camera>(GLB.SCR_W, GLB.SCR_H)),
+camera_(std::make_shared<Camera>(GLB.WIN_W, GLB.WIN_H)),
 light_camera_(std::make_shared<Camera>(1, 1)),
 chunk_size_m_(32),
 current_chunk_index_(0)

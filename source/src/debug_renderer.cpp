@@ -57,7 +57,7 @@ void DebugRenderer::render()
     mat4 P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
-    GBuffer::Instance().blit_depth_to_screen(GLB.SCR_W, GLB.SCR_H);
+    GBuffer::Instance().blit_depth_to_screen(GLB.WIN_W, GLB.WIN_H);
     if(enable_depth_test_)
         GFX::enable_depth_testing();
 

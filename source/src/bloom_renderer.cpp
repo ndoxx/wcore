@@ -24,11 +24,11 @@ kernel_(9,1.8f)
         bloom_h_tex_.push_back(std::make_shared<Texture>(
                 std::vector<hash_t>{H_("brightTex")},
 #ifdef __OPTIM_BLOOM_USE_PP2__
-                    math::pp2(GLB.SCR_W/pow(2,ii+1)),
-                    math::pp2(GLB.SCR_H/pow(2,ii+1)),
+                    math::pp2(GLB.WIN_W/pow(2,ii+1)),
+                    math::pp2(GLB.WIN_H/pow(2,ii+1)),
 #else
-                    GLB.SCR_W/pow(2,ii+1),
-                    GLB.SCR_H/pow(2,ii+1),
+                    GLB.WIN_W/pow(2,ii+1),
+                    GLB.WIN_H/pow(2,ii+1),
 #endif // __OPTIM_BLOOM_USE_PP2__
                     GL_TEXTURE_2D,
                     GL_LINEAR,
@@ -41,8 +41,8 @@ kernel_(9,1.8f)
 
     auto bloom_tex = std::make_shared<Texture>(
                             std::vector<hash_t>{H_("bloomTex")},
-                            GLB.SCR_W/2,
-                            GLB.SCR_H/2,
+                            GLB.WIN_W/2,
+                            GLB.WIN_H/2,
                             GL_TEXTURE_2D,
                             GL_LINEAR,
                             GL_RGB,
@@ -82,8 +82,8 @@ void BloomRenderer::render()
 
     // HORIZONTAL BLUR PASS
     blur_pass_shader_.send_uniform(H_("horizontal"), true);
-    blur_pass_shader_.send_uniform(H_("v2_texelSize"), vec2(2.0f/GLB.SCR_W,
-                                                            2.0f/GLB.SCR_H));
+    blur_pass_shader_.send_uniform(H_("v2_texelSize"), vec2(2.0f/GLB.WIN_W,
+                                                            2.0f/GLB.WIN_H));
     // send Gaussian kernel
     blur_pass_shader_.send_uniform<int>(H_("kernel.i_half_size"), kernel_.get_half_size());
     blur_pass_shader_.send_uniform_array(H_("kernel.f_weight[0]"), kernel_.data(), kernel_.get_half_size());
