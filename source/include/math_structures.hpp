@@ -60,7 +60,7 @@ public:
         for(unsigned ii=0; ii<N; ++ii)
             value_[ii] = T(0);
     }
-    vec(std::initializer_list<T> coeffs)
+    explicit vec(std::initializer_list<T> coeffs)
     {
         uint32_t index = 0;
         for(auto it=coeffs.begin(); it!=coeffs.end() && index<N; ++it)
@@ -198,13 +198,13 @@ public:
     }
 
     // Assignment
-    inline const vec& operator=(const vec& right)
+    inline vec& operator=(const vec& right)
     {
         std::copy(right.value_,right.value_+N,value_);
         return *this;
     }
 
-    inline const vec& operator=(vec&& right)
+    inline vec& operator=(vec&& right)
     {
         std::swap(right.value_,value_);
         return *this;
@@ -585,6 +585,28 @@ public:
     }
 
     /**
+     * @brief Move constructor.
+     * @details Construct a matrix from an r-value matrix
+     *
+     * @param right Other matrix.
+     */
+    mat(mat&& right)
+    {
+        std::swap(value_, right.value_);
+    }
+
+    /**
+     * @brief Copy constructor.
+     * @details Copy a matrix
+     *
+     * @param right Other matrix.
+     */
+    mat(const mat& right)
+    {
+        std::copy(right.value_,right.value_+Size,value_);
+    }
+
+    /**
      * @brief Parentheses accessor.
      * @details Get a reference to an element by specifying the row and column
      * indices.
@@ -658,6 +680,17 @@ public:
     inline mat& operator=(const mat& right)
     {
         std::copy(right.value_, right.value_+Size, value_);
+        return *this;
+    }
+
+    /**
+     * @brief Move right matrix to self.
+     *
+     * @param right matrix on the right of equal sign.
+     */
+    inline mat& operator=(mat&& right)
+    {
+        std::swap(value_, right.value_);
         return *this;
     }
 

@@ -130,6 +130,10 @@ public:
 #ifndef __DISABLE_EDITOR__
     void generate_widget();
 #endif
+
+private:
+    // Find which models are in view frustum
+    void visibility_pass();
 };
 
 inline void Scene::add_chunk(const math::i32vec2& coords)

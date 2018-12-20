@@ -25,6 +25,7 @@ set(SRC_CORE_TEST
     ${CMAKE_SOURCE_DIR}/source/src/informer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/listener.cpp
     ${CMAKE_SOURCE_DIR}/source/src/logger.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/stack_trace.cpp
     ${CMAKE_SOURCE_DIR}/source/src/colors.cpp
     ${CMAKE_SOURCE_DIR}/source/src/wentity.cpp
     ${CMAKE_SOURCE_DIR}/source/src/wcomponent.cpp)

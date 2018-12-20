@@ -453,3 +453,33 @@ TEST_CASE("4x4 matrix initialized to orthographic projection.", "[mat]")
     init_ortho(P, {-aspect/2, aspect/2, -0.5, 0.5, 0.5, 100.0});
     REQUIRE(true); // TRUSTED (for now) (looks alright)
 }
+
+TEST_CASE("Segment transform matrix for [(42,-200,-41.12) (63.9,21,-4)].", "[mat]")
+{
+    vec3 A(42,-200,-41.12);  // start
+    vec3 B(63.9,21,-4); // end
+
+    mat4 trans(segment_transform(A,B));
+    REQUIRE(VectorNear(A, trans*vec3(0,0,0), precision));
+    REQUIRE(VectorNear(B, trans*vec3(1,0,0), precision));
+}
+
+TEST_CASE("Segment transform matrix for [(-54,1000,-77.28) (663.8,541.2,-4)].", "[mat]")
+{
+    vec3 A(-54,1000,-77.28);  // start
+    vec3 B(663.8,541.2,-4); // end
+
+    mat4 trans(segment_transform(A,B));
+    REQUIRE(VectorNear(A, trans*vec3(0,0,0), precision));
+    REQUIRE(VectorNear(B, trans*vec3(1,0,0), precision));
+}
+
+TEST_CASE("Segment transform matrix for vertical segment [(1,-2,1) (1,12,1)].", "[mat]")
+{
+    vec3 A(1,-2,1);  // start
+    vec3 B(1,12,1); // end
+
+    mat4 trans(segment_transform(A,B));
+    REQUIRE(VectorNear(A, trans*vec3(0,0,0), precision));
+    REQUIRE(VectorNear(B, trans*vec3(1,0,0), precision));
+}

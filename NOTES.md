@@ -5304,4 +5304,98 @@ Le curseur est au stade expérimental. En mode windowed, je peux détecter la so
 C'est pour ça que le curseur custom est désactivé par défaut. L'option *root.gui.cursor.custom* de config.xml permet d'activer ce feature.
 
 -> Il me semble avoir compris l'origine du léger décalage (non constant sur l'écran) que subissait le curseur en windowed full screen. Dans ce mode, la fenêtre ne mesure PAS la résolution demandée de 1920x1080 mais moins (1855x1056 chez-moi). Donc *tous* les systèmes qui utilisent GLB.SCR_W et GLB.SCR_H pour initialiser des tailles de buffer ou que sais-je, commettent une erreur. Un peu connement j'ai créé une nouvelle paire de globaux GLB.WIN_W et GLB.WIN_H pour contenir les bonnes tailles de fenêtre au lieu de simplement remplacer GLB.SCR_W et GLB.SCR_H. Mais tous les systèmes utilisent les WIN_x et tout fonctionne. En particulier le décalage curseur réel / curseur custom disparaît. Sauf en mode windowed full screen où on a un offset constant sur tout le putain d'écran... Y a-t-il une taille codée en dur quelque part dans le code ?
+    -> Non, c'est juste que quand j'écris les GLB.WIN_x dans _Context_ juste après avoir ouvert la fenêtre, la taille que je récupère est celle que j'ai demandé, et non la taille réelle, car la fenêtre n'est pas encore ouverte et GLFW ne connaît pas encore la taille qui sera allouée par l'OS (noter que le windowed full screen est OS spécifique). J'ai donc choisi d'attendre 100ms avant de query la taille. Ce n'est __PAS SAFE__.
+        -> Il faut trouver un moyen de faire ça avec un callback.
+        -> Noter que GLB.WIN_x sont obtenus avec glfwGetFramebufferSize() et non glfwGetWindowSize() (il se trouve que chez-moi, les 2 coincident). Ces noms sont mauvais.
 
+## Ray Casting
+Je dois mettre au point le mécanisme de sélection au curseur de l'éditeur. Il me faut pouvoir lancer un rayon (struct _Ray_) depuis des coordonnées écran (grâce à la classe _RayCaster_), tester la collision de ce rayon avec tous les AABB/OBB qui sont dans le frustum de la caméra, et retourner dans un premier temps une liste, dans un second temps un unique handle (à définir) vers un objet de la scène.
+    [x] Il faut pouvoir mettre en cache les tests de collision Frustum/AABB/OBB produits par le _GeometryRenderer_. Peut être même qu'une passe externe préalable lors de la phase update est de mise.
+        -> Scene::visibility_pass() fait ça et est appelée dans Scene::update(). Un flag visible_ de _Model_ est alors modifié selon qu'il est ou non dans le view frustum. _GeometryRenderer_ surveille pmodel->is_visible() afin de cull.
+    [ ] Dans un premier temps, il convient d'afficher le rayon qui vient d'être tiré. _DebugRenderer_ doit pouvoir afficher ce type de primitives avec un TTL.
+    -> Un objet peut être un _Model_ statique, ou plus tard une _Entity_ et le test peut échouer. Je pense automatiquement à un type retour std::optional<std::variant<Model,Entity>> mais c'est un peu lourdingue syntaxiquement, faut bien l'avouer ! Un std::variant<Model,Entity,int> en utilisant int comme tag type pour signifier l'échec ?
+        -> Mieux, y a un type std::monostate fait pour pouvoir default initialize un std::variant. Donc std::variant<std::monostate,Model,Entity>. Ex :
+
+```cpp
+    // Without the monostate type this declaration will fail.
+    // This is because S is not default-constructible.
+    std::variant<std::monostate, S> var;
+    // var.index() is now 0 - the first element
+    // std::get<S> will throw! We need to assign a value
+    var = 12;
+    std::cout << std::get<S>(var).i << '\n';
+```
+>> 12
+
+On pourrait imaginer le dispatching suivant pour les valeurs de retour :
+
+```cpp
+struct Visitor
+{
+   void operator()(Model){}
+   void operator()(Entity){}
+   void operator()(std::monostate){}
+};
+
+std::variant<std::monostate, Model, Entity> ret = get_ray_cast_result();
+std::visit(Visitor{}, ret); // invokes the int overload
+std::visit(Visitor{}, ret); // ... and the double overload
+std::visit(Visitor{}, ret); // ... and finally the std::monostate overload
+```
+
+#[20-12-18]
+## Debug display requests: segments
+Je veux pouvoir afficher des segments depuis le _DebugRenderer_. Il s'agira de tracer in-game les rayons produits par le ray casting.
+
+Le _DebugRenderer_ stocke maintenant une liste de _DebugDrawRequest_ qui correspondent à des requêtes d'affichage de primitives mises en queue par d'autres systèmes. Des fonctions request_draw_x() permettront d'empiler un ordre d'affichage en spécifiant des informations géométriques, une couleur et une durée de vie de la primitive (TTL).
+En particulier :
+```cpp
+void request_draw_segment(const math::vec3& world_start,
+                          const math::vec3& world_end,
+                          int ttl = 60,
+                          const math::vec3& color = math::vec3(0,1,0));
+```
+Permettra de demander l'affichage d'une ligne spécifiée par les coordonnées world de ses extrémités.
+Afin de pouvoir ne stocker qu'un seul segment dans le VBO, il m'a fallu calculer une matrice affine qui transforme un segment unitaire (selon x) en un segment arbitraire spécifié par ses extrémités. Tout le calcul est spécifié dans le cahier et la fonction qui produit de telles matrices a été ajoutée dans math3d.h (unit testé dans catch_mat.cpp) :
+
+```cpp
+mat4 segment_transform(const vec3& world_start, const vec3& world_end)
+{
+    vec3 AB(world_end-world_start);
+    float s = AB.norm(); // scale is just the length of input segment
+
+    // If line is vertical, general transformation is singular (OH==0)
+    // Rotation is around z-axis only and with angle pi/2
+    if(fabs(AB.x())<0.0001f && fabs(AB.z())<0.0001f)
+    {
+        return mat4(0, -s, 0, world_start.x(),
+                    s, 0,  0, world_start.y(),
+                    0, 0,  s, world_start.z(),
+                    0, 0,  0, 1);
+    }
+    // General transformation
+    else
+    {
+        vec3 OH(AB.x(),0,AB.z()); // project AB on xz plane
+        vec3 w(OH.normalized());  // unit vector along AB
+        float k = AB.y()/s;       // = sin(theta) (theta angle around z-axis)
+        float d = sqrt(1.0f-k*k); // = cos(theta)
+        float l = w.x();          // = cos(phi) (phi angle around y-axis)
+        float e = ((w.z()>=0.0f)?1.0f:-1.0f) * sqrt(1.0f-l*l); // = sin(phi)
+
+        // Return pre-combined product of T*R*S matrices
+        return mat4(s*l*d, -s*l*k, -s*e, world_start.x(),
+                    s*k,   s*d,    0,    world_start.y(),
+                    s*e*d, -s*e*k, s*l,  world_start.z(),
+                    0,     0,      0,    1);
+    }
+}
+```
+Pour parvenir à ce résultat, j'ai décomposé la matrice affine recherchée en un produit d'une matrice de translation par une de rotation et par une d'échelle. En gros, on imagine qu'on essaye d'abord de rescale le segment unitaire pour lui donner la longueur du segment arbitraire, puis on le tourne selon z, puis selon y, puis on le translate. Les parties scaling et translation sont triviales. Il y a 2 remarques importantes concernant les rotations :
+* Dans l'évaluation de Ry, l'angle phi est connaissable au signe près, car il est obtenu par un arc-cosinus d'un produit scalaire de 2 vecteurs unitaires w et x. Considérons le produit vectoriel de w et x. Le produit scalaire du vecteur obtenu avec l'axe de rotation y donne le signe que l'on cherche. Quelques simplifications entrainent que ce signe est celui de w.z.
+* Plutôt que de calculer les angles via les fonctions inverse trigo et appliquer les fonctions directes sur ceux-ci, on peut se servir d'un peu de trigo pour simplifier les matrices :
+    sin(acos(x)) = cos(asin(x)) = sqrt(1-x^2)
+De fait, les angles n'ont jamais besoin d'être calculés explicitement (+rapide -d'erreur d'arrondi).
+
+La transformation générale telle que décrite ici est singulière pour tous les segments verticaux. Donc je teste simplement si un vecteur est vectical à un epsilon près, et je retourne une transformation dégénérée plus simple si tel est le cas.
+J'ai pré-calculé à la main les produits matriciels et ma fonction retourne directement la combinaison totale. Je la pense assez optimisée et robuste.

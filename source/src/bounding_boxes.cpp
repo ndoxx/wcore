@@ -23,10 +23,10 @@ static const std::vector<vec3> CUBE_VERTICES
 
 static const std::vector<vec3> CENTERED_CUBE_VERTICES
 {
-    vec3( 0.5f, -0.5f, 0.5f),    // 0
-    vec3( 0.5f, -0.5f, -0.5f),   // 1
-    vec3( -0.5f, -0.5f, -0.5f),  // 2
-    vec3( -0.5f, -0.5f, 0.5f),   // 3
+    vec3( 0.5f, -0.5f, 0.5f),   // 0
+    vec3( 0.5f, -0.5f, -0.5f),  // 1
+    vec3( -0.5f, -0.5f, -0.5f), // 2
+    vec3( -0.5f, -0.5f, 0.5f),  // 3
     vec3( 0.5f,  0.5f, 0.5f),   // 4
     vec3( 0.5f,  0.5f, -0.5f),  // 5
     vec3( -0.5f, 0.5f, -0.5f),  // 6

@@ -33,7 +33,7 @@
     </render>
     <gui>
         <cursor>
-            <bool name="custom" value="false"/>
+            <bool name="custom" value="true"/>
         </cursor>
     </gui>
     <input>

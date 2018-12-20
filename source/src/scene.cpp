@@ -289,6 +289,30 @@ void Scene::onKeyboardEvent(const WData& data)
     }
 }
 
+void Scene::visibility_pass()
+{
+    traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_id)
+    {
+        // Non cullable models are passed
+        if(!pmodel->can_frustum_cull())
+        {
+            pmodel->set_visibility(true);
+            return;
+        }
+/*
+        // Get model AABB
+        AABB& aabb = pmodel->get_AABB();
+        // Frustum culling
+        pmodel->set_visibility(camera_->frustum_collides(aabb));
+*/
+        // Get model OBB
+        OBB& obb = pmodel->get_OBB();
+        // Frustum culling
+        pmodel->set_visibility(camera_->frustum_collides(obb));
+    });
+}
+
+
 void Scene::update(const GameClock& clock)
 {
     float scaled_dt = clock.get_scaled_frame_duration();
@@ -315,6 +339,9 @@ void Scene::update(const GameClock& clock)
         chunk->update(scaled_dt);
         chunk->sort_models(camera_);
     }
+
+    // Perform and cache OBB / frustum tests
+    visibility_pass();
 
     // Display debug info
     if(DINFO.active())

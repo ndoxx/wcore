@@ -26,5 +26,6 @@
         <KB name="k_frame_speed_up"          key="KP_ADD"       cooldown="10" repeat="true"     description="Speed up game clock."/>
         <KB name="k_frame_slow_down"         key="KP_SUBTRACT"  cooldown="10" repeat="true"     description="Slow down game clock."/>
         <KB name="k_next_frame"              key="KP_DECIMAL"   cooldown="10" repeat="true"     description="Triggers next frame if game clock is stopped."/>
+        <KB name="k_test_key"                key="T"            cooldown="10"                   description="Triggers RenderPipeline test function."/>
     </Category>
 </KeyBindings>

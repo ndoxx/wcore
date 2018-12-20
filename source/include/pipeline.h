@@ -56,6 +56,17 @@ public:
 #ifndef __DISABLE_EDITOR__
     void generate_widget();
 #endif
+#ifdef __DEBUG__
+    void debug_draw_segment(const math::vec3& world_start,
+                            const math::vec3& world_end,
+                            int ttl = 60,
+                            const math::vec3& color = math::vec3(0,1,0));
+#endif
+
+private:
+#ifdef __DEBUG__
+    void perform_test(); // Anything in here is bound to "k_test_key"
+#endif
 };
 
 }

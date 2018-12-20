@@ -1,6 +1,8 @@
 #ifndef DEBUG_RENDERER_H
 #define DEBUG_RENDERER_H
 
+#include <list>
+
 #include "renderer.hpp"
 #include "shader.h"
 
@@ -9,11 +11,32 @@ namespace wcore
 
 struct Vertex3P;
 class LBuffer;
+
+struct DebugDrawRequest
+{
+    enum: uint8_t
+    {
+        SEGMENT,
+        TRIANGLE,
+        QUAD,
+        CUBE,
+        SPHERE,
+        N_TYPES
+    };
+
+    int        ttl;    // Time to live in number of frames. 0 = lives forever
+    uint8_t    type;   // Type of object to render
+    math::vec4 color;  // RGB color of lines
+    math::mat4 model_matrix;
+};
+
 class DebugRenderer : public Renderer<Vertex3P>
 {
 private:
     Shader line_shader_;
     bool display_line_models_;
+
+    std::list<DebugDrawRequest> draw_requests_;
 
 public:
     int light_display_mode_; // 0=disabled, 1=mini-spheres, 2=full-scale spheres
@@ -33,6 +56,11 @@ public:
 
     inline void next_light_display_mode() { light_display_mode_ = (++light_display_mode_)%3; }
     inline int get_light_display_mode() const { return light_display_mode_; }
+
+    void request_draw_segment(const math::vec3& world_start,
+                              const math::vec3& world_end,
+                              int ttl = 60,
+                              const math::vec3& color = math::vec3(0,1,0));
 };
 
 }

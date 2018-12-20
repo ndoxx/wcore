@@ -139,6 +139,10 @@ T lerp(const T& t1, const T& t2, float param)
     return t1 + param*(t2-t1);
 }
 
+// Returns a matrix that transforms unitary segment along x to any segment starting at
+// world position world_start and ending at world_end.
+mat4 segment_transform(const vec3& world_start, const vec3& world_end);
+
 } // namespace math
 } // namespace wcore
 

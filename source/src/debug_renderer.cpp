@@ -30,22 +30,29 @@ enable_depth_test_(true)
 
 static size_t CUBE_OFFSET = 0;
 static size_t SPHERE_OFFSET = 0;
+static size_t SEG_OFFSET = 0;
 static size_t CUBE_NE = 0;
 static size_t SPHERE_NE = 0;
+static size_t SEG_NE = 0;
 
 void DebugRenderer::load_geometry()
 {
     Mesh<Vertex3P>* cube_mesh   = factory::make_cube_3P();
     Mesh<Vertex3P>* sphere_mesh = factory::make_uv_sphere_3P(4, 7, true);
+    Mesh<Vertex3P>* seg_mesh    = factory::make_segment_x_3P();
     buffer_unit_.submit(*cube_mesh);
     buffer_unit_.submit(*sphere_mesh);
+    buffer_unit_.submit(*seg_mesh);
     buffer_unit_.upload();
     CUBE_OFFSET   = cube_mesh->get_buffer_offset();
     SPHERE_OFFSET = sphere_mesh->get_buffer_offset();
+    SEG_OFFSET = seg_mesh->get_buffer_offset();
     CUBE_NE   = cube_mesh->get_n_elements();
     SPHERE_NE = sphere_mesh->get_n_elements();
+    SEG_NE = seg_mesh->get_n_elements();
     delete cube_mesh;
     delete sphere_mesh;
+    delete seg_mesh;
 }
 
 #include "logger.h"
@@ -115,6 +122,26 @@ void DebugRenderer::render()
             return plight->is_in_frustum(*SCENE.get_camera());
         });
     }
+
+    // DRAW REQUESTS
+    for(auto&& request: draw_requests_)
+    {
+        if(request.type == DebugDrawRequest::SEGMENT)
+        {
+            if(--request.ttl < 0)
+            {
+                // Mark request for deletion
+                continue;
+            }
+            // Get model matrix and compute products
+            mat4 MVP(PV*request.model_matrix);
+
+            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(request.color));
+            buffer_unit_.draw(SEG_NE, SEG_OFFSET);
+        }
+    }
+
     vertex_array_.unbind();
     if(display_line_models_)
     {
@@ -131,6 +158,20 @@ void DebugRenderer::render()
 
     if(enable_depth_test_)
         GFX::disable_depth_testing();
+}
+
+void DebugRenderer::request_draw_segment(const math::vec3& world_start,
+                                         const math::vec3& world_end,
+                                         int ttl,
+                                         const math::vec3& color)
+{
+    DebugDrawRequest request;
+    request.type = DebugDrawRequest::SEGMENT;
+    request.ttl = ttl;
+    request.color = color;
+    request.color[3] = 1.0f;
+    request.model_matrix = math::segment_transform(world_start, world_end);
+    draw_requests_.push_back(request);
 }
 
 }

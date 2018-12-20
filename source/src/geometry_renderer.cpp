@@ -79,20 +79,7 @@ void GeometryRenderer::render()
     },
     [&](std::shared_ptr<Model> pmodel) // evaluator predicate
     {
-        // Non cullable models are passed
-        if(!pmodel->can_frustum_cull())
-            return true;
-/*
-        // Get model AABB
-        AABB& aabb = pmodel->get_AABB();
-        // Frustum culling
-        return SCENE.get_camera()->frustum_collides(aabb);
-*/
-        // Get model OBB
-        OBB& obb = pmodel->get_OBB();
-        // Frustum culling
-        return SCENE.get_camera()->frustum_collides(obb);
-
+        return pmodel->is_visible(); // Visibility is evaluated during update by Scene::visibility_pass()
     },
     wcore::ORDER::FRONT_TO_BACK);
 

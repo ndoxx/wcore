@@ -76,6 +76,12 @@ RenderPipeline::~RenderPipeline()
     delete geometry_renderer_;
 }
 
+void RenderPipeline::perform_test()
+{
+    debug_draw_segment(math::vec3(10,2,10),math::vec3(20,5,5), 60*5, math::vec3(1,0.7,0));
+}
+
+
 void RenderPipeline::set_pp_gamma(const math::vec3& value)     { post_processing_renderer_->set_gamma(value); }
 void RenderPipeline::set_pp_fog_color(const math::vec3& value) { post_processing_renderer_->set_fog_color(value); }
 void RenderPipeline::set_pp_saturation(float value)            { post_processing_renderer_->set_saturation(value); }
@@ -114,6 +120,9 @@ void RenderPipeline::onKeyboardEvent(const WData& data)
         case H_("k_tg_wireframe"):
     		geometry_renderer_->toggle_wireframe();
     		break;
+        case H_("k_test_key"):
+            perform_test();
+            break;
     }
 }
 
@@ -532,5 +541,15 @@ void RenderPipeline::dbg_show_statistics()
     }
     #endif
 }
+
+#ifdef __DEBUG__
+void RenderPipeline::debug_draw_segment(const math::vec3& world_start,
+                                        const math::vec3& world_end,
+                                        int ttl,
+                                        const math::vec3& color)
+{
+    debug_renderer_->request_draw_segment(world_start, world_end, ttl, color);
+}
+#endif
 
 }

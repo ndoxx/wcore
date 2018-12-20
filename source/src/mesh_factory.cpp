@@ -434,6 +434,19 @@ MeshP* make_icosahedron_3P()
     return pmesh;
 }
 
+MeshP* make_segment_x_3P()
+{
+    MeshP* pmesh = new MeshP;
+
+    pmesh->_emplace_vertex(vec3(0,0,0));
+    pmesh->_emplace_vertex(vec3(1,0,0));
+
+    pmesh->push_line(0, 1);
+
+    return pmesh;
+}
+
+
 static uint32_t get_mid_point(const i32vec2& edge,
                               TriangularMesh* pmesh,
                               std::unordered_map<i32vec2, uint32_t>& lookup)

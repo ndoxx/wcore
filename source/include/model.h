@@ -60,6 +60,7 @@ protected:
     AABB                  aabb_;
     bool                  frustum_cull_;
     bool                  is_dynamic_;
+    bool                  visible_;
     uint32_t              shadow_cull_face_;
 
 public:
@@ -90,6 +91,9 @@ public:
     inline void update_OBB()                                    { obb_.update(); }
     inline void set_OBB_offset(const math::vec3& offset)        { obb_.set_offset(offset); }
     inline void update_bounding_boxes()                         { update_OBB(); update_AABB(); }
+
+    inline void set_visibility(bool value)                      { visible_ = value; }
+    inline bool is_visible() const                              { return visible_; }
 
     inline void set_frustum_cull(bool value)                    { frustum_cull_ = value; }
     inline bool can_frustum_cull() const                        { return frustum_cull_; }

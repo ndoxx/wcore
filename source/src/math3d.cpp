@@ -355,5 +355,37 @@ float det(const mat4& m)
     return m[0]*c0-m[4]*c4+m[8]*c8-m[12]*c12;
 }
 
+mat4 segment_transform(const vec3& world_start, const vec3& world_end)
+{
+    vec3 AB(world_end-world_start);
+    float s = AB.norm(); // scale is just the length of input segment
+
+    // If line is vertical, general transformation is singular (OH==0)
+    // Rotation is around z-axis only and with angle pi/2
+    if(fabs(AB.x())<0.0001f && fabs(AB.z())<0.0001f)
+    {
+        return mat4(0, -s, 0, world_start.x(),
+                    s, 0,  0, world_start.y(),
+                    0, 0,  s, world_start.z(),
+                    0, 0,  0, 1);
+    }
+    // General transformation
+    else
+    {
+        vec3 OH(AB.x(),0,AB.z()); // project AB on xz plane
+        vec3 w(OH.normalized());  // unit vector along AB
+        float k = AB.y()/s;       // = sin(theta) (theta angle around z-axis)
+        float d = sqrt(1.0f-k*k); // = cos(theta)
+        float l = w.x();          // = cos(phi) (phi angle around y-axis)
+        float e = ((w.z()>=0.0f)?1.0f:-1.0f) * sqrt(1.0f-l*l); // = sin(phi)
+
+        // Return pre-combined product of T*R*S matrices
+        return mat4(s*l*d, -s*l*k, -s*e, world_start.x(),
+                    s*k,   s*d,    0,    world_start.y(),
+                    s*e*d, -s*e*k, s*l,  world_start.z(),
+                    0,     0,      0,    1);
+    }
+}
+
 } // namespace math
 } // namespace wcore

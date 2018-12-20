@@ -18,6 +18,7 @@ obb_(*this),
 aabb_(*this),
 frustum_cull_(true),
 is_dynamic_(false),
+visible_(false),
 shadow_cull_face_(0)
 {
     #ifdef __DEBUG__

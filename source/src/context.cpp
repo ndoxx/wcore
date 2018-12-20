@@ -76,11 +76,13 @@ cursor_hidden_(true)
     if(CONFIG.is(H_("root.display.vsync")))
         glfwSwapInterval(1); // Enable vsync
 
-    // Sleep a bit so that the window has enough time to open, and the sizes we get
+    // UNSAFE Sleep a bit so that the window has enough time to open, and the sizes we get
     // actually correspond to the window size
+    // NOTE(ndx) -> Find a way to do this with a callback
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    glfwGetWindowSize(window_, &GLB.WIN_W, &GLB.WIN_H);
+    //glfwGetWindowSize(window_, &GLB.WIN_W, &GLB.WIN_H);
+    glfwGetFramebufferSize(window_, &GLB.WIN_W, &GLB.WIN_H);
 }
 
 Context::~Context()
