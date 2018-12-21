@@ -5392,10 +5392,55 @@ mat4 segment_transform(const vec3& world_start, const vec3& world_end)
 }
 ```
 Pour parvenir à ce résultat, j'ai décomposé la matrice affine recherchée en un produit d'une matrice de translation par une de rotation et par une d'échelle. En gros, on imagine qu'on essaye d'abord de rescale le segment unitaire pour lui donner la longueur du segment arbitraire, puis on le tourne selon z, puis selon y, puis on le translate. Les parties scaling et translation sont triviales. Il y a 2 remarques importantes concernant les rotations :
-* Dans l'évaluation de Ry, l'angle phi est connaissable au signe près, car il est obtenu par un arc-cosinus d'un produit scalaire de 2 vecteurs unitaires w et x. Considérons le produit vectoriel de w et x. Le produit scalaire du vecteur obtenu avec l'axe de rotation y donne le signe que l'on cherche. Quelques simplifications entrainent que ce signe est celui de w.z.
-* Plutôt que de calculer les angles via les fonctions inverse trigo et appliquer les fonctions directes sur ceux-ci, on peut se servir d'un peu de trigo pour simplifier les matrices :
+* Dans l'évaluation de Ry, l'angle phi est connaissable au signe près, car il est obtenu par un arc-cosinus d'un produit scalaire de 2 vecteurs unitaires w et x. Considérons le produit vectoriel de w et x. Le produit scalaire du vecteur obtenu avec l'axe de rotation y donne le signe que l'on cherche (l'opération complète est donc un produit mixte). Quelques simplifications entrainent que ce signe est celui de w.z.
+* Plutôt que de calculer les angles via les fonctions inverse trigo et appliquer les fonctions directes sur ceux-ci, on peut se servir d'une relation bien utile pour simplifier les matrices :
     sin(acos(x)) = cos(asin(x)) = sqrt(1-x^2)
-De fait, les angles n'ont jamais besoin d'être calculés explicitement (+rapide -d'erreur d'arrondi).
+L'expression de l'angle phi implique une fonction signe, et on se sert de la parité de sin et cos pour propager celui-ci (ou non), d'où les expressions de l et e.
+De fait, les angles n'ont jamais besoin d'être calculés explicitement, on a directement les coefficients des matrices Ry et Rz (+rapide -d'erreur d'arrondi).
 
 La transformation générale telle que décrite ici est singulière pour tous les segments verticaux. Donc je teste simplement si un vecteur est vectical à un epsilon près, et je retourne une transformation dégénérée plus simple si tel est le cas.
 J'ai pré-calculé à la main les produits matriciels et ma fonction retourne directement la combinaison totale. Je la pense assez optimisée et robuste.
+
+Du coup, on peut faire :
+```cpp
+void DebugRenderer::request_draw_segment(const math::vec3& world_start,
+                                         const math::vec3& world_end,
+                                         int ttl,
+                                         const math::vec3& color)
+{
+    DebugDrawRequest request;
+    request.type = DebugDrawRequest::SEGMENT;
+    request.ttl = ttl;
+    request.color = color;
+    request.color[3] = 1.0f;
+    request.model_matrix = math::segment_transform(world_start, world_end);
+    draw_requests_.push_back(request);
+}
+```
+Et dans la fonction render() on n'a plus qu'à parcourir la liste de draw requests, éliminer celles qui ont un TTL négatif, et afficher les autres (plutôt que de parcourir la liste une seconde fois avec std::remove_if après la boucle d'affichage) :
+```cpp
+    auto it = draw_requests_.begin();
+    while (it != draw_requests_.end())
+    {
+        // Remove dead requests
+        bool alive = (--(*it).ttl >= 0);
+        if (!alive)
+        {
+            draw_requests_.erase(it++);  // alternatively, it = draw_requests_.erase(it);
+        }
+        // Display the required primitive
+        else
+        {
+            if((*it).type == DebugDrawRequest::SEGMENT)
+            {
+                // Get model matrix and compute products
+                mat4 MVP(PV*(*it).model_matrix);
+
+                line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+                line_shader_.send_uniform(H_("v4_line_color"), vec4((*it).color));
+                buffer_unit_.draw(SEG_NE, SEG_OFFSET);
+            }
+            ++it;
+        }
+    }
+```

@@ -45,6 +45,9 @@ public:
     static const float SPEED_FAST;
 
 
+    static float get_near() { return NEAR; }
+    static float get_far()  { return FAR; }
+
     Camera() = delete;
     Camera(float scr_width, float scr_height);
 

@@ -258,9 +258,10 @@ void InputHandler::handle_mouse(Context& context)
             }
         }
         if((!mouse_out && (xpos != last_x || ypos != last_y)) || last_mouse_locked)
-        {
             post(H_("input.mouse.unlocked"), MouseData(float(xpos/GLB.WIN_W), 1.0f-float(ypos/GLB.WIN_H), buttons));
-        }
+        if(buttons && (buttons!=last_mouse_button_state))
+            post(H_("input.mouse.click"), MouseData(float(xpos/GLB.WIN_W), 1.0f-float(ypos/GLB.WIN_H), buttons));
+
     }
 
     last_mouse_button_state = buttons;

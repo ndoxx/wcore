@@ -13,16 +13,16 @@ TEST_CASE("CSpline float interpolation.", "[cspline]")
     float ans = cspline.interpolate(0.5);
     REQUIRE(FloatNear(ans, 1.5, precision));
 }
-
+/*
 TEST_CASE("CSpline vec3 interpolation.", "[cspline]")
 {
-    CSpline<vec3> cspline({0,       1},
+    CSpline<vec3> cspline({0,1},
                           {{0,1,0}, {1,0.5,0.5}},
                           {vec3(0), vec3(0)});
 
     vec3 ans(cspline.interpolate(0.5));
     REQUIRE(VectorNear(ans, vec3(0.5, 0.75, 0.25), precision));
-}
+}*/
 
 TEST_CASE("CSpline float interpolation multiple samples.", "[cspline]")
 {

@@ -124,21 +124,28 @@ void DebugRenderer::render()
     }
 
     // DRAW REQUESTS
-    for(auto&& request: draw_requests_)
+    auto it = draw_requests_.begin();
+    while (it != draw_requests_.end())
     {
-        if(request.type == DebugDrawRequest::SEGMENT)
+        // Remove dead requests
+        bool alive = (--(*it).ttl >= 0);
+        if (!alive)
         {
-            if(--request.ttl < 0)
+            draw_requests_.erase(it++);  // alternatively, it = items.erase(it);
+        }
+        // Display the required primitive
+        else
+        {
+            if((*it).type == DebugDrawRequest::SEGMENT)
             {
-                // Mark request for deletion
-                continue;
-            }
-            // Get model matrix and compute products
-            mat4 MVP(PV*request.model_matrix);
+                // Get model matrix and compute products
+                mat4 MVP(PV*(*it).model_matrix);
 
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(request.color));
-            buffer_unit_.draw(SEG_NE, SEG_OFFSET);
+                line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+                line_shader_.send_uniform(H_("v4_line_color"), vec4((*it).color));
+                buffer_unit_.draw(SEG_NE, SEG_OFFSET);
+            }
+            ++it;
         }
     }
 

@@ -10,6 +10,7 @@
 #include "input_handler.h"
 #include "pipeline.h"
 #include "daylight.h"
+#include "ray_caster.h"
 #include "globals.h"
 #include "logger.h"
 
@@ -53,6 +54,7 @@ struct Engine::EngineImpl
     scene_loader(nullptr),
     pipeline(nullptr),
     daylight(nullptr),
+    ray_caster(nullptr),
     chunk_manager(nullptr)
     {
 
@@ -61,6 +63,7 @@ struct Engine::EngineImpl
     ~EngineImpl()
     {
         delete chunk_manager;
+        delete ray_caster;
         delete daylight;
         delete pipeline;
         delete scene_loader;
@@ -72,10 +75,11 @@ struct Engine::EngineImpl
 
     void init()
     {
-        game_loop = new GameLoop();
-        scene_loader = new SceneLoader();
-        pipeline = new RenderPipeline();
-        daylight = new DaylightSystem(*pipeline);
+        game_loop     = new GameLoop();
+        scene_loader  = new SceneLoader();
+        pipeline      = new RenderPipeline();
+        daylight      = new DaylightSystem(*pipeline);
+        ray_caster    = new RayCaster(*pipeline);
         chunk_manager = new ChunkManager(*scene_loader);
     }
 
@@ -83,6 +87,7 @@ struct Engine::EngineImpl
     SceneLoader*    scene_loader;
     RenderPipeline* pipeline;
     DaylightSystem* daylight;
+    RayCaster*      ray_caster;
     ChunkManager*   chunk_manager;
 };
 
@@ -126,6 +131,7 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->pipeline->subscribe(H_("input.mouse.unlocked"), input_handler, &RenderPipeline::onMouseEvent);
     eimpl_->pipeline->subscribe(H_("input.keyboard"), input_handler, &RenderPipeline::onKeyboardEvent);
     eimpl_->daylight->subscribe(H_("input.keyboard"), input_handler, &DaylightSystem::onKeyboardEvent);
+    eimpl_->ray_caster->subscribe(H_("input.mouse.click"), input_handler, &RayCaster::onMouseEvent);
     eimpl_->scene_loader->subscribe(H_("input.keyboard"), input_handler, &SceneLoader::onKeyboardEvent);
     eimpl_->chunk_manager->subscribe(H_("input.keyboard"), input_handler, &ChunkManager::onKeyboardEvent);
 
@@ -142,6 +148,7 @@ void Engine::Init(int argc, char const *argv[],
 #endif
 
     eimpl_->game_loop->register_updatable_system(*eimpl_->daylight);
+    eimpl_->game_loop->register_updatable_system(*eimpl_->ray_caster);
     eimpl_->game_loop->register_updatable_system(SCENE);
     eimpl_->game_loop->register_updatable_system(*eimpl_->chunk_manager);
 

@@ -224,34 +224,48 @@ public:
     inline vec& operator+=(const vec& right)
     {
         for(unsigned ii=0; ii<N; ++ii)
-            (*this)[ii] = value_[ii] + right[ii];
+            (*this)[ii] += right[ii];
         return *this;
     }
     inline vec& operator-=(const vec& right)
     {
         for(unsigned ii=0; ii<N; ++ii)
-            (*this)[ii] = value_[ii] - right[ii];
+            (*this)[ii] -= right[ii];
         return *this;
     }
     inline vec& operator*=(const vec& right)
     {
         for(unsigned ii=0; ii<N; ++ii)
-            (*this)[ii] = value_[ii] * right[ii];
-        return *this;
-    }
-    inline vec& operator*=(const T& right)
-    {
-        for(unsigned ii=0; ii<N; ++ii)
-            (*this)[ii] *= right;
+            (*this)[ii] *= right[ii];
         return *this;
     }
     inline vec& operator/=(const vec& right)
     {
         for(unsigned ii=0; ii<N; ++ii)
-            (*this)[ii] = value_[ii] / right[ii];
+            (*this)[ii] /= right[ii];
         return *this;
     }
-    inline vec& operator/=(const T& right)
+
+
+    inline vec& operator+=(T right)
+    {
+        for(unsigned ii=0; ii<N; ++ii)
+            (*this)[ii] += right;
+        return *this;
+    }
+    inline vec& operator-=(T right)
+    {
+        for(unsigned ii=0; ii<N; ++ii)
+            (*this)[ii] -= right;
+        return *this;
+    }
+    inline vec& operator*=(T right)
+    {
+        for(unsigned ii=0; ii<N; ++ii)
+            (*this)[ii] *= right;
+        return *this;
+    }
+    inline vec& operator/=(T right)
     {
         for(unsigned ii=0; ii<N; ++ii)
             (*this)[ii] /= right;

@@ -57,6 +57,8 @@ public:
     inline void next_light_display_mode() { light_display_mode_ = (++light_display_mode_)%3; }
     inline int get_light_display_mode() const { return light_display_mode_; }
 
+    inline void clear_draw_requests() { draw_requests_.clear(); }
+
     void request_draw_segment(const math::vec3& world_start,
                               const math::vec3& world_end,
                               int ttl = 60,

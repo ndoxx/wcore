@@ -263,6 +263,10 @@ void RenderPipeline::generate_widget()
         {
             profile_renderers = !profile_renderers;
         }
+        if(ImGui::Button("Clear draw requests"))
+        {
+            debug_renderer_->clear_draw_requests();
+        }
     }
 
     // POST PROCESSING CONTROL

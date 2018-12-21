@@ -1,89 +1,52 @@
 #include <iostream>
 #include <cmath>
 #include "math3d.h"
+#include "bounding_boxes.h"
+#include "logger.h"
 
 using namespace wcore;
 using namespace math;
 
-inline float sign(float x)
+/*
+int glhUnProjectf(float winx, float winy, float winz, float *modelview, float *projection, int *viewport, float *objectCoordinate)
 {
-    return (x>=0.0f)?1.0f:-1.0f;
-}
+  // Transformation matrices
+  float m[16], A[16];
+  float in[4], out[4];
+  // Calculation for inverting a matrix, compute projection x modelview
+  // and store in A[16]
+  MultiplyMatrices4by4OpenGL_FLOAT(A, projection, modelview);
+  // Now compute the inverse of matrix A
+  if(glhInvertMatrixf2(A, m)==0)
+     return 0;
+  // Transformation of normalized coordinates between -1 and 1
+  in[0]=(winx-(float)viewport[0])/(float)viewport[2]*2.0-1.0;
+  in[1]=(winy-(float)viewport[1])/(float)viewport[3]*2.0-1.0;
+  in[2]=2.0*winz-1.0;
+  in[3]=1.0;
+  // Objects coordinates
+  MultiplyMatrixByVector4by4OpenGL_FLOAT(out, m, in);
+  if(out[3]==0.0)
+     return 0;
+  out[3]=1.0/out[3];
+  objectCoordinate[0]=out[0]*out[3];
+  objectCoordinate[1]=out[1]*out[3];
+  objectCoordinate[2]=out[2]*out[3];
+  return 1;
+}*/
 
 int main()
 {
-    // Segment defined from start and end points;
-    vec3 A(1,-2,1);  // start
-    vec3 B(1,12,1); // end
+    float scr_width = 1024;
+    float scr_height = 768;
+    float aspect = scr_width/scr_height;
+    float NEAR = 0.1f;
+    float FAR = 100.0f;
 
-    vec3 AB(B-A);
-    vec3 OH(AB.x(),0,AB.z()); // singular if OH = 0 (xB-xA=0 ^ zB-zA=0)
-    vec3 v(AB.normalized());
-    vec3 w(OH.normalized());
+    math::Frustum frustum({-aspect*NEAR, aspect*NEAR, -NEAR, NEAR, -NEAR, -FAR});
 
-    std::cout << "A: " << A << std::endl;
-    std::cout << "B: " << B << std::endl;
-    std::cout << "AB: " << AB << std::endl;
-
-    // * Find affine matrix that sends segment [0,1] to [A,B]
-    // Translation
-    mat4 T;
-    T.init_translation(A);
-    std::cout << T << std::endl;
-
-    // Scale
-    float s = AB.norm();
-    mat4 S;
-    S.init_diagonal(vec4(s,s,s,1));
-    std::cout << S << std::endl;
-
-    // Rotation
-    //float theta = asin(AB.y()/s);
-    /*mat4 Rz(cos(theta), -sin(theta), 0, 0,
-            sin(theta), cos(theta),  0, 0,
-            0,          0,           1, 0,
-            0,          0,           0, 1);*/
-
-    /*float phi = sign(w.z()) * acos(w.x()); // w.z is the y component of w cross x
-    mat4 Ry(cos(phi), 0, -sin(phi), 0,
-            0,        1, 0,         0,
-            sin(phi), 0, cos(phi),  0,
-            0,        0, 0,         1);*/
-
-    float k = AB.y()/s;
-    float d = sqrt(1.0f-k*k);
-    float l = w.x();
-    float e = sign(w.z()) * sqrt(1.0f-l*l);
-
-    /*mat4 Rz(d, -k, 0, 0,
-            k, d,  0, 0,
-            0, 0,  1, 0,
-            0, 0,  0, 1);
-
-    mat4 Ry(l, 0, -e, 0,
-            0, 1, 0,  0,
-            e, 0, l,  0,
-            0, 0, 0,  1);
-
-    mat4 R(Ry*Rz);*/
-
-    mat4 R(l*d, -l*k, -e, 0,
-           k,   d,    0,  0,
-           e*d, -e*k, l,  0,
-           0,   0,    0,  1);
-
-    mat4 TRS(s*l*d, -s*l*k, -s*e, A.x(),
-             s*k,   s*d,    0,    A.y(),
-             s*e*d, -s*e*k, s*l,  A.z(),
-             0,     0,      0,    1);
-
-    std::cout << TRS << std::endl;
-    std::cout << TRS*vec3(1,0,0) << std::endl;
-
-    mat4 trans(math::segment_transform(A,B));
-    std::cout << trans*vec3(0,0,0) << std::endl;
-    std::cout << trans*vec3(1,0,0) << std::endl;
-
+    mat4 P;
+    init_frustum(P, frustum);
 
     return 0;
 }
