@@ -4,6 +4,7 @@
 #include "updatable.h"
 #include "listener.h"
 #include "math3d.h"
+#include "ray.h"
 
 namespace wcore
 {
@@ -22,7 +23,8 @@ public:
     virtual void update(const GameClock& clock) override;
 
     void onMouseEvent(const WData& data);
-    void cast_ray_from_screen(const math::vec2& screen_coords);
+    Ray cast_ray_from_screen(const math::vec2& screen_coords);
+    void ray_scene_query(const Ray& ray);
 
 private:
     RenderPipeline& pipeline_;

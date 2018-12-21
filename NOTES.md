@@ -5444,3 +5444,53 @@ Et dans la fonction render() on n'a plus qu'à parcourir la liste de draw reques
         }
     }
 ```
+
+#[21-12-18] Pas de repos pour les braves
+#[Ray casting] Screen -> NDC -> World
+Le ray casting fonctionne (en tout cas la partie projection de rayon, donc l'essentiel). Le système _RayCaster_ est un _Updatable_ et un _Listener_ configuré dans wcore.cpp pour écouter le canal "input.mouse.click" sur lequel émet _InputHandler_ uniquement quand un bouton de la souris est cliqué. Sa fonction update() récupère les matrices de la caméra à chaque frame afin de calculer une matrice de déprojection qui est mise en cache pour toutes les requêtes de lancer de rayon. A chaque évenement souris, sa fonction cast_ray_from_screen() est appelée avec les coordonnées écran, calcule un rayon en coordonnées world et demande à la _RenderPipeline_ de dessiner un segment grâce à la méthode mise au point hier.
+
+Dans le détail, la déprojection se fait ainsi :
+* On prépare la matrice de déprojection en inversant la view-projection matrix à cette frame :
+```cpp
+void RayCaster::update(const GameClock& clock)
+{
+    // Get camera view-projection matrix for this frame and invert it
+    pCamera cam = SCENE.get_camera();
+    const math::mat4& view = cam->get_view_matrix();
+    const math::mat4& projection = cam->get_projection_matrix();
+    eye_pos_world_ = cam->get_position();
+    eye_pos_world_[3] = 1.0f;
+    math::mat4 VP(projection*view);
+    math::inverse(VP, unproj_);
+}
+```
+
+* On commence avec des coordonnées écran $x_s,y_s\in[0,1]$ avec $(0,0)$ le coin inférieur gauche. On convertit en NDC :
+```cpp
+void RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
+{
+    math::vec4 coords(screen_coords);
+    coords *= 2.0f;
+    coords -= 1.0f;
+    coords[2] = -1.0f; // near
+    coords[3] = 1.0f;
+```
+On veut se mettre en z=-1 qui en NDC correspond au plan near (z=1 correspond à far). La composante w est initialisée à 1.
+
+* Ce point en coordonnées NDC est ensuite multiplié par la matrice de déprojection et subit un perspective divide :
+```cpp
+    math::vec4 wcoords(unproj_*coords);
+    wcoords /= wcoords.w();
+```
+
+* On calcule la direction du rayon par soustraction de la position de la caméra et normalisation :
+```cpp
+    math::vec4 direction(wcoords-eye_pos_world_);
+    direction.normalize();
+```
+
+* La donnée de wcoords, direction ainsi qu'une longueur totale forment un rayon, que je me contente d'afficher sous forme de segment pour l'instant :
+```cpp
+    pipeline_.debug_draw_segment(wcoords.xyz(), (wcoords+Camera::get_far()*direction).xyz(), 10*60, math::vec3(0,1,0));
+
+```

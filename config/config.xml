@@ -33,7 +33,7 @@
     </render>
     <gui>
         <cursor>
-            <bool name="custom" value="true"/>
+            <bool name="custom" value="false"/>
         </cursor>
     </gui>
     <input>
@@ -44,19 +44,26 @@
     </input>
     <debug>
         <channel_verbosity>
-            <uint name="texture"  value="0"/>
-            <uint name="material" value="0"/>
-            <uint name="model"    value="0"/>
-            <uint name="shader"   value="0"/>
-            <uint name="text"     value="0"/>
-            <uint name="input"    value="3"/>
-            <uint name="buffer"   value="0"/>
-            <uint name="chunk"    value="0"/>
-            <uint name="parsing"  value="0"/>
-            <uint name="entity"   value="0"/>
-            <uint name="scene"    value="0"/>
-            <uint name="io"       value="0"/>
-            <uint name="profile"  value="0"/>
+            <uint name="texture"   value="0"/>
+            <uint name="material"  value="0"/>
+            <uint name="model"     value="0"/>
+            <uint name="shader"    value="0"/>
+            <uint name="text"      value="0"/>
+            <uint name="input"     value="3"/>
+            <uint name="buffer"    value="0"/>
+            <uint name="chunk"     value="0"/>
+            <uint name="parsing"   value="0"/>
+            <uint name="entity"    value="0"/>
+            <uint name="scene"     value="0"/>
+            <uint name="io"        value="0"/>
+            <uint name="profile"   value="0"/>
+            <uint name="collision" value="3"/>
         </channel_verbosity>
+        <raycast>
+            <geometry>
+                <bool name="show_on_click" value="true"/>
+                <int  name="persistence"   value="600"/>
+            </geometry>
+        </raycast>
     </debug>
 </Config>

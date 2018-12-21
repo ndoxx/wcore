@@ -43,7 +43,7 @@ static std::vector<std::string> LOGGER_CHANNELS
     "texture", "material", "model", "shader",
     "text", "input", "buffer", "chunk",
     "parsing", "entity", "scene", "io",
-    "profile"
+    "profile", "collision"
 };
 
 void Config::init_logger_channels()

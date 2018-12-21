@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "camera.h"
 #include "algorithms.h"
+#include "ray.h"
 
 namespace wcore
 {
@@ -214,5 +215,79 @@ math::vec3 FrustumBox::split_center(uint32_t splitIndex) const
     //vec3 LBii1 = lerp(LBN(),LBF(),splits_[splitIndex+1]);
     return lerp(LBii,RBii1,0.5);
 }
+
+/*
+https://www.siggraph.org//education/materials/HyperGraph/raytrace/rtinter3.htm
+
+The Ray is defined as before in terms of Ro, Rd Then the algorithm is as follows:
+
+set Tnear = - infinity, Tfar = infinity
+
+For each pair of planes P associated with X, Y, and Z do:
+(example using X planes)
+if direction Xd = 0 then the ray is parallel to the X planes, so
+if origin Xo is not between the slabs ( Xo < Xl or Xo > Xh) then return false
+else, if the ray is not parallel to the plane then
+begin
+compute the intersection distance of the planes
+T1 = (Xl - Xo) / Xd
+T2 = (Xh - Xo) / Xd
+If T1 > T2 swap (T1, T2)  since T1 intersection with near plane
+If T1 > Tnear set Tnear =T1  want largest Tnear
+If T2 < Tfar set Tfar="T2"  want smallest Tfar
+If Tnear > Tfar box is missed so return false
+If Tfar < 0 box is behind ray return false end
+
+end of for loop If Box survived all above tests, return true with intersection point Tnear and exit point Tfar.
+*/
+
+static const float epsilon = 0.0001f;
+
+bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
+{
+    float Tnear = -std::numeric_limits<float>::max();
+    float Tfar  = std::numeric_limits<float>::max();
+
+    math::vec3 ray_dir(ray.end_world - ray.start_world);
+    ray_dir.normalize();
+
+    // For each X/Y/Z slab
+    for(uint32_t ii=0; ii<3; ++ii)
+    {
+        float xxl = aabb.extent(2*ii);
+        float xxh = aabb.extent(2*ii+1);
+        float xxo = ray.start_world[ii];
+        float xxd = ray_dir[ii];
+
+        // If ray parallel to planes
+        if(xxd<epsilon)
+        {
+            // If ray origin not between slab, no intersection for this slab
+            if(xxo < xxl || xxo > xxh)
+                return false;
+        }
+        else
+        {
+            // Compute the intersection distance of the planes
+            float T1 = (xxl - xxo) / xxd;
+            float T2 = (xxh - xxo) / xxd;
+
+            if(T1 > T2)
+                std::swap(T1, T2); // Make sure T1 is the intersection with the near plane
+            if(T1 > Tnear)
+                Tnear = T1; // Tnear will converge to the largest T1
+            if(T2 < Tfar)
+                Tfar = T2;  // Tfar will converge to the smallest T2
+        }
+    }
+
+    if(Tfar<Tnear || Tfar<0)
+        return false;
+
+    data.near = Tnear;
+    data.far  = Tfar;
+    return true;
+}
+
 
 }

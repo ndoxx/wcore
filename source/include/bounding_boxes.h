@@ -4,6 +4,7 @@
 #include <vector>
 #include <array>
 #include <memory>
+#include <cassert>
 
 #include "math3d.h"
 #include "transformation.h"
@@ -12,6 +13,7 @@ namespace wcore
 {
 
 class Model;
+struct Ray;
 
 class OBB
 {
@@ -57,6 +59,12 @@ public:
     inline float ymax() const { return extent_[3]; }
     inline float zmin() const { return extent_[4]; }
     inline float zmax() const { return extent_[5]; }
+
+    inline float extent(uint32_t index) const
+    {
+        assert(index<6 && "[AABB] extent() index out of bounds.");
+        return extent_[index];
+    }
 
     inline void set_offset(const math::vec3& offset) { offset_.init_translation(offset); }
     inline const std::array<math::vec3, 8>& get_vertices() const { return vertices_; }
@@ -136,6 +144,14 @@ bool FrustumBox::collides(const BB& bb)
     }
     return true;
 }
+
+struct RayCollisionData
+{
+    float near = 0.0f;
+    float far  = 0.0f;
+};
+
+bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data);
 
 }
 
