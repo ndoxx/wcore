@@ -17,6 +17,7 @@ struct DebugDrawRequest
     enum: uint8_t
     {
         SEGMENT,
+        CROSS3,
         TRIANGLE,
         QUAD,
         CUBE,
@@ -63,6 +64,14 @@ public:
                               const math::vec3& world_end,
                               int ttl = 60,
                               const math::vec3& color = math::vec3(0,1,0));
+    void request_draw_sphere(const math::vec3& world_pos,
+                             float radius,
+                             int ttl = 60,
+                             const math::vec3& color = math::vec3(0,1,0));
+    void request_draw_cross3(const math::vec3& world_pos,
+                             float radius,
+                             int ttl = 60,
+                             const math::vec3& color = math::vec3(0,1,0));
 };
 
 }

@@ -387,5 +387,13 @@ mat4 segment_transform(const vec3& world_start, const vec3& world_end)
     }
 }
 
+mat4 scale_translate(const vec3& world_position, float scale)
+{
+    mat4 T,S;
+    math::init_translation(T, world_position);
+    math::init_scale(S, vec3(scale));
+    return T*S;
+}
+
 } // namespace math
 } // namespace wcore

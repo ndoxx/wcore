@@ -143,6 +143,9 @@ T lerp(const T& t1, const T& t2, float param)
 // world position world_start and ending at world_end.
 mat4 segment_transform(const vec3& world_start, const vec3& world_end);
 
+// Returns a scale-translation matrix
+mat4 scale_translate(const vec3& world_position, float scale);
+
 } // namespace math
 } // namespace wcore
 

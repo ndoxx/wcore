@@ -248,16 +248,13 @@ bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
     float Tnear = -std::numeric_limits<float>::max();
     float Tfar  = std::numeric_limits<float>::max();
 
-    math::vec3 ray_dir(ray.end_world - ray.start_world);
-    ray_dir.normalize();
-
     // For each X/Y/Z slab
     for(uint32_t ii=0; ii<3; ++ii)
     {
         float xxl = aabb.extent(2*ii);
         float xxh = aabb.extent(2*ii+1);
-        float xxo = ray.start_world[ii];
-        float xxd = ray_dir[ii];
+        float xxo = ray.origin_w[ii];
+        float xxd = ray.direction[ii];
 
         // If ray parallel to planes
         if(xxd<epsilon)

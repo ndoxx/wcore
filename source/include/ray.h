@@ -8,18 +8,15 @@ namespace wcore
 
 struct Ray
 {
-    Ray(const math::vec3& start_world,
-        const math::vec3& end_world):
-    start_world(start_world),
-    end_world(end_world){}
+    Ray(const math::vec3& origin,
+        const math::vec3& end):
+    origin_w(origin),
+    end_w(end),
+    direction((end_w-origin_w).normalized()){}
 
-    Ray(math::vec3&& start_world,
-        math::vec3&& end_world):
-    start_world(std::move(start_world)),
-    end_world(std::move(end_world)){}
-
-    math::vec3 start_world;
-    math::vec3 end_world;
+    math::vec3 origin_w;
+    math::vec3 end_w;
+    math::vec3 direction;
 };
 
 } // namespace wcore

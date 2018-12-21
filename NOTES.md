@@ -5472,10 +5472,10 @@ void RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
     math::vec4 coords(screen_coords);
     coords *= 2.0f;
     coords -= 1.0f;
-    coords[2] = -1.0f; // near
+    coords[2] = 1.0f; // near
     coords[3] = 1.0f;
 ```
-On veut se mettre en z=-1 qui en NDC correspond au plan near (z=1 correspond à far). La composante w est initialisée à 1.
+On veut se mettre en z=1 qui en NDC correspond au plan near (z=-1 correspond à far). La composante w est initialisée à 1.
 
 * Ce point en coordonnées NDC est ensuite multiplié par la matrice de déprojection et subit un perspective divide :
 ```cpp
@@ -5494,3 +5494,4 @@ On veut se mettre en z=-1 qui en NDC correspond au plan near (z=1 correspond à 
     pipeline_.debug_draw_segment(wcoords.xyz(), (wcoords+Camera::get_far()*direction).xyz(), 10*60, math::vec3(0,1,0));
 
 ```
+

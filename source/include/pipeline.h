@@ -61,6 +61,14 @@ public:
                             const math::vec3& world_end,
                             int ttl = 60,
                             const math::vec3& color = math::vec3(0,1,0));
+    void debug_draw_sphere(const math::vec3& world_pos,
+                           float radius,
+                           int ttl = 60,
+                           const math::vec3& color = math::vec3(0,1,0));
+    void debug_draw_cross3(const math::vec3& world_pos,
+                           float radius,
+                           int ttl = 60,
+                           const math::vec3& color = math::vec3(0,1,0));
 #endif
 
 private:

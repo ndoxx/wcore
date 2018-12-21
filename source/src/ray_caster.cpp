@@ -62,10 +62,10 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
     math::vec4 coords_near(screen_coords);
     coords_near *= 2.0f;
     coords_near -= 1.0f;
-    coords_near[2] = -1.0f; // screen is the near plane (z=-1)
+    coords_near[2] = 1.0f; // screen is the near plane
     coords_near[3] = 1.0f;
     math::vec4 coords_far(coords_near);
-    coords_near[2] = 1.0f; // far plane (z=1)
+    coords_near[2] = -1.0f; // far plane
 
 #ifdef __DEBUG__
     ss << "NDC: " << coords_near;
@@ -83,28 +83,24 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
     Ray ray(wcoords_near.xyz(), wcoords_far.xyz());
 
 #ifdef __DEBUG__
-    ss << "Near (world): " << wcoords_near;
+    ss << "Origin (world): " << ray.origin_w;
     DLOGI(ss.str(), "collision", Severity::LOW);
     ss.str("");
 
-    ss << "Far (world): " << wcoords_far;
+    ss << "End (world): " << ray.end_w;
     DLOGI(ss.str(), "collision", Severity::LOW);
     ss.str("");
 
-    // Compute direction from camera position to this point
-    math::vec4 direction(wcoords_near-wcoords_far);
-    direction.normalize();
-
-    ss << "Direction: " << direction;
+    ss << "Direction: " << ray.direction;
     DLOGI(ss.str(), "collision", Severity::LOW);
     ss.str("");
 
     if(show_ray)
     {
-        pipeline_.debug_draw_segment(ray.start_world,
-                                     ray.end_world,
+        pipeline_.debug_draw_segment(ray.origin_w,
+                                     ray.end_w,
                                      ray_persistence,
-                                     math::vec3(1,0,0));
+                                     math::vec3(1,0.2,0));
     }
 #endif
 
@@ -122,7 +118,23 @@ void RayCaster::ray_scene_query(const Ray& ray)
         if(ray_collides_AABB(ray, pmdl->get_AABB(), data))
         {
             ++count;
-            std::cout << data.near << " " << data.far << std::endl;
+
+            #ifdef __DEBUG__
+            if(show_ray)
+            {
+                math::vec3 near_intersection(ray.origin_w + (ray.direction*data.near));
+                math::vec3 far_intersection(ray.origin_w + (ray.direction*data.far));
+                pipeline_.debug_draw_cross3(near_intersection,
+                                            0.3f,
+                                            ray_persistence,
+                                            math::vec3(0,0.7f,1));
+                pipeline_.debug_draw_cross3(far_intersection,
+                                            0.3f,
+                                            ray_persistence,
+                                            math::vec3(1,0.7f,0));
+            }
+            #endif
+            //std::cout << data.near << " " << data.far << std::endl;
         }
     });
     std::cout << count << std::endl;

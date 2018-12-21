@@ -554,6 +554,22 @@ void RenderPipeline::debug_draw_segment(const math::vec3& world_start,
 {
     debug_renderer_->request_draw_segment(world_start, world_end, ttl, color);
 }
+void RenderPipeline::debug_draw_sphere(const math::vec3& world_pos,
+                                       float radius,
+                                       int ttl,
+                                       const math::vec3& color)
+{
+    debug_renderer_->request_draw_sphere(world_pos, radius, ttl, color);
+
+}
+void RenderPipeline::debug_draw_cross3(const math::vec3& world_pos,
+                                       float radius,
+                                       int ttl,
+                                       const math::vec3& color)
+{
+    debug_renderer_->request_draw_cross3(world_pos, radius, ttl, color);
+
+}
 #endif
 
 }

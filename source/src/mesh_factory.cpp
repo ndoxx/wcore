@@ -446,6 +446,24 @@ MeshP* make_segment_x_3P()
     return pmesh;
 }
 
+MeshP* make_cross3D_3P()
+{
+    MeshP* pmesh = new MeshP;
+
+    pmesh->_emplace_vertex(vec3(-0.5f,0,0));
+    pmesh->_emplace_vertex(vec3(0.5f,0,0));
+    pmesh->_emplace_vertex(vec3(0,-0.5f,0));
+    pmesh->_emplace_vertex(vec3(0,0.5f,0));
+    pmesh->_emplace_vertex(vec3(0,0,-0.5f));
+    pmesh->_emplace_vertex(vec3(0,0,0.5f));
+
+    pmesh->push_line(0, 1);
+    pmesh->push_line(2, 3);
+    pmesh->push_line(4, 5);
+
+    return pmesh;
+}
+
 
 static uint32_t get_mid_point(const i32vec2& edge,
                               TriangularMesh* pmesh,

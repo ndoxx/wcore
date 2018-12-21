@@ -62,7 +62,7 @@
         <raycast>
             <geometry>
                 <bool name="show_on_click" value="true"/>
-                <int  name="persistence"   value="600"/>
+                <int  name="persistence"   value="5000"/>
             </geometry>
         </raycast>
     </debug>

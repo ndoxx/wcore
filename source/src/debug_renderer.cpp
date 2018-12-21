@@ -31,28 +31,35 @@ enable_depth_test_(true)
 static size_t CUBE_OFFSET = 0;
 static size_t SPHERE_OFFSET = 0;
 static size_t SEG_OFFSET = 0;
+static size_t CROSS3_OFFSET = 0;
 static size_t CUBE_NE = 0;
 static size_t SPHERE_NE = 0;
 static size_t SEG_NE = 0;
+static size_t CROSS3_NE = 0;
 
 void DebugRenderer::load_geometry()
 {
     Mesh<Vertex3P>* cube_mesh   = factory::make_cube_3P();
     Mesh<Vertex3P>* sphere_mesh = factory::make_uv_sphere_3P(4, 7, true);
     Mesh<Vertex3P>* seg_mesh    = factory::make_segment_x_3P();
+    Mesh<Vertex3P>* cross3_mesh = factory::make_cross3D_3P();
     buffer_unit_.submit(*cube_mesh);
     buffer_unit_.submit(*sphere_mesh);
     buffer_unit_.submit(*seg_mesh);
+    buffer_unit_.submit(*cross3_mesh);
     buffer_unit_.upload();
     CUBE_OFFSET   = cube_mesh->get_buffer_offset();
     SPHERE_OFFSET = sphere_mesh->get_buffer_offset();
     SEG_OFFSET = seg_mesh->get_buffer_offset();
+    CROSS3_OFFSET = cross3_mesh->get_buffer_offset();
     CUBE_NE   = cube_mesh->get_n_elements();
     SPHERE_NE = sphere_mesh->get_n_elements();
     SEG_NE = seg_mesh->get_n_elements();
+    CROSS3_NE = cross3_mesh->get_n_elements();
     delete cube_mesh;
     delete sphere_mesh;
     delete seg_mesh;
+    delete cross3_mesh;
 }
 
 #include "logger.h"
@@ -136,14 +143,25 @@ void DebugRenderer::render()
         // Display the required primitive
         else
         {
+            // Get model matrix and compute products
+            mat4 MVP(PV*(*it).model_matrix);
+
+            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4((*it).color));
+
             if((*it).type == DebugDrawRequest::SEGMENT)
             {
-                // Get model matrix and compute products
-                mat4 MVP(PV*(*it).model_matrix);
-
-                line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-                line_shader_.send_uniform(H_("v4_line_color"), vec4((*it).color));
                 buffer_unit_.draw(SEG_NE, SEG_OFFSET);
+            }
+            else if((*it).type == DebugDrawRequest::SPHERE)
+            {
+                buffer_unit_.draw(SPHERE_NE, SPHERE_OFFSET);
+            }
+            else if((*it).type == DebugDrawRequest::CROSS3)
+            {
+                glLineWidth(2.5f);
+                buffer_unit_.draw(CROSS3_NE, CROSS3_OFFSET);
+                glLineWidth(1.0f);
             }
             ++it;
         }
@@ -178,6 +196,34 @@ void DebugRenderer::request_draw_segment(const math::vec3& world_start,
     request.color = color;
     request.color[3] = 1.0f;
     request.model_matrix = math::segment_transform(world_start, world_end);
+    draw_requests_.push_back(request);
+}
+
+void DebugRenderer::request_draw_sphere(const math::vec3& world_pos,
+                                        float radius,
+                                        int ttl,
+                                        const math::vec3& color)
+{
+    DebugDrawRequest request;
+    request.type = DebugDrawRequest::SPHERE;
+    request.ttl = ttl;
+    request.color = color;
+    request.color[3] = 1.0f;
+    request.model_matrix = math::scale_translate(world_pos, radius);;
+    draw_requests_.push_back(request);
+}
+
+void DebugRenderer::request_draw_cross3(const math::vec3& world_pos,
+                                        float radius,
+                                        int ttl,
+                                        const math::vec3& color)
+{
+    DebugDrawRequest request;
+    request.type = DebugDrawRequest::CROSS3;
+    request.ttl = ttl;
+    request.color = color;
+    request.color[3] = 1.0f;
+    request.model_matrix = math::scale_translate(world_pos, radius);;
     draw_requests_.push_back(request);
 }
 
