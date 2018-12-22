@@ -94,14 +94,14 @@ void Chunk::sort_models(pCamera camera)
 
     // Sort order list according to models distance
     std::sort(models_order_.begin(), models_order_.end(),
-    [&](const uint32_t& a, const uint32_t& b)
+    [&](uint32_t a, uint32_t b)
     {
         float dist_a = norm2(models_[a]->get_position()-cam_pos);
         float dist_b = norm2(models_[b]->get_position()-cam_pos);
         return (dist_a < dist_b); // sort front to back
     });
     std::sort(blend_models_order_.begin(), blend_models_order_.end(),
-    [&](const uint32_t& a, const uint32_t& b)
+    [&](uint32_t a, uint32_t b)
     {
         float dist_a = norm2(models_blend_[a]->get_position()-cam_pos);
         float dist_b = norm2(models_blend_[b]->get_position()-cam_pos);
@@ -199,9 +199,10 @@ void Chunk::traverse_models(ModelVisitor func,
 
 bool Chunk::visit_model_first(ModelVisitor func, ModelEvaluator ifFunc) const
 {
-    // Static models
-    for(pModel pmodel: models_)
+    // Sorted static models
+    for(uint32_t ii=0; ii<models_order_.size(); ++ii)
     {
+        pModel pmodel = models_[models_order_[ii]];
         if(ifFunc(pmodel))
         {
             func(pmodel, index_);
