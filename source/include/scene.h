@@ -36,6 +36,10 @@ private:
     math::i32vec2 current_chunk_coords_;    // Coordinates of the chunk the camera is in
     std::vector<uint32_t> chunks_order_;    // Permutation vector for chunk ordering
 
+#ifndef __DISABLE_EDITOR__
+    std::weak_ptr<Model> editor_selection_;
+#endif
+
     static uint32_t SHADOW_WIDTH;           // Width of shadow map
     static uint32_t SHADOW_HEIGHT;          // Height of shadow map
 
@@ -129,6 +133,8 @@ public:
 
 #ifndef __DISABLE_EDITOR__
     void generate_widget();
+    inline void set_editor_selection(pModel pmdl)               { editor_selection_ = pmdl; }
+    inline std::weak_ptr<Model> get_editor_selection() const    { return editor_selection_; }
 #endif
 
 private:

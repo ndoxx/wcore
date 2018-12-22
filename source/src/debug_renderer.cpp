@@ -110,6 +110,19 @@ void DebugRenderer::render()
     wcore::ORDER::IRRELEVANT,
     wcore::MODEL_CATEGORY::OPAQUE);
 
+#ifndef __DISABLE_EDITOR__
+    // Show editor selection
+    if(auto&& psel = SCENE.get_editor_selection().lock())
+    {
+        OBB& obb = psel->get_OBB();
+        mat4 M = obb.get_model_matrix();
+        line_shader_.send_uniform(H_("v4_line_color"), vec4(1,0.8,0,0));
+        mat4 MVP = PV*M;
+        line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+        buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+    }
+#endif
+
     if(light_display_mode_ > 0)
     {
         SCENE.traverse_lights([&](std::shared_ptr<Light> plight, uint32_t chunk_index)

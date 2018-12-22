@@ -136,12 +136,15 @@ void RayCaster::ray_scene_query(const Ray& ray)
                                             0.3f,
                                             ray_persistence,
                                             math::vec3(1,0.7f,0));
-                pmdl->debug_display_opts_.enable(DebugDisplayOptions::AABB);
+                //pmdl->debug_display_opts_.enable(DebugDisplayOptions::AABB);
+                SCENE.set_editor_selection(pmdl);
             }
             #endif
             //std::cout << data.near << " " << data.far << std::endl;
         }
-    });
+    },
+    wcore::DEFAULT_MODEL_EVALUATOR,
+    wcore::ORDER::BACK_TO_FRONT);
     //std::cout << count << std::endl;
 }
 

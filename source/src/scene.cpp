@@ -424,6 +424,7 @@ void Scene::generate_widget()
 
     ImGui::End();
 }
+
 #endif
 
 }
