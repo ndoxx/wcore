@@ -114,6 +114,7 @@ void Chunk::sort_models(pCamera camera)
 #endif
 }
 
+// [TODO] REWRITE THIS MONSTROSITY
 void Chunk::traverse_models(ModelVisitor func,
                             ModelEvaluator ifFunc,
                             wcore::ORDER order,
@@ -123,7 +124,7 @@ void Chunk::traverse_models(ModelVisitor func,
         profile_clock_.restart();
 #endif
 
-    if(model_cat == wcore::MODEL_CATEGORY::OPAQUE)
+    if(model_cat == wcore::MODEL_CATEGORY::OPAQUE || model_cat == wcore::MODEL_CATEGORY::IRRELEVANT)
     {
         if(order == wcore::ORDER::IRRELEVANT)
         {
@@ -163,7 +164,7 @@ void Chunk::traverse_models(ModelVisitor func,
                 func(terrain_, index_);
         }
     }
-    else if(model_cat == wcore::MODEL_CATEGORY::TRANSPARENT)
+    else if(model_cat == wcore::MODEL_CATEGORY::TRANSPARENT || model_cat == wcore::MODEL_CATEGORY::IRRELEVANT)
     {
         if(order == wcore::ORDER::IRRELEVANT)
         {
@@ -179,9 +180,14 @@ void Chunk::traverse_models(ModelVisitor func,
                     func(pmodel, index_);
             }
         }
-        else
+        else if(order == wcore::ORDER::FRONT_TO_BACK)
         {
-            DLOGW("[Chunk] Traverse order not supported for transparent models.", "chunk", Severity::WARN);
+            for(auto rit=blend_models_order_.rbegin(); rit != blend_models_order_.rend(); ++rit)
+            {
+                pModel pmodel = models_[*rit];
+                if(ifFunc(pmodel))
+                    func(pmodel, index_);
+            }
         }
     }
 
@@ -190,6 +196,29 @@ void Chunk::traverse_models(ModelVisitor func,
         models_traversal_fifo_.push(std::chrono::duration_cast<std::chrono::duration<float>>(period).count());
 #endif
 }
+
+bool Chunk::visit_model_first(ModelVisitor func, ModelEvaluator ifFunc) const
+{
+    // Static models
+    for(pModel pmodel: models_)
+    {
+        if(ifFunc(pmodel))
+        {
+            func(pmodel, index_);
+            return true;
+        }
+    }
+
+    // Terrain
+    if(ifFunc(terrain_))
+    {
+        func(terrain_, index_);
+        return true;
+    }
+
+    return false;
+}
+
 
 void Chunk::traverse_line_models(std::function<void(pLineModel)> func)
 {

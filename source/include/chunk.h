@@ -109,6 +109,8 @@ public:
                          ORDER order=ORDER::IRRELEVANT,
                          MODEL_CATEGORY model_cat=MODEL_CATEGORY::OPAQUE) const;
 
+    bool visit_model_first(ModelVisitor func, ModelEvaluator ifFunc) const;
+
     void traverse_line_models(std::function<void(pLineModel)> func);
 
     void traverse_lights(LightVisitor func,

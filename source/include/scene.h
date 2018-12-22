@@ -120,6 +120,8 @@ public:
                          ModelEvaluator ifFunc=wcore::DEFAULT_MODEL_EVALUATOR,
                          wcore::ORDER order=wcore::ORDER::IRRELEVANT,
                          wcore::MODEL_CATEGORY model_cat=wcore::MODEL_CATEGORY::OPAQUE) const;
+    // Visit the first model that evaluates to true in evaluator predicate (front to back search)
+    void visit_model_first(ModelVisitor func, ModelEvaluator ifFunc) const;
     // Visit lights in loaded chunks
     void traverse_lights(LightVisitor func,
                          LightEvaluator ifFunc=wcore::DEFAULT_LIGHT_EVALUATOR);

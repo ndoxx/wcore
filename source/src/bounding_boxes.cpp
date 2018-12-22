@@ -216,31 +216,6 @@ math::vec3 FrustumBox::split_center(uint32_t splitIndex) const
     return lerp(LBii,RBii1,0.5);
 }
 
-/*
-https://www.siggraph.org//education/materials/HyperGraph/raytrace/rtinter3.htm
-
-The Ray is defined as before in terms of Ro, Rd Then the algorithm is as follows:
-
-set Tnear = - infinity, Tfar = infinity
-
-For each pair of planes P associated with X, Y, and Z do:
-(example using X planes)
-if direction Xd = 0 then the ray is parallel to the X planes, so
-if origin Xo is not between the slabs ( Xo < Xl or Xo > Xh) then return false
-else, if the ray is not parallel to the plane then
-begin
-compute the intersection distance of the planes
-T1 = (Xl - Xo) / Xd
-T2 = (Xh - Xo) / Xd
-If T1 > T2 swap (T1, T2)  since T1 intersection with near plane
-If T1 > Tnear set Tnear =T1  want largest Tnear
-If T2 < Tfar set Tfar="T2"  want smallest Tfar
-If Tnear > Tfar box is missed so return false
-If Tfar < 0 box is behind ray return false end
-
-end of for loop If Box survived all above tests, return true with intersection point Tnear and exit point Tfar.
-*/
-
 static const float epsilon = 0.0001f;
 
 bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
@@ -289,6 +264,7 @@ bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
         }
     }
 
+    // Box miss / box behind ray
     if(Tfar<Tnear || Tfar<0)
     {
         //std::cout << "miss" << std::endl;

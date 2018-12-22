@@ -15,6 +15,7 @@ enum class ORDER: uint32_t
 
 enum class MODEL_CATEGORY: uint32_t
 {
+    IRRELEVANT,
     OPAQUE,
     TRANSPARENT
 };

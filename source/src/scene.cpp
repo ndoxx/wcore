@@ -98,7 +98,7 @@ void Scene::traverse_models(ModelVisitor func,
                             wcore::MODEL_CATEGORY model_cat) const
 {
     //Traverse chunks front to back for opaque geometry
-    if(model_cat==wcore::MODEL_CATEGORY::OPAQUE)
+    if(model_cat==wcore::MODEL_CATEGORY::OPAQUE || model_cat==wcore::MODEL_CATEGORY::IRRELEVANT)
     {
         for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
         {
@@ -117,6 +117,17 @@ void Scene::traverse_models(ModelVisitor func,
         }
     }
 }
+
+void Scene::visit_model_first(ModelVisitor func, ModelEvaluator ifFunc) const
+{
+    for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
+    {
+        Chunk* chunk = chunks_.at(chunks_order_[ii]);
+        if(chunk->visit_model_first(func, ifFunc))
+            break;
+    }
+}
+
 
 void Scene::draw_line_models(std::function<void(pLineModel)> func)
 {

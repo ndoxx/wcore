@@ -109,43 +109,37 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
 
 void RayCaster::ray_scene_query(const Ray& ray)
 {
-    // * Perform ray/OBB collision test with objects in view frustum
+    // * Perform ray/AABB intersection test with objects in view frustum
     //   and return the closest object or nothing
-    uint32_t count = 0;
-    SCENE.traverse_models([&](pModel pmdl, uint32_t chunk_id)
+    // [TODO] test ray/OBB intersection instead in FRONT_TO_BACK
+
+    RayCollisionData data;
+    SCENE.visit_model_first([&](pModel pmdl, uint32_t chunk_id)
+    {
+        #ifdef __DEBUG__
+        if(show_ray)
+        {
+            math::vec3 near_intersection(ray.origin_w + (ray.direction*data.near));
+            math::vec3 far_intersection(ray.origin_w + (ray.direction*data.far));
+            pipeline_.debug_draw_cross3(near_intersection,
+                                        0.3f,
+                                        ray_persistence,
+                                        math::vec3(0,0.7f,1));
+            pipeline_.debug_draw_cross3(far_intersection,
+                                        0.3f,
+                                        ray_persistence,
+                                        math::vec3(1,0.7f,0));
+        }
+        #endif
+        SCENE.set_editor_selection(pmdl);
+    },
+    [&](pModel pmdl) // Evaluator -> breaks from traversal loop when return value is false
     {
         // Skip terrains for now
-        if(pmdl->is_terrain())
-            return;
-
-        RayCollisionData data;
-        if(ray_collides_AABB(ray, pmdl->get_AABB(), data))
-        {
-            ++count;
-
-            #ifdef __DEBUG__
-            if(show_ray)
-            {
-                math::vec3 near_intersection(ray.origin_w + (ray.direction*data.near));
-                math::vec3 far_intersection(ray.origin_w + (ray.direction*data.far));
-                pipeline_.debug_draw_cross3(near_intersection,
-                                            0.3f,
-                                            ray_persistence,
-                                            math::vec3(0,0.7f,1));
-                pipeline_.debug_draw_cross3(far_intersection,
-                                            0.3f,
-                                            ray_persistence,
-                                            math::vec3(1,0.7f,0));
-                //pmdl->debug_display_opts_.enable(DebugDisplayOptions::AABB);
-                SCENE.set_editor_selection(pmdl);
-            }
-            #endif
-            //std::cout << data.near << " " << data.far << std::endl;
-        }
-    },
-    wcore::DEFAULT_MODEL_EVALUATOR,
-    wcore::ORDER::BACK_TO_FRONT);
-    //std::cout << count << std::endl;
+        if(pmdl->is_terrain() || !pmdl->is_visible())
+            return false;
+        return ray_collides_AABB(ray, pmdl->get_AABB(), data);
+    });
 }
 
 

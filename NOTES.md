@@ -5495,3 +5495,17 @@ On veut se mettre en z=1 qui en NDC correspond au plan near (z=-1 correspond à 
 
 ```
 
+## Ray/AABB intersection
+J'ai implémenté l'algo décrit dans [1] pour effectuer des tests d'intersection entre un rayon et les AABBs des objets de la scène. J'ai supposé que ce serait plus simple pour un AABB qu'un OBB dans un premier temps (il semble que ce ne soit pas nécessairement le cas, voir [2]).
+Pour chaque dimension de l'espace, chaque paire opposée de plans d'un AABB forme une tranche (slab). Un rayon non parallèle au slab intersecte celui-ci en deux points (sur ses deux plans), l'un est proche, l'autre lointain. L'algo consiste à calculer les distances d'intersection pour chaque slab et à tenir à jour la valeur maximale des distances d'intersection proches (Tnear), ainsi que la valeur minimale des distances d'intersection lointaines (Tfar). Si Tfar<Tnear alors on n'a pas d'intersection.
+Cet algo est implémenté dans la fonction ray_collides_AABB() de bounding_box.h.
+
+_RayCaster_ parcourt maintenant la scène (fonction ray_scene_query()) à chaque clic, afin d'effectuer les tests d'intersection avec les AABBs. L'objet touché le plus proche est sélectionné dans l'éditeur via SCENE.set_editor_selection(), et son OBB est alors affiché en orange par _DebugRenderer_.
+- La sélection pourra gagner en rapidité quand j'aurai ajouté un prédicat à la fonction SCENE.traverse_models() pour pouvoir définir une condition de sortie précoce (dès q'un objet est touché alors que la scène est parcourue front to back).
+    -> C'est fait, grâce à la nouvelle fonction Scene::visit_model_first() qui visite uniquement le premier modèle à évaluer à true dans le prédicat du second argument.
+- La sélection gagnera en précision quand j'effectuerai des tests ray/OBB directement (si j'ai la garantie que ce n'est pas plus cher).
+
+
+* sources :
+[1] https://www.siggraph.org//education/materials/HyperGraph/raytrace/rtinter3.htm
+[2] http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-custom-ray-obb-function/
