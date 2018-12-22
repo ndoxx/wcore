@@ -138,7 +138,8 @@ void RayCaster::ray_scene_query(const Ray& ray)
         // Skip terrains for now
         if(pmdl->is_terrain() || !pmdl->is_visible())
             return false;
-        return ray_collides_AABB(ray, pmdl->get_AABB(), data);
+        //return ray_collides_AABB(ray, pmdl->get_AABB(), data);
+        return ray_collides_OBB(ray, pmdl, data);
     });
 }
 

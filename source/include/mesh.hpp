@@ -2,6 +2,7 @@
 #define MESH_H
 
 #include <vector>
+#include <array>
 #include <limits>
 #include <functional>
 
@@ -25,7 +26,7 @@ class Mesh
 protected:
     std::vector<VertexT>  vertices_;
     std::vector<uint32_t> indices_;
-    std::vector<float>    dimensions_;
+    std::array<float, 6>  dimensions_;
     uint32_t              buffer_offset_;
     uint32_t              n_elements_;
 
@@ -67,7 +68,7 @@ public:
 
     inline const std::vector<VertexT>&  get_vertex_buffer() const { return vertices_; }
     inline const std::vector<uint32_t>& get_index_buffer()  const { return indices_; }
-    inline const std::vector<float>& get_dimensions() const       { return dimensions_; }
+    inline const std::array<float, 6>& get_dimensions() const     { return dimensions_; }
 
 
     inline void _set_vertex(uint32_t index, const VertexT& vertex)

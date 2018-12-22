@@ -63,6 +63,7 @@ public:
 
     math::mat4 get_model_matrix();
     math::mat4 get_scale_rotation_matrix();
+    math::mat4 get_rotation_translation_matrix();
 
     Transformation operator*(const Transformation& other) const;
     Transformation& operator*=(const Transformation& other);

@@ -14,6 +14,8 @@ struct Ray
     end_w(end),
     direction((end_w-origin_w).normalized()){}
 
+    Ray to_model_space(const math::mat4& model_matrix) const;
+
     math::vec3 origin_w;
     math::vec3 end_w;
     math::vec3 direction;

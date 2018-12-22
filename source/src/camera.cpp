@@ -53,7 +53,7 @@ void Camera::set_perspective(float scr_width, float scr_height, float z_far)
     is_ortho_ = false;
 }
 
-void Camera::set_orthographic(float extent[6])
+void Camera::set_orthographic(const std::array<float,6>& extent)
 {
     frustum_.init(extent[0], extent[1], extent[2], extent[3], extent[4], extent[5]);
     init_ortho(proj_, frustum_);
@@ -230,7 +230,7 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
 
     // * Setup camera
     // Compute extent of vertices in view space
-    static float extent[6];
+    static std::array<float,6> extent;
     math::compute_extent(corners_lightspace, extent);
 
     /*BANG();

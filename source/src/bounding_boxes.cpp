@@ -47,16 +47,16 @@ static const std::vector<vec3> NDC_CUBE_VERTICES
 };
 
 OBB::OBB(Model& parent):
-parent_transform_(parent.get_transformation())
+parent_transform_(parent.get_transformation()),
+extent_(parent.get_mesh().get_dimensions())
 {
     // Initialize proper scale to parent's intrinsic scale
-    const std::vector<float>& pdim = parent.get_mesh().get_dimensions();
-    proper_scale_.init_scale(vec3(pdim[1]-pdim[0],
-                                  pdim[3]-pdim[2],
-                                  pdim[5]-pdim[4]));
+    proper_scale_.init_scale(vec3(extent_[1]-extent_[0],
+                                  extent_[3]-extent_[2],
+                                  extent_[5]-extent_[4]));
 
     // ~HACK translate vertically by default
-    offset_.init_translation(vec3(0,pdim[3]*0.5f,0));
+    offset_.init_translation(vec3(0,extent_[3]*0.5f,0));
 }
 
 OBB::~OBB() = default;
@@ -76,7 +76,7 @@ AABB::AABB(Model& parent):
 parent_transform_(parent.get_transformation())
 {
     // Initialize proper scale to parent's intrinsic scale
-    const std::vector<float>& pdim = parent.get_mesh().get_dimensions();
+    const extent_t& pdim = parent.get_mesh().get_dimensions();
     proper_scale_.init_scale(vec3(pdim[1]-pdim[0],
                                   pdim[3]-pdim[2],
                                   pdim[5]-pdim[4]));
@@ -218,7 +218,7 @@ math::vec3 FrustumBox::split_center(uint32_t splitIndex) const
 
 static const float epsilon = 0.0001f;
 
-bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
+bool ray_collides_extent(const Ray& ray, const extent_t& extent, RayCollisionData& data)
 {
     float Tnear = -std::numeric_limits<float>::max();
     float Tfar  = std::numeric_limits<float>::max();
@@ -226,8 +226,8 @@ bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
     // For each X/Y/Z slab
     for(uint32_t ii=0; ii<3; ++ii)
     {
-        float xxl = aabb.extent(2*ii);
-        float xxh = aabb.extent(2*ii+1);
+        float xxl = extent[2*ii];
+        float xxh = extent[2*ii+1];
         float xxo = ray.origin_w[ii];
         float xxd = ray.direction[ii];
 
@@ -277,5 +277,17 @@ bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
     return true;
 }
 
+bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> pmdl, RayCollisionData& data)
+{
+    // Transform ray to model space
+    bool ret = ray_collides_extent(ray.to_model_space(pmdl->get_model_matrix()), pmdl->get_mesh().get_dimensions(), data);
+    if(ret)
+    {
+        float scale = pmdl->get_transformation().get_scale();
+        data.near *= scale;
+        data.far *= scale;
+    }
+    return ret;
+}
 
 }

@@ -61,6 +61,15 @@ math::mat4 Transformation::get_scale_rotation_matrix()
     return R*S;
 }
 
+math::mat4 Transformation::get_rotation_translation_matrix()
+{
+    mat4 T, R;
+    T.init_translation(position_);
+    R = orientation_.get_rotation_matrix();
+    return T*R;
+}
+
+
 void Transformation::rotate(float phi, float theta, float psi)
 {
     quat incr(phi, theta, psi);

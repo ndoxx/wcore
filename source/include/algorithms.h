@@ -25,8 +25,8 @@ inline T clamp(const T &a, const T &min, const T &max)
     else return a;
 }
 
-extern void compute_extent(const std::vector<math::vec<3,float>>& vertices, float extent[6]);
-extern void compute_extent(const std::array<math::vec<3,float>, 8>& vertices, float extent[6]);
+extern void compute_extent(const std::vector<math::vec<3,float>>& vertices, std::array<float,6>& extent);
+extern void compute_extent(const std::array<math::vec<3,float>, 8>& vertices, std::array<float,6>& extent);
 
 } // namespace math
 } // namespace wcore

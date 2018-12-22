@@ -15,10 +15,13 @@ namespace wcore
 class Model;
 struct Ray;
 
+typedef std::array<float, 6> extent_t;
+
 class OBB
 {
 private:
     Transformation&  parent_transform_;
+    const extent_t&  extent_;
     math::mat4       proper_scale_;
     math::mat4       offset_;
     math::mat4       proper_transform_;
@@ -33,7 +36,7 @@ public:
     inline void set_offset(const math::vec3& offset) { offset_.init_translation(offset); }
     inline const std::array<math::vec3, 8>& get_vertices() const { return vertices_; }
     inline const math::mat4& get_model_matrix() const          { return proper_transform_; }
-
+    inline const extent_t& get_extent() const { return extent_; }
 };
 
 class AABB
@@ -44,7 +47,7 @@ private:
     math::mat4       offset_;
     math::mat4       proper_transform_;
     std::array<math::vec3, 8> vertices_;
-    float            extent_[6];
+    extent_t         extent_;
 
 public:
     AABB(Model& parent);
@@ -65,6 +68,7 @@ public:
         assert(index<6 && "[AABB] extent() index out of bounds.");
         return extent_[index];
     }
+    inline const extent_t& get_extent() const { return extent_; }
 
     inline void set_offset(const math::vec3& offset) { offset_.init_translation(offset); }
     inline const std::array<math::vec3, 8>& get_vertices() const { return vertices_; }
@@ -78,7 +82,7 @@ private:
     std::array<math::vec3, 8> vertices_;
     std::array<math::vec3, 6> normals_;
     std::vector<float> splits_;
-    float extent_[6];
+    extent_t extent_;
     static const std::vector<uint32_t> planePoints;
 
 public:
@@ -151,7 +155,12 @@ struct RayCollisionData
     float far  = 0.0f;
 };
 
-bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data);
+bool ray_collides_extent(const Ray& ray, const extent_t& extent, RayCollisionData& data);
+inline bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
+{
+    return ray_collides_extent(ray, aabb.get_extent(), data);
+}
+bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> model, RayCollisionData& data);
 
 }
 

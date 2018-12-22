@@ -29,7 +29,7 @@ uint32_t np2(uint32_t x)
     return ++x;
 }
 
-void compute_extent(const std::vector<math::vec3>& vertices, float extent[6])
+void compute_extent(const std::vector<math::vec3>& vertices, std::array<float,6>& extent)
 {
     extent[0] = std::numeric_limits<float>::max();
     extent[1] = -std::numeric_limits<float>::max();
@@ -52,7 +52,7 @@ void compute_extent(const std::vector<math::vec3>& vertices, float extent[6])
     }
 }
 
-void compute_extent(const std::array<math::vec3, 8>& vertices, float extent[6])
+void compute_extent(const std::array<math::vec3, 8>& vertices, std::array<float,6>& extent)
 {
     extent[0] = std::numeric_limits<float>::max();
     extent[1] = -std::numeric_limits<float>::max();

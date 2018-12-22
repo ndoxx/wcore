@@ -54,7 +54,7 @@ public:
     void set_perspective(float scr_width, float scr_height, float z_far=100.0f);
     inline void set_perspective() { init_frustum(proj_, frustum_); }
 
-    void set_orthographic(float extent[6]);
+    void set_orthographic(const std::array<float,6>& extent);
     void set_orthographic(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax);
     void set_orthographic(float scr_width, float scr_height, float zoom=1.0f);
     inline void set_orthographic() { init_ortho(proj_, frustum_); }
