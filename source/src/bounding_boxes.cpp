@@ -256,12 +256,19 @@ bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
         float xxo = ray.origin_w[ii];
         float xxd = ray.direction[ii];
 
+        /*std::cout << "ii: " << ii << " xxl: " << xxl
+                  << " xxh: " << xxh << " xxo: " << xxo
+                  << " xxd: " << xxd  << std::endl;*/
+
         // If ray parallel to planes
-        if(xxd<epsilon)
+        if(fabs(xxd)<epsilon)
         {
             // If ray origin not between slab, no intersection for this slab
             if(xxo < xxl || xxo > xxh)
+            {
+                //std::cout << "// ray origin out of slab" << std::endl;
                 return false;
+            }
         }
         else
         {
@@ -269,18 +276,26 @@ bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
             float T1 = (xxl - xxo) / xxd;
             float T2 = (xxh - xxo) / xxd;
 
+            //std::cout << "T1: " << T1 << " T2: " << T2 << std::endl;
+
             if(T1 > T2)
                 std::swap(T1, T2); // Make sure T1 is the intersection with the near plane
             if(T1 > Tnear)
                 Tnear = T1; // Tnear will converge to the largest T1
             if(T2 < Tfar)
                 Tfar = T2;  // Tfar will converge to the smallest T2
+
+            //std::cout << "Tnear: " << Tnear << " Tfar: " << Tfar << std::endl;
         }
     }
 
     if(Tfar<Tnear || Tfar<0)
+    {
+        //std::cout << "miss" << std::endl;
         return false;
+    }
 
+    //std::cout << "hit: Tnear:" << Tnear << " Tfar: " << Tfar << std::endl;
     data.near = Tnear;
     data.far  = Tfar;
     return true;

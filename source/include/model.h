@@ -7,7 +7,7 @@
 #include "transformation.h"
 #include "mesh.hpp"
 #include "bounding_boxes.h"
-
+#include "logger.h"
 namespace wcore
 {
 
@@ -60,6 +60,7 @@ protected:
     AABB                  aabb_;
     bool                  frustum_cull_;
     bool                  is_dynamic_;
+    bool                  is_terrain_; // TMP for editor selection purposes
     bool                  visible_;
     uint32_t              shadow_cull_face_;
 
@@ -94,6 +95,10 @@ public:
 
     inline void set_visibility(bool value)                      { visible_ = value; }
     inline bool is_visible() const                              { return visible_; }
+
+    // TMP for editor selection purposes --------------------------------------
+    inline bool is_terrain() const                              { return is_terrain_; }
+    // TMP --------------------------------------------------------------------
 
     inline void set_frustum_cull(bool value)                    { frustum_cull_ = value; }
     inline bool can_frustum_cull() const                        { return frustum_cull_; }

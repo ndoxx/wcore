@@ -114,6 +114,10 @@ void RayCaster::ray_scene_query(const Ray& ray)
     uint32_t count = 0;
     SCENE.traverse_models([&](pModel pmdl, uint32_t chunk_id)
     {
+        // Skip terrains for now
+        if(pmdl->is_terrain())
+            return;
+
         RayCollisionData data;
         if(ray_collides_AABB(ray, pmdl->get_AABB(), data))
         {
@@ -132,12 +136,13 @@ void RayCaster::ray_scene_query(const Ray& ray)
                                             0.3f,
                                             ray_persistence,
                                             math::vec3(1,0.7f,0));
+                pmdl->debug_display_opts_.enable(DebugDisplayOptions::AABB);
             }
             #endif
             //std::cout << data.near << " " << data.far << std::endl;
         }
     });
-    std::cout << count << std::endl;
+    //std::cout << count << std::endl;
 }
 
 

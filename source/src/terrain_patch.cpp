@@ -22,7 +22,7 @@ heightmap_(phm)
 //lattice_scale_(latticeScale),
 //texture_scale_(textureScale)
 {
-
+    is_terrain_ = true;
 }
 
 TerrainChunk::~TerrainChunk()
