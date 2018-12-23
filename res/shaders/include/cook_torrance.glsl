@@ -45,7 +45,8 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 // Fresnel-Schlick approx.
 vec3 FresnelSchlick(float VdotH, vec3 F0)
 {
-    return ((1.0f - F0) * pow(1.0f - VdotH, 5.0f)) + F0;
+    float flipVdotH = 1.0f - VdotH;
+    return ((1.0f - F0) * (flipVdotH*flipVdotH*flipVdotH*flipVdotH*flipVdotH)) + F0;
 }
 
 // Gaussian Spherical approx.

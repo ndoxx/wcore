@@ -103,10 +103,10 @@ vec3 Quaternion::get_euler_angles(bool degrees)
 {
     normalize();
     float phi   = atan2(2.0*(value_[3]*value_[0] + value_[1]*value_[2]),
-                        1.0 - 2.0*(pow(value_[0], 2) + pow(value_[1], 2)));
+                        1.0 - 2.0*(value_[0]*value_[0] + value_[1]*value_[1]));
     float theta = asin (2.0*(value_[3]*value_[1] - value_[2]*value_[0]));
     float psi   = atan2(2.0*(value_[3]*value_[2] + value_[0]*value_[1]),
-                        1.0 - 2.0*(pow(value_[1], 2) + pow(value_[2], 2)));
+                        1.0 - 2.0*(value_[1]*value_[1] + value_[2]*value_[2]));
 
     if(degrees)
         return vec3(TODEGREES(phi), TODEGREES(theta), TODEGREES(psi));
@@ -126,15 +126,15 @@ mat4 Quaternion::get_rotation_matrix() const
 {
     const_cast<vec4*>(&value_)->normalize();
 
-    float r11 = 1.0f - 2.0f * (pow(value_[1], 2) + pow(value_[2], 2));
+    float r11 = 1.0f - 2.0f * (value_[1]*value_[1] + value_[2]*value_[2]);
     float r12 = 2.0f * (value_[0]*value_[1] - value_[2]*value_[3]);
     float r13 = 2.0f * (value_[0]*value_[2] + value_[1]*value_[3]);
     float r21 = 2.0f * (value_[0]*value_[1] + value_[2]*value_[3]);
-    float r22 = 1.0f - 2.0f * (pow(value_[0], 2) + pow(value_[2], 2));
+    float r22 = 1.0f - 2.0f * (value_[0]*value_[0] + value_[2]*value_[2]);
     float r23 = 2.0f * (value_[1]*value_[2] - value_[0]*value_[3]);
     float r31 = 2.0f * (value_[0]*value_[2] - value_[1]*value_[3]);
     float r32 = 2.0f * (value_[1]*value_[2] + value_[0]*value_[3]);
-    float r33 = 1.0f - 2.0f * (pow(value_[0], 2) + pow(value_[1], 2));
+    float r33 = 1.0f - 2.0f * (value_[0]*value_[0] + value_[1]*value_[1]);
 
     return mat4(r11, r12, r13, 0.0,
                 r21, r22, r23, 0.0,

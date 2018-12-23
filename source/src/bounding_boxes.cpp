@@ -218,6 +218,8 @@ math::vec3 FrustumBox::split_center(uint32_t splitIndex) const
 
 static const float epsilon = 0.0001f;
 
+// Scott Owen's algo for ray/AABB intersection
+// adapted from pseudo-code in: https://www.siggraph.org//education/materials/HyperGraph/raytrace/rtinter3.htm
 bool ray_collides_extent(const Ray& ray, const extent_t& extent, RayCollisionData& data)
 {
     float Tnear = -std::numeric_limits<float>::max();
@@ -231,19 +233,12 @@ bool ray_collides_extent(const Ray& ray, const extent_t& extent, RayCollisionDat
         float xxo = ray.origin_w[ii];
         float xxd = ray.direction[ii];
 
-        /*std::cout << "ii: " << ii << " xxl: " << xxl
-                  << " xxh: " << xxh << " xxo: " << xxo
-                  << " xxd: " << xxd  << std::endl;*/
-
         // If ray parallel to planes
         if(fabs(xxd)<epsilon)
         {
             // If ray origin not between slab, no intersection for this slab
             if(xxo < xxl || xxo > xxh)
-            {
-                //std::cout << "// ray origin out of slab" << std::endl;
                 return false;
-            }
         }
         else
         {
@@ -251,27 +246,19 @@ bool ray_collides_extent(const Ray& ray, const extent_t& extent, RayCollisionDat
             float T1 = (xxl - xxo) / xxd;
             float T2 = (xxh - xxo) / xxd;
 
-            //std::cout << "T1: " << T1 << " T2: " << T2 << std::endl;
-
             if(T1 > T2)
                 std::swap(T1, T2); // Make sure T1 is the intersection with the near plane
             if(T1 > Tnear)
                 Tnear = T1; // Tnear will converge to the largest T1
             if(T2 < Tfar)
                 Tfar = T2;  // Tfar will converge to the smallest T2
-
-            //std::cout << "Tnear: " << Tnear << " Tfar: " << Tfar << std::endl;
         }
     }
 
     // Box miss / box behind ray
     if(Tfar<Tnear || Tfar<0)
-    {
-        //std::cout << "miss" << std::endl;
         return false;
-    }
 
-    //std::cout << "hit: Tnear:" << Tnear << " Tfar: " << Tfar << std::endl;
     data.near = Tnear;
     data.far  = Tfar;
     return true;
@@ -281,6 +268,7 @@ bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> pmdl, RayCollisionD
 {
     // Transform ray to model space
     bool ret = ray_collides_extent(ray.to_model_space(pmdl->get_model_matrix()), pmdl->get_mesh().get_dimensions(), data);
+    // Rescale hit data
     if(ret)
     {
         float scale = pmdl->get_transformation().get_scale();

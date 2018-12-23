@@ -5504,8 +5504,42 @@ _RayCaster_ parcourt maintenant la scène (fonction ray_scene_query()) à chaque
 - La sélection pourra gagner en rapidité quand j'aurai ajouté un prédicat à la fonction SCENE.traverse_models() pour pouvoir définir une condition de sortie précoce (dès q'un objet est touché alors que la scène est parcourue front to back).
     -> C'est fait, grâce à la nouvelle fonction Scene::visit_model_first() qui visite uniquement le premier modèle à évaluer à true dans le prédicat du second argument.
 - La sélection gagnera en précision quand j'effectuerai des tests ray/OBB directement (si j'ai la garantie que ce n'est pas plus cher).
+    -> C'est fait aussi, voir plus loin.
 
 
 * sources :
 [1] https://www.siggraph.org//education/materials/HyperGraph/raytrace/rtinter3.htm
 [2] http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-custom-ray-obb-function/
+
+
+#[23-12-18]
+## Ray/OBB intersection
+En réfléchissant juste 2 secondes, j'ai compris que le code d'intersection ray/AABB pouvait être réutilisé. Pour réaliser le test d'intersection ray/OBB, il suffit de passer le rayon dans l'espace modèle et de lancer un test ray/AABB. Une mise à l'échelle des résultats de collision est nécessaire en cas de hit.
+Toute la viande de ray_collides_AABB() est remballée sous le nom ray_collides_extent() qui prend un extent en argument (extent_t = std::array<float,6>). ray_collides_AABB() et ray_collides_OBB() utilisent cette fonction en sous-main.
+
+```cpp
+bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> pmdl, RayCollisionData& data)
+{
+    // Transform ray to model space
+    bool ret = ray_collides_extent(ray.to_model_space(pmdl->get_model_matrix()), pmdl->get_mesh().get_dimensions(), data);
+    // Rescale hit data
+    if(ret)
+    {
+        float scale = pmdl->get_transformation().get_scale();
+        data.near *= scale;
+        data.far *= scale;
+    }
+    return ret;
+}
+```
+
+La fonction Ray::to_model_space() prend une matrice modèle en argument, calcule son inverse (math::inverse_affine() optimale pour de telles matrices) et applique la matrice obtenue sur l'origine et l'extrémité du rayon, avant de recalculer la direction normalisée. Un nouveau rayon est généré, cette fois dans l'espace modèle, où les axes sont alignés avec l'OBB...
+
+La sélection lance maintenant des tests ray/OBB et stop au premier hit, alors que la scène est parcourue front to back, l'objet sélectionné est donc le plus proche possible de la cam. Tout semble bien fonctionner.
+- La sélection utilise un membre weak_ptr de la scène. Elle est naturellement invalidée quand l'objet est détruit (comme après un déchargement de chunk).
+- On pourrait aussi imaginer retourner toute la liste des objets qui intersectent le rayon, sélectionner le premier, et laisser l'utilisateur avancer ou reculer la sélection, afin d'améliorer l'opération sur un gros cluster de modèles.
+
+
+* TODO:
+    [ ] Pre-multiplied alpha:
+        https://www.essentialmath.com/GDC2015/VanVerth_Jim_DoingMathwRGB.pdf

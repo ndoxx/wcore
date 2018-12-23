@@ -41,7 +41,7 @@ FinalStatistics MovingAverage::get_stats() const
 
     for(auto element : queue_)
     {
-        variance += pow((double)element-mean, 2);
+        variance += ((double)element-mean)*((double)element-mean);
     }
     variance /= n_iter;
 

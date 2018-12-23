@@ -144,13 +144,20 @@ vec3 blinn_phong(vec3 lightColor,
 float attenuate(float distance, float radius)
 {
     // originally pow(,20) but I found it fucks up specular reflection tails
+    /*
+    float d2 = distance*distance;
+    float dr = distance/radius;
+    float dr5 = dr*dr*dr*dr*dr;
+    return (1.0 - dr5)/(1.0 + d2);
+    */
     return (1.0 - pow(distance/radius, 5))/(1.0 + distance*distance);
 }
 
 // Decompress a 2D normal back to 3 components
 vec3 decompress_normal(vec2 norm)
 {
-    float z2 = 1.0 - pow(length(norm), 2);
+    float lnorm2 = dot(norm,norm);
+    float z2 = 1.0f - lnorm2;
     float z  = sqrt(z2);
     return vec3(2*z*norm.x, 2*z*norm.y, 2*z2-1.0);
 }
