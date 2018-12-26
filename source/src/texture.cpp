@@ -178,7 +178,8 @@ ID_(++Ninst)
         {
             // Load Albedo / Diffuse textures as sRGB to avoid
             // double gamma-correction.
-            internalFormats[ii] = GL_SRGB_ALPHA;
+            internalFormats[ii] = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+            //internalFormats[ii] = GL_SRGB_ALPHA;
         }
         else
         {

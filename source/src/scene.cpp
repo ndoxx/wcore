@@ -154,6 +154,7 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
     //Traverse chunks front to back for opaque geometry
     if(model_cat==wcore::MODEL_CATEGORY::OPAQUE)
     {
+        // STATIC MODELS
         for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
         {
             Chunk* chunk = chunks_.at(chunks_order_[ii]);
@@ -163,13 +164,7 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
             {
                 // ----- /!\ (APPROX) /!\ -----
                 // Is chunk visible? ~= Is terrain visible? (when viewed from the top)
-/*
-                // Get terrain chunk AABB
-                AABB& aabb = chunk->get_terrain_nc()->get_AABB();
-                // Frustum cull entire chunk
-                if(!camera_->frustum_collides(aabb))
-                    continue;
-*/
+
                 // Get terrain chunk OBB
                 OBB& obb = chunk->get_terrain_nc()->get_OBB();
                 // Frustum cull entire chunk
@@ -186,6 +181,33 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
                             pmdl->get_mesh().get_buffer_offset());
             }, evaluate, order, model_cat);
             //GFX::unbind_vertex_array();
+        }
+        // TERRAINS
+        // Terrains are heavily occluded by the static geometry on top,
+        // so we draw them last so as to maximize depth test fails
+        for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
+        {
+            Chunk* chunk = chunks_.at(chunks_order_[ii]);
+            // * Chunk frustum culling
+            // Always traverse the chunk we're at, else, frustum cull
+            if(chunk->get_index()!=current_chunk_index_)
+            {
+                // ----- /!\ (APPROX) /!\ -----
+                // Is chunk visible? ~= Is terrain visible? (when viewed from the top)
+
+                // Get terrain chunk OBB
+                OBB& obb = chunk->get_terrain_nc()->get_OBB();
+                // Frustum cull entire chunk
+                if(!camera_->frustum_collides(obb))
+                    continue;
+            }
+
+            // Bind VAO, and draw terrains
+            chunk->bind_vertex_array();
+            pModel pterrain = chunk->get_terrain_nc();
+            prepare(pterrain);
+            chunk->draw(pterrain->get_mesh().get_n_elements(),
+                        pterrain->get_mesh().get_buffer_offset());
         }
     }
     //Traverse chunks back to front for transparent geometry

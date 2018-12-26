@@ -132,10 +132,6 @@ void Chunk::traverse_models(ModelVisitor func,
             for(pModel pmodel : models_)
                 if(ifFunc(pmodel))
                     func(pmodel, index_);
-
-            // Terrain
-            if(ifFunc(terrain_))
-                func(terrain_, index_);
         }
         else if(order == wcore::ORDER::FRONT_TO_BACK)
         {
@@ -146,9 +142,6 @@ void Chunk::traverse_models(ModelVisitor func,
                 if(ifFunc(pmodel))
                     func(pmodel, index_);
             }
-            // Terrain
-            if(ifFunc(terrain_))
-                func(terrain_, index_);
         }
         else if(order == wcore::ORDER::BACK_TO_FRONT)
         {
@@ -159,9 +152,6 @@ void Chunk::traverse_models(ModelVisitor func,
                 if(ifFunc(pmodel))
                     func(pmodel, index_);
             }
-            // Terrain
-            if(ifFunc(terrain_))
-                func(terrain_, index_);
         }
     }
     else if(model_cat == wcore::MODEL_CATEGORY::TRANSPARENT || model_cat == wcore::MODEL_CATEGORY::IRRELEVANT)

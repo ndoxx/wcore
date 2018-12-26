@@ -78,7 +78,7 @@ RenderPipeline::~RenderPipeline()
 
 void RenderPipeline::perform_test()
 {
-    debug_draw_segment(math::vec3(10,2,10),math::vec3(20,5,5), 60*5, math::vec3(1,0.7,0));
+
 }
 
 
@@ -431,7 +431,7 @@ void RenderPipeline::render()
     }
     #endif
 
-        geometry_renderer_->render();
+    geometry_renderer_->render();
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -452,7 +452,7 @@ void RenderPipeline::render()
     }
     #endif
 
-        SSAO_renderer_->render();
+    SSAO_renderer_->render();
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -473,7 +473,7 @@ void RenderPipeline::render()
     }
     #endif
 
-        lighting_renderer_->render();
+    lighting_renderer_->render();
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -494,7 +494,7 @@ void RenderPipeline::render()
     }
     #endif
 
-        forward_renderer_->render();
+    forward_renderer_->render();
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -550,9 +550,9 @@ void RenderPipeline::render()
     #endif
 
 // ------- OVERLAY AND TEXT (draw to screen with alpha blending) --------------
-        debug_renderer_->render();
-        debug_overlay_renderer_->render();
-        text_renderer_->render();
+    debug_renderer_->render();
+    debug_overlay_renderer_->render();
+    text_renderer_->render();
 
     #ifdef __PROFILE__
     if(profile_renderers)
