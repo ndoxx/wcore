@@ -57,6 +57,8 @@ namespace factory
                                     bool lines=false);
     extern MeshP* make_icosahedron_3P();
     extern MeshP* make_segment_x_3P();
+    extern MeshP* make_segment_y_3P();
+    extern MeshP* make_segment_z_3P();
     extern MeshP* make_cross3D_3P();
 
     // 3D procedural meshes

@@ -61,7 +61,7 @@ void init_perspective(mat4& Matrix, float fov, float aspectRatio, float zNear, f
 
     Matrix[0]  = xScale; Matrix[1]  = 0.0f;   Matrix[2]  = 0.0f; Matrix[3]  = 0.0f;
     Matrix[4]  = 0.0f;   Matrix[5]  = yScale; Matrix[6]  = 0.0f; Matrix[7]  = 0.0f;
-    Matrix[8]  = 0.0f;   Matrix[9]  = 0.0f;   Matrix[10] = p1;   Matrix[11] = -1.0f;
+    Matrix[8]  = 0.0f;   Matrix[9]  = 0.0f;   Matrix[10] = p1;   Matrix[11] = (leftHanded ? -1 : 1 ); //-1 for Opengl
     Matrix[12] = 0.0f;   Matrix[13] = 0.0f;   Matrix[14] = p2;   Matrix[15] = 0.0f;
 }
 
@@ -76,7 +76,7 @@ void init_frustum(mat4& Matrix, const Frustum& f, bool leftHanded)
 
     Matrix[0]  = xScale; Matrix[1]  = 0.0f;   Matrix[2]  = 0.0f;   Matrix[3]  = 0.0f;
     Matrix[4]  = 0.0f;   Matrix[5]  = yScale; Matrix[6]  = 0.0f;   Matrix[7]  = 0.0f;
-    Matrix[8]  = zx;     Matrix[9]  = zy;     Matrix[10] = zScale; Matrix[11] = -1.0f;
+    Matrix[8]  = zx;     Matrix[9]  = zy;     Matrix[10] = zScale; Matrix[11] = (leftHanded ? -1 : 1 ); //-1 for Opengl
     Matrix[12] = 0.0f;   Matrix[13] = 0.0f;   Matrix[14] = zp;     Matrix[15] = 0.0f;
 }
 

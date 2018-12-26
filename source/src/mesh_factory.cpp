@@ -446,6 +446,30 @@ MeshP* make_segment_x_3P()
     return pmesh;
 }
 
+MeshP* make_segment_y_3P()
+{
+    MeshP* pmesh = new MeshP;
+
+    pmesh->_emplace_vertex(vec3(0,0,0));
+    pmesh->_emplace_vertex(vec3(0,1,0));
+
+    pmesh->push_line(0, 1);
+
+    return pmesh;
+}
+
+MeshP* make_segment_z_3P()
+{
+    MeshP* pmesh = new MeshP;
+
+    pmesh->_emplace_vertex(vec3(0,0,0));
+    pmesh->_emplace_vertex(vec3(0,0,1));
+
+    pmesh->push_line(0, 1);
+
+    return pmesh;
+}
+
 MeshP* make_cross3D_3P()
 {
     MeshP* pmesh = new MeshP;

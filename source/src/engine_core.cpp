@@ -9,6 +9,7 @@
 #include "clock.hpp"
 #include "error.h"
 #include "input_handler.h"
+#include "logger.h"
 
 //GUI
 #ifndef __DISABLE_EDITOR__
@@ -107,10 +108,31 @@ void GameLoop::imgui_new_frame()
     ImGui::NewFrame();
 }
 
+static bool show_log_window = false;
 void GameLoop::generate_editor_widgets()
 {
+    ImGui::SetNextWindowPos(ImVec2(0,0));
+    ImGui::SetNextWindowSize(ImVec2(340,GLB.WIN_H), ImGuiCond_Once);
+    ImGui::Begin("Debug Menu");
+
+    ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
+    if(ImGui::CollapsingHeader("Main debug options"))
+    {
+        if(ImGui::Button("Show log window"))
+        {
+            show_log_window = !show_log_window;
+        }
+    }
+
     for(auto&& func: editor_widget_generators_)
         func();
+
+    if(show_log_window)
+    {
+        dbg::LOG.generate_widget();
+    }
+
+    ImGui::End();
 }
 #endif
 

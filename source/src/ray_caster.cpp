@@ -111,7 +111,6 @@ void RayCaster::ray_scene_query(const Ray& ray)
 {
     // * Perform ray/AABB intersection test with objects in view frustum
     //   and return the closest object or nothing
-    // [TODO] test ray/OBB intersection instead in FRONT_TO_BACK
 
     RayCollisionData data;
     SCENE.visit_model_first([&](pModel pmdl, uint32_t chunk_id)

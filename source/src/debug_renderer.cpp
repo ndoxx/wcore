@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "debug_renderer.h"
 #include "gfx_driver.h"
 #include "mesh.hpp"
@@ -11,6 +13,7 @@
 #include "g_buffer.h"
 #include "camera.h"
 #include "globals.h"
+#include "logger.h"
 
 namespace wcore
 {
@@ -30,40 +33,52 @@ enable_depth_test_(true)
 
 static size_t CUBE_OFFSET = 0;
 static size_t SPHERE_OFFSET = 0;
-static size_t SEG_OFFSET = 0;
+static size_t SEG_X_OFFSET = 0;
+static size_t SEG_Y_OFFSET = 0;
+static size_t SEG_Z_OFFSET = 0;
 static size_t CROSS3_OFFSET = 0;
 static size_t CUBE_NE = 0;
 static size_t SPHERE_NE = 0;
-static size_t SEG_NE = 0;
+static size_t SEG_X_NE = 0;
+static size_t SEG_Y_NE = 0;
+static size_t SEG_Z_NE = 0;
 static size_t CROSS3_NE = 0;
 
 void DebugRenderer::load_geometry()
 {
     Mesh<Vertex3P>* cube_mesh   = factory::make_cube_3P();
     Mesh<Vertex3P>* sphere_mesh = factory::make_uv_sphere_3P(4, 7, true);
-    Mesh<Vertex3P>* seg_mesh    = factory::make_segment_x_3P();
+    Mesh<Vertex3P>* seg_mesh_x  = factory::make_segment_x_3P();
+    Mesh<Vertex3P>* seg_mesh_y  = factory::make_segment_y_3P();
+    Mesh<Vertex3P>* seg_mesh_z  = factory::make_segment_z_3P();
     Mesh<Vertex3P>* cross3_mesh = factory::make_cross3D_3P();
     buffer_unit_.submit(*cube_mesh);
     buffer_unit_.submit(*sphere_mesh);
-    buffer_unit_.submit(*seg_mesh);
+    buffer_unit_.submit(*seg_mesh_x);
+    buffer_unit_.submit(*seg_mesh_y);
+    buffer_unit_.submit(*seg_mesh_z);
     buffer_unit_.submit(*cross3_mesh);
     buffer_unit_.upload();
     CUBE_OFFSET   = cube_mesh->get_buffer_offset();
     SPHERE_OFFSET = sphere_mesh->get_buffer_offset();
-    SEG_OFFSET = seg_mesh->get_buffer_offset();
+    SEG_X_OFFSET = seg_mesh_x->get_buffer_offset();
+    SEG_Y_OFFSET = seg_mesh_y->get_buffer_offset();
+    SEG_Z_OFFSET = seg_mesh_z->get_buffer_offset();
     CROSS3_OFFSET = cross3_mesh->get_buffer_offset();
     CUBE_NE   = cube_mesh->get_n_elements();
     SPHERE_NE = sphere_mesh->get_n_elements();
-    SEG_NE = seg_mesh->get_n_elements();
+    SEG_X_NE = seg_mesh_x->get_n_elements();
+    SEG_Y_NE = seg_mesh_y->get_n_elements();
+    SEG_Z_NE = seg_mesh_z->get_n_elements();
     CROSS3_NE = cross3_mesh->get_n_elements();
     delete cube_mesh;
     delete sphere_mesh;
-    delete seg_mesh;
+    delete seg_mesh_x;
+    delete seg_mesh_y;
+    delete seg_mesh_z;
     delete cross3_mesh;
 }
 
-#include "logger.h"
-#include <cstdlib>
 void DebugRenderer::render()
 {
     // Get camera matrices
@@ -78,6 +93,7 @@ void DebugRenderer::render()
     line_shader_.use();
     vertex_array_.bind();
 
+    // SCENE OBJECTS AABB/OBB
     SCENE.traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
     {
         // Get model matrix and compute products
@@ -101,17 +117,27 @@ void DebugRenderer::render()
             line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
         }
-        /*if(pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
+        if(bb_display_mode_ == 3 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
         {
-
-        }*/
+            OBB& obb = pmodel->get_OBB();
+            if(!SCENE.get_camera()->frustum_collides(obb)) return;
+            mat4 M = pmodel->get_transformation().get_rotation_translation_matrix();
+            mat4 MVP = PV*M;
+            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(1,0,0,0));
+            buffer_unit_.draw(SEG_X_NE, SEG_X_OFFSET);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,1,0,0));
+            buffer_unit_.draw(SEG_Y_NE, SEG_Y_OFFSET);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,0,1,0));
+            buffer_unit_.draw(SEG_Z_NE, SEG_Z_OFFSET);
+        }
     },
     wcore::DEFAULT_MODEL_EVALUATOR,
     wcore::ORDER::IRRELEVANT,
     wcore::MODEL_CATEGORY::OPAQUE);
 
 #ifndef __DISABLE_EDITOR__
-    // Show editor selection
+    // EDITOR SELECTION
     if(auto&& psel = SCENE.get_editor_selection().lock())
     {
         OBB& obb = psel->get_OBB();
@@ -123,6 +149,7 @@ void DebugRenderer::render()
     }
 #endif
 
+    // LIGHT PROXY GEOMETRY
     if(light_display_mode_ > 0)
     {
         SCENE.traverse_lights([&](std::shared_ptr<Light> plight, uint32_t chunk_index)
@@ -149,7 +176,7 @@ void DebugRenderer::render()
         bool alive = (--(*it).ttl >= 0);
         if (!alive)
         {
-            draw_requests_.erase(it++);  // alternatively, it = items.erase(it);
+            draw_requests_.erase(it++);  // alternatively, it = draw_requests_.erase(it);
         }
         // Display the required primitive
         else
@@ -162,7 +189,7 @@ void DebugRenderer::render()
 
             if((*it).type == DebugDrawRequest::SEGMENT)
             {
-                buffer_unit_.draw(SEG_NE, SEG_OFFSET);
+                buffer_unit_.draw(SEG_X_NE, SEG_X_OFFSET);
             }
             else if((*it).type == DebugDrawRequest::SPHERE)
             {
@@ -179,6 +206,8 @@ void DebugRenderer::render()
     }
 
     vertex_array_.unbind();
+
+    // LINE MODELS
     if(display_line_models_)
     {
         SCENE.draw_line_models([&](pLineModel pmodel)

@@ -648,7 +648,7 @@ J'ai implémenté les fonctions saturate() et gamma_correct() de mes vieux shade
 ##[TODO] Suite du programme
 [x] Per fragment lighting
 [x] HDR lighting
-[ ] Charger des .obj
+[x] Charger des .obj
 
 ### "Physically based shading"
 Commentaires intéressants sur: http://www.rorydriscoll.com/2013/11/22/physically-based-shading/
@@ -934,8 +934,8 @@ puis concaténer cette string à la string sourccce du fragment shader avant com
 ##[TODO] Suite du programme : Going full PBR
 J'ai pu aujourd'hui valider un certain nombre de features en codant vite taif un Phong model. Maintenant je dois attaquer le plat de résistance.
 
-    [ ] Ecrire du code en C++ qui implémente les fonctions dont on a besoin dans les shaders PBR et tester à blinde. Je pourrai me servir de mes classes de maths pour reproduire les types GLSL.
-    [ ] Ecrire les shaders en se basant sur le code précédent.
+    [o] Ecrire du code en C++ qui implémente les fonctions dont on a besoin dans les shaders PBR et tester à blinde. Je pourrai me servir de mes classes de maths pour reproduire les types GLSL.
+    [x] Ecrire les shaders en se basant sur le code précédent.
 
 #[09-07-18]
 Déjà on commence par régler le problème rencontré hier. Je vais pousser les instrus de debug pour les unifroms et automatiser la collection de leur noms.
@@ -2141,11 +2141,12 @@ Techniquement on fait ça pour tout un voisinage autour de la position à tester
 
 #[05-08-18]
 ##[TODO]
-[ ] Faire 2 shaders séparés pour les lumières directionnelle et ponctuelles.
-    [ ] Pour éviter d'avoir à copier-coller toutes les fonctions de lighting, améliorer la classe _Shader_ pour qu'elle puisse gérer des "includes".
-[ ] Optimiser les ombres directionnelles
-    [ ] Contraindre la lightcam à observer la projection du frustum de la cam principale sur le sol.
-    [ ] Near et Far de la lightcam en tight fit également depuis des données de la scène.
+[x] Faire 2 shaders séparés pour les lumières directionnelle et ponctuelles.
+    [x] Pour éviter d'avoir à copier-coller toutes les fonctions de lighting, améliorer la classe _Shader_ pour qu'elle puisse gérer des "includes".
+    -> Voir shader variants.
+[x] Optimiser les ombres directionnelles
+    [x] Contraindre la lightcam à observer la projection du frustum de la cam principale sur le sol.
+    [o] Near et Far de la lightcam en tight fit également depuis des données de la scène.
 [ ] Implémenter des depth cubemaps.
     [ ] Avec un _BufferModule_ ? Ou classe séparée ?
 [ ] Pour chaque lumière ponctuelle (configurée pour projeter une ombre) rendre une depth cubemap en une seule passe avec le *geometry shader trick*. En effet, un geometry shader peut (ssi une cubemap est attachée au FBO courant) sélectionner une des faces du cube sur laquelle envoyer des primitives au moyen de **gl_Layer**.
@@ -4651,7 +4652,7 @@ Essentiellement, il faut donner un nom au material (qui sera hashé et servira d
 Les structures du fichier assets.xml sont parsées par _MaterialFactory_. Pour chaque material, un descripteur (struct _MaterialDescriptor_) est sauvegardé dans une hashmap, en association avec le resource id du material (hash du nom). Un descripteur contient toutes les données nécessaires à la construction online d'un _Material_. _MaterialDescriptor_ est déclaré dans material_common.h. Une sous-structure de _MaterialDescriptor_ est _TextureDescriptor_ qui stock les données relatives au texturing uniquement. En particulier, j'ai prévu une structure _TextureParameters_ qui fixe les options OpenGL (filter, format, clamp...).
 
 ##[TODO]
-[ ] Le jeu DOIT être exécuté depuis le dossier build sinon ça ne fonctionne pas. C'est dû aux nombreux paths hardcodés. Corriger ça.
+[x] Le jeu DOIT être exécuté depuis le dossier build sinon ça ne fonctionne pas. C'est dû aux nombreux paths hardcodés. Corriger ça.
 [x] Réparer la SSAO sous __EXPERIMENTAL_POS_RECONSTRUCTION__.
     -> Par ailleurs, j'en ai eu marre de la lenteur de cet algo supposé rapide alors j'ai investigué. Si dans le shader SSAO.frag on remplace dans la boucle :
 
@@ -5293,7 +5294,7 @@ Il s'ensuit que la taille du noyau Gaussien et le sigma sont aisément configura
 * TODO :
     - UBO
 voir : https://github.com/TReed0803/QtOpenGL/blob/master/resources/shaders/ubo/GlobalBuffer.ubo
-    - Unproject click
+    [x] Unproject click
 
 #[19-12-18]
 

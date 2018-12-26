@@ -418,12 +418,8 @@ static int current_index = 0;
 
 void Scene::generate_widget()
 {
-    // New window
-    //ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Once);
-    ImGui::Begin("Scene control");
-
     // PIPELINE CONTROL SECTION
-    ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+    ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Camera"))
     {
         ImGui::WCombo("##camsel", "Cam selection", current_index, 2, items);
@@ -432,8 +428,6 @@ void Scene::generate_widget()
         else if(current_index==1)
             light_camera_->generate_gui_element();
     }
-
-    ImGui::End();
 }
 
 #endif

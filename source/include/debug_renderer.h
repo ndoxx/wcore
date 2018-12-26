@@ -17,6 +17,7 @@ struct DebugDrawRequest
     enum: uint8_t
     {
         SEGMENT,
+        ORIGIN,
         CROSS3,
         TRIANGLE,
         QUAD,
@@ -52,7 +53,7 @@ public:
 
     inline void toggle_line_models() { display_line_models_ = !display_line_models_; }
 
-    inline void next_bb_display_mode() { bb_display_mode_ = (++bb_display_mode_)%3; }
+    inline void next_bb_display_mode() { bb_display_mode_ = (++bb_display_mode_)%4; }
     inline int get_bb_display_mode() const { return bb_display_mode_; }
 
     inline void next_light_display_mode() { light_display_mode_ = (++light_display_mode_)%3; }

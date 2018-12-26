@@ -147,7 +147,7 @@ static MovingAverage pp_dt_fifo_(PROFILING_MAX_SAMPLES);
 #endif
 
 #ifndef __DISABLE_EDITOR__
-const char* bb_mode_items[]       = {"Hidden", "AABB", "OBB"};
+const char* bb_mode_items[]       = {"Hidden", "AABB", "OBB", "Origin"};
 const char* light_mode_items[]    = {"Hidden", "Location", "Scaled"};
 const char* acc_dalt_mode_items[] = {"Off", "Simulate", "Apply correction"};
 const char* acc_blindness_items[] = {"Protanopia", "Deuteranopia", "Tritanopia"};
@@ -162,10 +162,36 @@ void RenderPipeline::generate_widget()
 {
     // New window
     //ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Once);
-    ImGui::Begin("Rendering options");
+    //ImGui::Begin("Rendering options");
+
+    // DEBUG DRAWING
+    ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
+    if(ImGui::CollapsingHeader("Debug drawing"))
+    {
+        ImGui::Text("Primitives");
+        ImGui::Checkbox("Depth test", &debug_renderer_->enable_depth_test_);
+        ImGui::WCombo("##bbmodesel", "Bounding box", debug_renderer_->bb_display_mode_, 4, bb_mode_items);
+        ImGui::WCombo("##lightmodesel", "Light proxy", debug_renderer_->light_display_mode_, 3, light_mode_items);
+        ImGui::SliderFloat("Wireframe", (float*)&geometry_renderer_->get_wireframe_mix_nc(), 0.0f, 1.0f);
+
+        ImGui::Separator();
+        if(ImGui::Button("Framebuffer Peek"))
+        {
+            framebuffer_peek = !framebuffer_peek;
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Profile renderers"))
+        {
+            profile_renderers = !profile_renderers;
+        }
+        if(ImGui::Button("Clear draw requests"))
+        {
+            debug_renderer_->clear_draw_requests();
+        }
+    }
 
     // PIPELINE CONTROL SECTION
-    ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+    ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Pipeline control"))
     {
         ImGui::BeginChild("##pipelinectl", ImVec2(0, 3*ImGui::GetItemsLineHeightWithSpacing()));
@@ -243,34 +269,8 @@ void RenderPipeline::generate_widget()
         }
     }
 
-    // DEBUG
-    ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
-    if(ImGui::CollapsingHeader("Debug"))
-    {
-        ImGui::Text("Primitives");
-        ImGui::Checkbox("Depth test", &debug_renderer_->enable_depth_test_);
-        ImGui::WCombo("##bbmodesel", "Bounding box", debug_renderer_->bb_display_mode_, 3, bb_mode_items);
-        ImGui::WCombo("##lightmodesel", "Light proxy", debug_renderer_->light_display_mode_, 3, light_mode_items);
-        ImGui::SliderFloat("Wireframe", (float*)&geometry_renderer_->get_wireframe_mix_nc(), 0.0f, 1.0f);
-
-        ImGui::Separator();
-        if(ImGui::Button("Framebuffer Peek"))
-        {
-            framebuffer_peek = !framebuffer_peek;
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Profile renderers"))
-        {
-            profile_renderers = !profile_renderers;
-        }
-        if(ImGui::Button("Clear draw requests"))
-        {
-            debug_renderer_->clear_draw_requests();
-        }
-    }
-
     // POST PROCESSING CONTROL
-    ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+    ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Post-processing"))
     {
         ImGui::Text("Chromatic aberration");
@@ -324,7 +324,6 @@ void RenderPipeline::generate_widget()
         ImGui::Text("Misc.");
         ImGui::Checkbox("Enable dithering", &post_processing_renderer_->dithering_enabled_);
     }
-    ImGui::End();
 
     // RENDERER STATISTICS
     if(profile_renderers)
