@@ -60,19 +60,28 @@ void DaylightSystem::generate_widget()
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Daylight system"))
     {
-        ImGui::Text("Sun/Moon control");
-        ImGui::Checkbox("Real-time update", &active_);
-        ImGui::SliderFloat("Day time", &daytime_, 0.0f, 24.0f);
-        ImGui::SliderFloat("Sun incl.", &SUN_INCLINATION, 0.0f, M_PI);
-        ImGui::SliderFloat("Moon incl.", &MOON_INCLINATION, 0.0f, M_PI);
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Sun/Moon control"))
+        {
+            ImGui::Checkbox("Real-time update", &active_);
+            ImGui::SliderFloat("Day time", &daytime_, 0.0f, 24.0f);
+            ImGui::SliderFloat("Sun incl.", &SUN_INCLINATION, 0.0f, M_PI);
+            ImGui::SliderFloat("Moon incl.", &MOON_INCLINATION, 0.0f, M_PI);
+            ImGui::TreePop();
+            ImGui::Separator();
+        }
 
         if(auto dir_light = SCENE.get_directional_light_nc().lock())
         {
-            ImGui::Separator();
-            ImGui::Text("Directional light control");
-            ImGui::SliderFloat("Brightness", &dir_light->get_brightness_nc(), 0.0f, 30.0f);
-            ImGui::SliderFloat("Ambient str.", &dir_light->get_ambient_strength_nc(), 0.0f, 1.5f);
-            ImGui::ColorEdit3("Color", (float*)&dir_light->get_color_nc());
+            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+            if(ImGui::TreeNode("Directional light control"))
+            {
+                ImGui::SliderFloat("Brightness", &dir_light->get_brightness_nc(), 0.0f, 30.0f);
+                ImGui::SliderFloat("Ambient str.", &dir_light->get_ambient_strength_nc(), 0.0f, 1.5f);
+                ImGui::ColorEdit3("Color", (float*)&dir_light->get_color_nc());
+                ImGui::TreePop();
+                ImGui::Separator();
+            }
         }
     }
 

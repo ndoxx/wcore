@@ -420,13 +420,19 @@ void Scene::generate_widget()
 {
     // PIPELINE CONTROL SECTION
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
-    if(ImGui::CollapsingHeader("Camera"))
+    if(ImGui::CollapsingHeader("Scene"))
     {
-        ImGui::WCombo("##camsel", "Cam selection", current_index, 2, items);
-        if(current_index==0)
-            camera_->generate_gui_element();
-        else if(current_index==1)
-            light_camera_->generate_gui_element();
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Camera"))
+        {
+            ImGui::WCombo("##camsel", "Cam selection", current_index, 2, items);
+            if(current_index==0)
+                camera_->generate_gui_element();
+            else if(current_index==1)
+                light_camera_->generate_gui_element();
+            ImGui::TreePop();
+            ImGui::Separator();
+        }
     }
 }
 

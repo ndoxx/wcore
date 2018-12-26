@@ -112,7 +112,7 @@ static bool show_log_window = false;
 void GameLoop::generate_editor_widgets()
 {
     ImGui::SetNextWindowPos(ImVec2(0,0));
-    ImGui::SetNextWindowSize(ImVec2(340,GLB.WIN_H), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(365,GLB.WIN_H), ImGuiCond_Once);
     ImGui::Begin("Debug Menu");
 
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
@@ -203,8 +203,16 @@ void GameLoop::onMouseFocus(const WData& data)
 
 void GameLoop::handle_events()
 {
+#ifndef __DISABLE_EDITOR__
+    ImGuiIO& io = ImGui::GetIO();
+    if(!io.WantCaptureMouse)    // Don't propagate mouse events to game if ImGui wants them
+        handler_.handle_mouse(context_);
+    if(!io.WantCaptureKeyboard) // Don't propagate keyboard events to game if ImGui wants them
+        handler_.handle_keybindings(context_);
+#else
     handler_.handle_mouse(context_);
     handler_.handle_keybindings(context_);
+#endif
 }
 
 int GameLoop::run()

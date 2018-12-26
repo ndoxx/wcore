@@ -168,25 +168,35 @@ void RenderPipeline::generate_widget()
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Debug drawing"))
     {
-        ImGui::Text("Primitives");
-        ImGui::Checkbox("Depth test", &debug_renderer_->enable_depth_test_);
-        ImGui::WCombo("##bbmodesel", "Bounding box", debug_renderer_->bb_display_mode_, 4, bb_mode_items);
-        ImGui::WCombo("##lightmodesel", "Light proxy", debug_renderer_->light_display_mode_, 3, light_mode_items);
-        ImGui::SliderFloat("Wireframe", (float*)&geometry_renderer_->get_wireframe_mix_nc(), 0.0f, 1.0f);
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Primitives"))
+        {
+            ImGui::Checkbox("Depth test", &debug_renderer_->enable_depth_test_);
+            ImGui::WCombo("##bbmodesel", "Bounding box", debug_renderer_->bb_display_mode_, 4, bb_mode_items);
+            ImGui::WCombo("##lightmodesel", "Light proxy", debug_renderer_->light_display_mode_, 3, light_mode_items);
+            ImGui::SliderFloat("Wireframe", (float*)&geometry_renderer_->get_wireframe_mix_nc(), 0.0f, 1.0f);
+            if(ImGui::Button("Clear draw requests"))
+            {
+                debug_renderer_->clear_draw_requests();
+            }
+            ImGui::TreePop();
+            ImGui::Separator();
+        }
 
-        ImGui::Separator();
-        if(ImGui::Button("Framebuffer Peek"))
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Windows"))
         {
-            framebuffer_peek = !framebuffer_peek;
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Profile renderers"))
-        {
-            profile_renderers = !profile_renderers;
-        }
-        if(ImGui::Button("Clear draw requests"))
-        {
-            debug_renderer_->clear_draw_requests();
+            if(ImGui::Button("Framebuffer peek"))
+            {
+                framebuffer_peek = !framebuffer_peek;
+            }
+            ImGui::SameLine();
+            if(ImGui::Button("Profile renderers"))
+            {
+                profile_renderers = !profile_renderers;
+            }
+
+            ImGui::TreePop();
         }
     }
 
@@ -217,24 +227,34 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("SSAO control"))
         {
-            ImGui::SliderFloat("Radius",      &SSAO_renderer_->SSAO_radius_, 0.01f, 1.0f);
-            ImGui::SliderFloat("Scalar bias", &SSAO_renderer_->SSAO_bias_, 0.0f, 1.0f);
-            ImGui::SliderFloat("Vector bias", &SSAO_renderer_->SSAO_vbias_, 0.0f, 0.5f);
-            ImGui::SliderFloat("Intensity",   &SSAO_renderer_->SSAO_intensity_, 0.0f, 5.0f);
-            ImGui::SliderFloat("Scale",       &SSAO_renderer_->SSAO_scale_, 0.01f, 1.0f);
-
-            ImGui::Separator();
-            int ker_size = 2*SSAO_kernel_half_size-1;
-            ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
-            bool update_kernel = ImGui::SliderInt("Half-size", &SSAO_kernel_half_size, 3, 8);
-            update_kernel     |= ImGui::SliderFloat("Sigma",   &SSAO_sigma, 0.5f, 2.0f);
-            if(update_kernel)
+            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+            if(ImGui::TreeNode("Tuning"))
             {
-                SSAO_renderer_->blur_policy_.kernel_.update_kernel(2*SSAO_kernel_half_size-1, SSAO_sigma);
+                ImGui::SliderFloat("Radius",      &SSAO_renderer_->SSAO_radius_, 0.01f, 1.0f);
+                ImGui::SliderFloat("Scalar bias", &SSAO_renderer_->SSAO_bias_, 0.0f, 1.0f);
+                ImGui::SliderFloat("Vector bias", &SSAO_renderer_->SSAO_vbias_, 0.0f, 0.5f);
+                ImGui::SliderFloat("Intensity",   &SSAO_renderer_->SSAO_intensity_, 0.0f, 5.0f);
+                ImGui::SliderFloat("Scale",       &SSAO_renderer_->SSAO_scale_, 0.01f, 1.0f);
+                ImGui::TreePop();
+                ImGui::Separator();
             }
 
-            ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_policy_.n_pass_, 0, 5);
-            ImGui::SliderFloat("Compression", &SSAO_renderer_->blur_policy_.gamma_r_, 0.5f, 2.0f);
+            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+            if (ImGui::TreeNode("Blur"))
+            {
+                int ker_size = 2*SSAO_kernel_half_size-1;
+                ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
+                bool update_kernel = ImGui::SliderInt("Half-size", &SSAO_kernel_half_size, 3, 8);
+                update_kernel     |= ImGui::SliderFloat("Sigma",   &SSAO_sigma, 0.5f, 2.0f);
+                if(update_kernel)
+                {
+                    SSAO_renderer_->blur_policy_.kernel_.update_kernel(2*SSAO_kernel_half_size-1, SSAO_sigma);
+                }
+
+                ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_policy_.n_pass_, 0, 5);
+                ImGui::SliderFloat("Compression", &SSAO_renderer_->blur_policy_.gamma_r_, 0.5f, 2.0f);
+                ImGui::TreePop();
+            }
         }
     }
 
@@ -273,56 +293,90 @@ void RenderPipeline::generate_widget()
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Post-processing"))
     {
-        ImGui::Text("Chromatic aberration");
-        ImGui::SliderFloat("Shift", &post_processing_renderer_->aberration_shift_, 0.0f, 10.0f);
-        ImGui::SliderFloat("Magnitude", &post_processing_renderer_->aberration_strength_, 0.0f, 1.0f);
-
-        ImGui::Separator();
-        ImGui::Text("Vignette");
-        ImGui::SliderFloat("Falloff", &post_processing_renderer_->vignette_falloff_, 0.0f, 2.0f);
-        ImGui::SliderFloat("Balance", &post_processing_renderer_->vignette_balance_, 0.0f, 1.0f);
-
-        ImGui::Separator();
-        ImGui::Text("Vibrance");
-        ImGui::SliderFloat("Strength", &post_processing_renderer_->vibrance_, -1.0f, 1.0f);
-        ImGui::SliderFloat3("Balance", (float*)&post_processing_renderer_->vibrance_bal_, 0.0f, 1.0f);
-
-        ImGui::Separator();
-        ImGui::SliderFloat("Saturation", &post_processing_renderer_->saturation_, 0.0f, 2.0f);
-        ImGui::SliderFloat3("Gamma", (float*)&post_processing_renderer_->gamma_, 1.0f, 2.0f);
-        ImGui::SliderFloat("Exposure", &post_processing_renderer_->exposure_, 0.1f, 5.0f);
-        ImGui::SliderFloat("Contrast", &post_processing_renderer_->contrast_, 0.0f, 2.0f);
-
-        ImGui::Separator();
-        ImGui::Text("Fog");
-        ImGui::Checkbox("Enable fog", &post_processing_renderer_->fog_enabled_);
-        if(post_processing_renderer_->get_fog_enabled_flag())
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Chromatic aberration"))
         {
-            ImGui::SliderFloat("Density", &post_processing_renderer_->fog_density_, 0.0f, 0.1f);
-            ImGui::ColorEdit3("Color", (float*)&post_processing_renderer_->fog_color_);
+            ImGui::SliderFloat("Shift", &post_processing_renderer_->aberration_shift_, 0.0f, 10.0f);
+            ImGui::SliderFloat("Magnitude", &post_processing_renderer_->aberration_strength_, 0.0f, 1.0f);
+            ImGui::TreePop();
+            ImGui::Separator();
         }
 
-        ImGui::Separator();
-        ImGui::Text("FXAA");
-        ImGui::Checkbox("Enable FXAA", &post_processing_renderer_->fxaa_enabled_);
-        if(post_processing_renderer_->get_fxaa_enabled_flag())
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Vignette"))
         {
-
+            ImGui::SliderFloat("Falloff", &post_processing_renderer_->vignette_falloff_, 0.0f, 2.0f);
+            ImGui::SliderFloat("Balance", &post_processing_renderer_->vignette_balance_, 0.0f, 1.0f);
+            ImGui::TreePop();
+            ImGui::Separator();
         }
 
-        ImGui::Separator();
-        ImGui::Text("Accessibility");
-        ImGui::WCombo("##daltmodesel", "Daltonize", post_processing_renderer_->acc_daltonize_mode_, 3, acc_dalt_mode_items);
-        if(post_processing_renderer_->acc_daltonize_mode_)
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Color"))
         {
-            ImGui::Indent();
-            ImGui::WCombo("##blindnesssel", "Blindness", post_processing_renderer_->acc_blindness_type_, 3, acc_blindness_items);
-            ImGui::Unindent();
+            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+            if(ImGui::TreeNode("Vibrance"))
+            {
+                ImGui::SliderFloat("Strength", &post_processing_renderer_->vibrance_, -1.0f, 1.0f);
+                ImGui::SliderFloat3("Balance", (float*)&post_processing_renderer_->vibrance_bal_, 0.0f, 1.0f);
+                ImGui::TreePop();
+                ImGui::Separator();
+            }
+
+            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+            if(ImGui::TreeNode("Correction"))
+            {
+                ImGui::SliderFloat("Saturation", &post_processing_renderer_->saturation_, 0.0f, 2.0f);
+                ImGui::SliderFloat3("Gamma", (float*)&post_processing_renderer_->gamma_, 1.0f, 2.0f);
+                ImGui::SliderFloat("Exposure", &post_processing_renderer_->exposure_, 0.1f, 5.0f);
+                ImGui::SliderFloat("Contrast", &post_processing_renderer_->contrast_, 0.0f, 2.0f);
+                ImGui::TreePop();
+                ImGui::Separator();
+            }
+            ImGui::TreePop();
         }
 
-        ImGui::Separator();
-        ImGui::Text("Misc.");
-        ImGui::Checkbox("Enable dithering", &post_processing_renderer_->dithering_enabled_);
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Fog"))
+        {
+            ImGui::Checkbox("Enable fog", &post_processing_renderer_->fog_enabled_);
+            if(post_processing_renderer_->get_fog_enabled_flag())
+            {
+                ImGui::SliderFloat("Density", &post_processing_renderer_->fog_density_, 0.0f, 0.1f);
+                ImGui::ColorEdit3("Color", (float*)&post_processing_renderer_->fog_color_);
+            }
+            ImGui::TreePop();
+            ImGui::Separator();
+        }
+
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("FXAA"))
+        {
+            ImGui::Checkbox("Enable FXAA", &post_processing_renderer_->fxaa_enabled_);
+            ImGui::TreePop();
+            ImGui::Separator();
+        }
+
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Accessibility"))
+        {
+            ImGui::WCombo("##daltmodesel", "Daltonize", post_processing_renderer_->acc_daltonize_mode_, 3, acc_dalt_mode_items);
+            if(post_processing_renderer_->acc_daltonize_mode_)
+            {
+                ImGui::Indent();
+                ImGui::WCombo("##blindnesssel", "Blindness", post_processing_renderer_->acc_blindness_type_, 3, acc_blindness_items);
+                ImGui::Unindent();
+            }
+            ImGui::TreePop();
+            ImGui::Separator();
+        }
+
+        ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
+        if(ImGui::TreeNode("Misc."))
+        {
+            ImGui::Checkbox("Enable dithering", &post_processing_renderer_->dithering_enabled_);
+            ImGui::TreePop();
+        }
     }
 
     // RENDERER STATISTICS
