@@ -5544,3 +5544,139 @@ La sélection lance maintenant des tests ray/OBB et stop au premier hit, alors q
 * TODO:
     [ ] Pre-multiplied alpha:
         https://www.essentialmath.com/GDC2015/VanVerth_Jim_DoingMathwRGB.pdf
+    [ ] Check extension support befor using
+        - GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT (texture.cpp)
+        - GL_COMPRESSED_RGBA_S3TC_DXT1_EXT (material_common.cpp)
+        -> Il faut tester la présence de l'extension GL_EXT_texture_compression_s3tc.
+        -> GLEW ne permet pas de détecter l'extension correctement, ne supporte pas vraiment les contextes core profile, et de plus nécessite glewExperimental pour ne pas segfault lamentablement lors d'un glGenVertexArrays(). __Passer sous GLAD__ (penser à linker avec libdl sous nux (-ldl)).
+        https://github.com/Dav1dde/glad
+        https://glad.dav1d.de/
+        https://github.com/LibreVR/Revive/commit/86926af6908f7a99c443559a961b38b3ce33c74d
+    [ ] Perform texture compression offline.
+        - Use glCompressedTexImage2D()
+        https://opengl.developpez.com/tutoriels/opengl-tutorial/5-un-cube-texture/#LVII
+
+## GLEW rant
+https://www.reddit.com/r/opengl/comments/3m28x1/glew_vs_glad/
+
+* It doesn't generate or handle functions properly. One example is VAO functions. The functions are core in GL3+, and also available if the GL_ARB_vertex_array_object extension is available. However because of the crappy way GLEW's headers have been generated, by default it will only load the function pointers if GL_ARB_vertex_array_object is available – even if a GL3 context is used! This completely breaks everything on platforms like OS X where it exposes GL3 and the VAO functions, but doesn't expose the GL_ARB_vertex_array_object extension. (There are many similar examples.)
+
+* It doesn't load extensions properly in GL3+. It tries to use a removed function (glGetString(GL_EXTENSIONS), rather than glGetStringi(GL_EXTENSIONS, index)), which means no function pointers for extensions will be loaded at all unless glewExperimental is used.
+
+* glewExperimental is a totally broken idea. It just tries to load the function pointer of all function names from all extensions, and bases its "reported extension support" on whether the functions exist on the system. Not only is this very slow, it also completely breaks when the system has more functions in its GL library than the actual context supports. For example in OS X if you use a legacy GL2 context, it won't support GL3 nor several modern extensions. However GLEW thinks they're supported because OpenGL.framework has those function pointers. So it will report GL_ARB_vertex_array_object (and others) as being supported when they're not and will cause runtime errors if you have code that queries GLEW for whether they're supported.
+
+
+#[28-12-18] RK integrator
+Je suis en train de prototyper un intégrateur Runge-Kutta-Nyström d'ordre 4 (RKN4) pour la simulation physique. Pour l'instant j'intègre uniquement la position et la vitesse du centre de gravité d'un solide, la partie orientation est autrement plus poilue et verra le jour un peu plus tard.
+
+Je me base essentiellement sur [1] p.5 (il y a une erreur pour le calcul de k3, la dépendance est en k2 et non en k1).
+
+Définissons l'état du solide via la structure suivante :
+```cpp
+struct RigidBodyState
+{
+    math::vec3 position; // Center of gravity position
+    math::vec3 velocity; // C.o.G instant velocity
+    float mass = 1.f;    // Total object mass
+};
+```
+
+Pour l'instant, considérons des forces qui s'appliquent sur le solide à chaque instant (non-impulse). On fait l'hypothèse qu'on peut les écrire en fonction de la position, de la vitesse, de la masse et du temps :
+```cpp
+typedef std::function<math::vec3 (const math::vec3&, const math::vec3&, float, float)> force_t;
+
+static force_t gravity = [](const math::vec3& pos, const math::vec3& vel, float m, float t)
+{
+    return m*math::vec3(0.f, -9.81f, 0.f);
+};
+static force_t drag = [](const math::vec3& pos, const math::vec3& vel, float m, float t)
+{
+    return -5.0f*vel.norm2()*vel.normalized();
+};
+static force_t total_force = [](const math::vec3& pos, const math::vec3& vel, float m, float t)
+{
+    return gravity(pos,vel,m,t) + drag(pos,vel,m,t);
+};
+```
+
+Alors un pas d'intégration suit l'algorithme :
+```cpp
+RigidBodyState integrate_RKN4(const RigidBodyState& last, force_t force, float t, float dt)
+{
+    float mass_inv = 1.0f/last.mass;
+    math::vec3 k1 = mass_inv * force(last.position, last.velocity, last.mass, t);
+    math::vec3 k2 = mass_inv * force(last.position + 0.5f*dt * last.velocity + 0.125f*dt*dt * k1,
+                                     last.velocity + 0.5f*dt * k1, last.mass, t + 0.5f*dt);
+    math::vec3 k3 = mass_inv * force(last.position + 0.5f*dt * last.velocity + 0.125f*dt*dt * k2,
+                                     last.velocity + 0.5f*dt * k2, last.mass, t + 0.5f*dt);
+    math::vec3 k4 = mass_inv * force(last.position +      dt * last.velocity +   0.5f*dt*dt * k3,
+                                     last.velocity +      dt * k3, last.mass, t +      dt);
+    RigidBodyState next;
+    next.position = last.position + dt*last.velocity + dt*dt/6.0f * (k1+k2+k3);
+    next.velocity = last.velocity + dt/6.0f * (k1 + 2.0f*k2 + 2.0f*k3 + k4);
+    next.mass     = last.mass;
+    return next;
+}
+```
+
+On peut alors définir un état initial et intégrer celui-ci sous l'effet des forces de gravité et de trainée cumulées :
+```cpp
+    RigidBodyState body1;
+    body1.position = vec3(0,10,0);
+    body1.velocity = vec3(1,0,0);
+    body1.mass = 10.f;
+
+    float t  = 0.f;
+    float dt = 1.0f/60.0f;
+    for(int ii=0; ii<60*5; ++ii)
+    {
+        body1 = integrate_RKN4(body1, total_force, t, dt);
+        t += dt;
+    }
+```
+
+Afin de plotter le résultat, j'utilise un pipe vers GnuPlot (voir [3]). Son utilisation nécessite de linker l'exécutable avec -lboost_iostreams, -lboost_system et -lboost_filesystem. On doit include gnuplot-iostream.h qui se trouve dans vendor/gnuplot. Gnuplot nécessite 4 colonnes pour pouvoir plotter une courbe comme une suite de vecteurs (x,y,dx,dy). Il faut donc former ces vecteurs lors de l'itération :
+
+```cpp
+    std::vector<std::tuple<float, float, float, float>> plot_points;
+
+    float t  = 0.f;
+    float dt = 1.0f/60.0f;
+    for(int ii=0; ii<60*5; ++ii)
+    {
+        float x = body1.position.x();
+        float y = body1.position.y();
+
+        body1 = integrate_RKN4(body1, total_force, t, dt);
+        //std::cout << body1 << std::endl;
+        t += dt;
+
+        float dx = body1.position.x()-x;
+        float dy = body1.position.y()-y;
+        plot_points.push_back(std::make_tuple(x,y,dx,dy));
+    }
+```
+
+Puis on utilise le pipe pour communiquer les données à GnuPlot :
+```cpp
+    Gnuplot gp;
+
+    // Don't forget to put "\n" at the end of each line!
+    gp << "set xrange [0:1]\nset yrange [0:10]\n";
+    // '-' means read from stdin.  The send1d() function sends data to gnuplot's stdin.
+    gp << "plot '-' with vectors title 'traj'\n";
+    gp.send1d(plot_points);
+```
+
+L'état initial fait partir l'objet de l'altitude y=10 avec la vitesse horizontale vx=1.
+On obtient une belle courbe caractéristique du mouvement freiné d'un objet dans un fluide visqueux.
+Mon premier test plus simple consistait à lacher l'objet verticalement initialement au repos, et a bien vérifier que j'obtenais une vitesse verticale vy=-9.81 au bout d'une seconde (60 pas d'intégration à dt=1/60), ce qui était le cas.
+
+
+* sources :
+[1] Rigid body dynamics using Euler's equations, Runge-Kutta and quaternions. Indrek Mandre feb. 26, 2008
+http://www.mare.ee/indrek/varphi/vardyn.pdf
+[2] Geometric Integration of Quaternions. Michael S. Andrle
+, John L. Crassidis. University at Buffalo, State University of New York, Amherst, NY, 14260-4400
+http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
+[3] http://stahlke.org/dan/gnuplot-iostream/

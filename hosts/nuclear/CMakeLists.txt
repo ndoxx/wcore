@@ -26,6 +26,7 @@ set(SRC_NUCLEAR
 add_executable(nuclear ${SRC_NUCLEAR})
 
 target_include_directories(nuclear PRIVATE "${CMAKE_SOURCE_DIR}/hosts/nuclear/source/include")
+target_include_directories(nuclear PRIVATE "${CMAKE_SOURCE_DIR}/source/vendor/gnuplot")
 target_include_directories(nuclear PRIVATE "${CMAKE_SOURCE_DIR}/source/include")
 
 set_target_properties(nuclear
@@ -42,5 +43,8 @@ set_target_properties(iwcore PROPERTIES
 )
 
 target_link_libraries(nuclear
-                      iwcore)
+                      iwcore
+                      boost_iostreams
+                      boost_system
+                      boost_filesystem)
 cotire(nuclear)

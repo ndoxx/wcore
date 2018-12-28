@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 
 #include "material_common.h"
+#include "logger.h"
 
 namespace wcore
 {
