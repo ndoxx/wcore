@@ -2,7 +2,9 @@
 #include <ostream>
 #include <functional>
 #include "math3d.h"
+#include "quaternion.h"
 #include "gnuplot-iostream.h"
+#include "logger.h"
 
 using namespace wcore;
 using namespace math;
@@ -10,9 +12,12 @@ using namespace math;
 
 struct RigidBodyState
 {
-    math::vec3 position; // Center of gravity position
-    math::vec3 velocity; // C.o.G instant velocity
-    float mass = 1.f;    // Total object mass
+    math::vec3 position;         // Center of gravity position
+    math::vec3 velocity;         // C.o.G instant velocity
+    math::vec3 angular_velocity; // Spin vector
+    math::quat orientation;      // Orientation quaternion
+    math::mat3 inertia;          // Inertia matrix
+    float mass = 1.f;            // Total object mass
 
     friend std::ostream& operator<<(std::ostream& stream, const RigidBodyState& state)
     {
@@ -36,6 +41,20 @@ static force_t total_force = [](const math::vec3& pos, const math::vec3& vel, fl
     return gravity(pos,vel,m,t) + drag(pos,vel,m,t);
 };
 
+static math::mat3 skew_matrix(const math::vec3& a)
+{
+    return math::mat3(0,   -a[2],  a[1],
+                      a[2], 0,    -a[0],
+                     -a[1], a[0],  0);
+}
+
+vec3 newton_raphson_33(const math::mat3& jacobian, const math::vec3& f)
+{
+    math::mat3 J_inv;
+    math::inverse(jacobian, J_inv);
+    return J_inv*f;
+}
+
 // Runge-Kutta-Nyström integrator
 RigidBodyState integrate_RKN4(const RigidBodyState& last, force_t force, float t, float dt)
 {
@@ -54,25 +73,64 @@ RigidBodyState integrate_RKN4(const RigidBodyState& last, force_t force, float t
     return next;
 }
 
+RigidBodyState integrate_semi_implicit_euler(const RigidBodyState& last, force_t force, float t, float dt)
+{
+    RigidBodyState next;
+    // * Integrate C.o.G velocity/position
+    next.velocity = last.velocity + dt/last.mass * force(last.position, last.velocity, last.mass, t);
+    next.position = last.position + dt * next.velocity;
+    next.mass     = last.mass;
+
+    // * Integrate orientation
+    // Convert to local coordinates (inertia constant in local frame)
+    math::vec3 omega_b = last.orientation.rotate_inverse(last.angular_velocity);
+    // std::cout << "omega_b " << omega_b << std::endl;
+    // Compute residual vector (gyroscopic torque)
+    math::vec3 f = dt * math::cross(omega_b, last.inertia * omega_b);
+    // std::cout << "f " << f << std::endl;
+    // Compute Jacobian for Newton-Raphson step
+    math::mat3 J = last.inertia + dt * (skew_matrix(omega_b)*last.inertia - skew_matrix(last.inertia*omega_b));
+    // std::cout << "J " << J << std::endl;
+    // Single Newton-Raphson step
+    omega_b -= newton_raphson_33(J, f);
+    // std::cout << "omega_b " << omega_b << std::endl;
+    // Get back to world coordinates
+    next.angular_velocity = last.orientation.rotate(omega_b);
+    // std::cout << "omega " << next.angular_velocity << std::endl;
+    // Update quaternion
+    next.orientation = last.orientation + 0.5f*dt * math::quat(math::vec4(omega_b));
+    next.orientation.normalize();
+    // std::cout << "q1 " << next.orientation << std::endl;
+    next.inertia = last.inertia;
+    return next;
+}
+
 int main()
 {
     RigidBodyState body1;
     body1.position = vec3(0,10,0);
     body1.velocity = vec3(2,10,0);
+    body1.angular_velocity = vec3(-0.5,1,10);
     body1.mass = 10.f;
+    body1.inertia = mat3(0.1, 0.5,  0,
+                         0.5, 0.1,  0.2,
+                         0,   0.2, 0);
 
     std::vector<std::tuple<float, float, float, float>> plot_points;
 
     float t  = 0.f;
     float dt = 1.0f/60.0f;
-    for(int ii=0; ii<60*5; ++ii)
+    for(int ii=0; ii<60; ++ii)
     {
+        // BANG();
         float x = body1.position.x();
         float y = body1.position.y();
 
-        body1 = integrate_RKN4(body1, total_force, t, dt);
-        if(ii==59)
-            std::cout << body1 << std::endl;
+        //body1 = integrate_RKN4(body1, total_force, t, dt);
+        body1 = integrate_semi_implicit_euler(body1, total_force, t, dt);
+        //std::cout << body1 << std::endl;
+        math::vec3 L(body1.inertia * body1.angular_velocity);
+        std::cout << L << std::endl;
         t += dt;
 
         float dx = body1.position.x()-x;
@@ -81,13 +139,13 @@ int main()
     }
 
     // Plot
-    Gnuplot gp;
+    /*Gnuplot gp;
 
     // Don't forget to put "\n" at the end of each line!
     gp << "set xrange [0:1.2]\nset yrange [0:12]\n";
     // '-' means read from stdin.  The send1d() function sends data to gnuplot's stdin.
     gp << "plot '-' with vectors title 'traj'\n";
-    gp.send1d(plot_points);
+    gp.send1d(plot_points);*/
 
     return 0;
 }

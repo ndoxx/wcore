@@ -218,6 +218,54 @@ TEST_CASE("Two quats are divided.", "[quat]")
     REQUIRE(VectorNear(vec4(-0.5000, 0.5000, -0.5000, 0.5000), q21.get_as_vec(), precision));
 }
 
+// INVALID TEST -> Matlab seems to use CW rotations
+// In following code, the 3 blocks output the same results, which correspond
+// to correct CCW rotations
+/*
+    vec3 v1(1,0,0);
+    vec3 v2(0,0,1);
+    vec3 v3(0,0,-1);
+    vec3 v4(0,1,0);
+    vec3 v5(0,-1,0);
+    quat q1(0.0, 0.7071, 0.0, 0.7071);
+    quat q2(0.0, 0.0, 0.7071, 0.7071);
+    q1.normalize();
+    q2.normalize();
+
+    mat4 m1,m2;
+    math::init_rotation_euler(m1, 0, TORADIANS(90), 0);
+    math::init_rotation_euler(m2, TORADIANS(90), 0, 0);
+
+    std::cout << "q1: rot +90 around y axis" << std::endl;
+    std::cout << v1 << " -> " << q1.rotate(v1) << std::endl;
+    std::cout << v2 << " -> " << q1.rotate(v2) << std::endl;
+    std::cout << v3 << " -> " << q1.rotate(v3) << std::endl;
+    std::cout << "q2: rot +90 around z axis" << std::endl;
+    std::cout << v1 << " -> " << q2.rotate(v1) << std::endl;
+    std::cout << v4 << " -> " << q2.rotate(v4) << std::endl;
+    std::cout << v5 << " -> " << q2.rotate(v5) << std::endl;
+
+
+    std::cout << "q1.rot_matrix: rot +90 around y axis" << std::endl;
+    std::cout << v1 << " -> " << q1.get_rotation_matrix()*v1 << std::endl;
+    std::cout << v2 << " -> " << q1.get_rotation_matrix()*v2 << std::endl;
+    std::cout << v3 << " -> " << q1.get_rotation_matrix()*v3 << std::endl;
+    std::cout << "q2.rot_matrix: rot +90 around z axis" << std::endl;
+    std::cout << v1 << " -> " << q2.get_rotation_matrix()*v1 << std::endl;
+    std::cout << v4 << " -> " << q2.get_rotation_matrix()*v4 << std::endl;
+    std::cout << v5 << " -> " << q2.get_rotation_matrix()*v5 << std::endl;
+
+
+    std::cout << "m1: rot +90 around y axis" << std::endl;
+    std::cout << v1 << " -> " << m1*v1 << std::endl;
+    std::cout << v2 << " -> " << m1*v2 << std::endl;
+    std::cout << v3 << " -> " << m1*v3 << std::endl;
+    std::cout << "m2: rot +90 around z axis" << std::endl;
+    std::cout << v1 << " -> " << m2*v1 << std::endl;
+    std::cout << v4 << " -> " << m2*v4 << std::endl;
+    std::cout << v5 << " -> " << m2*v5 << std::endl;
+*/
+/*
 TEST_CASE("A quat acts on a vector to rotate it.", "[quat]")
 {
     quat q1(0.7071, 0.0, 0.0, 0.7071);
@@ -238,3 +286,4 @@ TEST_CASE("A quat acts on a vector to rotate it.", "[quat]")
     //MATLAB: quatrotate([2.1 0.75 -1.25 3.21],[-0.5 0.2 1.8])
     REQUIRE(VectorNear(vec3(1.4185, -0.1232, 1.2259), v32, precision));
 }
+*/

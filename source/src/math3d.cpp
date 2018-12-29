@@ -395,5 +395,6 @@ mat4 scale_translate(const vec3& world_position, float scale)
     return T*S;
 }
 
+
 } // namespace math
 } // namespace wcore

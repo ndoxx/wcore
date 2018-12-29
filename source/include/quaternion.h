@@ -19,6 +19,7 @@ public:
     Quaternion(float phi, float theta, float psi);
     Quaternion(const vec3& axis, float angle);
     Quaternion(const vec4& components);
+    Quaternion(const vec3& components);
     Quaternion(const Quaternion& other);
     Quaternion(Quaternion&& other) noexcept;
     ~Quaternion();
@@ -33,7 +34,8 @@ public:
     Quaternion get_inverse() const;
     inline void set_identity() { value_[0]=0.0f; value_[1]=0.0f; value_[2]=0.0f; value_[3]=1.0f; }
 
-    vec3 rotate(const vec3& vector);
+    vec3 rotate(const vec3& vector) const;
+    vec3 rotate_inverse(const vec3& vector) const;
     vec3 get_euler_angles(bool degrees=true);
     vec4 get_axis_angle(bool degrees=true);
     mat4 get_rotation_matrix() const;
@@ -49,6 +51,7 @@ public:
     friend Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs);
     friend Quaternion operator/(const Quaternion& lhs, const Quaternion& rhs);
     friend Quaternion operator*(const Quaternion& lhs, float rhs);
+    friend Quaternion operator*(float lhs, const Quaternion& rhs);
     friend std::ostream& operator<<(std::ostream& stream, const Quaternion& rhs);
 
 private:

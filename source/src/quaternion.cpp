@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include "quaternion.h"
+#include "math3d.h"
 
 namespace wcore
 {
@@ -26,6 +27,9 @@ Quaternion::Quaternion(const vec3& axis, float angle)
 }
 
 Quaternion::Quaternion(const vec4& components):
+value_(components){}
+
+Quaternion::Quaternion(const vec3& components):
 value_(components){}
 
 Quaternion::Quaternion(const Quaternion& other):
@@ -94,9 +98,16 @@ Quaternion Quaternion::get_inverse() const
     return ret;
 }
 
-vec3 Quaternion::rotate(const vec3& vector)
+vec3 Quaternion::rotate(const vec3& vector) const
 {
-    return get_conjugate().get_rotation_matrix()*vector;
+    //return get_rotation_matrix()*vector;
+    return ((*this)*Quaternion(vector)*get_conjugate()).get_as_vec().xyz();
+}
+
+vec3 Quaternion::rotate_inverse(const vec3& vector) const
+{
+    // return get_conjugate().get_rotation_matrix()*vector;
+    return (get_conjugate()*Quaternion(vector)*(*this)).get_as_vec().xyz();
 }
 
 vec3 Quaternion::get_euler_angles(bool degrees)
@@ -191,11 +202,18 @@ Quaternion operator*(const Quaternion& lhs, float rhs)
     return Quaternion(lhs.value_ * rhs);
 }
 
+Quaternion operator*(float lhs, const Quaternion& rhs)
+{
+    return Quaternion(rhs.value_ * lhs);
+}
+
+
 std::ostream& operator<<(std::ostream& stream, const Quaternion& rhs)
 {
     stream << rhs.value_;
     return stream;
 }
+
 
 } // namespace math
 } // namespace wcore

@@ -5680,3 +5680,121 @@ http://www.mare.ee/indrek/varphi/vardyn.pdf
 , John L. Crassidis. University at Buffalo, State University of New York, Amherst, NY, 14260-4400
 http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
 [3] http://stahlke.org/dan/gnuplot-iostream/
+
+
+#[29-12-18]
+* Je viens de corriger une erreur merdique dans mon code de quaternions, d'invalider un unit test et d'optimiser le calcul de rotations de vecteurs par quaternion.
+
+Avant :
+```cpp
+vec3 Quaternion::rotate(const vec3& vector) const
+{
+    return get_conjugate().get_rotation_matrix()*vector;
+}
+```
+
+Après :
+```cpp
+vec3 Quaternion::rotate(const vec3& vector) const
+{
+    //return get_rotation_matrix()*vector;
+    return ((*this)*Quaternion(vector)*get_conjugate()).get_as_vec().xyz();
+}
+```
+
+La seule raison pour laquelle j'utilisais get_conjugate() au lieu du quat lui-même était pour coller à ce que me sortait Matlab lors du unit testing. Mais Matlab semble effectuer des rotations CW au lieu de CCW. J'utilise maintenant la vraie formule, qui consiste à augmenter le vecteur pour en faire un quaternion avec une composante scalaire nulle, et à le prendre en sandwich entre le quat d'orientation et son conjugué (voir [1]) :
+
+    r = (r_x, r_y, r_z) -> R = (r_x, r_y, r_z, 0)
+    calculer q*r*q_  avec q_ = (-q_x, -q_y, -q_z, q_w)
+
+Le vecteur retourné est simplement la partie vectorielle du quaternion obtenu (on peut montrer que la composante scalaire est toujours nulle).
+
+Pour la rotation inverse on fait :
+```cpp
+vec3 Quaternion::rotate_inverse(const vec3& vector) const
+{
+    // return get_conjugate().get_rotation_matrix()*vector;
+    return (get_conjugate()*Quaternion(vector)*(*this)).get_as_vec().xyz();
+}
+```
+
+Voici du code qui en l'état me confirme que je fais les choses de manière cohérente :
+```cpp
+    vec3 v1(1,0,0);
+    vec3 v2(0,0,1);
+    vec3 v3(0,0,-1);
+    vec3 v4(0,1,0);
+    vec3 v5(0,-1,0);
+    quat q1(0.0, 0.7071, 0.0, 0.7071); // == quat q1(0, 90, 0);
+    quat q2(0.0, 0.0, 0.7071, 0.7071); // == quat q2(90, 0, 0);
+
+    q1.normalize();
+    q2.normalize();
+
+    mat4 m1,m2;
+    math::init_rotation_euler(m1, 0, TORADIANS(90), 0);
+    math::init_rotation_euler(m2, TORADIANS(90), 0, 0);
+
+    std::cout << "q1: rot +90 around y axis" << std::endl;
+    std::cout << v1 << " -> " << q1.rotate(v1) << std::endl;
+    std::cout << v2 << " -> " << q1.rotate(v2) << std::endl;
+    std::cout << v3 << " -> " << q1.rotate(v3) << std::endl;
+    std::cout << "q2: rot +90 around z axis" << std::endl;
+    std::cout << v1 << " -> " << q2.rotate(v1) << std::endl;
+    std::cout << v4 << " -> " << q2.rotate(v4) << std::endl;
+    std::cout << v5 << " -> " << q2.rotate(v5) << std::endl;
+
+    std::cout << "q1.rot_matrix: rot +90 around y axis" << std::endl;
+    std::cout << v1 << " -> " << q1.get_rotation_matrix()*v1 << std::endl;
+    std::cout << v2 << " -> " << q1.get_rotation_matrix()*v2 << std::endl;
+    std::cout << v3 << " -> " << q1.get_rotation_matrix()*v3 << std::endl;
+    std::cout << "q2.rot_matrix: rot +90 around z axis" << std::endl;
+    std::cout << v1 << " -> " << q2.get_rotation_matrix()*v1 << std::endl;
+    std::cout << v4 << " -> " << q2.get_rotation_matrix()*v4 << std::endl;
+    std::cout << v5 << " -> " << q2.get_rotation_matrix()*v5 << std::endl;
+
+    std::cout << "m1: rot +90 around y axis" << std::endl;
+    std::cout << v1 << " -> " << m1*v1 << std::endl;
+    std::cout << v2 << " -> " << m1*v2 << std::endl;
+    std::cout << v3 << " -> " << m1*v3 << std::endl;
+    std::cout << "m2: rot +90 around z axis" << std::endl;
+    std::cout << v1 << " -> " << m2*v1 << std::endl;
+    std::cout << v4 << " -> " << m2*v4 << std::endl;
+    std::cout << v5 << " -> " << m2*v5 << std::endl;
+```
+
+>> q1: rot +90 around y axis
+   (1, 0, 0) -> (0, 0, -1)
+   (0, 0, 1) -> (1, 0, 0)
+   (0, 0, -1) -> (-1, 0, 0)
+   q2: rot +90 around z axis
+   (1, 0, 0) -> (0, 1, 0)
+   (0, 1, 0) -> (-1, 0, 0)
+   (0, -1, 0) -> (1, 0, 0)
+   q1.rot_matrix: rot +90 around y axis
+   (1, 0, 0) -> (-1.19209e-07, 0, -1)
+   (0, 0, 1) -> (1, 0, -1.19209e-07)
+   (0, 0, -1) -> (-1, 0, 1.19209e-07)
+   q2.rot_matrix: rot +90 around z axis
+   (1, 0, 0) -> (-1.19209e-07, 1, 0)
+   (0, 1, 0) -> (-1, -1.19209e-07, 0)
+   (0, -1, 0) -> (1, 1.19209e-07, 0)
+   m1: rot +90 around y axis
+   (1, 0, 0) -> (-4.37114e-08, 0, -1)
+   (0, 0, 1) -> (1, 0, -4.37114e-08)
+   (0, 0, -1) -> (-1, 0, 4.37114e-08)
+   m2: rot +90 around z axis
+   (1, 0, 0) -> (-4.37114e-08, 1, 0)
+   (0, 1, 0) -> (-1, -4.37114e-08, 0)
+   (0, -1, 0) -> (1, 4.37114e-08, 0)
+
+* TODO:
+[ ] Noter que l'initialisation des quats par angles de Tait-Bryan suppose des arguments en degrés, tandis que la même initialisation pour les matrices les suppose en radians. Il faudra corriger cette inconsistence.
+
+* J'essaye de prototyper l'intégration de l'orientation d'un solide. J'utilise une méthode d'Euler semi-implicite taillée pour prendre en compte le couple gyroscopique (effet de précession, bien souvent omis par les gamedevs pour des raisons de stabilité numérique) (voir [2]). Le calcul de la vitesse angulaire se fait en coordonnées locales (comme ça le tenseur d'inertie est constant), un "vecteur résiduel" et un Jacobien sont calculés et utilisés dans un pas de Newton-Raphson pour mettre à jour la vitesse angulaire. La nouvelle orientation (quaternion) est calculée depuis la vitesse angulaire (voir [3]).
+Pour l'instant, je calcule le moment cinétique (L = I * omega) à chaque pas d'intégration, et je constate qu'il n'est pas constant alors que je n'applique aucun couple sur le système, donc j'ai nécessairement un souci qq part.
+
+* Sources :
+[1] http://www.cs.cmu.edu/afs/cs.cmu.edu/user/spiff/www/moedit99/expmap.pdf
+[2] https://www.gdcvault.com/play/1022196/Physics-for-Game-Programmers-Numerical
+[3] https://fgiesen.wordpress.com/2012/08/24/quaternion-differentiation/
