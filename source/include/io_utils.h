@@ -15,23 +15,23 @@ namespace io
 {
 
 // Return path to a file given folder config node and file name. Void path if error.
-extern fs::path get_file(hashstr_t folder_node, const fs::path& file_name);
-inline fs::path get_file(hashstr_t folder_node, const char* file_name)
+extern fs::path get_file(hash_t folder_node, const fs::path& file_name);
+inline fs::path get_file(hash_t folder_node, const char* file_name)
 {
     return get_file(folder_node, fs::path(file_name));
 }
-inline fs::path get_file(hashstr_t folder_node, const std::string& file_name)
+inline fs::path get_file(hash_t folder_node, const std::string& file_name)
 {
     return get_file(folder_node, fs::path(file_name));
 }
 
 // Return a text string from a config node and file name.
-extern std::string get_file_as_string(hashstr_t folder_node, const fs::path& file_name);
-inline std::string get_file_as_string(hashstr_t folder_node, const char* file_name)
+extern std::string get_file_as_string(hash_t folder_node, const fs::path& file_name);
+inline std::string get_file_as_string(hash_t folder_node, const char* file_name)
 {
     return get_file_as_string(folder_node, fs::path(file_name));
 }
-inline std::string get_file_as_string(hashstr_t folder_node, const std::string& file_name)
+inline std::string get_file_as_string(hash_t folder_node, const std::string& file_name)
 {
     return get_file_as_string(folder_node, fs::path(file_name));
 }

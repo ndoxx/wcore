@@ -9,7 +9,7 @@ namespace wcore
 namespace io
 {
 
-fs::path get_file(hashstr_t folder_node, const fs::path& file_name)
+fs::path get_file(hash_t folder_node, const fs::path& file_name)
 {
     fs::path file_path;
     if(!CONFIG.get(folder_node, file_path))
@@ -28,7 +28,7 @@ fs::path get_file(hashstr_t folder_node, const fs::path& file_name)
     return file_path;
 }
 
-std::string get_file_as_string(hashstr_t folder_node, const fs::path& file_name)
+std::string get_file_as_string(hash_t folder_node, const fs::path& file_name)
 {
     fs::path file_path = get_file(folder_node, file_name);
     std::ifstream ifs(file_path);

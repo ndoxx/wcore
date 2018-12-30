@@ -172,14 +172,14 @@ void Logger::print_console(const LogMessage& log_message)
 void Logger::register_channel(const char* name, uint32_t verbosity)
 {
     // Register channel name, hash and verbosity
-    hashstr_t hname = H_(name);
+    hash_t hname = H_(name);
 
     // Detect duplicate channel or hash collision
     auto it = channels_.find(hname);
     if(it != channels_.end())
     {
         operator ()("[Logger] Ignoring duplicate channel or collision detected: " + it->second.name,
-                    MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, HS_("core"));
+                    MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, H_("core"));
         return;
     }
 
@@ -195,7 +195,7 @@ void Logger::operator ()(const std::string& message,
                          MsgType type,
                          LogMode mode,
                          uint32_t severity,
-                         hashstr_t channel)
+                         hash_t channel)
 {
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
     LogMessage logm(message, timestamp, type, mode, severity, channel);
@@ -206,7 +206,7 @@ void Logger::operator ()(std::string&& message,
                          MsgType type,
                          LogMode mode,
                          uint32_t severity,
-                         hashstr_t channel)
+                         hash_t channel)
 {
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
     LogMessage logm(message, timestamp, type, mode, severity, channel);
@@ -294,7 +294,7 @@ void Logger::generate_widget()
 }
 #endif
 
-void Logger::end_section(hashstr_t channel, uint32_t severity)
+void Logger::end_section(hash_t channel, uint32_t severity)
 {
     operator() (std::string(last_section_size_, '-'),
                 MsgType::SECTION,

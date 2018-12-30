@@ -23,8 +23,8 @@ static fs::path inc_path_;
 static fs::path src_path_;
 static fs::path conf_path_;
 
-// Non greedy regex that matches the H_("any_str") and HS_("any_str") macros
-static std::regex hash_str_tag("HS?_\\(\"(.+?)\"\\)");
+// Non greedy regex that matches the H_("any_str") macro
+static std::regex hash_str_tag("H_\\(\"(.+?)\"\\)");
 // Associates hashes to original strings
 static std::map<unsigned long long, std::string> intern_strings_;
 

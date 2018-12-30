@@ -362,7 +362,7 @@ int GameLoop::run()
 #endif //__PROFILING_GAMELOOP__
 
     fs::path log_path;
-    if(CONFIG.get<fs::path>(HS_("root.folders.log"), log_path))
+    if(CONFIG.get<fs::path>(H_("root.folders.log"), log_path))
         dbg::LOG.write(log_path / "debug.log");
     else
         dbg::LOG.write(fs::path("debug.log"));

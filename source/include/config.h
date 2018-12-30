@@ -51,6 +51,9 @@ public:
     // Test a boolean flag quickly
     inline bool is(hash_t name);
 
+    inline const fs::path& get_root_directory() const   { return root_path_; }
+    inline const fs::path& get_config_directory() const { return conf_path_; }
+
     // Initialize directory info
     void init();
 #ifdef __DEBUG__

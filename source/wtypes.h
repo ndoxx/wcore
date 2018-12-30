@@ -25,23 +25,10 @@ namespace detail
     }
 }
 
-// If __PRESERVE_STRS__ defined H_ is a function that hashes strings
-// else it's a dummy macro that leaves the string intact.
-#ifdef __PRESERVE_STRS__
-    #define H_(X) (std::string(X))
-    typedef std::string hash_t;
-#else
-    typedef unsigned long long hash_t;
-    // compile-time hash
-    extern constexpr hash_t H_(const char* str)
-    {
-        return detail::hash_one(str[0], str + 1, detail::basis);
-    }
-#endif
 
-typedef unsigned long long hashstr_t;
+typedef unsigned long long hash_t;
 // compile-time hash
-extern constexpr hashstr_t HS_(const char* str)
+extern constexpr hash_t H_(const char* str)
 {
     return detail::hash_one(str[0], str + 1, detail::basis);
 }
@@ -57,5 +44,7 @@ void split_string(const std::string& str, Container& cont, char delim = ' ')
 }
 
 }
+
+#include "intern_string.h" // for HRESOLVE
 
 #endif

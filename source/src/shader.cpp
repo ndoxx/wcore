@@ -32,7 +32,7 @@ ShaderResource::ShaderResource(std::string&& resource_str,
     for(uint32_t ii=0; ii<resources.size(); ++ii)
     {
         fs::path file_name(resources[ii]);
-        hashstr_t shader_type = HS_(file_name.extension().string().c_str());
+        hash_t shader_type = H_(file_name.extension().string().c_str());
 
         switch(shader_type)
         {
@@ -206,7 +206,7 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
     uint32_t offset = sizeof(incStr) + 2;
 
     std::string file_name(incline.substr(offset, incline.length()-(offset+1)));
-    std::string include_source(io::get_file_as_string(HS_("root.folders.shaderinc"), file_name));
+    std::string include_source(io::get_file_as_string(H_("root.folders.shaderinc"), file_name));
 #ifdef __DEBUG__
     DLOGI("Dependency: <p>" + file_name + "</p>", "shader", Severity::DET);
 #endif
@@ -255,10 +255,10 @@ GLuint Shader::compile_shader(const fs::path& shader_file,
                               GLenum ShaderType,
                               const std::vector<std::string>& flags)
 {
-    //fs::path shader_path = io::get_file(HS_("root.folders.shader"), shader_file);
+    //fs::path shader_path = io::get_file(H_("root.folders.shader"), shader_file);
 
     std::string shader_file_name(shader_file.string());
-    std::string shader_source_raw(io::get_file_as_string(HS_("root.folders.shader"), shader_file));
+    std::string shader_source_raw(io::get_file_as_string(H_("root.folders.shader"), shader_file));
     std::string shader_source;
     {
         std::stringstream ss(shader_source_raw);
@@ -375,15 +375,15 @@ void Shader::program_error_report()
 }
 
 #ifdef __DEBUG__
-static std::set<hashstr_t> marked; // So that we don't warn twice for the same uniform
+static std::set<hash_t> marked; // So that we don't warn twice for the same uniform
 static inline void warn_unknown_uniform(const std::string& shaderName, hash_t name)
 {
-    hashstr_t shname = H_(shaderName.c_str());
+    hash_t shname = H_(shaderName.c_str());
     #ifdef __PRESERVE_STRS__
-        hashstr_t hname = H_(name.c_str());
-        hashstr_t id = shname ^ hname;
+        hash_t hname = H_(name.c_str());
+        hash_t id = shname ^ hname;
     #else
-        hashstr_t id = shname ^ name;
+        hash_t id = shname ^ name;
     #endif
     if(marked.find(id) == marked.end())
     {

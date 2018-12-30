@@ -187,7 +187,7 @@ ID_(++Ninst)
         }
         formats[ii] = descriptor.parameters.format;
 
-        fs::path file_path = io::get_file(HS_("root.folders.texture"), descriptor.locations.at(key));
+        fs::path file_path = io::get_file(H_("root.folders.texture"), descriptor.locations.at(key));
         px_bufs[ii] = png_loader_.load_png(file_path);
 
         if(px_bufs[ii])
@@ -195,7 +195,7 @@ ID_(++Ninst)
             data[ii] = px_bufs[ii]->get_data_pointer();
             #if __DEBUG__
                 DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
-                if(dbg::LOG.get_channel_verbosity(HS_("texture")) == 3u)
+                if(dbg::LOG.get_channel_verbosity(H_("texture")) == 3u)
                     px_bufs[ii]->debug_display();
                     //std::cout << *px_bufs[ii] << std::endl;
             #endif

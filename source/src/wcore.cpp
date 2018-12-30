@@ -3,6 +3,7 @@
 #include "gfx_driver.h" // Won't compile if removed: ensures GLFW header included before GL
 #include "error.h"
 #include "config.h"
+#include "intern_string.h"
 #include "engine_core.h"
 #include "scene.h"
 #include "chunk_manager.h"
@@ -17,30 +18,30 @@
 namespace wcore
 {
 
-static void warn_global_not_found(hashstr_t name)
+static void warn_global_not_found(hash_t name)
 {
     DLOGW("Global name not found:", "core", Severity::WARN);
     DLOGI(std::to_string(name), "core", Severity::WARN);
     DLOGW("Skipping.", "core", Severity::WARN);
 }
 
-void GlobalsSet(hashstr_t name, const void* data)
+void GlobalsSet(hash_t name, const void* data)
 {
     switch(name)
     {
         default:
             warn_global_not_found(name);
             break;
-        case HS_("SCR_W"):
+        case H_("SCR_W"):
             GLB.SCR_W = *reinterpret_cast<const uint32_t*>(data);
             break;
-        case HS_("SCR_H"):
+        case H_("SCR_H"):
             GLB.SCR_H = *reinterpret_cast<const uint32_t*>(data);
             break;
-        case HS_("SCR_FULL"):
+        case H_("SCR_FULL"):
             GLB.SCR_FULL = *reinterpret_cast<const bool*>(data);
             break;
-        case HS_("START_LEVEL"):
+        case H_("START_LEVEL"):
             char* value = const_cast<char*>(reinterpret_cast<const char*>(data));
             GLB.START_LEVEL = value;
             break;
@@ -109,10 +110,15 @@ void Engine::Init(int argc, char const *argv[],
     // Parse config file
     CONFIG.init();
 
+    // Parse intern string hash table file
+    #ifdef __DEBUG__
+        HRESOLVE.init();
+    #endif
+
     // First, try to initialize default values using config
-    wcore::CONFIG.get(wcore::HS_("root.display.width"),  wcore::GLB.SCR_W);
-    wcore::CONFIG.get(wcore::HS_("root.display.height"), wcore::GLB.SCR_H);
-    wcore::CONFIG.get(wcore::HS_("root.display.full"),   wcore::GLB.SCR_FULL);
+    wcore::CONFIG.get(wcore::H_("root.display.width"),  wcore::GLB.SCR_W);
+    wcore::CONFIG.get(wcore::H_("root.display.height"), wcore::GLB.SCR_H);
+    wcore::CONFIG.get(wcore::H_("root.display.full"),   wcore::GLB.SCR_FULL);
 
     // Parse command line arguments
     if(parse_arguments)

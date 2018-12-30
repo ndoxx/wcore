@@ -31,9 +31,9 @@ public:
     std::vector<std::string> flags; // list of flags that will end up in #define directives
 
     //static const std::string SHADER_PATH;
-    static constexpr hashstr_t VS = HS_(".vert"); // extension for vertex shader
-    static constexpr hashstr_t GS = HS_(".geom"); // extension for geometry shader
-    static constexpr hashstr_t FS = HS_(".frag"); // extension for fragment shader
+    static constexpr hash_t VS = H_(".vert"); // extension for vertex shader
+    static constexpr hash_t GS = H_(".geom"); // extension for geometry shader
+    static constexpr hash_t FS = H_(".frag"); // extension for fragment shader
 
     ShaderResource(std::string&& resource_str,
                    std::string&& flags_str = "");

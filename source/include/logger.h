@@ -74,7 +74,7 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hashstr_t channel=HS_("core"))
+               hash_t channel=H_("core"))
     : message_(message)
     , mode_(mode)
     , type_(type)
@@ -89,7 +89,7 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hashstr_t channel=HS_("core"))
+               hash_t channel=H_("core"))
     : message_(std::move(message))
     , mode_(mode)
     , type_(type)
@@ -102,7 +102,7 @@ public:
     std::string message_;
     LogMode     mode_;
     MsgType     type_;
-    hashstr_t   channel_;
+    hash_t   channel_;
     uint32_t    verbosity_level;
 
     const TimeStamp timestamp_;
@@ -136,7 +136,7 @@ private:
     uint32_t last_section_size_;       // Size of last section message
 
     std::vector<LogMessage> messages_;         // List of logged messages
-    std::map<hashstr_t, LogChannel> channels_; // Map of debugging channels
+    std::map<hash_t, LogChannel> channels_; // Map of debugging channels
 
     // Singleton boilerplate
     Logger (const Logger&)=delete;
@@ -159,22 +159,22 @@ public:
     // Register a debugging channel
     void register_channel(const char* name, uint32_t verbosity=0);
     // Change channel verbosity
-    inline void set_channel_verbosity(hashstr_t name, uint32_t verbosity)
+    inline void set_channel_verbosity(hash_t name, uint32_t verbosity)
     {
         channels_.at(name).verbosity = std::min(verbosity, 3u);
     }
     // Mute channel by setting its verbosity to 0
-    inline void mute_channel(hashstr_t name)
+    inline void mute_channel(hash_t name)
     {
         channels_.at(name).verbosity = 0;
     }
     // Get channel verbosity by name
-    inline uint32_t get_channel_verbosity(hashstr_t name) const
+    inline uint32_t get_channel_verbosity(hash_t name) const
     {
         return channels_.at(name).verbosity;
     }
     // Get channel verbosity reference
-    inline uint32_t& get_channel_verbosity_nc(hashstr_t name)
+    inline uint32_t& get_channel_verbosity_nc(hash_t name)
     {
         return channels_.at(name).verbosity;
     }
@@ -184,19 +184,19 @@ public:
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hashstr_t channel=HS_("core"));
+                     hash_t channel=H_("core"));
     void operator ()(std::string&& message,
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hashstr_t channel=HS_("core"));
+                     hash_t channel=H_("core"));
     void operator ()(const LogMessage& log_message);
 
     template <typename ...Args>
     void printfold(Args&&... args);
 
     // End last section
-    void end_section(hashstr_t channel=HS_("core"),
+    void end_section(hash_t channel=H_("core"),
                      uint32_t severity=0u);
 
     // Logs any event the logger has subscribed to
@@ -270,40 +270,40 @@ namespace dbg
     //     wcore::dbg::LOG( MESSAGE, ##__VA_ARGS__ ); \
     //     } while(0)
     #define DLOG(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::CANONICAL, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::CANONICAL, LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGR(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::RAW,     LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::RAW,     LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGI(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::ITEM,    LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::ITEM,    LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGT(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::TRACK,   LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::TRACK,   LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGN(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::NOTIFY,  LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::NOTIFY,  LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGW(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::WARNING, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::WARNING, LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGE(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::ERROR,   LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::ERROR,   LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGF(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::FATAL,   LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::FATAL,   LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGG(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::GOOD,    LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::GOOD,    LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGB(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::BAD,     LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::BAD,     LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGS(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::SECTION, LogMode::CANONICAL, SEVERITY, HS_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::SECTION, LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGES(CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG.end_section( HS_( CHANNEL ), SEVERITY ); \
+        wcore::dbg::LOG.end_section( H_( CHANNEL ), SEVERITY ); \
         } while(0)
     #define BANG() do { \
         wcore::dbg::LOG(std::string(__FILE__)+":"+std::to_string(__LINE__), MsgType::BANG); \

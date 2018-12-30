@@ -127,12 +127,12 @@ void Config::retrieve_configuration(rapidxml::xml_node<>* node,
     }
 }
 
-static const hashstr_t H_UINT   = HS_("uint");
-static const hashstr_t H_INT    = HS_("int");
-static const hashstr_t H_FLOAT  = HS_("float");
-static const hashstr_t H_STRING = HS_("string");
-static const hashstr_t H_BOOL   = HS_("bool");
-static const hashstr_t H_PATH   = HS_("path");
+static const hash_t H_UINT   = H_("uint");
+static const hash_t H_INT    = H_("int");
+static const hash_t H_FLOAT  = H_("float");
+static const hash_t H_STRING = H_("string");
+static const hash_t H_BOOL   = H_("bool");
+static const hash_t H_PATH   = H_("path");
 
 
 hash_t Config::parse_xml_property(rapidxml::xml_node<>* node,
@@ -146,7 +146,7 @@ hash_t Config::parse_xml_property(rapidxml::xml_node<>* node,
     hash_t full_name_hash = H_(str_full_name.c_str());
 
     // Get hash from node name
-    hashstr_t nameHash = HS_(node->name());
+    hash_t nameHash = H_(node->name());
 
     switch(nameHash)
     {

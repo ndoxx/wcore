@@ -9,12 +9,11 @@
 #include "wecs.h"
 
 using wcore::H_;
-using wcore::HS_;
 
 namespace wcore
 {
     // Globals access
-    extern "C" void WAPI GlobalsSet(hashstr_t name, const void* data);
+    extern "C" void WAPI GlobalsSet(hash_t name, const void* data);
 
     class WAPI Engine
     {
