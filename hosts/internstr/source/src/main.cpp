@@ -26,7 +26,7 @@ static fs::path conf_path_;
 // Non greedy regex that matches the H_("any_str") macro
 static std::regex hash_str_tag("H_\\(\"(.+?)\"\\)");
 // Associates hashes to original strings
-static std::map<unsigned long long, std::string> intern_strings_;
+static std::map<hash_t, std::string> intern_strings_;
 
 // Get path to executable
 static fs::path get_selfpath()
@@ -71,7 +71,7 @@ static void parse_entry(const std::filesystem::directory_entry& entry)
     std::regex_iterator<std::string::iterator> it (source_str.begin(), source_str.end(), hash_str_tag);
     std::regex_iterator<std::string::iterator> end;
 
-    while (it != end)
+    while(it != end)
     {
         std::string intern((*it)[1]); // The intern string
         unsigned long long hash_intern = H_(intern.c_str()); // Hashed string
@@ -84,7 +84,6 @@ static void parse_entry(const std::filesystem::directory_entry& entry)
 
         ++it;
     }
-
 }
 
 int main()

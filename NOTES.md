@@ -5798,3 +5798,46 @@ Pour l'instant, je calcule le moment cinétique (L = I * omega) à chaque pas d'
 [1] http://www.cs.cmu.edu/afs/cs.cmu.edu/user/spiff/www/moedit99/expmap.pdf
 [2] https://www.gdcvault.com/play/1022196/Physics-for-Game-Programmers-Numerical
 [3] https://fgiesen.wordpress.com/2012/08/24/quaternion-differentiation/
+
+
+#[30-12-18] Intern strings & H_ macro
+Plutôt que de persister à utiliser le define __PRESERVE_STRS__ qui est complètement pété, j'ai choisi une nouvelle approche. J'ai écrit un petit utilitaire nommé "internstr" (host app), qui parse les sources (.h et .cpp) à la recherche de macros H_("...") (j'ai viré HS_ et hstr_t). Les string et les hash qui leur correspondent sont ensuite stockés dans un fichier XML (config/dbg_intern_strings.xml).
+Le nouveau foncteur _InternStringLocator_ de intern_string.h parse le fichier XML en runtime et récupère cette table. Une globale _InternStringLocator_ du nom de HRESOLVE peut être appelée (partout où wtypes.h est inclu) afin de résoudre les hash en runtime ! Si un hash ne peut être résolu, la chaîne "???" est renvoyée à la place.
+Donc il suffit de lancer l'utilitaire quand on crée une nouvelle string interne via H_ et le hash sera automatiquement solvable en runtime.
+
+Le seul truc qui m'a cassé les burnes est l'utilisation d'un regex pour matcher toutes les occurrences dans un fichier.
+
+L'application se localise et remonte au dossier root, puis cherche les chemins d'accès vers les sources (inc_path_ et src_path_) :
+```cpp
+    for(const auto& entry: fs::directory_iterator(inc_path_))
+        parse_entry(entry);
+    for(const auto& entry: fs::directory_iterator(src_path_))
+        parse_entry(entry);
+```
+La fonction parse_entry() est la suivante :
+```cpp
+static std::regex hash_str_tag("H_\\(\"(.+?)\"\\)");
+static std::map<hash_t, std::string> intern_strings_;
+static void parse_entry(const std::filesystem::directory_entry& entry)
+{
+    // * Copy file to string
+
+    // ...
+
+    // * Match string hash macros and update table
+    std::regex_iterator<std::string::iterator> it (source_str.begin(), source_str.end(), hash_str_tag);
+    std::regex_iterator<std::string::iterator> end;
+
+    while(it != end)
+    {
+        std::string intern((*it)[1]); // The intern string
+        unsigned long long hash_intern = H_(intern.c_str()); // Hashed string
+
+        if(intern_strings_.find(hash_intern) == intern_strings_.end())
+            intern_strings_.insert(std::make_pair(hash_intern, intern));
+
+        ++it;
+    }
+}
+```
+Le regex_iterator peut être déréférencé pour retourner un std::smatch. L'élément 1 du smatch est la première capture : l'argument de la macro.
