@@ -15,6 +15,9 @@ height_(ptexture->get_height())
 {
     // Register as a named texture
     Texture::register_named_texture(H_(out_tex_name), out_texture_);
+#ifdef __DEBUG__
+    HRESOLVE.add_intern_string(out_tex_name);
+#endif
 }
 
 BufferModule::BufferModule(unsigned int width,

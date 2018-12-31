@@ -53,7 +53,7 @@ static fs::path get_selfpath()
 }
 
 // Parse a single file for hash macros
-static void parse_entry(const std::filesystem::directory_entry& entry)
+static void parse_entry(const fs::directory_entry& entry)
 {
     // * Copy file to string
     DLOG("<p>" + entry.path().string() + "</p>", "core", Severity::LOW);
@@ -68,20 +68,30 @@ static void parse_entry(const std::filesystem::directory_entry& entry)
 
 
     // * Match string hash macros and update table
-    std::regex_iterator<std::string::iterator> it (source_str.begin(), source_str.end(), hash_str_tag);
+    std::regex_iterator<std::string::iterator> it(source_str.begin(), source_str.end(), hash_str_tag);
     std::regex_iterator<std::string::iterator> end;
 
     while(it != end)
     {
         std::string intern((*it)[1]); // The intern string
-        unsigned long long hash_intern = H_(intern.c_str()); // Hashed string
+        hash_t hash_intern = H_(intern.c_str()); // Hashed string
 
-        if(intern_strings_.find(hash_intern) == intern_strings_.end())
+        auto it2 = intern_strings_.find(hash_intern);
+        if(it2 == intern_strings_.end())
         {
             DLOGI("<v>" + std::to_string(hash_intern) + "</v> -> " + intern, "core", Severity::LOW);
             intern_strings_.insert(std::make_pair(hash_intern, intern));
         }
-
+        else if(it2->second.compare(intern)) // Detect hash collision
+        {
+            DLOGW("Hash collision detected:", "core", Severity::WARN);
+            DLOGI(it2->second + " -> " + std::to_string(it2->first), "core", Severity::LOW);
+            DLOGI(intern + " -> " + std::to_string(hash_intern), "core", Severity::LOW);
+            do
+            {
+                std::cout << '\n' << "Press ENTER to continue...";
+            } while (std::cin.get() != '\n');
+        }
         ++it;
     }
 }

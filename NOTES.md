@@ -5802,8 +5802,10 @@ Pour l'instant, je calcule le moment cinétique (L = I * omega) à chaque pas d'
 
 #[30-12-18] Intern strings & H_ macro
 Plutôt que de persister à utiliser le define __PRESERVE_STRS__ qui est complètement pété, j'ai choisi une nouvelle approche. J'ai écrit un petit utilitaire nommé "internstr" (host app), qui parse les sources (.h et .cpp) à la recherche de macros H_("...") (j'ai viré HS_ et hstr_t). Les string et les hash qui leur correspondent sont ensuite stockés dans un fichier XML (config/dbg_intern_strings.xml).
-Le nouveau foncteur _InternStringLocator_ de intern_string.h parse le fichier XML en runtime et récupère cette table. Une globale _InternStringLocator_ du nom de HRESOLVE peut être appelée (partout où wtypes.h est inclu) afin de résoudre les hash en runtime ! Si un hash ne peut être résolu, la chaîne "???" est renvoyée à la place.
+Le nouveau foncteur singleton _InternStringLocator_ de intern_string.h parse le fichier XML en runtime et récupère cette table. Un alias de _InternStringLocator_ du nom de HRESOLVE peut être appelé (partout où wtypes.h est inclu) afin de résoudre les hash en runtime ! Si un hash ne peut être résolu, la chaîne "???" est renvoyée à la place.
 Donc il suffit de lancer l'utilitaire quand on crée une nouvelle string interne via H_ et le hash sera automatiquement solvable en runtime.
+
+Certains systèmes (dont _MaterialFactory_) génèrent des intern strings en runtime et doivent donc soumettre celles-ci à HRESOLVE via InternStringLocator::add_intern_string().
 
 Le seul truc qui m'a cassé les burnes est l'utilisation d'un regex pour matcher toutes les occurrences dans un fichier.
 
@@ -5818,14 +5820,14 @@ La fonction parse_entry() est la suivante :
 ```cpp
 static std::regex hash_str_tag("H_\\(\"(.+?)\"\\)");
 static std::map<hash_t, std::string> intern_strings_;
-static void parse_entry(const std::filesystem::directory_entry& entry)
+static void parse_entry(const fs::directory_entry& entry)
 {
     // * Copy file to string
 
     // ...
 
     // * Match string hash macros and update table
-    std::regex_iterator<std::string::iterator> it (source_str.begin(), source_str.end(), hash_str_tag);
+    std::regex_iterator<std::string::iterator> it(source_str.begin(), source_str.end(), hash_str_tag);
     std::regex_iterator<std::string::iterator> end;
 
     while(it != end)
@@ -5841,3 +5843,7 @@ static void parse_entry(const std::filesystem::directory_entry& entry)
 }
 ```
 Le regex_iterator peut être déréférencé pour retourner un std::smatch. L'élément 1 du smatch est la première capture : l'argument de la macro.
+
+Noter que le regex ignore les cas d'utilisation runtime de la macro H_, car des guillemets doivent être présents pour qu'il y ait match.
+
+J'ai ensuite modifié parse_entry() pour détecter les collisions de hash. Si un hash est déjà présent dans le tableau, alors la string correspondante est comparée à la nouvelle string qui a produit le même hash. Si les deux strings sont différentes, c'est qu'il y a une collision, le programme génère un warning et demande l'appui sur la touche ENTER avant de poursuivre.
