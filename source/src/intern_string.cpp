@@ -5,6 +5,16 @@
 namespace wcore
 {
 
+InternStringLocator::InternStringLocator()
+{
+
+}
+
+InternStringLocator::~InternStringLocator()
+{
+
+}
+
 void InternStringLocator::init()
 {
     DLOGS("[InternStringLocator] Retrieving intern string table.", "core", Severity::LOW);
@@ -43,5 +53,13 @@ std::string InternStringLocator::operator()(hash_t hashname)
     else
         return std::string("???");
 }
+
+void InternStringLocator::add_intern_string(const std::string& str)
+{
+    hash_t hname = H_(str.c_str());
+    if(intern_strings_.find(hname)==intern_strings_.end())
+        intern_strings_.insert(std::make_pair(hname,str));
+}
+
 
 } // namespace wcore

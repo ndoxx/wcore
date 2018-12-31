@@ -101,6 +101,9 @@ void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* root)
             parse_material_descriptor(mat_node, descriptor);
             descriptor.texture_descriptor.resource_id = H_(material_name.c_str());
             material_descriptors_[H_(material_name.c_str())] = descriptor;
+#ifdef __DEBUG__
+            HRESOLVE.add_intern_string(material_name);
+#endif
         }
     }
 }

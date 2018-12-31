@@ -5807,7 +5807,7 @@ Donc il suffit de lancer l'utilitaire quand on crée une nouvelle string interne
 
 Le seul truc qui m'a cassé les burnes est l'utilisation d'un regex pour matcher toutes les occurrences dans un fichier.
 
-L'application se localise et remonte au dossier root, puis cherche les chemins d'accès vers les sources (inc_path_ et src_path_) :
+L'application se localise et remonte au dossier root, puis cherche les chemins d'accès vers les sources (inc_path_ et src_path_). Chaque fichier est alors parsé :
 ```cpp
     for(const auto& entry: fs::directory_iterator(inc_path_))
         parse_entry(entry);

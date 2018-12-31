@@ -174,7 +174,7 @@ void Shader::program_active_report()
             #ifdef __PRESERVE_STRS__
                 DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(loc) + "] ", "shader", Severity::DET);
             #else
-                DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(loc) + "] " + std::to_string(H_(name)), "shader", Severity::DET);
+                DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(loc) + "] ", "shader", Severity::DET);
             #endif
         }
     #endif // __DEBUG__
@@ -379,16 +379,12 @@ static std::set<hash_t> marked; // So that we don't warn twice for the same unif
 static inline void warn_unknown_uniform(const std::string& shaderName, hash_t name)
 {
     hash_t shname = H_(shaderName.c_str());
-    #ifdef __PRESERVE_STRS__
-        hash_t hname = H_(name.c_str());
-        hash_t id = shname ^ hname;
-    #else
-        hash_t id = shname ^ name;
-    #endif
+    hash_t id = shname ^ name;
+
     if(marked.find(id) == marked.end())
     {
         std::stringstream ss;
-        ss << "[Shader] [<n>" << shaderName << "</n>] Unknown uniform name: <u>" << name << "</u>";
+        ss << "[Shader] [<n>" << shaderName << "</n>] Unknown uniform name: " << HRESOLVE(name) << " <u>(" << name << ")</u>";
         DLOGW(ss.str(), "shader", Severity::WARN);
         marked.insert(id);
     }

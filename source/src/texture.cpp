@@ -118,7 +118,7 @@ void Texture::register_named_texture(hash_t name, pTexture ptex)
     {
         std::stringstream ss;
         ss << "[Texture] Registering new named texture: "
-           << "<n>" << name << "</n>";
+           << "<n>" << HRESOLVE(name) << "</n>";
         DLOGN(ss.str(), "texture", Severity::DET);
         DLOGI("width:  <v>" + std::to_string(ptex->get_width()) + "</v>", "texture", Severity::DET);
         DLOGI("height: <v>" + std::to_string(ptex->get_height()) + "</v>", "texture", Severity::DET);
@@ -425,7 +425,7 @@ units_(descriptor.units)
     #if __DEBUG__
     {
         std::stringstream ss;
-        ss << "[Texture] New texture from asset: <n>" << resourceID_ << "</n>";
+        ss << "[Texture] New texture from asset: <n>" << HRESOLVE(resourceID_) << "</n>";
         DLOGN(ss.str(), "texture", Severity::DET);
     }
     #endif
@@ -485,7 +485,7 @@ Texture::~Texture()
             RESOURCE_MAP_.erase(resourceID_);
             #ifdef __DEBUG__
             std::stringstream ss;
-            ss << "[Texture] Destroying cached texture: <n>" << resourceID_ << "</n>";
+            ss << "[Texture] Destroying cached texture: <n>" << HRESOLVE(resourceID_) << "</n>";
             DLOGN(ss.str(), "texture", Severity::LOW);
             #endif
         }
