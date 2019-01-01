@@ -7,7 +7,6 @@
 #include <cassert>
 
 #include "math3d.h"
-#include "transformation.h"
 
 namespace wcore
 {
@@ -20,12 +19,13 @@ typedef std::array<float, 6> extent_t;
 class OBB
 {
 private:
-    Transformation&  parent_transform_;
+    Model& parent_;
     const extent_t&  extent_;
     math::mat4       proper_scale_;
     math::mat4       offset_;
     math::mat4       proper_transform_;
     std::array<math::vec3, 8> vertices_;
+    bool             centered_;
 
 public:
     OBB(Model& parent);
@@ -42,7 +42,7 @@ public:
 class AABB
 {
 private:
-    Transformation&  parent_transform_;
+    Model& parent_;
     math::mat4       proper_scale_;
     math::mat4       offset_;
     math::mat4       proper_transform_;

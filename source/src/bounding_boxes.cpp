@@ -47,18 +47,20 @@ static const std::vector<vec3> NDC_CUBE_VERTICES
 };
 
 OBB::OBB(Model& parent):
-parent_transform_(parent.get_transformation()),
-extent_(parent.get_mesh().get_dimensions())
+parent_(parent),
+extent_(parent.get_mesh().get_dimensions()),
+centered_(parent.get_mesh().is_centered())
 {
     // Initialize proper scale to parent's intrinsic scale
     proper_scale_.init_scale(vec3(extent_[1]-extent_[0],
                                   extent_[3]-extent_[2],
-                                  extent_[5]-extent_[4])
-                             *parent_transform_.get_scale());
+                                  extent_[5]-extent_[4]));
 
-    // ~HACK translate vertically if mesh is not centered
+    // translate mesh if not centered
     if(!parent.get_mesh().is_centered())
-        offset_.init_translation(vec3(0,parent_transform_.get_scale()*(extent_[3]-extent_[2])*0.5f,0));
+        offset_.init_translation(vec3((extent_[1]+extent_[0])*0.5f,
+                                      (extent_[3]+extent_[2])*0.5f,
+                                      (extent_[5]+extent_[4])*0.5f));
     else
         offset_.init_identity();
 }
@@ -68,7 +70,7 @@ OBB::~OBB() = default;
 void OBB::update()
 {
     // Compute OBB transform from parent transform
-    proper_transform_ = parent_transform_.get_model_matrix() * offset_ * proper_scale_;
+    proper_transform_ = parent_.get_model_matrix() * offset_ * proper_scale_;
 
     // Compute OBB vertices
     for(uint32_t ii=0; ii<8; ++ii)
@@ -77,7 +79,7 @@ void OBB::update()
 
 
 AABB::AABB(Model& parent):
-parent_transform_(parent.get_transformation()),
+parent_(parent),
 centered_(parent.get_mesh().is_centered())
 {
     // Initialize proper scale to parent's intrinsic scale
@@ -93,28 +95,7 @@ AABB::~AABB() = default;
 
 void AABB::update()
 {
-    // Compute OBB transform from parent transform
-    proper_transform_ = parent_transform_.get_model_matrix() * offset_ * proper_scale_;
-
-    // Compute OBB vertices and extent
-    std::vector<vec3> OBB_vertices;
-    if(centered_) // Is mesh centered around origin in model space?
-    {
-        for(uint32_t ii=0; ii<8; ++ii)
-        {
-            vec3 vertex(proper_transform_ * CENTERED_CUBE_VERTICES[ii]);
-            OBB_vertices.push_back(vertex);
-        }
-    }
-    else
-    {
-        for(uint32_t ii=0; ii<8; ++ii)
-        {
-            vec3 vertex(proper_transform_ * CUBE_VERTICES[ii]);
-            OBB_vertices.push_back(vertex);
-        }
-    }
-    math::compute_extent(OBB_vertices, extent_);
+    math::compute_extent(parent_.get_OBB().get_vertices(), extent_);
 
     // Create AABB from OBB extent
     mat4 AABB_scale, AABB_pos;
