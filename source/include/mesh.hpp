@@ -29,25 +29,29 @@ protected:
     std::array<float, 6>  dimensions_;
     uint32_t              buffer_offset_;
     uint32_t              n_elements_;
+    bool                  centered_;
 
 public:
     Mesh():
     buffer_offset_(0),
-    n_elements_(0){}
+    n_elements_(0),
+    centered_(false){}
 
     Mesh(Mesh&& other) noexcept
     : vertices_(std::move(other.vertices_))
     , indices_(std::move(other.indices_))
     , dimensions_(other.dimensions_)
     , buffer_offset_(other.buffer_offset_)
-    , n_elements_(other.n_elements_){}
+    , n_elements_(other.n_elements_),
+    centered_(false){}
 
     Mesh(const Mesh& other)
     : vertices_(other.vertices_)
     , indices_(other.indices_)
     , dimensions_(other.dimensions_)
     , buffer_offset_(other.buffer_offset_)
-    , n_elements_(other.n_elements_) {}
+    , n_elements_(other.n_elements_),
+    centered_(false){}
 
     virtual ~Mesh() {}
 
@@ -58,6 +62,7 @@ public:
         buffer_offset_ = other.buffer_offset_;
         n_elements_ = other.n_elements_;
         dimensions_ = other.dimensions_;
+        centered_ = other.centered_;
         return *this;
     }
 
@@ -65,6 +70,9 @@ public:
     inline uint32_t get_ni() const            { return indices_.size(); }
     inline uint32_t get_n_elements() const    { return n_elements_; }
     inline uint32_t get_buffer_offset() const { return buffer_offset_; }
+
+    inline bool is_centered() const           { return centered_; }
+    inline void set_centered(bool value)      { centered_ = value; }
 
     inline const std::vector<VertexT>&  get_vertex_buffer() const { return vertices_; }
     inline const std::vector<uint32_t>& get_index_buffer()  const { return indices_; }

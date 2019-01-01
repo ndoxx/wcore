@@ -311,6 +311,7 @@
                 <Mesh type="obj">
                     <Location>teapot.obj</Location>
                     <ProcessUV>false</ProcessUV>
+                    <Centered>true</Centered>
                 </Mesh>
                 <Material>
                     <Color>(0.05,0.5,1.0)</Color>
@@ -327,6 +328,7 @@
                 <Mesh type="obj">
                     <Location>icosphere.obj</Location>
                     <ProcessUV>true</ProcessUV>
+                    <Centered>true</Centered>
                 </Mesh>
                 <Material>
                     <Asset>ball01</Asset>
@@ -378,7 +380,7 @@
                     <Scale variance="0.5">1.5</Scale>
                 </Transform>
                 <AABB>
-                    <Offset>(0,-0.5,0)</Offset>
+                    <Offset>(0,0,0)</Offset>
                 </AABB>
                 <Shadow>
                     <CullFace>2</CullFace>

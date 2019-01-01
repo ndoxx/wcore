@@ -36,7 +36,7 @@ namespace factory
     extern MeshPU* make_quad_3P2U();
 
     // 3D primitives
-    extern FaceMesh* make_cube();
+    extern FaceMesh* make_cube(bool finalize=true);
     extern FaceMesh* make_terrain(const HeightMap& hm,
                                   float latScale=1.0f,
                                   float texScale=1.0f);

@@ -1126,10 +1126,13 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
             return nullptr;
         }
         bool process_uv = false;
+        bool centered = false;
         xml::parse_node(mesh_node, "ProcessUV", process_uv);
+        xml::parse_node(mesh_node, "Centered", centered);
         std::stringstream ss;
         ss << "../res/models/" << location;
         pmesh = LOADOBJ(ss.str().c_str(), process_uv);
+        pmesh->set_centered(centered);
     }
     else
     {

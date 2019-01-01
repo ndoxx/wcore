@@ -53,10 +53,14 @@ extent_(parent.get_mesh().get_dimensions())
     // Initialize proper scale to parent's intrinsic scale
     proper_scale_.init_scale(vec3(extent_[1]-extent_[0],
                                   extent_[3]-extent_[2],
-                                  extent_[5]-extent_[4]));
+                                  extent_[5]-extent_[4])
+                             *parent_transform_.get_scale());
 
-    // ~HACK translate vertically by default
-    offset_.init_translation(vec3(0,extent_[3]*0.5f,0));
+    // ~HACK translate vertically if mesh is not centered
+    if(!parent.get_mesh().is_centered())
+        offset_.init_translation(vec3(0,parent_transform_.get_scale()*(extent_[3]-extent_[2])*0.5f,0));
+    else
+        offset_.init_identity();
 }
 
 OBB::~OBB() = default;
@@ -73,7 +77,8 @@ void OBB::update()
 
 
 AABB::AABB(Model& parent):
-parent_transform_(parent.get_transformation())
+parent_transform_(parent.get_transformation()),
+centered_(parent.get_mesh().is_centered())
 {
     // Initialize proper scale to parent's intrinsic scale
     const extent_t& pdim = parent.get_mesh().get_dimensions();
@@ -108,6 +113,10 @@ void AABB::update()
     AABB_pos.init_translation(vec3((extent_[1]+extent_[0])*0.5f,
                                    (extent_[3]+extent_[2])*0.5f,
                                    (extent_[5]+extent_[4])*0.5f));
+
+    // ~HACK translate vertically if mesh is not centered
+    if(centered_)
+        offset_.init_translation(vec3(0,-parent_transform_.get_scale(),0));
 
     // Compute AABB vertices
     proper_transform_ = AABB_pos * offset_ * AABB_scale;

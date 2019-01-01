@@ -72,8 +72,8 @@ void Scene::sort_chunks()
     std::sort(chunks_order_.begin(), chunks_order_.end(),
     [&](const uint32_t& a, const uint32_t& b)
     {
-        float dist_a = norm(get_chunk_center(a)-cam_pos);
-        float dist_b = norm(get_chunk_center(b)-cam_pos);
+        float dist_a = norm2(get_chunk_center(a)-cam_pos);
+        float dist_b = norm2(get_chunk_center(b)-cam_pos);
         return (dist_a < dist_b); // sort front to back
     });
 }

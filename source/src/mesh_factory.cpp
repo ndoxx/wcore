@@ -16,7 +16,7 @@ using namespace math;
 namespace factory
 {
 
-FaceMesh* make_cube()
+FaceMesh* make_cube(bool finalize)
 {
     FaceMesh* pmesh = new FaceMesh;
     //                  /--------POSITION------  /----------UV----------
@@ -68,8 +68,12 @@ FaceMesh* make_cube()
     pmesh->push_triangle(16, 18, 19);
     pmesh->push_triangle(20, 21, 22);
     pmesh->push_triangle(20, 22, 23);
-    pmesh->build_normals_and_tangents();
-    pmesh->compute_dimensions();
+
+    if(finalize)
+    {
+        pmesh->build_normals_and_tangents();
+        pmesh->compute_dimensions();
+    }
 
     return pmesh;
 }
@@ -101,6 +105,8 @@ MeshP* make_cube_3P()
     pmesh->push_line(7, 3);
     pmesh->push_line(5, 1);
 
+    pmesh->set_centered(true);
+
     return pmesh;
 }
 
@@ -131,13 +137,15 @@ MeshPC* make_cube_3P_3C()
     pmesh->push_line(7, 3);
     pmesh->push_line(5, 1);
 
+    pmesh->set_centered(true);
+
     return pmesh;
 }
 
 MeshP* make_cube_NDC_3P()
 {
     MeshP* pmesh = new MeshP;
-    float uu = 0.8f;
+    float uu = 0.5f;
     // BOTTOM
     pmesh->_emplace_vertex(vec3( uu, -uu, uu));   // 0
     pmesh->_emplace_vertex(vec3( uu, -uu, -uu));  // 1
@@ -161,6 +169,8 @@ MeshP* make_cube_NDC_3P()
     pmesh->push_line(2, 3);
     pmesh->push_line(7, 3);
     pmesh->push_line(5, 1);
+
+    pmesh->set_centered(true);
 
     return pmesh;
 }
@@ -258,6 +268,9 @@ MeshP* make_uv_sphere_3P(uint32_t nRings,
             pmesh->_push_triangle(base + (pp+1)%nRingPoints, npoints-2, base + pp);
         }
     }
+
+    pmesh->set_centered(true);
+
     return pmesh;
 }
 
@@ -318,6 +331,8 @@ FaceMesh* make_uv_sphere(uint32_t nRings,
         pmesh->push_triangle(base + (pp+1)%nRingPoints, npoints-2, base + pp);
     }
 
+    pmesh->set_centered(true);
+
     pmesh->build_normals_and_tangents();
     pmesh->compute_dimensions();
     return pmesh;
@@ -325,9 +340,8 @@ FaceMesh* make_uv_sphere(uint32_t nRings,
 
 // Constants to avoid having to renormalize positions of icosahedron vertices each call
 static const float PHI = (1.0f + sqrt(5.0f)) / 2.0f;
-static const float PHI_ONE_NORM = 1.0f/sqrt(2.0f+PHI); // norm of any icosahedron vertex position
-static const float ONE_N = 1.0f*PHI_ONE_NORM;
-static const float PHI_N = PHI*PHI_ONE_NORM;
+static const float ONE_N = 1.0f/(sqrt(2.0f+PHI)); // norm of any icosahedron vertex position
+static const float PHI_N = PHI*ONE_N;
 
 TriangularMesh* make_icosahedron(bool finalize)
 {
@@ -372,7 +386,9 @@ TriangularMesh* make_icosahedron(bool finalize)
     pmesh->push_triangle(8, 6, 7);
     pmesh->push_triangle(9, 8, 1);
 
-    if(finalize)
+    pmesh->set_centered(true);
+
+    if(!finalize)
     {
         pmesh->build_normals_and_tangents();
         pmesh->compute_dimensions();
@@ -430,6 +446,8 @@ MeshP* make_icosahedron_3P()
     pmesh->push_line(7, 8);
     pmesh->push_line(8, 9);
     pmesh->push_line(10, 11);
+
+    pmesh->set_centered(true);
 
     return pmesh;
 }
@@ -511,10 +529,7 @@ static uint32_t get_mid_point(const i32vec2& edge,
 
 static inline i32vec2 ordered_edge(uint32_t p1, uint32_t p2)
 {
-    if(p1<p2)
-        return i32vec2(p1,p2);
-    else
-        return i32vec2(p2,p1);
+    return (p1<p2)?i32vec2(p1,p2):i32vec2(p2,p1);
 }
 
 void subdivide_mesh(TriangularMesh* pmesh)
@@ -548,7 +563,7 @@ void subdivide_mesh(TriangularMesh* pmesh)
 
 TriangularMesh* make_ico_sphere(uint32_t refine, bool finalize)
 {
-    // * Generate an icosahedron, but don't finalize mesh
+    // * Generate an icosahedron, but don't compute normals and tangents ftm
     TriangularMesh* pmesh = make_icosahedron(false);
 
     // * Subdivide: replace each triangle by 4 triangles

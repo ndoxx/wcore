@@ -25,16 +25,18 @@
 
     <Chunk coords="(0,0)">
         <Models>
-            <!-- Icosphere -->
             <Model ypos="relative">
-                <Mesh type="cube"/>
+                <Mesh type="icosphere">
+                    <Density>0</Density>
+                </Mesh>
                 <Material>
                     <Color>(1.0,0.4,0.05)</Color>
                     <Roughness>0.2</Roughness>
                 </Material>
                 <Transform>
-                    <Position>(0,0,0)</Position>
-                    <Scale>2.0</Scale>
+                    <Position>(0,4,0)</Position>
+                    <Scale>1.0</Scale>
+                    <Angle>(0,0,0)</Angle>
                 </Transform>
                 <AABB>
                     <Offset>(0,0,0)</Offset>
@@ -45,7 +47,7 @@
         <Lights>
             <!-- Static lights -->
             <Light type="point" ypos="relative">
-                <Position>(3.0,3.0,3.0)</Position>
+                <Position>(2.0,2.0,2.0)</Position>
                 <Color>(0.2, 0.9, 0.7)</Color>
                 <Radius>10.0</Radius>
                 <Brightness>10.0</Brightness>

@@ -154,12 +154,13 @@ void Chunk::traverse_models(ModelVisitor func,
             }
         }
     }
-    else if(model_cat == wcore::MODEL_CATEGORY::TRANSPARENT || model_cat == wcore::MODEL_CATEGORY::IRRELEVANT)
+    if(model_cat == wcore::MODEL_CATEGORY::TRANSPARENT || model_cat == wcore::MODEL_CATEGORY::IRRELEVANT)
     {
         if(order == wcore::ORDER::IRRELEVANT)
         {
             for(pModel pmodel : models_blend_)
-                func(pmodel, index_);
+                if(ifFunc(pmodel))
+                    func(pmodel, index_);
         }
         else if(order == wcore::ORDER::BACK_TO_FRONT)
         {
