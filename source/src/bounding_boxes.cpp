@@ -98,10 +98,21 @@ void AABB::update()
 
     // Compute OBB vertices and extent
     std::vector<vec3> OBB_vertices;
-    for(uint32_t ii=0; ii<8; ++ii)
+    if(centered_) // Is mesh centered around origin in model space?
     {
-        vec3 vertex(proper_transform_ * CUBE_VERTICES[ii]);
-        OBB_vertices.push_back(vertex);
+        for(uint32_t ii=0; ii<8; ++ii)
+        {
+            vec3 vertex(proper_transform_ * CENTERED_CUBE_VERTICES[ii]);
+            OBB_vertices.push_back(vertex);
+        }
+    }
+    else
+    {
+        for(uint32_t ii=0; ii<8; ++ii)
+        {
+            vec3 vertex(proper_transform_ * CUBE_VERTICES[ii]);
+            OBB_vertices.push_back(vertex);
+        }
     }
     math::compute_extent(OBB_vertices, extent_);
 
@@ -114,14 +125,10 @@ void AABB::update()
                                    (extent_[3]+extent_[2])*0.5f,
                                    (extent_[5]+extent_[4])*0.5f));
 
-    // ~HACK translate vertically if mesh is not centered
-    if(centered_)
-        offset_.init_translation(vec3(0,-parent_transform_.get_scale(),0));
-
     // Compute AABB vertices
-    proper_transform_ = AABB_pos * offset_ * AABB_scale;
+    proper_transform_ = AABB_pos * AABB_scale;
     for(uint32_t ii=0; ii<8; ++ii)
-        vertices_[ii] = proper_transform_ * CUBE_VERTICES[ii];
+        vertices_[ii] = proper_transform_ * CENTERED_CUBE_VERTICES[ii];
 }
 
 bool AABB::is_inside(const vec3& point) const
