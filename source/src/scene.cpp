@@ -128,7 +128,6 @@ void Scene::visit_model_first(ModelVisitor func, ModelEvaluator ifFunc) const
     }
 }
 
-
 void Scene::draw_line_models(std::function<void(pLineModel)> func)
 {
     //Traverse chunks front to back

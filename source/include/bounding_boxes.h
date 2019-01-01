@@ -43,8 +43,6 @@ class AABB
 {
 private:
     Model& parent_;
-    math::mat4       proper_scale_;
-    math::mat4       offset_;
     math::mat4       proper_transform_;
     std::array<math::vec3, 8> vertices_;
     extent_t         extent_;
@@ -71,7 +69,6 @@ public:
     }
     inline const extent_t& get_extent() const { return extent_; }
 
-    inline void set_offset(const math::vec3& offset) { offset_.init_translation(offset); }
     inline const std::array<math::vec3, 8>& get_vertices() const { return vertices_; }
     inline const math::mat4& get_model_matrix() const          { return proper_transform_; }
 };

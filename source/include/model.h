@@ -87,7 +87,6 @@ public:
     inline void set_dynamic(bool value)                         { is_dynamic_ = value; }
     inline AABB& get_AABB()                                     { if(is_dynamic_) aabb_.update(); return aabb_; }
     inline void update_AABB()                                   { aabb_.update(); }
-    inline void set_AABB_offset(const math::vec3& offset)       { aabb_.set_offset(offset); }
     inline OBB& get_OBB()                                       { if(is_dynamic_) obb_.update(); return obb_; }
     inline void update_OBB()                                    { obb_.update(); }
     inline void set_OBB_offset(const math::vec3& offset)        { obb_.set_offset(offset); }

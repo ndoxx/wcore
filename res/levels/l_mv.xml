@@ -38,9 +38,6 @@
                     <Scale>1.0</Scale>
                     <Angle>(0,0,0)</Angle>
                 </Transform>
-                <AABB>
-                    <Offset>(0,0,0)</Offset>
-                </AABB>
             </Model>
         </Models>
 

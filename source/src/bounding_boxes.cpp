@@ -56,7 +56,7 @@ centered_(parent.get_mesh().is_centered())
                                   extent_[3]-extent_[2],
                                   extent_[5]-extent_[4]));
 
-    // translate mesh if not centered
+    // Translate mesh if not centered
     if(!parent.get_mesh().is_centered())
         offset_.init_translation(vec3((extent_[1]+extent_[0])*0.5f,
                                       (extent_[3]+extent_[2])*0.5f,
@@ -82,19 +82,14 @@ AABB::AABB(Model& parent):
 parent_(parent),
 centered_(parent.get_mesh().is_centered())
 {
-    // Initialize proper scale to parent's intrinsic scale
-    const extent_t& pdim = parent.get_mesh().get_dimensions();
-    proper_scale_.init_scale(vec3(pdim[1]-pdim[0],
-                                  pdim[3]-pdim[2],
-                                  pdim[5]-pdim[4]));
 
-    offset_.init_identity();
 }
 
 AABB::~AABB() = default;
 
 void AABB::update()
 {
+    // Get parent OBB and compute its extent
     math::compute_extent(parent_.get_OBB().get_vertices(), extent_);
 
     // Create AABB from OBB extent

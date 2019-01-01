@@ -88,9 +88,6 @@
                     <Position>(5,2,10)</Position>
                     <Scale>2.0</Scale>
                 </Transform>
-                <AABB>
-                    <Offset>(0,0,0)</Offset>
-                </AABB>
             </Model>
             <Model ypos="relative">
                 <Mesh type="icosphere">
@@ -104,9 +101,6 @@
                     <Position>(5,2,15)</Position>
                     <Scale>2.0</Scale>
                 </Transform>
-                <AABB>
-                    <Offset>(0,0.0,0)</Offset>
-                </AABB>
             </Model>
             <Model ypos="relative">
                 <Mesh type="icosphere">
@@ -120,9 +114,6 @@
                     <Position>(5,2,20)</Position>
                     <Scale>2.0</Scale>
                 </Transform>
-                <AABB>
-                    <Offset>(0,0.0,0)</Offset>
-                </AABB>
             </Model>
             <Model ypos="relative">
                 <Mesh type="icosphere">
@@ -136,9 +127,6 @@
                     <Position>(5,2,25)</Position>
                     <Scale>2.0</Scale>
                 </Transform>
-                <AABB>
-                    <Offset>(0,0.0,0)</Offset>
-                </AABB>
             </Model>
 
             <!-- Procedural Rocks -->
@@ -164,9 +152,6 @@
                     <Position>(25,0.5,15)</Position>
                     <Scale>2.0</Scale>
                 </Transform>
-                <AABB>
-                    <Offset>(0,-0.5,0)</Offset>
-                </AABB>
             </Model>
 
             <!-- Spline tentacle -->
@@ -379,9 +364,6 @@
                     <Angle variance="(2.0,2.0,2.0)">(0.0,0.0,0.0)</Angle>
                     <Scale variance="0.5">1.5</Scale>
                 </Transform>
-                <AABB>
-                    <Offset>(0,0,0)</Offset>
-                </AABB>
                 <Shadow>
                     <CullFace>2</CullFace>
                 </Shadow>

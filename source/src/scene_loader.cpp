@@ -424,7 +424,6 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     xml_node<>* mat_node = patch->first_node("Material");
     if(!mat_node) return;
     xml_node<>* trn_node = patch->first_node("Transform");
-    xml_node<>* aabb_node = patch->first_node("AABB");
     xml_node<>* shadow_node = patch->first_node("Shadow");
     xml_node<>* generator_node = patch->first_node("Generator");
     xml_node<>* height_modifier_node = patch->first_node("HeightModifier");
@@ -556,24 +555,6 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
                     (chunk_size_m_-lattice_scale_)*chunk_coords.y());
     terrain->set_transformation(trans);
 
-    // AABB options
-    if(aabb_node)
-    {
-        vec3 aabb_offset;
-        if(xml::parse_node(aabb_node, "Offset", aabb_offset))
-        {
-            terrain->set_AABB_offset(aabb_offset);
-        }
-    }
-    else
-    {
-        auto&& dimensions = terrain->get_mesh().get_dimensions();
-        // By default -> for hex terrain meshes
-        // Center bounding boxes on terrain chunk
-        terrain->set_OBB_offset(vec3(0.5f*(chunk_size_m_-1.0f), dimensions[3]*0.5f, 0.5f*(chunk_size_m_-0.5f)));
-        terrain->set_AABB_offset(vec3(0.25f*(chunk_size_m_-1.0f), dimensions[2]*0.5f, 0.25f*(chunk_size_m_-0.5f)));
-    }
-
     // Shadow options
     if(shadow_node)
     {
@@ -601,7 +582,6 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
 
         xml_node<>* trn_node = model->first_node("Transform");
         xml_node<>* mot_node = model->first_node("Motion");
-        xml_node<>* aabb_node = model->first_node("AABB");
         xml_node<>* shadow_node = model->first_node("Shadow");
 
         // Do we position the models relative to a heightmap?
@@ -639,16 +619,6 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
             pmdl->translate((chunk_size_m_-1)*chunk_coords.x(),
                             0,
                             (chunk_size_m_-1)*chunk_coords.y());
-        }
-
-        // AABB options
-        if(aabb_node)
-        {
-            vec3 aabb_offset;
-            if(xml::parse_node(aabb_node, "Offset", aabb_offset))
-            {
-                pmdl->set_AABB_offset(aabb_offset);
-            }
         }
 
         // Shadow options
@@ -738,7 +708,6 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
             continue;
         xml_node<>* shadow_node = batch->first_node("Shadow");
         xml_node<>* trn_node = batch->first_node("Transform");
-        xml_node<>* aabb_node = batch->first_node("AABB");
 
         uint32_t instances, seed;
         xml::parse_attribute(batch, "instances", instances);
@@ -763,11 +732,6 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
         xml::parse_node(mat_node, "Roughness", roughness);
         xml::parse_attribute(mat_node->first_node("Color"), "variance", color_var);
         xml::parse_attribute(mat_node->first_node("Color"), "space", color_space);
-
-        // AABB options
-        vec3 aabb_offset(0.0f);
-        if(aabb_node)
-            xml::parse_node(aabb_node, "Offset", aabb_offset);
 
         // Generate batch transformations
         std::vector<Transformation> transforms;
@@ -822,11 +786,6 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
                 uint32_t cull_face=0;
                 if(xml::parse_node(shadow_node, "CullFace", cull_face))
                     pmdl->set_shadow_cull_face(cull_face);
-            }
-
-            if(aabb_node)
-            {
-                pmdl->set_AABB_offset(aabb_offset);
             }
 
             pmdl->update_bounding_boxes();
