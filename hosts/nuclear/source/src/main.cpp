@@ -159,48 +159,25 @@ int main()
 
 using namespace wcore;
 
-struct OctreeContent
-{
-    typedef math::vec3 entry_t;
-
-    inline void add(const entry_t& entry)
-    {
-        points_.push_back(entry);
-    }
-    inline void clear()
-    {
-        points_.clear();
-    }
-    inline uint32_t size() const
-    {
-        return points_.size();
-    }
-
-    void traverse(std::function<void(const entry_t&, const math::vec3&)> visit)
-    {
-        for(auto&& point: points_)
-            visit(point, point);
-    }
-
-    std::list<math::vec3> points_;
-};
-
 int main()
 {
-    BoundingRegion region({-100,100,0,10,-100,100});
-    OctreeContent content;
+    typedef Octree<math::vec3,float> PointOctree;
+    typedef PointOctree::content_t   DataList;
 
-    math::srand_vec3(0);
+    BoundingRegion region({-100,100,0,10,-100,100});
+    DataList data_points;
+
+    math::srand_vec3(1);
     for(int ii=0; ii<1000; ++ii)
     {
-        content.points_.push_back(math::random_vec3(region.extent));
+        data_points.push_back(std::make_pair(math::random_vec3(region.extent),1.0f));
     }
 
     const float    MIN_CELL_SIZE  = 5.0f;
     const uint32_t MAX_CELL_COUNT = 20;
 
-    Octree<OctreeContent> octree(region, std::move(content));
-    octree.subdivide([&](const OctreeContent& cur_content, const BoundingRegion& cur_region)
+    PointOctree octree(region, std::move(data_points));
+    octree.subdivide([&](const DataList& cur_content, const BoundingRegion& cur_region)
     {
         float size_x = cur_region.extent[1]-cur_region.extent[0];
         return (size_x > MIN_CELL_SIZE)
@@ -208,7 +185,7 @@ int main()
     });
 
     uint32_t npoints=0;
-    octree.traverse_leaves([&](Octree<OctreeContent>* leaf)
+    octree.traverse_leaves([&](PointOctree* leaf)
     {
         std::cout << "--- Current region: ";
         for(int jj=0; jj<6; ++jj)
@@ -218,10 +195,10 @@ int main()
         std::cout << std::endl;
         std::cout << "\tContent: " << std::endl;
         auto&& content = leaf->get_content();
-        for(auto&& point: content.points_)
+        for(auto&& data: content)
         {
             ++npoints;
-            std::cout << "\t" << point << std::endl;
+            std::cout << "\t" << data.first << " data: " << data.second << std::endl;
         }
     });
 

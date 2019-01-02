@@ -5873,6 +5873,10 @@ Le deuxième argument permet la chaîne de récursivité.
 A chaque niveau de récursion, on teste si on doit encore subdiviser en se servant du prédicat. On peut vouloir contraindre la taille minimale des cellules ou le nombre d'objets max qu'elles peuvent contenir par exemple (je fais les deux). Si on ne peut pas subdiviser, alors on a notre condition d'arrêt. Si on peut subdiviser, alors on commence par allouer et initialiser les 8 octants enfants. Puis on calcule les limites spatiales des octants, à partir du centre de la cellule courante et de ses propres limites. Ensuite le contenu de la cellule courante est dispatché dans les octants, puis les enfants sont subdivisés à leur tour...
 
 Pour l'instant, comme je ne classe que des points pour ce prototype d'octree, tous mes objets finissent nécessairement dans les feuilles de l'octree. Donc à chaque niveau de récursion, je vide complètement la liste courante dans les octants. Plus tard, quand je devrai classer des bounding boxes, il faudra déterminer si les octants sont suffisamment larges pour accueillir celles-ci, le cas échéant l'objet restera dans le noeud parent (ne sera pas retiré de sa liste).
+La structure actuelle s'appelle un Point Octree, et reste intéressante à conserver (utile pour les algos de particules type flocking...). Il faudrait que je puisse templater l'octree avec la classe d'objets à partitionner, ce serait plus intelligent que de tout foutre en l'air pour remplacer par des AABBs.
+
+* NOTE:
+    Mes _AABB_ ont pour le moment un membre Model& (qui leur sert à récupérer l'_OBB_ du parent pour l'update), ça va être gênant pour en faire une utilisation avec les _Entity_ plus tard.
 
 -> Quand j'utiliserai l'octree dans mon moteur, il faudra veiller à ce que les chunks puissent être contenus dans des cellules à leur taille. D'une certaine manière, les chunks deviendront une unité d'insertion pour l'octree.
 -> Je pense aussi me servir de l'octree pour accélérer (O(n)->O(log(n))) le frustum culling (genre, on peut skip toute une branche dont la racine n'est pas visible).
