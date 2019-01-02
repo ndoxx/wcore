@@ -171,6 +171,10 @@ struct OctreeContent
     {
         points_.clear();
     }
+    inline uint32_t size() const
+    {
+        return points_.size();
+    }
 
     void traverse(std::function<void(const entry_t&, const math::vec3&)> visit)
     {
@@ -183,20 +187,45 @@ struct OctreeContent
 
 int main()
 {
-    BoundingRegion region({-10,10,0,10,-10,10});
+    BoundingRegion region({-100,100,0,10,-100,100});
     OctreeContent content;
 
     math::srand_vec3(0);
-    for(int ii=0; ii<100; ++ii)
+    for(int ii=0; ii<1000; ++ii)
     {
         content.points_.push_back(math::random_vec3(region.extent));
     }
+
+    const float    MIN_CELL_SIZE  = 5.0f;
+    const uint32_t MAX_CELL_COUNT = 20;
 
     Octree<OctreeContent> octree(region, std::move(content));
     octree.subdivide([&](const OctreeContent& cur_content, const BoundingRegion& cur_region)
     {
         float size_x = cur_region.extent[1]-cur_region.extent[0];
-        return size_x > 4.0f;
+        return (size_x > MIN_CELL_SIZE)
+            && (cur_content.size()>MAX_CELL_COUNT);
     });
+
+    uint32_t npoints=0;
+    octree.traverse_leaves([&](Octree<OctreeContent>* leaf)
+    {
+        std::cout << "--- Current region: ";
+        for(int jj=0; jj<6; ++jj)
+        {
+            std::cout << leaf->get_bounds().extent[jj] << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "\tContent: " << std::endl;
+        auto&& content = leaf->get_content();
+        for(auto&& point: content.points_)
+        {
+            ++npoints;
+            std::cout << "\t" << point << std::endl;
+        }
+    });
+
+    std::cout << "Recovered " << npoints << " points." << std::endl;
+
     return 0;
 }

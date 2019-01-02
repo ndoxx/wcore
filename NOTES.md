@@ -5857,3 +5857,34 @@ Tout est beaucoup plus clair et hack-free.
     [ ] Insp chunk loading:
 
     What we do is actually pretty simple. Each frame we loop though all active chunks for update. During the update, we check and see if a chunk is missing any neighbors. If it is, we check and see if the neighbor chunk slots are withing the loading range. If they are, we load chunks and hook them up to their neighbors.
+
+#[02-01-19] Du gros Octree qui tache
+Je suis en train de prévoir la broad phase du moteur physique. J'ai dev un début de classe _Octree_ dans octree.hpp.
+Pour l'instant je ne peux classer que des points, la classe devra évoluer pour classer des objets avec des AABBs.
+La classe est templatée par une structure contenant une ou plusieurs listes d'objets. Cette structure doit définir différentes fonctions pour être utilisable dans _Octree_. Je ne suis pas totalement satisfait de cette approche, donc je tairai le détail pour le moment.
+L'octree possède des membres parent_ et children_ de type Octree* . L'octree root (qui englobera le niveau entier) possède un parent_ nullptr, et les leaves ont leur children_ nullptr. Un autre membre important est bounding_region_ (qui contient essentiellement un math::extent_t et un membre mid_point initialisé RAII) qui fixe les limites spatiales d'un noeud donné de l'arbre.
+La partie "compliquée" consiste à subdiviser récursivement l'espace en 8 octants à chaque fois que c'est nécessaire, et à répartir le contenu d'une cellule à subdiviser dans les 8 octants enfants.
+La viande se trouve donc dans Octree<content_t>::subdivide() qui prend un prédicat et un Octree* en arguments. Le prédicat sert à évaluer depuis l'extérieur de la classe si la cellule spatiale courante doit encore être subdivisée :
+```cpp
+    typedef std::function<bool(const content_t&, const BoundingRegion&)> subdivision_predicate_t;
+```
+Le deuxième argument permet la chaîne de récursivité.
+
+A chaque niveau de récursion, on teste si on doit encore subdiviser en se servant du prédicat. On peut vouloir contraindre la taille minimale des cellules ou le nombre d'objets max qu'elles peuvent contenir par exemple (je fais les deux). Si on ne peut pas subdiviser, alors on a notre condition d'arrêt. Si on peut subdiviser, alors on commence par allouer et initialiser les 8 octants enfants. Puis on calcule les limites spatiales des octants, à partir du centre de la cellule courante et de ses propres limites. Ensuite le contenu de la cellule courante est dispatché dans les octants, puis les enfants sont subdivisés à leur tour...
+
+Pour l'instant, comme je ne classe que des points pour ce prototype d'octree, tous mes objets finissent nécessairement dans les feuilles de l'octree. Donc à chaque niveau de récursion, je vide complètement la liste courante dans les octants. Plus tard, quand je devrai classer des bounding boxes, il faudra déterminer si les octants sont suffisamment larges pour accueillir celles-ci, le cas échéant l'objet restera dans le noeud parent (ne sera pas retiré de sa liste).
+
+-> Quand j'utiliserai l'octree dans mon moteur, il faudra veiller à ce que les chunks puissent être contenus dans des cellules à leur taille. D'une certaine manière, les chunks deviendront une unité d'insertion pour l'octree.
+-> Je pense aussi me servir de l'octree pour accélérer (O(n)->O(log(n))) le frustum culling (genre, on peut skip toute une branche dont la racine n'est pas visible).
+-> Plus tard on pourra tirer partie de cette structure pour du LoD dynamique sur le terrain, ça serait super sexy.
+
+* TODO:
+    [ ] Gérer les bounding boxes
+        -> Move object to child list iif child bounds are large enough
+        -> Only delete moved objects from the list (use delete list)
+    [ ] Ecrire une fonction d'insertion en lazy init à la [1]
+        -> On feed une liste d'objets à rajouter dans l'octree
+        -> On insère la liste en une seule fois, plutôt que d'avoir à effectuer une reconstruction partielle/totale de l'octree à chaque insertion.
+
+* sources :
+[1] https://www.gamedev.net/articles/programming/general-and-gameplay-programming/introduction-to-octrees-r3529/

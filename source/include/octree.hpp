@@ -41,6 +41,9 @@ public:
     // Recursive spatial subdivision
     void subdivide(subdivision_predicate_t can_subdivide, Octree* current=nullptr);
 
+    // Recursive octree leaves traversal
+    void traverse_leaves(std::function<void(Octree*)> visit, Octree* current=nullptr);
+
     inline void set_node_active(uint8_t index)
     {
         assert(index<8 && "Octree::set_node_active() index out of bounds.");
@@ -56,6 +59,15 @@ public:
         assert(index<8 && "Octree::is_node_active() index out of bounds.");
         return active_nodes_[index];
     }
+    inline bool is_leaf_node() const
+    {
+        return (children_ == nullptr);
+    }
+    inline const BoundingRegion& get_bounds() const  { return bounding_region_; }
+    inline const content_t& get_content() const      { return content_; }
+
+    inline bool octant_contains(uint8_t index, const math::vec3& point);
+    // TODO: implement octant_contains() for bounding boxes
 
 private:
     Octree* parent_;
@@ -90,6 +102,18 @@ Octree<content_t>::~Octree()
 {
     delete[] children_;
     active_nodes_ = 0x0;
+}
+
+template <class content_t>
+inline bool Octree<content_t>::octant_contains(uint8_t index, const math::vec3& point)
+{
+    assert(index<8 && "Octree::octant_contains() index out of bounds.");
+    return(point[0] >= children_[index].bounding_region_.extent[0]
+        && point[0] <  children_[index].bounding_region_.extent[1]
+        && point[1] >= children_[index].bounding_region_.extent[2]
+        && point[1] <  children_[index].bounding_region_.extent[3]
+        && point[2] >= children_[index].bounding_region_.extent[4]
+        && point[2] <  children_[index].bounding_region_.extent[5]);
 }
 
 template <class content_t>
@@ -150,35 +174,24 @@ void Octree<content_t>::subdivide(subdivision_predicate_t can_subdivide, Octree*
                                                              current->bounding_region_.extent[2], center[1],
                                                              current->bounding_region_.extent[4], center[2]});
 
-    /*for(int ii=0; ii<8; ++ii)
-    {
-        std::cout << "Octant " << ii << ": ";
-        for(int jj=0; jj<6; ++jj)
-        {
-            std::cout << current->children_[ii].bounding_region_.extent[jj] << " ";
-        }
-        std::cout << std::endl;
-    }*/
-
     // * Dispatch current content into children octants
     current->content_.traverse([&](const typename content_t::entry_t& entry, const math::vec3& object_position)
     {
         for(int ii=0; ii<8; ++ii)
         {
             // If object position is within child bounding region, add it to child content
-            if(object_position[0]>current->children_[ii].bounding_region_.extent[0]
-            && object_position[0]<current->children_[ii].bounding_region_.extent[1]
-            && object_position[1]>current->children_[ii].bounding_region_.extent[2]
-            && object_position[1]<current->children_[ii].bounding_region_.extent[3]
-            && object_position[2]>current->children_[ii].bounding_region_.extent[4]
-            && object_position[2]<current->children_[ii].bounding_region_.extent[5])
+            // TODO: test against bounding boxes
+            // -> Move object to child list iif child bounds are large enough
+            // -> Only delete moved objects from the list
+            if(current->octant_contains(ii, object_position))
             {
                 current->children_[ii].content_.add(entry);
                 return;
             }
         }
     });
-    current->content_.clear();
+    // Remove moved objects from list
+    current->content_.clear(); // ftm that's all the objects, bc we move points
 
     // * Recursively subdivide children nodes
     for(int ii=0; ii<8; ++ii)
@@ -186,6 +199,28 @@ void Octree<content_t>::subdivide(subdivision_predicate_t can_subdivide, Octree*
         subdivide(can_subdivide, &current->children_[ii]);
     }
 }
+
+template <class content_t>
+void Octree<content_t>::traverse_leaves(std::function<void(Octree*)> visit, Octree* current)
+{
+    // * Initial condition
+    if(current == nullptr)
+        current = this;
+
+    // * Stop condition
+    if(current->is_leaf_node())
+    {
+        visit(current);
+        return;
+    }
+
+    // * Walk down the octree recursively
+    for(int ii=0; ii<8; ++ii)
+    {
+        traverse_leaves(visit, &current->children_[ii]);
+    }
+}
+
 
 } // namespace wcore
 
