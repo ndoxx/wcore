@@ -25,7 +25,6 @@ private:
     math::mat4       offset_;
     math::mat4       proper_transform_;
     std::array<math::vec3, 8> vertices_;
-    bool             centered_;
 
 public:
     OBB(Model& parent);
@@ -46,7 +45,6 @@ private:
     math::mat4       proper_transform_;
     std::array<math::vec3, 8> vertices_;
     extent_t         extent_;
-    bool             centered_;
 
 public:
     AABB(Model& parent);

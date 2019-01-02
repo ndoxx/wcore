@@ -1,4 +1,4 @@
-#include <iostream>
+/*#include <iostream>
 #include <ostream>
 #include <functional>
 #include "math3d.h"
@@ -139,13 +139,64 @@ int main()
     }
 
     // Plot
-    /*Gnuplot gp;
+    Gnuplot gp;
 
     // Don't forget to put "\n" at the end of each line!
     gp << "set xrange [0:1.2]\nset yrange [0:12]\n";
     // '-' means read from stdin.  The send1d() function sends data to gnuplot's stdin.
     gp << "plot '-' with vectors title 'traj'\n";
-    gp.send1d(plot_points);*/
+    gp.send1d(plot_points);
 
+    return 0;
+}
+*/
+
+#include <iostream>
+#include <list>
+
+#include "octree.hpp"
+#include "math3d.h"
+
+using namespace wcore;
+
+struct OctreeContent
+{
+    typedef math::vec3 entry_t;
+
+    inline void add(const entry_t& entry)
+    {
+        points_.push_back(entry);
+    }
+    inline void clear()
+    {
+        points_.clear();
+    }
+
+    void traverse(std::function<void(const entry_t&, const math::vec3&)> visit)
+    {
+        for(auto&& point: points_)
+            visit(point, point);
+    }
+
+    std::list<math::vec3> points_;
+};
+
+int main()
+{
+    BoundingRegion region({-10,10,0,10,-10,10});
+    OctreeContent content;
+
+    math::srand_vec3(0);
+    for(int ii=0; ii<100; ++ii)
+    {
+        content.points_.push_back(math::random_vec3(region.extent));
+    }
+
+    Octree<OctreeContent> octree(region, std::move(content));
+    octree.subdivide([&](const OctreeContent& cur_content, const BoundingRegion& cur_region)
+    {
+        float size_x = cur_region.extent[1]-cur_region.extent[0];
+        return size_x > 4.0f;
+    });
     return 0;
 }

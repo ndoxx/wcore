@@ -5847,3 +5847,13 @@ Le regex_iterator peut être déréférencé pour retourner un std::smatch. L'é
 Noter que le regex ignore les cas d'utilisation runtime de la macro H_, car des guillemets doivent être présents pour qu'il y ait match.
 
 J'ai ensuite modifié parse_entry() pour détecter les collisions de hash. Si un hash est déjà présent dans le tableau, alors la string correspondante est comparée à la nouvelle string qui a produit le même hash. Si les deux strings sont différentes, c'est qu'il y a une collision, le programme génère un warning et demande l'appui sur la touche ENTER avant de poursuivre.
+
+#[01-01-19]
+J'ai réglé TOUS les problèmes que j'avais avec les AABB/OBB, qui sont maintenant parfaitement calés et optimaux. Il y a juste une distinction à faire entre les modèles dont le mesh est centré sur l'origine en model space et ceux qui ont un ymin=0. Si le modèle n'est pas centré, il faut translater son OBB verticalement, puisque j'utilise les vertices d'un cube centré dans la fonction OBB::update(). La fonction AABB::update() utilise maintenant l'OBB du modèle parent pour éliminer les calculs inutiles.
+Tout est beaucoup plus clair et hack-free.
+
+* TODO:
+    [ ] Bien penser à updater les bounding boxes pour les objets qui bougent.
+    [ ] Insp chunk loading:
+
+    What we do is actually pretty simple. Each frame we loop though all active chunks for update. During the update, we check and see if a chunk is missing any neighbors. If it is, we check and see if the neighbor chunk slots are withing the loading range. If they are, we load chunks and hook them up to their neighbors.

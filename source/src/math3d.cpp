@@ -1,3 +1,4 @@
+#include <random>
 #include "math3d.h"
 
 namespace wcore
@@ -395,6 +396,20 @@ mat4 scale_translate(const vec3& world_position, float scale)
     return T*S;
 }
 
+static std::mt19937 genv3;
+
+void srand_vec3(uint32_t seed)
+{
+    genv3.seed(seed);
+}
+
+vec3 random_vec3(const extent_t& extent)
+{
+    std::uniform_real_distribution<float> dis_x(extent[0], extent[1]);
+    std::uniform_real_distribution<float> dis_y(extent[2], extent[3]);
+    std::uniform_real_distribution<float> dis_z(extent[4], extent[5]);
+    return vec3(dis_x(genv3),dis_y(genv3),dis_z(genv3));
+}
 
 } // namespace math
 } // namespace wcore

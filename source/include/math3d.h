@@ -1,6 +1,7 @@
 #ifndef MATH_H
 #define MATH_H
 
+#include <array>
 #include "math_structures.hpp"
 
 namespace wcore
@@ -18,6 +19,8 @@ namespace wcore
 
 namespace math
 {
+
+typedef std::array<float, 6> extent_t;
 
 // Vector helper funcs
 template <unsigned N, typename T>
@@ -138,6 +141,9 @@ T lerp(const T& t1, const T& t2, float param)
     //return (1.0f-param)*t1 + param*t2;
     return t1 + param*(t2-t1);
 }
+
+void srand_vec3(uint32_t seed=0);
+vec3 random_vec3(const extent_t& extent);
 
 // Returns a matrix that transforms unitary segment along x to any segment starting at
 // world position world_start and ending at world_end.

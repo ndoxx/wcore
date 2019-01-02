@@ -48,15 +48,14 @@ static const std::vector<vec3> NDC_CUBE_VERTICES
 
 OBB::OBB(Model& parent):
 parent_(parent),
-extent_(parent.get_mesh().get_dimensions()),
-centered_(parent.get_mesh().is_centered())
+extent_(parent.get_mesh().get_dimensions())
 {
-    // Initialize proper scale to parent's intrinsic scale
+    // Initialize proper scale (non uniform) to parent's intrinsic scale
     proper_scale_.init_scale(vec3(extent_[1]-extent_[0],
                                   extent_[3]-extent_[2],
                                   extent_[5]-extent_[4]));
 
-    // Translate mesh if not centered
+    // Translate OBB if mesh not centered bc we use the vertices of a centered cube in update()
     if(!parent.get_mesh().is_centered())
         offset_.init_translation(vec3((extent_[1]+extent_[0])*0.5f,
                                       (extent_[3]+extent_[2])*0.5f,
@@ -79,8 +78,7 @@ void OBB::update()
 
 
 AABB::AABB(Model& parent):
-parent_(parent),
-centered_(parent.get_mesh().is_centered())
+parent_(parent)
 {
 
 }
