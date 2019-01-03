@@ -396,6 +396,13 @@ mat4 scale_translate(const vec3& world_position, float scale)
     return T*S;
 }
 
+void translate_matrix(mat4& matrix, const vec3& translation)
+{
+    for(unsigned ii=0; ii<3; ++ii)
+        matrix[12+ii] += translation[ii];
+}
+
+
 static std::mt19937 genv3;
 
 void srand_vec3(uint32_t seed)

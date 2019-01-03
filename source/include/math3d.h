@@ -152,6 +152,8 @@ mat4 segment_transform(const vec3& world_start, const vec3& world_end);
 // Returns a scale-translation matrix
 mat4 scale_translate(const vec3& world_position, float scale);
 
+void translate_matrix(mat4& matrix, const vec3& translation);
+
 } // namespace math
 } // namespace wcore
 

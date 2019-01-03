@@ -14,61 +14,72 @@ namespace wcore
 class Model;
 struct Ray;
 
-typedef std::array<float, 6> extent_t;
+struct BoundingRegion
+{
+    BoundingRegion() = default;
+    explicit BoundingRegion(math::extent_t&& value);
+    explicit BoundingRegion(const math::extent_t& value);
+
+    void update();
+    bool intersects(const BoundingRegion& other) const;
+    bool contains(const math::vec3& point) const;
+
+    math::extent_t extent;
+    math::vec3 mid_point;
+    math::vec3 half;
+};
 
 class OBB
 {
 private:
-    Model& parent_;
-    const extent_t&  extent_;
+    BoundingRegion   bounding_region_; // Bounding region in model space
     math::mat4       proper_scale_;
-    math::mat4       offset_;
     math::mat4       proper_transform_;
+    math::vec3       offset_;
     std::array<math::vec3, 8> vertices_;
 
 public:
-    OBB(Model& parent);
+    OBB(const math::extent_t& parent_extent, bool centered);
     ~OBB();
 
-    void update();
+    void update(const math::mat4& parent_model_matrix);
 
-    inline void set_offset(const math::vec3& offset) { offset_.init_translation(offset); }
+    inline void set_offset(const math::vec3& offset)             { offset_ = offset; }
     inline const std::array<math::vec3, 8>& get_vertices() const { return vertices_; }
-    inline const math::mat4& get_model_matrix() const          { return proper_transform_; }
-    inline const extent_t& get_extent() const { return extent_; }
+    inline const math::mat4& get_model_matrix() const            { return proper_transform_; }
+    inline const math::extent_t& get_extent() const              { return bounding_region_.extent; }
 };
 
 class AABB
 {
 private:
-    Model& parent_;
+    BoundingRegion   bounding_region_; // Bounding region in world space
     math::mat4       proper_transform_;
     std::array<math::vec3, 8> vertices_;
-    extent_t         extent_;
 
 public:
-    AABB(Model& parent);
+    AABB();
     ~AABB();
 
-    void update();
+    void update(const OBB& parent_OBB);
     bool is_inside(const math::vec3& point) const;
 
-    inline float xmin() const { return extent_[0]; }
-    inline float xmax() const { return extent_[1]; }
-    inline float ymin() const { return extent_[2]; }
-    inline float ymax() const { return extent_[3]; }
-    inline float zmin() const { return extent_[4]; }
-    inline float zmax() const { return extent_[5]; }
+    inline float xmin() const { return bounding_region_.extent[0]; }
+    inline float xmax() const { return bounding_region_.extent[1]; }
+    inline float ymin() const { return bounding_region_.extent[2]; }
+    inline float ymax() const { return bounding_region_.extent[3]; }
+    inline float zmin() const { return bounding_region_.extent[4]; }
+    inline float zmax() const { return bounding_region_.extent[5]; }
 
     inline float extent(uint32_t index) const
     {
         assert(index<6 && "[AABB] extent() index out of bounds.");
-        return extent_[index];
+        return bounding_region_.extent[index];
     }
-    inline const extent_t& get_extent() const { return extent_; }
+    inline const math::extent_t& get_extent() const { return bounding_region_.extent; }
 
     inline const std::array<math::vec3, 8>& get_vertices() const { return vertices_; }
-    inline const math::mat4& get_model_matrix() const          { return proper_transform_; }
+    inline const math::mat4& get_model_matrix() const            { return proper_transform_; }
 };
 
 class Camera;
@@ -78,7 +89,7 @@ private:
     std::array<math::vec3, 8> vertices_;
     std::array<math::vec3, 6> normals_;
     std::vector<float> splits_;
-    extent_t extent_;
+    math::extent_t extent_;
     static const std::vector<uint32_t> planePoints;
 
 public:
@@ -151,7 +162,7 @@ struct RayCollisionData
     float far  = 0.0f;
 };
 
-bool ray_collides_extent(const Ray& ray, const extent_t& extent, RayCollisionData& data);
+bool ray_collides_extent(const Ray& ray, const math::extent_t& extent, RayCollisionData& data);
 inline bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
 {
     return ray_collides_extent(ray, aabb.get_extent(), data);

@@ -178,21 +178,10 @@ int main()
     octree.subdivide();
 
     uint32_t npoints=0;
-    /*octree.traverse_leaves([&](PointOctree* leaf)
+    /*octree.traverse_leaves([&](auto&& data)
     {
-        std::cout << "--- Current region: ";
-        for(int jj=0; jj<6; ++jj)
-        {
-            std::cout << leaf->get_bounds().extent[jj] << " ";
-        }
-        std::cout << std::endl;
-        std::cout << "\tContent: " << std::endl;
-        auto&& content = leaf->get_content();
-        for(auto&& data: content)
-        {
-            ++npoints;
-            std::cout << "\t" << data.first << " data: " << data.second << std::endl;
-        }
+        ++npoints;
+        std::cout << "\t" << data.first << " data: " << data.second << std::endl;
     });*/
 
     octree.traverse_range(BoundingRegion({-500,500,0,50,-500,500}),

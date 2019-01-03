@@ -8,49 +8,10 @@
 #include <iostream>
 
 #include "math3d.h"
+#include "bounding_boxes.h"
 
 namespace wcore
 {
-
-struct BoundingRegion
-{
-    BoundingRegion() = default;
-    explicit BoundingRegion(math::extent_t&& value):
-    extent(std::move(value)),
-    mid_point(math::vec3((extent[1]+extent[0])*0.5f,
-                         (extent[3]+extent[2])*0.5f,
-                         (extent[5]+extent[4])*0.5f)),
-    half(math::vec3((extent[1]-extent[0])*0.5f,
-                    (extent[3]-extent[2])*0.5f,
-                    (extent[5]-extent[4])*0.5f))
-    {
-
-    }
-
-    bool intersects(const BoundingRegion& other) const
-    {
-        if(std::fabs(mid_point[0] - other.mid_point[0]) > (half[0] + other.half[0]) ) return false;
-        if(std::fabs(mid_point[1] - other.mid_point[1]) > (half[1] + other.half[1]) ) return false;
-        if(std::fabs(mid_point[2] - other.mid_point[2]) > (half[2] + other.half[2]) ) return false;
-
-        // We have an overlap
-        return true;
-    };
-
-    bool contains(const math::vec3& point) const
-    {
-        return(point[0] >= extent[0]
-            && point[0] <  extent[1]
-            && point[1] >= extent[2]
-            && point[1] <  extent[3]
-            && point[2] >= extent[4]
-            && point[2] <  extent[5]);
-    }
-
-    math::extent_t extent;
-    math::vec3 mid_point;
-    math::vec3 half;
-};
 
 /*
     Octree class for spatial partitioning of data.
@@ -68,6 +29,7 @@ class Octree
 public:
     typedef std::pair<primitive_t, user_data_t> data_t;
     typedef std::list<data_t> content_t;
+    typedef std::function<void(const data_t&)> data_visitor_t;
 
     Octree();
     Octree(const BoundingRegion& bounding_region, content_t&& content);
@@ -78,11 +40,11 @@ public:
 
     // Recursive depth first traversal of objects within range
     void traverse_range(const BoundingRegion& query_range,
-                        std::function<void(const data_t&)> visit,
+                        data_visitor_t visit,
                         Octree* current=nullptr);
 
     // Recursive octree leaves traversal
-    void traverse_leaves(std::function<void(Octree*)> visit, Octree* current=nullptr);
+    void traverse_leaves(data_visitor_t visit, Octree* current=nullptr);
 
     inline void set_node_active(uint8_t index)
     {
@@ -251,7 +213,7 @@ void OCTREE::subdivide(Octree* current)
 }
 
 template <OCTREE_TARGS>
-void OCTREE::traverse_leaves(std::function<void(Octree*)> visit, Octree* current)
+void OCTREE::traverse_leaves(data_visitor_t visit, Octree* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -260,7 +222,8 @@ void OCTREE::traverse_leaves(std::function<void(Octree*)> visit, Octree* current
     // * Stop condition
     if(current->is_leaf_node())
     {
-        visit(current);
+        for(auto&& data: current->content_)
+            visit(data);
         return;
     }
 
@@ -273,7 +236,7 @@ void OCTREE::traverse_leaves(std::function<void(Octree*)> visit, Octree* current
 
 template <OCTREE_TARGS>
 void OCTREE::traverse_range(const BoundingRegion& query_range,
-                            std::function<void(const data_t&)> visit,
+                            data_visitor_t visit,
                             Octree* current)
 {
     // * Initial condition

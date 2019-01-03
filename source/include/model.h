@@ -85,10 +85,10 @@ public:
     inline const math::vec3& get_position() const               { return trans_.get_position(); }
 
     inline void set_dynamic(bool value)                         { is_dynamic_ = value; }
-    inline AABB& get_AABB()                                     { if(is_dynamic_) aabb_.update(); return aabb_; }
-    inline void update_AABB()                                   { aabb_.update(); }
-    inline OBB& get_OBB()                                       { if(is_dynamic_) obb_.update(); return obb_; }
-    inline void update_OBB()                                    { obb_.update(); }
+    inline void update_OBB()                                    { obb_.update(get_model_matrix()); }
+    inline void update_AABB()                                   { aabb_.update(get_OBB()); }
+    inline AABB& get_AABB()                                     { if(is_dynamic_) update_AABB(); return aabb_; }
+    inline OBB& get_OBB()                                       { if(is_dynamic_) update_OBB(); return obb_; }
     inline void set_OBB_offset(const math::vec3& offset)        { obb_.set_offset(offset); }
     inline void update_bounding_boxes()                         { update_OBB(); update_AABB(); }
 

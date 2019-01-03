@@ -46,30 +46,68 @@ static const std::vector<vec3> NDC_CUBE_VERTICES
     vec3( -1.0f, 1.0f, 1.0f)    // 7
 };
 
-OBB::OBB(Model& parent):
-parent_(parent),
-extent_(parent.get_mesh().get_dimensions())
+BoundingRegion::BoundingRegion(math::extent_t&& value):
+extent(std::move(value))
+{
+    update();
+}
+
+BoundingRegion::BoundingRegion(const math::extent_t& value):
+extent(value)
+{
+    update();
+}
+
+void BoundingRegion::update()
+{
+    mid_point = math::vec3((extent[1]+extent[0])*0.5f,
+                           (extent[3]+extent[2])*0.5f,
+                           (extent[5]+extent[4])*0.5f);
+    half = math::vec3((extent[1]-extent[0])*0.5f,
+                      (extent[3]-extent[2])*0.5f,
+                      (extent[5]-extent[4])*0.5f);
+}
+
+
+bool BoundingRegion::intersects(const BoundingRegion& other) const
+{
+    if(std::fabs(mid_point[0] - other.mid_point[0]) > (half[0] + other.half[0]) ) return false;
+    if(std::fabs(mid_point[1] - other.mid_point[1]) > (half[1] + other.half[1]) ) return false;
+    if(std::fabs(mid_point[2] - other.mid_point[2]) > (half[2] + other.half[2]) ) return false;
+
+    // We have an overlap
+    return true;
+};
+
+bool BoundingRegion::contains(const math::vec3& point) const
+{
+    return(point[0] >= extent[0]
+        && point[0] <  extent[1]
+        && point[1] >= extent[2]
+        && point[1] <  extent[3]
+        && point[2] >= extent[4]
+        && point[2] <  extent[5]);
+}
+
+OBB::OBB(const math::extent_t& parent_extent, bool centered):
+bounding_region_(parent_extent)
 {
     // Initialize proper scale (non uniform) to parent's intrinsic scale
-    proper_scale_.init_scale(vec3(extent_[1]-extent_[0],
-                                  extent_[3]-extent_[2],
-                                  extent_[5]-extent_[4]));
+    proper_scale_.init_scale(2.0f*bounding_region_.half);
 
     // Translate OBB if mesh not centered bc we use the vertices of a centered cube in update()
-    if(!parent.get_mesh().is_centered())
-        offset_.init_translation(vec3((extent_[1]+extent_[0])*0.5f,
-                                      (extent_[3]+extent_[2])*0.5f,
-                                      (extent_[5]+extent_[4])*0.5f));
-    else
-        offset_.init_identity();
+    if(!centered)
+        offset_ = bounding_region_.mid_point;;
 }
 
 OBB::~OBB() = default;
 
-void OBB::update()
+void OBB::update(const math::mat4& parent_model_matrix)
 {
     // Compute OBB transform from parent transform
-    proper_transform_ = parent_.get_model_matrix() * offset_ * proper_scale_;
+    proper_transform_ = proper_scale_;
+    math::translate_matrix(proper_transform_, offset_);
+    proper_transform_ = parent_model_matrix * proper_transform_;
 
     // Compute OBB vertices
     for(uint32_t ii=0; ii<8; ++ii)
@@ -77,30 +115,25 @@ void OBB::update()
 }
 
 
-AABB::AABB(Model& parent):
-parent_(parent)
+AABB::AABB()
 {
 
 }
 
 AABB::~AABB() = default;
 
-void AABB::update()
+void AABB::update(const OBB& parent_OBB)
 {
-    // Get parent OBB and compute its extent
-    math::compute_extent(parent_.get_OBB().get_vertices(), extent_);
+    // Get parent OBB and compute its extent in world space
+    math::extent_t extent;
+    math::compute_extent(parent_OBB.get_vertices(), extent);
+    bounding_region_ = BoundingRegion(extent);
 
     // Create AABB from OBB extent
-    mat4 AABB_scale, AABB_pos;
-    AABB_scale.init_scale(vec3(extent_[1]-extent_[0],
-                               extent_[3]-extent_[2],
-                               extent_[5]-extent_[4]));
-    AABB_pos.init_translation(vec3((extent_[1]+extent_[0])*0.5f,
-                                   (extent_[3]+extent_[2])*0.5f,
-                                   (extent_[5]+extent_[4])*0.5f));
+    proper_transform_.init_scale(2.0f*bounding_region_.half);
+    math::translate_matrix(proper_transform_, bounding_region_.mid_point);
 
     // Compute AABB vertices
-    proper_transform_ = AABB_pos * AABB_scale;
     for(uint32_t ii=0; ii<8; ++ii)
         vertices_[ii] = proper_transform_ * CENTERED_CUBE_VERTICES[ii];
 }

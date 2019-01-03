@@ -2,7 +2,11 @@
 
 project(nuclear)
 
-include(toolchain_clang7)
+if(DEFINED CLANG6)
+  include(toolchain_clang6)
+else()
+  include(toolchain_clang7)
+endif()
 
 add_definitions(-std=c++17)
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
