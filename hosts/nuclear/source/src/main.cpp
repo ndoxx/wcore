@@ -164,28 +164,21 @@ int main()
     typedef Octree<math::vec3,float> PointOctree;
     typedef PointOctree::content_t   DataList;
 
-    BoundingRegion region({-100,100,0,10,-100,100});
+    BoundingRegion region({-1000,1000,0,100,-1000,1000});
     DataList data_points;
 
-    math::srand_vec3(1);
+    math::srand_vec3(42);
     for(int ii=0; ii<1000; ++ii)
     {
-        data_points.push_back(std::make_pair(math::random_vec3(region.extent),1.0f));
+        math::vec3 point(math::random_vec3(region.extent));
+        data_points.push_back(std::make_pair(point,point.norm()));
     }
 
-    const float    MIN_CELL_SIZE  = 5.0f;
-    const uint32_t MAX_CELL_COUNT = 20;
-
     PointOctree octree(region, std::move(data_points));
-    octree.subdivide([&](const DataList& cur_content, const BoundingRegion& cur_region)
-    {
-        float size_x = cur_region.extent[1]-cur_region.extent[0];
-        return (size_x > MIN_CELL_SIZE)
-            && (cur_content.size()>MAX_CELL_COUNT);
-    });
+    octree.subdivide();
 
     uint32_t npoints=0;
-    octree.traverse_leaves([&](PointOctree* leaf)
+    /*octree.traverse_leaves([&](PointOctree* leaf)
     {
         std::cout << "--- Current region: ";
         for(int jj=0; jj<6; ++jj)
@@ -200,6 +193,13 @@ int main()
             ++npoints;
             std::cout << "\t" << data.first << " data: " << data.second << std::endl;
         }
+    });*/
+
+    octree.traverse_range(BoundingRegion({-500,500,0,50,-500,500}),
+    [&](auto&& data)
+    {
+        ++npoints;
+        std::cout << "\t" << data.first << " data: " << data.second << std::endl;
     });
 
     std::cout << "Recovered " << npoints << " points." << std::endl;

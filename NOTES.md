@@ -5879,6 +5879,7 @@ La structure actuelle s'appelle un Point Octree, et reste intéressante à conse
     Mes _AABB_ ont pour le moment un membre Model& (qui leur sert à récupérer l'_OBB_ du parent pour l'update), ça va être gênant pour en faire une utilisation avec les _Entity_ plus tard.
 
 -> Quand j'utiliserai l'octree dans mon moteur, il faudra veiller à ce que les chunks puissent être contenus dans des cellules à leur taille. D'une certaine manière, les chunks deviendront une unité d'insertion pour l'octree.
+-> J'ai l'intention d'utiliser un octree pour la géométrie statique, et un autre pour la géométrie dynamique. Seul le second aura besoin d'être reconstruit en temps réel, et comme a priori il y aura moins d'objets dynamiques que statiques, je pense faire une économie CPU.
 -> Je pense aussi me servir de l'octree pour accélérer (O(n)->O(log(n))) le frustum culling (genre, on peut skip toute une branche dont la racine n'est pas visible).
 -> Plus tard on pourra tirer partie de cette structure pour du LoD dynamique sur le terrain, ça serait super sexy.
 
