@@ -77,10 +77,6 @@ public:
         return (content_.size()>MAX_CELL_COUNT && depth_<(MAX_DEPTH-1));
     }
 
-    // Point-octant intersection test
-    inline bool octant_contains(uint8_t index, const math::vec3& point);
-    // TODO: implement octant_contains() for bounding boxes
-
 private:
     Octree* parent_;                    // parent node, nullptr if root node
     Octree* children_;                  // array of 8 octants, nullptr if leaf node
@@ -121,14 +117,6 @@ OCTREE::~Octree()
 {
     delete[] children_;
     active_nodes_ = 0x0;
-}
-
-template <OCTREE_TARGS>
-inline bool OCTREE::octant_contains(uint8_t index, const math::vec3& point)
-{
-    assert(index<8 && "Octree::octant_contains() index out of bounds.");
-    // Point has to be within octant range
-    return children_[index].bounding_region_.intersects(point);
 }
 
 template <OCTREE_TARGS>
@@ -190,30 +178,33 @@ void OCTREE::subdivide(Octree* current)
                                                              current->bounding_region_.extent[2], center[1],
                                                              current->bounding_region_.extent[4], center[2]});
 
-    // * Dispatch current content into children octants
-    for(const data_t& obj: current->content_)
+    // * Dispatch current content into children octants when possible
+    auto it = current->content_.begin();
+    while(it != current->content_.end())
     {
+        bool remove_object = false;
         for(int ii=0; ii<8; ++ii)
         {
-            // If object position is within child bounding region, add it to child content
-            // TODO: test against bounding boxes:
-            // -> Move object to child list iif child bounds are large enough
-            // -> Only delete moved objects from the list
-            if(current->octant_contains(ii, obj.first))
+            // If object is within child bounding region, add it to child content
+            // otherwise it stays at this level
+            if(current->children_[ii].bounding_region_.contains(it->first))
             {
-                current->children_[ii].content_.push_back(obj);
+                current->children_[ii].content_.push_back(*it);
+                // Mark object for removal
+                remove_object = true;
                 break;
             }
         }
+        // Remove moved object from current content
+        if(remove_object)
+            current->content_.erase(it++);
+        else
+            ++it;
     }
-    // Remove moved objects from list
-    current->content_.clear(); // ftm that's all the objects, bc we only support moving points
 
     // * Recursively subdivide children nodes
     for(int ii=0; ii<8; ++ii)
-    {
         subdivide(&current->children_[ii]);
-    }
 }
 
 template <OCTREE_TARGS>

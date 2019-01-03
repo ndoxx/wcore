@@ -14,6 +14,7 @@ namespace wcore
 class Model;
 struct Ray;
 
+class AABB;
 struct BoundingRegion
 {
     BoundingRegion() = default;
@@ -23,6 +24,11 @@ struct BoundingRegion
     void update();
     bool intersects(const BoundingRegion& other) const;
     bool intersects(const math::vec3& point) const;
+
+    bool contains(const BoundingRegion& other) const;
+    bool contains(const AABB& aabb) const;
+    // A point is contained if it intersects bounding region
+    inline bool contains(const math::vec3& point) const { return intersects(point); }
 
     std::array<math::vec3, 8> get_vertices() const;
 
@@ -78,7 +84,8 @@ public:
         assert(index<6 && "[AABB] extent() index out of bounds.");
         return bounding_region_.extent[index];
     }
-    inline const math::extent_t& get_extent() const { return bounding_region_.extent; }
+    inline const BoundingRegion& get_bounding_region() const { return bounding_region_; }
+    inline const math::extent_t& get_extent() const          { return bounding_region_.extent; }
 
     inline const std::array<math::vec3, 8>& get_vertices() const { return vertices_; }
     inline const math::mat4& get_model_matrix() const            { return proper_transform_; }

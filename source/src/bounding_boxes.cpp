@@ -79,19 +79,51 @@ bool BoundingRegion::intersects(const BoundingRegion& other) const
     return true;
 };
 
+bool BoundingRegion::contains(const BoundingRegion& other) const
+{
+    if(other.extent[0] < extent[0]) return false;
+    if(other.extent[1] > extent[1]) return false;
+    if(other.extent[2] < extent[2]) return false;
+    if(other.extent[3] > extent[3]) return false;
+    if(other.extent[4] < extent[4]) return false;
+    if(other.extent[5] > extent[5]) return false;
+    return true;
+
+    /*return(other.extent[0]>=extent[0]
+        && other.extent[1]<=extent[1]
+        && other.extent[2]>=extent[2]
+        && other.extent[3]<=extent[3]
+        && other.extent[4]>=extent[4]
+        && other.extent[5]<=extent[5]);*/
+}
+
+bool BoundingRegion::contains(const AABB& aabb) const
+{
+    return contains(aabb.get_bounding_region());
+}
+
 bool BoundingRegion::intersects(const math::vec3& point) const
 {
-    return(point[0] >= extent[0]
+    if(point[0] <  extent[0]) return false;
+    if(point[0] >= extent[1]) return false;
+    if(point[1] <  extent[2]) return false;
+    if(point[1] >= extent[3]) return false;
+    if(point[2] <  extent[4]) return false;
+    if(point[2] >= extent[5]) return false;
+    return true;
+
+    /*return(point[0] >= extent[0]
         && point[0] <  extent[1]
         && point[1] >= extent[2]
         && point[1] <  extent[3]
         && point[2] >= extent[4]
-        && point[2] <  extent[5]);
+        && point[2] <  extent[5]);*/
 }
 
 std::array<math::vec3, 8> BoundingRegion::get_vertices() const
 {
-    return std::array<math::vec3, 8>({
+    return std::array<math::vec3, 8>
+    ({
         vec3(extent[1], extent[2], extent[5]),   // 0
         vec3(extent[1], extent[2], extent[4]),   // 1
         vec3(extent[0], extent[2], extent[4]),   // 2
@@ -102,7 +134,6 @@ std::array<math::vec3, 8> BoundingRegion::get_vertices() const
         vec3(extent[0], extent[3], extent[5])    // 7
     });
 }
-
 
 OBB::OBB(const math::extent_t& parent_extent, bool centered):
 bounding_region_(parent_extent)
