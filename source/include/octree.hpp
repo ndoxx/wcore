@@ -39,7 +39,11 @@ public:
     void subdivide(Octree* current=nullptr);
 
     // Recursive depth first traversal of objects within range
-    void traverse_range(const BoundingRegion& query_range,
+    // Can be used with FrustumBox for visible range traversal
+    // RangeT must define a bool intersects() method that works
+    // with BoundingRegion AND primitive_t
+    template <typename RangeT>
+    void traverse_range(const RangeT& query_range,
                         data_visitor_t visit,
                         Octree* current=nullptr);
 
@@ -124,7 +128,7 @@ inline bool OCTREE::octant_contains(uint8_t index, const math::vec3& point)
 {
     assert(index<8 && "Octree::octant_contains() index out of bounds.");
     // Point has to be within octant range
-    return children_[index].bounding_region_.contains(point);
+    return children_[index].bounding_region_.intersects(point);
 }
 
 template <OCTREE_TARGS>
@@ -235,7 +239,8 @@ void OCTREE::traverse_leaves(data_visitor_t visit, Octree* current)
 }
 
 template <OCTREE_TARGS>
-void OCTREE::traverse_range(const BoundingRegion& query_range,
+template <typename RangeT>
+void OCTREE::traverse_range(const RangeT& query_range,
                             data_visitor_t visit,
                             Octree* current)
 {
@@ -245,12 +250,12 @@ void OCTREE::traverse_range(const BoundingRegion& query_range,
 
     // * Stop condition
     // Check bounding region intersection, return if out of range
-    if(!current->bounding_region_.intersects(query_range))
+    if(!query_range.intersects(current->bounding_region_))
         return;
 
     // * Visit objects within range at this level
     for(auto&& data: current->content_)
-        if(query_range.contains(data.first))
+        if(query_range.intersects(data.first))
             visit(data);
 
     // * Walk down the octree recursively
@@ -258,7 +263,6 @@ void OCTREE::traverse_range(const BoundingRegion& query_range,
         for(int ii=0; ii<8; ++ii)
             traverse_range(query_range, visit, &current->children_[ii]);
 }
-
 
 } // namespace wcore
 

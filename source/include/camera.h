@@ -92,11 +92,12 @@ public:
     inline void strafe_right();
     inline void strafe_left();
 
-    inline bool frustum_collides(const AABB& aabb) { return frusBox_.collides(aabb); }
-    inline bool frustum_collides(const OBB& obb)   { return frusBox_.collides(obb); }
+    inline bool frustum_collides(const AABB& aabb) { return frusBox_.intersects(aabb); }
+    inline bool frustum_collides(const OBB& obb)   { return frusBox_.intersects(obb); }
     inline bool frustum_collides_sphere(const math::vec3& center, float radius) const;
     inline void enable_frustum_update()  { update_frustum_ = true; }
     inline void disable_frustum_update() { update_frustum_ = false; }
+    inline const FrustumBox& get_frustum_box() const { return frusBox_; }
     inline const std::array<math::vec3, 8>& get_frustum_corners() const { return frusBox_.get_corners(); }
     inline math::vec3 get_frustum_split_center(uint32_t splitIndex) const;
 

@@ -79,7 +79,7 @@ bool BoundingRegion::intersects(const BoundingRegion& other) const
     return true;
 };
 
-bool BoundingRegion::contains(const math::vec3& point) const
+bool BoundingRegion::intersects(const math::vec3& point) const
 {
     return(point[0] >= extent[0]
         && point[0] <  extent[1]
@@ -88,6 +88,21 @@ bool BoundingRegion::contains(const math::vec3& point) const
         && point[2] >= extent[4]
         && point[2] <  extent[5]);
 }
+
+std::array<math::vec3, 8> BoundingRegion::get_vertices() const
+{
+    return std::array<math::vec3, 8>({
+        vec3(extent[1], extent[2], extent[5]),   // 0
+        vec3(extent[1], extent[2], extent[4]),   // 1
+        vec3(extent[0], extent[2], extent[4]),   // 2
+        vec3(extent[0], extent[2], extent[5]),   // 3
+        vec3(extent[1], extent[3], extent[5]),   // 4
+        vec3(extent[1], extent[3], extent[4]),   // 5
+        vec3(extent[0], extent[3], extent[4]),   // 6
+        vec3(extent[0], extent[3], extent[5])    // 7
+    });
+}
+
 
 OBB::OBB(const math::extent_t& parent_extent, bool centered):
 bounding_region_(parent_extent)
@@ -228,6 +243,19 @@ bool FrustumBox::collides_sphere(const math::vec3& center, float radius) const
    float dist45 = fmin(dist_to_plane(4, center), dist_to_plane(5, center));
    return (fmin(fmin(dist01, dist23), dist45) + radius)>0;
 }
+
+bool FrustumBox::intersects(const math::vec3& point) const
+{
+    // * Point has to be above all frustum planes in order to be in frustum
+
+    // For each frustum plane, check if point is above plane, bail early if not the case
+    for(uint32_t ii=0; ii<6; ++ii)
+        if(dist_to_plane(ii, point)<0)
+            return false;
+
+    return true;
+}
+
 
 math::vec3 FrustumBox::split_center(uint32_t splitIndex) const
 {

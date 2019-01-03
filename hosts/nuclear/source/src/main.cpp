@@ -156,6 +156,7 @@ int main()
 
 #include "octree.hpp"
 #include "math3d.h"
+#include "camera.h"
 
 using namespace wcore;
 
@@ -164,7 +165,7 @@ int main()
     typedef Octree<math::vec3,float> PointOctree;
     typedef PointOctree::content_t   DataList;
 
-    BoundingRegion region({-1000,1000,0,100,-1000,1000});
+    BoundingRegion region({-100,100,0,100,-100,100});
     DataList data_points;
 
     math::srand_vec3(42);
@@ -184,12 +185,24 @@ int main()
         std::cout << "\t" << data.first << " data: " << data.second << std::endl;
     });*/
 
-    octree.traverse_range(BoundingRegion({-500,500,0,50,-500,500}),
+    /*octree.traverse_range(BoundingRegion({-500,500,0,50,-500,500}),
+    [&](auto&& data)
+    {
+        ++npoints;
+        std::cout << "\t" << data.first << " data: " << data.second << std::endl;
+    });*/
+
+    Camera camera(1024,768);
+    camera.update(1/60.0f);
+    const FrustumBox& fb = camera.get_frustum_box();
+
+    octree.traverse_range(fb,
     [&](auto&& data)
     {
         ++npoints;
         std::cout << "\t" << data.first << " data: " << data.second << std::endl;
     });
+
 
     std::cout << "Recovered " << npoints << " points." << std::endl;
 

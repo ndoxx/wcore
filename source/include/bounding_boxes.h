@@ -22,7 +22,9 @@ struct BoundingRegion
 
     void update();
     bool intersects(const BoundingRegion& other) const;
-    bool contains(const math::vec3& point) const;
+    bool intersects(const math::vec3& point) const;
+
+    std::array<math::vec3, 8> get_vertices() const;
 
     math::extent_t extent;
     math::vec3 mid_point;
@@ -117,8 +119,9 @@ public:
     inline const std::array<math::vec3, 6>& get_normals() const { return normals_; }
 
     void update(const Camera& camera);
-    template <typename BB> bool collides(const BB& bb);
+    template <typename BB> bool intersects(const BB& bb) const;
     bool collides_sphere(const math::vec3& center, float radius) const;
+    bool intersects(const math::vec3& point) const;
 
     math::vec3 split_center(uint32_t splitIndex) const;
 
@@ -132,7 +135,7 @@ inline float FrustumBox::dist_to_plane(uint32_t index, math::vec3 point) const
 }
 
 template <typename BB>
-bool FrustumBox::collides(const BB& bb)
+bool FrustumBox::intersects(const BB& bb) const
 {
     const std::array<math::vec3, 8>& verts = bb.get_vertices();
 
