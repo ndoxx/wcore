@@ -283,48 +283,64 @@ bool OCTREE::sub_remove(const user_data_t& udata, Octree* current)
         current = this;
 
     // * Try to remove object at this level
-    bool obj_removed = false;
     for(auto it = current->content_.begin(); it != current->content_.end(); ++it)
     {
         if(it->data == udata)
         {
             current->content_.erase(it);
-            obj_removed = true;
-            break;
+            return true;
         }
     }
 
     // * If we get here, this means the object couldn't be found at this level
     // so try to find the object lower in the tree
-    if(!obj_removed && !current->is_leaf_node())
+    if(!current->is_leaf_node())
     {
         for(int ii=0; ii<8; ++ii)
         {
-            obj_removed = sub_remove(udata, &current->children_[ii]);
-            if(obj_removed)
-                break;
+            if(sub_remove(udata, &current->children_[ii]))
+            {
+                // Check if we can merge children nodes now that the object has been removed
+                if(current->must_merge())
+                    current->merge();
+
+                return true;
+            }
         }
     }
 
-    // * Check if we can merge children nodes now that the object has been removed
-    if(obj_removed && !current->is_leaf_node())
-        if(current->must_merge())
-            current->merge();
-
-    return obj_removed;
+    return false;
 }
 
 template <OCTREE_TARGS>
 bool OCTREE::must_merge()
 {
+    // * Nothing to merge if we are at the bottom of the tree
+    // or children are not leaves
+    if(is_leaf_node() || !children_[0].is_leaf_node())
+        return false;
+
     // * Sum up the size of all children nodes content
     // if below node capacity, we can merge
+    uint32_t count = 0;
+    for(int ii=0; ii<8; ++ii)
+    {
+        count += children_[ii].content_.size();
+        if(count>MAX_CELL_COUNT)
+            return false;
+    }
+    return true;
 }
 
 template <OCTREE_TARGS>
 void OCTREE::merge()
 {
+    // * Pull back children node content and cleanup
+    for(int ii=0; ii<8; ++ii)
+        content_.splice(content_.end(), children_[ii].content_);
 
+    delete[] children_;
+    children_ = nullptr;
 }
 
 template <OCTREE_TARGS>

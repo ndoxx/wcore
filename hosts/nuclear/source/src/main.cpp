@@ -225,7 +225,7 @@ int main()
     octree.traverse_leaves([&](auto&& obj)
     {
         ++npoints;
-        std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+        //std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
     });
 
     /*octree.traverse_range(BoundingRegion({-500,500,0,50,-500,500}),
