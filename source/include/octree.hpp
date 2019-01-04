@@ -16,58 +16,43 @@ namespace wcore
 
 /*
     Octree class for spatial partitioning of data.
-    primitive_t is the type of objects that are checked against cell bounding regions
+    PrimitiveT is the type of objects that are checked against cell bounding regions
         -> math::vec3 for a point octree
         -> AABB for AABB octree
         -> ...
-    user_data_t is any kind of data that will be carried along with the primitives.
-        -> Each node has a container of std::pair<primitive_t,user_data_t>
+    UserDataT is any kind of data that will be carried along with the primitives.
         -> Useful to store references to game objects so they can be querried later on.
+        -> Must be a comparable type
 */
-template <class primitive_t, class user_data_t, uint32_t MAX_CELL_COUNT=16, uint32_t MAX_DEPTH=5>
+template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT=16, uint32_t MAX_DEPTH=5>
 class Octree
 {
 public:
-    struct data_t
-    {
-        data_t(const primitive_t& p, const user_data_t& d):
-        primitive(p),
-        data(d){}
-
-        bool operator==(const data_t& other)
-        {
-            return data == other.data;
-        }
-
-        primitive_t primitive;
-        user_data_t data;
-    };
-
-    typedef std::list<data_t> content_t;
-    typedef std::function<void(const data_t&)> data_visitor_t;
+    struct DataT;
+    typedef std::list<DataT> ContentT;
+    typedef std::function<void(const DataT&)> data_visitor_t;
 
     Octree();
-    Octree(const BoundingRegion& bounding_region, content_t&& content);
+    Octree(const BoundingRegion& bounding_region, ContentT&& content);
     ~Octree();
 
     // Lazy insertion of a single data element
-    inline void insert(const data_t& data);
+    inline void insert(const DataT& data);
 
     // Lazy insertion of a data list
-    inline void insert(const content_t& data);
-    inline void insert(content_t&& data);
+    inline void insert(const ContentT& data);
+    inline void insert(ContentT&& data);
 
     // Remove an object that was inserted with a given user data
-    // user_data_t must be comparable
-    inline bool remove(const user_data_t& udata);
+    inline bool remove(const UserDataT& udata);
 
     // Recursive object dispatch (will make effective any previous insertion)
     void propagate(Octree* current=nullptr);
 
-    // Recursive depth first traversal of objects within range
+    // Recursive depth first traversal of objects within specified range
     // Can be used with FrustumBox for visible range traversal
     // RangeT must define a bool intersects() method that works
-    // with BoundingRegion AND primitive_t
+    // with BoundingRegion AND PrimitiveT
     template <typename RangeT>
     void traverse_range(const RangeT& query_range,
                         data_visitor_t visit,
@@ -93,14 +78,14 @@ public:
     }
     inline bool is_leaf_node() const                 { return (children_ == nullptr); }
     inline const BoundingRegion& get_bounds() const  { return bounding_region_; }
-    inline const content_t& get_content() const      { return content_; }
+    inline const ContentT& get_content() const      { return content_; }
 
 private:
     // Subdivide current cell into 8 octants
     void subdivide();
 
     // Recursive removal of an object inserted with a given user data
-    bool sub_remove(const user_data_t& udata, Octree* current=nullptr);
+    bool sub_remove(const UserDataT& udata, Octree* current=nullptr);
 
     // Merge children nodes and pull back their content at this level
     void merge();
@@ -120,12 +105,28 @@ private:
     std::bitset<8> active_nodes_;       // flags to signify whether corresponding octants are active
     uint32_t depth_;                    // depth at this node
     BoundingRegion bounding_region_;    // represents the volume spanned by this node
-    content_t content_;                 // data container at this node
+    ContentT content_;                 // data container at this node
 };
 
 // For convenience
-#define OCTREE       Octree<primitive_t, user_data_t, MAX_CELL_COUNT, MAX_DEPTH>
-#define OCTREE_TARGS class primitive_t, class user_data_t, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
+#define OCTREE       Octree<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>
+#define OCTREE_TARGS class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
+
+template <OCTREE_TARGS>
+struct OCTREE::DataT
+{
+    DataT(const PrimitiveT& p, const UserDataT& d):
+    primitive(p),
+    data(d){}
+
+    inline bool operator==(const DataT& other)
+    {
+        return data == other.data;
+    }
+
+    PrimitiveT primitive;
+    UserDataT data;
+};
 
 template <OCTREE_TARGS>
 OCTREE::Octree():
@@ -138,7 +139,7 @@ depth_(0)
 }
 
 template <OCTREE_TARGS>
-OCTREE::Octree(const BoundingRegion& bounding_region, content_t&& content):
+OCTREE::Octree(const BoundingRegion& bounding_region, ContentT&& content):
 parent_(nullptr),
 children_(nullptr),
 active_nodes_(0x0),
@@ -156,19 +157,24 @@ OCTREE::~Octree()
 }
 
 template <OCTREE_TARGS>
-inline void OCTREE::insert(const data_t& data)
+inline void OCTREE::insert(const DataT& data)
 {
     content_.push_back(data);
 }
 template <OCTREE_TARGS>
-inline void OCTREE::insert(const content_t& data)
+inline void OCTREE::insert(const ContentT& data)
 {
     content_.insert(content_.end(), data.begin(), data.end());
 }
 template <OCTREE_TARGS>
-inline void OCTREE::insert(content_t&& data)
+inline void OCTREE::insert(ContentT&& data)
 {
     content_.splice(content_.end(), data);
+}
+template <OCTREE_TARGS>
+inline bool OCTREE::remove(const UserDataT& udata)
+{
+    return sub_remove(udata);
 }
 
 template <OCTREE_TARGS>
@@ -270,13 +276,7 @@ void OCTREE::propagate(Octree* current)
 }
 
 template <OCTREE_TARGS>
-inline bool OCTREE::remove(const user_data_t& udata)
-{
-    return sub_remove(udata);
-}
-
-template <OCTREE_TARGS>
-bool OCTREE::sub_remove(const user_data_t& udata, Octree* current)
+bool OCTREE::sub_remove(const UserDataT& udata, Octree* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -316,15 +316,19 @@ template <OCTREE_TARGS>
 bool OCTREE::must_merge()
 {
     // * Nothing to merge if we are at the bottom of the tree
-    // or children are not leaves
-    if(is_leaf_node() || !children_[0].is_leaf_node())
+    if(is_leaf_node())
         return false;
 
     // * Sum up the size of all children nodes content
     // if below node capacity, we can merge
-    uint32_t count = 0;
+    uint32_t count = content_.size();
     for(int ii=0; ii<8; ++ii)
     {
+        // If child is not a leaf, total count will necessarily exceed node capacity
+        if(!children_[ii].is_leaf_node())
+            return false;
+
+        // Add child object count, bail early if total count exceeds node capacity
         count += children_[ii].content_.size();
         if(count>MAX_CELL_COUNT)
             return false;

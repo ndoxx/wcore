@@ -183,15 +183,15 @@ int main()
 
 
     typedef Octree<math::vec3,UData> PointOctree;
-    typedef PointOctree::data_t      DataT;
-    typedef PointOctree::content_t   DataList;
+    typedef PointOctree::DataT       DataT;
+    typedef PointOctree::ContentT    DataList;
 
     BoundingRegion region({-100,100,0,100,-100,100});
     DataList data_points;
     DataList remove_list;
 
     math::srand_vec3(42);
-    for(int ii=0; ii<1000; ++ii)
+    for(int ii=0; ii<50000; ++ii)
     {
         math::vec3 point(math::random_vec3(region.extent));
         UData user_data({point.norm(), ii});
@@ -211,7 +211,8 @@ int main()
     // Remove some of the points
     for(auto&& rem: remove_list)
     {
-        octree.remove(rem.data);
+        if(!octree.remove(rem.data))
+            std::cout << "Couldn't remove" << std::endl;
     }
 
     /*for(int ii=0; ii<100; ++ii)
@@ -225,7 +226,7 @@ int main()
     octree.traverse_leaves([&](auto&& obj)
     {
         ++npoints;
-        //std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+        std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
     });
 
     /*octree.traverse_range(BoundingRegion({-500,500,0,50,-500,500}),
