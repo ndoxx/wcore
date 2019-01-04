@@ -164,3 +164,35 @@ set_target_properties(test_objload
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
+
+
+add_executable(test_octree
+               catch_app.cpp
+               catch_octree.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/bounding_boxes.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/ray.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/model.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/material.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/texture.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/intern_string.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/xml_parser.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/png_loader.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/pixel_buffer.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/error.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/io_utils.cpp
+               ${CMAKE_SOURCE_DIR}/source/src/xml_utils.cpp
+               ${SRC_CORE_TEST}
+               ${SRC_3D_TEST}
+               ${SRC_MATHS_TEST})
+
+set_target_properties(test_octree
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+)
+
+target_link_libraries(test_octree
+                      m
+                      stdc++fs
+                      GL
+                      GLEW
+                      png)

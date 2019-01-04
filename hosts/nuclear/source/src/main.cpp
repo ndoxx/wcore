@@ -160,48 +160,91 @@ int main()
 
 using namespace wcore;
 
+struct UData
+{
+    float value;
+    int key;
+
+    bool operator==(const UData& other)
+    {
+        return key == other.key;
+    }
+    friend std::ostream& operator<<(std::ostream& stream, const UData& data);
+};
+
+std::ostream& operator<<(std::ostream& stream, const UData& data)
+{
+    stream << data.value;
+    return stream;
+}
+
 int main()
 {
-    typedef Octree<math::vec3,float> PointOctree;
+
+
+    typedef Octree<math::vec3,UData> PointOctree;
+    typedef PointOctree::data_t      DataT;
     typedef PointOctree::content_t   DataList;
 
     BoundingRegion region({-100,100,0,100,-100,100});
     DataList data_points;
+    DataList remove_list;
 
     math::srand_vec3(42);
     for(int ii=0; ii<1000; ++ii)
     {
         math::vec3 point(math::random_vec3(region.extent));
-        data_points.push_back(std::make_pair(point,point.norm()));
+        UData user_data({point.norm(), ii});
+        DataT obj(point,user_data);
+        data_points.push_back(obj);
+        if(ii<100)
+        {
+            // The 100 first objects will be removed
+            remove_list.push_back(obj);
+        }
     }
 
+    // Populate octree
     PointOctree octree(region, std::move(data_points));
-    octree.subdivide();
+    octree.propagate();
+
+    // Remove some of the points
+    for(auto&& rem: remove_list)
+    {
+        octree.remove(rem.data);
+    }
+
+    /*for(int ii=0; ii<100; ++ii)
+    {
+        math::vec3 point(math::random_vec3(region.extent));
+        octree.insert(DataT(point,point.norm()));
+    }
+    octree.propagate();*/
 
     uint32_t npoints=0;
-    /*octree.traverse_leaves([&](auto&& data)
+    octree.traverse_leaves([&](auto&& obj)
     {
         ++npoints;
-        std::cout << "\t" << data.first << " data: " << data.second << std::endl;
-    });*/
+        std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+    });
 
     /*octree.traverse_range(BoundingRegion({-500,500,0,50,-500,500}),
-    [&](auto&& data)
+    [&](auto&& obj)
     {
         ++npoints;
-        std::cout << "\t" << data.first << " data: " << data.second << std::endl;
+        std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
     });*/
 
-    Camera camera(1024,768);
+    /*Camera camera(1024,768);
     camera.update(1/60.0f);
     const FrustumBox& fb = camera.get_frustum_box();
 
     octree.traverse_range(fb,
-    [&](auto&& data)
+    [&](auto&& obj)
     {
         ++npoints;
-        std::cout << "\t" << data.first << " data: " << data.second << std::endl;
-    });
+        std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+    });*/
 
 
     std::cout << "Recovered " << npoints << " points." << std::endl;
