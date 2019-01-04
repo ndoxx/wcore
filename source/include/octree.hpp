@@ -13,28 +13,19 @@
 
 namespace wcore
 {
-
-/*
-    Octree class for spatial partitioning of data.
-    PrimitiveT is the type of objects that are checked against cell bounding regions
-        -> math::vec3 for a point octree
-        -> AABB for AABB octree
-        -> ...
-    UserDataT is any kind of data that will be carried along with the primitives.
-        -> Useful to store references to game objects so they can be querried later on.
-        -> Must be a comparable type
-*/
-template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT=16, uint32_t MAX_DEPTH=5>
-class Octree
+namespace detail
+{
+template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH>
+class OctreeNode
 {
 public:
     struct DataT;
     typedef std::list<DataT> ContentT;
-    typedef std::function<void(const DataT&)> data_visitor_t;
+    typedef std::function<void(const DataT&)> DataVisitorT;
 
-    Octree();
-    Octree(const BoundingRegion& bounding_region, ContentT&& content);
-    ~Octree();
+    OctreeNode();
+    OctreeNode(const BoundingRegion& bounding_region, ContentT&& content);
+    ~OctreeNode();
 
     // Lazy insertion of a single data element
     inline void insert(const DataT& data);
@@ -43,11 +34,11 @@ public:
     inline void insert(const ContentT& data);
     inline void insert(ContentT&& data);
 
-    // Remove an object that was inserted with a given user data
-    inline bool remove(const UserDataT& udata);
+    // Recursive removal of an object inserted with a given user data
+    bool remove(const UserDataT& udata, OctreeNode* current=nullptr);
 
     // Recursive object dispatch (will make effective any previous insertion)
-    void propagate(Octree* current=nullptr);
+    void propagate(OctreeNode* current=nullptr);
 
     // Recursive depth first traversal of objects within specified range
     // Can be used with FrustumBox for visible range traversal
@@ -55,37 +46,20 @@ public:
     // with BoundingRegion AND PrimitiveT
     template <typename RangeT>
     void traverse_range(const RangeT& query_range,
-                        data_visitor_t visit,
-                        Octree* current=nullptr);
+                        DataVisitorT visit,
+                        OctreeNode* current=nullptr);
 
     // Recursive octree leaves traversal
-    void traverse_leaves(data_visitor_t visit, Octree* current=nullptr);
+    void traverse_leaves(DataVisitorT visit, OctreeNode* current=nullptr);
 
-    inline void set_node_active(uint8_t index)
-    {
-        assert(index<8 && "Octree::set_node_active() index out of bounds.");
-        active_nodes_[index] = 1;
-    }
-    inline void set_node_inactive(uint8_t index)
-    {
-        assert(index<8 && "Octree::set_node_inactive() index out of bounds.");
-        active_nodes_[index] = 0;
-    }
-    inline bool is_node_active(uint8_t index) const
-    {
-        assert(index<8 && "Octree::is_node_active() index out of bounds.");
-        return active_nodes_[index];
-    }
     inline bool is_leaf_node() const                 { return (children_ == nullptr); }
+    inline bool is_root_node() const                 { return (parent_ == nullptr); }
     inline const BoundingRegion& get_bounds() const  { return bounding_region_; }
-    inline const ContentT& get_content() const      { return content_; }
+    inline const ContentT& get_content() const       { return content_; }
 
 private:
     // Subdivide current cell into 8 octants
     void subdivide();
-
-    // Recursive removal of an object inserted with a given user data
-    bool sub_remove(const UserDataT& udata, Octree* current=nullptr);
 
     // Merge children nodes and pull back their content at this level
     void merge();
@@ -100,20 +74,19 @@ private:
     }
 
 private:
-    Octree* parent_;                    // parent node, nullptr if root node
-    Octree* children_;                  // array of 8 octants, nullptr if leaf node
-    std::bitset<8> active_nodes_;       // flags to signify whether corresponding octants are active
-    uint32_t depth_;                    // depth at this node
-    BoundingRegion bounding_region_;    // represents the volume spanned by this node
+    OctreeNode* parent_;               // parent node, nullptr if root node
+    OctreeNode** children_;            // array of 8 octants, nullptr if leaf node
+    uint32_t depth_;                   // depth at this node
+    BoundingRegion bounding_region_;   // represents the volume spanned by this node
     ContentT content_;                 // data container at this node
 };
 
 // For convenience
-#define OCTREE       Octree<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>
-#define OCTREE_TARGS class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
+#define OCTREE_NODE         OctreeNode<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>
+#define OCTREE_NODE_ARGLIST class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
 
-template <OCTREE_TARGS>
-struct OCTREE::DataT
+template <OCTREE_NODE_ARGLIST>
+struct OCTREE_NODE::DataT
 {
     DataT(const PrimitiveT& p, const UserDataT& d):
     primitive(p),
@@ -128,109 +101,108 @@ struct OCTREE::DataT
     UserDataT data;
 };
 
-template <OCTREE_TARGS>
-OCTREE::Octree():
+template <OCTREE_NODE_ARGLIST>
+OCTREE_NODE::OctreeNode():
 parent_(nullptr),
 children_(nullptr),
-active_nodes_(0x0),
 depth_(0)
 {
 
 }
 
-template <OCTREE_TARGS>
-OCTREE::Octree(const BoundingRegion& bounding_region, ContentT&& content):
+template <OCTREE_NODE_ARGLIST>
+OCTREE_NODE::OctreeNode(const BoundingRegion& bounding_region, ContentT&& content):
 parent_(nullptr),
 children_(nullptr),
-active_nodes_(0x0),
 depth_(0),
 bounding_region_(bounding_region)
 {
     content_.splice(content_.end(), content);
 }
 
-template <OCTREE_TARGS>
-OCTREE::~Octree()
+template <OCTREE_NODE_ARGLIST>
+OCTREE_NODE::~OctreeNode()
 {
+    if(children_)
+    {
+        for(int ii=0; ii<8; ++ii)
+            delete children_[ii];
+    }
     delete[] children_;
-    active_nodes_ = 0x0;
 }
 
-template <OCTREE_TARGS>
-inline void OCTREE::insert(const DataT& data)
+template <OCTREE_NODE_ARGLIST>
+inline void OCTREE_NODE::insert(const DataT& data)
 {
     content_.push_back(data);
 }
-template <OCTREE_TARGS>
-inline void OCTREE::insert(const ContentT& data)
+
+template <OCTREE_NODE_ARGLIST>
+inline void OCTREE_NODE::insert(const ContentT& data)
 {
     content_.insert(content_.end(), data.begin(), data.end());
 }
-template <OCTREE_TARGS>
-inline void OCTREE::insert(ContentT&& data)
+
+template <OCTREE_NODE_ARGLIST>
+inline void OCTREE_NODE::insert(ContentT&& data)
 {
     content_.splice(content_.end(), data);
 }
-template <OCTREE_TARGS>
-inline bool OCTREE::remove(const UserDataT& udata)
-{
-    return sub_remove(udata);
-}
 
-template <OCTREE_TARGS>
-void OCTREE::subdivide()
+template <OCTREE_NODE_ARGLIST>
+void OCTREE_NODE::subdivide()
 {
     // * Allocate children nodes
-    delete[] children_;
-    children_ = new OCTREE[8];
+    children_ = new OCTREE_NODE*[8];
 
     // * Set children properties
     for(int ii=0; ii<8; ++ii)
     {
-        children_[ii].parent_ = this;
-        children_[ii].depth_  = depth_ + 1;
+        children_[ii] = new OCTREE_NODE;
+        children_[ii]->parent_ = this;
+        children_[ii]->depth_  = depth_ + 1;
     }
 
     // * Subdivide bounding region into 8 octants
     const math::vec3& center = bounding_region_.mid_point;
     // Upper octants
     // Octant 0: x>x_c, y>y_c, z>z_c
-    children_[0].bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                    center[1], bounding_region_.extent[3],
-                                                    center[2], bounding_region_.extent[5]});
+    children_[0]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
+                                                     center[1], bounding_region_.extent[3],
+                                                     center[2], bounding_region_.extent[5]});
     // Octant 1: x<x_c, y>y_c, z>z_c
-    children_[1].bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                    center[1], bounding_region_.extent[3],
-                                                    center[2], bounding_region_.extent[5]});
+    children_[1]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
+                                                     center[1], bounding_region_.extent[3],
+                                                     center[2], bounding_region_.extent[5]});
     // Octant 2: x>x_c, y>y_c, z<z_c
-    children_[2].bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                    center[1], bounding_region_.extent[3],
-                                                    bounding_region_.extent[4], center[2]});
+    children_[2]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
+                                                     center[1], bounding_region_.extent[3],
+                                                     bounding_region_.extent[4], center[2]});
     // Octant 3: x<x_c, y>y_c, z<z_c
-    children_[3].bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                    center[1], bounding_region_.extent[3],
-                                                    bounding_region_.extent[4], center[2]});
+    children_[3]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
+                                                     center[1], bounding_region_.extent[3],
+                                                     bounding_region_.extent[4], center[2]});
     // Lower octants
     // Octant 4: x>x_c, y<y_c, z>z_c
-    children_[4].bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                    bounding_region_.extent[2], center[1],
-                                                    center[2], bounding_region_.extent[5]});
+    children_[4]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
+                                                     bounding_region_.extent[2], center[1],
+                                                     center[2], bounding_region_.extent[5]});
     // Octant 5: x<x_c, y<y_c, z>z_c
-    children_[5].bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                    bounding_region_.extent[2], center[1],
-                                                    center[2], bounding_region_.extent[5]});
+    children_[5]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
+                                                     bounding_region_.extent[2], center[1],
+                                                     center[2], bounding_region_.extent[5]});
     // Octant 6: x>x_c, y<y_c, z<z_c
-    children_[6].bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                    bounding_region_.extent[2], center[1],
-                                                    bounding_region_.extent[4], center[2]});
+    children_[6]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
+                                                     bounding_region_.extent[2], center[1],
+                                                     bounding_region_.extent[4], center[2]});
     // Octant 7: x<x_c, y<y_c, z<z_c
-    children_[7].bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                    bounding_region_.extent[2], center[1],
-                                                    bounding_region_.extent[4], center[2]});
+    children_[7]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
+                                                     bounding_region_.extent[2], center[1],
+                                                     bounding_region_.extent[4], center[2]});
 }
 
-template <OCTREE_TARGS>
-void OCTREE::propagate(Octree* current)
+template <OCTREE_NODE_ARGLIST>
+void OCTREE_NODE::propagate(OctreeNode* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -252,9 +224,9 @@ void OCTREE::propagate(Octree* current)
             {
                 // If object is within child bounding region, add it to child content
                 // otherwise it stays at this level
-                if(current->children_[ii].bounding_region_.contains(it->primitive))
+                if(current->children_[ii]->bounding_region_.contains(it->primitive))
                 {
-                    current->children_[ii].content_.push_back(*it);
+                    current->children_[ii]->content_.push_back(*it);
                     // Mark object for removal
                     remove_object = true;
                     break;
@@ -269,14 +241,14 @@ void OCTREE::propagate(Octree* current)
 
         // Recursively propagate data to children nodes
         for(int ii=0; ii<8; ++ii)
-            propagate(&current->children_[ii]);
+            propagate(current->children_[ii]);
     }
     else // Stop condition
         return;
 }
 
-template <OCTREE_TARGS>
-bool OCTREE::sub_remove(const UserDataT& udata, Octree* current)
+template <OCTREE_NODE_ARGLIST>
+bool OCTREE_NODE::remove(const UserDataT& udata, OctreeNode* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -298,7 +270,7 @@ bool OCTREE::sub_remove(const UserDataT& udata, Octree* current)
     {
         for(int ii=0; ii<8; ++ii)
         {
-            if(sub_remove(udata, &current->children_[ii]))
+            if(remove(udata, current->children_[ii]))
             {
                 // Check if we can merge children nodes now that the object has been removed
                 if(current->must_merge())
@@ -312,8 +284,8 @@ bool OCTREE::sub_remove(const UserDataT& udata, Octree* current)
     return false;
 }
 
-template <OCTREE_TARGS>
-bool OCTREE::must_merge()
+template <OCTREE_NODE_ARGLIST>
+bool OCTREE_NODE::must_merge()
 {
     // * Nothing to merge if we are at the bottom of the tree
     if(is_leaf_node())
@@ -325,30 +297,33 @@ bool OCTREE::must_merge()
     for(int ii=0; ii<8; ++ii)
     {
         // If child is not a leaf, total count will necessarily exceed node capacity
-        if(!children_[ii].is_leaf_node())
+        if(!children_[ii]->is_leaf_node())
             return false;
 
         // Add child object count, bail early if total count exceeds node capacity
-        count += children_[ii].content_.size();
+        count += children_[ii]->content_.size();
         if(count>MAX_CELL_COUNT)
             return false;
     }
     return true;
 }
 
-template <OCTREE_TARGS>
-void OCTREE::merge()
+template <OCTREE_NODE_ARGLIST>
+void OCTREE_NODE::merge()
 {
     // * Pull back children node content and cleanup
     for(int ii=0; ii<8; ++ii)
-        content_.splice(content_.end(), children_[ii].content_);
+    {
+        content_.splice(content_.end(), children_[ii]->content_);
+        delete children_[ii];
+    }
 
     delete[] children_;
     children_ = nullptr;
 }
 
-template <OCTREE_TARGS>
-void OCTREE::traverse_leaves(data_visitor_t visit, Octree* current)
+template <OCTREE_NODE_ARGLIST>
+void OCTREE_NODE::traverse_leaves(DataVisitorT visit, OctreeNode* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -365,15 +340,15 @@ void OCTREE::traverse_leaves(data_visitor_t visit, Octree* current)
     // * Walk down the octree recursively
     for(int ii=0; ii<8; ++ii)
     {
-        traverse_leaves(visit, &current->children_[ii]);
+        traverse_leaves(visit, current->children_[ii]);
     }
 }
 
-template <OCTREE_TARGS>
+template <OCTREE_NODE_ARGLIST>
 template <typename RangeT>
-void OCTREE::traverse_range(const RangeT& query_range,
-                            data_visitor_t visit,
-                            Octree* current)
+void OCTREE_NODE::traverse_range(const RangeT& query_range,
+                            DataVisitorT visit,
+                            OctreeNode* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -392,10 +367,108 @@ void OCTREE::traverse_range(const RangeT& query_range,
     // * Walk down the octree recursively
     if(!current->is_leaf_node())
         for(int ii=0; ii<8; ++ii)
-            traverse_range(query_range, visit, &current->children_[ii]);
+            traverse_range(query_range, visit, current->children_[ii]);
+}
+
+} // namespace detail
+
+/*
+    Octree class for spatial partitioning of data.
+    PrimitiveT is the type of objects that are checked against cell bounding regions
+        -> math::vec3 for a point octree
+        -> AABB for AABB octree
+        -> ...
+    UserDataT is any kind of data that will be carried along with the primitives.
+        -> Useful to store references to game objects so they can be querried later on.
+        -> Must be a comparable type
+*/
+
+template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT=16, uint32_t MAX_DEPTH=5>
+class Octree
+{
+private:
+    typedef detail::OctreeNode<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH> OctreeNode;
+
+public:
+    typedef typename OctreeNode::DataT DataT;
+    typedef typename OctreeNode::ContentT ContentT;
+    typedef typename OctreeNode::DataVisitorT DataVisitorT;
+
+    Octree();
+    Octree(const BoundingRegion& bounding_region, ContentT&& content);
+    ~Octree();
+
+    void insert(const DataT& data);
+    void insert(const ContentT& data);
+    void insert(ContentT&& data);
+    inline bool remove(const UserDataT& udata)      { return root_->remove(udata); }
+
+    inline void propagate()                         { root_->propagate(); }
+
+    inline void traverse_leaves(DataVisitorT visit) { root_->traverse_leaves(visit); }
+
+    template <typename RangeT>
+    inline void traverse_range(const RangeT& query_range,
+                               DataVisitorT visit)  { root_->traverse_range(query_range, visit); }
+
+private:
+    OctreeNode* root_;
+};
+
+// For convenience
+#define OCTREE         Octree<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>
+#define OCTREE_ARGLIST class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
+
+template <OCTREE_NODE_ARGLIST>
+OCTREE::Octree()
+{
+    root_ = new OctreeNode();
+}
+
+template <OCTREE_NODE_ARGLIST>
+OCTREE::Octree(const BoundingRegion& bounding_region, ContentT&& content)
+{
+    root_ = new OctreeNode(bounding_region, std::move(content));
+}
+
+template <OCTREE_NODE_ARGLIST>
+OCTREE::~Octree()
+{
+    delete root_;
+}
+
+template <OCTREE_NODE_ARGLIST>
+void OCTREE::insert(const DataT& data)
+{
+    // * Detect if object lies outside of bounds
+    // If so, we need to expand tree in the direction of the outlier
+    if(!root_->bounding_region_.contains(data.primitive))
+    {
+        std::cout << "outlier: " << data.primitive << std::endl;
+        // Create parent node with 8 children, one of which is current root node
+    }
+
+    root_->insert(data);
+}
+
+template <OCTREE_NODE_ARGLIST>
+void OCTREE::insert(const ContentT& data)
+{
+    root_->insert(data);
+}
+
+template <OCTREE_NODE_ARGLIST>
+void OCTREE::insert(ContentT&& data)
+{
+    root_->insert(data);
 }
 
 } // namespace wcore
 
+
+#undef OCTREE
+#undef OCTREE_NODE
+#undef OCTREE_ARGLIST
+#undef OCTREE_NODE_ARGLIST
 
 #endif // OCTREE_H

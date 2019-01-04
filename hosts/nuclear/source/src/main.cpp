@@ -191,7 +191,7 @@ int main()
     DataList remove_list;
 
     math::srand_vec3(42);
-    for(int ii=0; ii<50000; ++ii)
+    for(int ii=0; ii<10000; ++ii)
     {
         math::vec3 point(math::random_vec3(region.extent));
         UData user_data({point.norm(), ii});
@@ -214,6 +214,10 @@ int main()
         if(!octree.remove(rem.data))
             std::cout << "Couldn't remove" << std::endl;
     }
+
+    // Insert out of bounds point
+    /*octree.insert(DataT(math::vec3(-120,10,40),UData({0,9901})));
+    octree.propagate();*/
 
     /*for(int ii=0; ii<100; ++ii)
     {
