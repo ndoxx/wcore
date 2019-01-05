@@ -267,12 +267,12 @@ void FrustumBox::update(const Camera& camera)
     normals_[5] = normal_F();
 }
 
-bool FrustumBox::collides_sphere(const math::vec3& center, float radius) const
+bool FrustumBox::intersects(const Sphere& sphere) const
 {
-   float dist01 = fmin(dist_to_plane(0, center), dist_to_plane(1, center));
-   float dist23 = fmin(dist_to_plane(2, center), dist_to_plane(3, center));
-   float dist45 = fmin(dist_to_plane(4, center), dist_to_plane(5, center));
-   return (fmin(fmin(dist01, dist23), dist45) + radius)>0;
+   float dist01 = fmin(dist_to_plane(0, sphere.center), dist_to_plane(1, sphere.center));
+   float dist23 = fmin(dist_to_plane(2, sphere.center), dist_to_plane(3, sphere.center));
+   float dist45 = fmin(dist_to_plane(4, sphere.center), dist_to_plane(5, sphere.center));
+   return (fmin(fmin(dist01, dist23), dist45) + sphere.radius)>0;
 }
 
 bool FrustumBox::intersects(const math::vec3& point) const

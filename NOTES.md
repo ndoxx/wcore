@@ -5877,6 +5877,7 @@ La structure actuelle s'appelle un Point Octree, et reste intéressante à conse
 
 * NOTE:
     Mes _AABB_ ont pour le moment un membre Model& (qui leur sert à récupérer l'_OBB_ du parent pour l'update), ça va être gênant pour en faire une utilisation avec les _Entity_ plus tard.
+        -> C'est réglé, gros refactor des bounding boxes.
 
 -> Quand j'utiliserai l'octree dans mon moteur, il faudra veiller à ce que les chunks puissent être contenus dans des cellules à leur taille. D'une certaine manière, les chunks deviendront une unité d'insertion pour l'octree.
 -> J'ai l'intention d'utiliser un octree pour la géométrie statique, et un autre pour la géométrie dynamique. Seul le second aura besoin d'être reconstruit en temps réel, et comme a priori il y aura moins d'objets dynamiques que statiques, je pense faire une économie CPU.
@@ -5893,3 +5894,150 @@ La structure actuelle s'appelle un Point Octree, et reste intéressante à conse
 
 * sources :
 [1] https://www.gamedev.net/articles/programming/general-and-gameplay-programming/introduction-to-octrees-r3529/
+
+
+#[05-01-19]
+
+##[REFACTOR] Bounding boxes
+- Une nouvelle structure _BoundingRegion_ cumule les 2 représentations possibles d'un volume spatial cubique : un math::extent ET un couple de vecteurs pour le centre (mid_point) et les demi-dimensions (half). Comme mes algos utilisent les 2 représentations, j'ai pensé que l'overhead valait le coup.
+
+- La classe _OBB_ possède un _BoundingRegion_ en model space, est construite depuis un math::extent d'un modèle parent et un booléen qui traduit si le mesh est centré ou non su l'origine en model space. La fonction update() prend une matrice modèle en argument (celle du parent).
+
+- La classe _AABB_ possède un _BoundingRegion_ en world space, et est updatée via un objet _OBB_ (celui du parent).
+
+- J'ai clarifié et uniformisé la sémantique pour les tests de collisions entre mes primitives volumétriques :
+    - intersects() permet de savoir si 2 primitives sont en collision.
+    - contains() permet de savoir si une primitive en contient une autre.
+        - En particulier, contains() et intersects() sont équivalentes pour un point uniquement.
+
+## Octree
+J'ai méga avancé dans le développement de l'octree.
+
+Je différencie maintenant les noeuds de type _OctreeNode<>_ de l'octree lui-même _Octree<>_. Ca me permettra de manipuler la racine de l'arbre plus facilement, ce qui est essentiel pour pouvoir étendre et contracter l'octree quand un nouvel objet est inséré hors des limites spatiales de la racine ou respectivement qu'un objet est détruit et que 7 des 8 octants de la racine sont vides (à venir).
+La classe _Octree<>_ possède pour l'instant un unique membre root_ et un ensemble de méthodes dont la plupart se contentent d'appeler les méthodes d'_OctreeNode<>_.
+La structure supporte l'insertion de données et leur suppression, ainsi qu'une méthode de query qui permet de visiter les noeuds compris dans un volume spatial spécifié en argument.
+
+Définitions :
+* *Primitive* : Le type d'objet utilisé dans l'arbre pour localiser les données. Il peut s'agir d'un point (math::vec3), d'un volume cubique (_BoundingRegion_ ou _AABB_), d'une sphère...
+* *User data* : Le type de données associées aux primitives dans l'arbre. Il peut s'agir d'un entity ID, d'un pointeur vers un objet du jeu... C'est nécessairement un type comparable.
+* *Data* : Cette structure encapsule une primitive et un objet User data (plus d'autres flags éventuels pour les besoins de l'octree).
+
+### Insertion et propagation
+Pour insérer des données, on les envoie d'abord dans la liste de données de la racine. Puis une méthode propagate() est appelée, qui fait descendre les données dans l'arbre récursivement. Pour chaque niveau de récursion :
+    - On vérifie si la cellule courante doit être subdivisée (s'il y a trop de données au niveau courant et qu'on n'a pas atteint la profondeur maximale). Si tel est le cas, alors on subdivise et on poursuit l'algo.
+    - Si on n'est pas dans une feuille
+    {
+        - Pour chaque objet à ce niveau :
+            - On calcule l'indice de l'octant le plus à même d'accueillir l'objet
+            - On vérifie que l'objet peut rentrer dans l'octant. Si c'est le cas on l'y envoie, sinon il reste sur place.
+        - On propage les données des enfants
+    }
+    - Sinon
+    {
+        - On stop la récursion en retournant.
+    }
+Noter que les données sont accompagnées d'un flag qui permet de savoir si elles ont atteint le niveau idoine dans l'arbre. Une donnée placée ne sera plus testée. Si la cellule doit être subdivisée, alors ce flag est invalidé pour toutes les données courantes. Si on est dans une feuille alors les données sont nécessairement à destination.
+
+Pour calculer l'indice du meilleur octant pour envoyer les données, j'ai fait un truc malin inspiré de [1]. L'indice de mes octants correspond aux choix cumulés d'un arbre de décision binaire :
+
+    X: x>x_c ? 1 : 0
+    Z: z>z_c ? 2 : 0
+    Y: y>y_c ? 4 : 0
+                                  X?
+                                 n/\y
+                                 /  \
+                                0    1
+                               Z?    Z?
+                               /\    /\
+                              /  \  /  \
+                             0   2  0   2
+                            Y?  Y?  Y?  Y?
+                            /\  /\  /\  /\
+                           /  \/  \/  \/  \
+                           0  40  40  40  4
+Par exemple, pour l'octant droit (x < xc) vers l'avant (z > zc) supérieur (y > yc), l'indice vaut 0 + 2 + 4 = 6.
+Donc pour calculer l'indice du meilleur octant je fais :
+```cpp
+template <OCTREE_NODE_ARGLIST>
+inline uint8_t OCTREE_NODE::best_fit_octant(const PrimitiveT& primitive)
+{
+    // Octants are arranged in a binary decision tree fashion
+    // We can use this to our advantage
+    math::vec3 diff(center(primitive) - bounding_region_.mid_point);
+    return (diff.x()<0 ? 0 : 1) + (diff.z()<0 ? 0 : 2) + (diff.y()<0 ? 0 : 4);
+}
+```
+Noter qu'il doit exister une fonction center(const PrimitiveT&) qui renvoie le centre de la primitive. Pour un point, c'est le point lui-même, pour un AABB, c'est son... centre, pour une sphère... son centre également etc.
+
+### Suppression et merge
+Pour faire référence à un objet à supprimer dans l'arbre, on utilise les user data communiquées avec la primitive lors de l'insertion. Le type UserDataT doit être comparable (définir bool operator==()). En pratique on peut former une structure du genre :
+```cpp
+struct UData
+{
+    float value;
+    int key;
+
+    bool operator==(const UData& other)
+    {
+        return key == other.key;
+    }
+};
+```
+Avec key un hash des données membres ou bien un unique id fourni par le moteur. Il est capital de s'assurer que cette clé est bien unique dans l'arbre. C'est un des points faibles de mon implémentation, mais je préfère ne pas avoir à calculer des hash dans l'octree pour accélérer les calculs.
+
+L'algo de suppression est un depth first traversal qui va simplement comparer les données stockées à celle en argument et supprimer l'objet quand il est trouvé. Cependant, il peut arriver qu'une suppression libère suffisamment de place dans les octants d'un niveau donné pour que ces octants puissent être refondus au niveau courant (merge).
+
+Pour chaque niveau de récursion on fait :
+    - Pour chaque objet courant
+        - Si l'objet compare on le vire et on retourne true
+    - Si on n'est pas dans une feuille
+        - Pour chaque octant enfant
+            - Si on parvient à supprimer l'objet dans un des octants
+                - Si on peut merge on merge
+                - On retourne true
+    - On retourne false
+
+Pour savoir si on peut merge :
+    - Si on est une feuille on ne peut pas (return false)
+    - On initialise un compte total avec le nombre d'objets courants
+    - Pour chaque octant
+        - Si l'octant n'est pas une feuille alors il y a nécessairement trop d'objets sous le niveau courant donc on retourne false
+        - On incrémente le compte total du nombre d'objets de l'octant
+        - Si le compte total dépasse la capacité maximale on retourne false
+    - On retourne true
+
+Le merge est un simple splice() des listes d'objets des octants dans celle du niveau courant, et une suppression des enfants.
+
+### Query, traversal, visit
+Je suis assez fier de ma fonction de visite :
+```cpp
+template <OCTREE_NODE_ARGLIST>
+template <typename RangeT>
+void OCTREE_NODE::traverse_range(const RangeT& query_range,
+                                 DataVisitorT visit,
+                                 OctreeNode* current)
+{
+    // * Initial condition
+    if(current == nullptr)
+        current = this;
+
+    // * Stop condition
+    // Check bounding region intersection, return if out of range
+    if(!query_range.intersects(current->bounding_region_))
+        return;
+
+    // * Visit objects within range at this level
+    for(auto&& data: current->content_)
+        if(query_range.intersects(data.primitive))
+            visit(data);
+
+    // * Walk down the octree recursively
+    if(!current->is_leaf_node())
+        for(int ii=0; ii<8; ++ii)
+            traverse_range(query_range, visit, current->children_[ii]);
+}
+```
+RangeT peut être n'importe quel objet volumétrique tant qu'il définit une fonction intersects() avec un objet _BoundingRegion_ ET avec la primitive. Cet objet peut être un bête _BoundingRegion_ ce qui permet de visiter uniquement les objets contenus dans cette région cubique, mais ce qui est super sexy c'est que RangeT peut être un objet _FrustumBox_, ce qui permet de faire un visibility traversal grâce au frustum de la caméra !
+
+* Sources :
+[1] https://github.com/Nition/UnityOctree/blob/master/Scripts/PointOctreeNode.cs

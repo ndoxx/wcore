@@ -52,6 +52,10 @@ public:
     // Recursive octree leaves traversal
     void traverse_leaves(DataVisitorT visit, OctreeNode* current=nullptr);
 
+    // Find best fit octant for an input primitive
+    // There must exist a center() function that returns the center of a PrimitiveT
+    inline uint8_t best_fit_octant(const PrimitiveT& primitive);
+
     inline bool is_leaf_node() const                 { return (children_ == nullptr); }
     inline bool is_root_node() const                 { return (parent_ == nullptr); }
     inline const BoundingRegion& get_bounds() const  { return bounding_region_; }
@@ -90,7 +94,8 @@ struct OCTREE_NODE::DataT
 {
     DataT(const PrimitiveT& p, const UserDataT& d):
     primitive(p),
-    data(d){}
+    data(d),
+    is_placed(false){}
 
     inline bool operator==(const DataT& other)
     {
@@ -99,6 +104,7 @@ struct OCTREE_NODE::DataT
 
     PrimitiveT primitive;
     UserDataT data;
+    bool is_placed; // object arrived at its correct node and does not need to be propagated lower
 };
 
 template <OCTREE_NODE_ARGLIST>
@@ -150,6 +156,15 @@ inline void OCTREE_NODE::insert(ContentT&& data)
 }
 
 template <OCTREE_NODE_ARGLIST>
+inline uint8_t OCTREE_NODE::best_fit_octant(const PrimitiveT& primitive)
+{
+    // Octants are arranged in a binary decision tree fashion
+    // We can use this to our advantage
+    math::vec3 diff(center(primitive) - bounding_region_.mid_point);
+    return (diff.x()<0 ? 0 : 1) + (diff.z()<0 ? 0 : 2) + (diff.y()<0 ? 0 : 4);
+}
+
+template <OCTREE_NODE_ARGLIST>
 void OCTREE_NODE::subdivide()
 {
     // * Allocate children nodes
@@ -165,40 +180,48 @@ void OCTREE_NODE::subdivide()
 
     // * Subdivide bounding region into 8 octants
     const math::vec3& center = bounding_region_.mid_point;
-    // Upper octants
-    // Octant 0: x>x_c, y>y_c, z>z_c
-    children_[0]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                     center[1], bounding_region_.extent[3],
-                                                     center[2], bounding_region_.extent[5]});
-    // Octant 1: x<x_c, y>y_c, z>z_c
-    children_[1]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                     center[1], bounding_region_.extent[3],
-                                                     center[2], bounding_region_.extent[5]});
-    // Octant 2: x>x_c, y>y_c, z<z_c
-    children_[2]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                     center[1], bounding_region_.extent[3],
-                                                     bounding_region_.extent[4], center[2]});
-    // Octant 3: x<x_c, y>y_c, z<z_c
-    children_[3]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                     center[1], bounding_region_.extent[3],
-                                                     bounding_region_.extent[4], center[2]});
+
+    // Arrange octants according to a binary decision tree :
+    // x>x_c ? 1 : 0
+    // z>z_c ? 2 : 0
+    // y>y_c ? 4 : 0
+    // We add up the evaluations of these 3 decisions to get the index
+
     // Lower octants
-    // Octant 4: x>x_c, y<y_c, z>z_c
-    children_[4]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                     bounding_region_.extent[2], center[1],
-                                                     center[2], bounding_region_.extent[5]});
-    // Octant 5: x<x_c, y<y_c, z>z_c
-    children_[5]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                     bounding_region_.extent[2], center[1],
-                                                     center[2], bounding_region_.extent[5]});
-    // Octant 6: x>x_c, y<y_c, z<z_c
-    children_[6]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
+    // Octant 0: x<x_c, y<y_c, z<z_c
+    children_[0]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
                                                      bounding_region_.extent[2], center[1],
                                                      bounding_region_.extent[4], center[2]});
-    // Octant 7: x<x_c, y<y_c, z<z_c
-    children_[7]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
+    // Octant 1: x>x_c, y<y_c, z<z_c
+    children_[1]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
                                                      bounding_region_.extent[2], center[1],
                                                      bounding_region_.extent[4], center[2]});
+    // Octant 2: x<x_c, y<y_c, z>z_c
+    children_[2]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
+                                                     bounding_region_.extent[2], center[1],
+                                                     center[2], bounding_region_.extent[5]});
+    // Octant 3: x>x_c, y<y_c, z>z_c
+    children_[3]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
+                                                     bounding_region_.extent[2], center[1],
+                                                     center[2], bounding_region_.extent[5]});
+
+    // Upper octants
+    // Octant 4: x<x_c, y>y_c, z<z_c
+    children_[4]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
+                                                     center[1], bounding_region_.extent[3],
+                                                     bounding_region_.extent[4], center[2]});
+    // Octant 5: x>x_c, y>y_c, z<z_c
+    children_[5]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
+                                                     center[1], bounding_region_.extent[3],
+                                                     bounding_region_.extent[4], center[2]});
+    // Octant 6: x<x_c, y>y_c, z>z_c
+    children_[6]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
+                                                     center[1], bounding_region_.extent[3],
+                                                     center[2], bounding_region_.extent[5]});
+    // Octant 7: x>x_c, y>y_c, z>z_c
+    children_[7]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
+                                                     center[1], bounding_region_.extent[3],
+                                                     center[2], bounding_region_.extent[5]});
 }
 
 template <OCTREE_NODE_ARGLIST>
@@ -210,7 +233,13 @@ void OCTREE_NODE::propagate(OctreeNode* current)
 
     // * Check if we need to subdivide cell
     if(current->must_subdivide())
-        current->subdivide(); // Subdivide current cell
+    {
+        // Invalidate object placement at this level
+        for(auto&& obj: current->content_)
+            obj.is_placed = false;
+        // Subdivide current cell
+        current->subdivide();
+    }
 
     // * Propagate data to children nodes if current node is not a leaf, else return
     if(!current->is_leaf_node())
@@ -219,24 +248,23 @@ void OCTREE_NODE::propagate(OctreeNode* current)
         auto it = current->content_.begin();
         while(it != current->content_.end())
         {
-            bool remove_object = false;
-            for(int ii=0; ii<8; ++ii)
+            // If object already arrived at destination, skip tests
+            if(it->is_placed) continue;
+            // Find index of child octant that will best fit our object
+            uint8_t best_octant = current->best_fit_octant(it->primitive);
+            // If object is within child bounding region, add it to child content
+            // otherwise it stays at this level
+            if(current->children_[best_octant]->bounding_region_.contains(it->primitive))
             {
-                // If object is within child bounding region, add it to child content
-                // otherwise it stays at this level
-                if(current->children_[ii]->bounding_region_.contains(it->primitive))
-                {
-                    current->children_[ii]->content_.push_back(*it);
-                    // Mark object for removal
-                    remove_object = true;
-                    break;
-                }
-            }
-            // Remove moved object from current content
-            if(remove_object)
+                current->children_[best_octant]->content_.push_back(*it);
+                // Remove moved object from current content
                 current->content_.erase(it++);
+            }
             else
+            {
+                it->is_placed = true;
                 ++it;
+            }
         }
 
         // Recursively propagate data to children nodes
@@ -244,7 +272,12 @@ void OCTREE_NODE::propagate(OctreeNode* current)
             propagate(current->children_[ii]);
     }
     else // Stop condition
+    {
+        // Objects at leaf nodes are definitely where they should be
+        for(auto&& obj: current->content_)
+            obj.is_placed = true;
         return;
+    }
 }
 
 template <OCTREE_NODE_ARGLIST>
@@ -347,8 +380,8 @@ void OCTREE_NODE::traverse_leaves(DataVisitorT visit, OctreeNode* current)
 template <OCTREE_NODE_ARGLIST>
 template <typename RangeT>
 void OCTREE_NODE::traverse_range(const RangeT& query_range,
-                            DataVisitorT visit,
-                            OctreeNode* current)
+                                 DataVisitorT visit,
+                                 OctreeNode* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -382,7 +415,6 @@ void OCTREE_NODE::traverse_range(const RangeT& query_range,
         -> Useful to store references to game objects so they can be querried later on.
         -> Must be a comparable type
 */
-
 template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT=16, uint32_t MAX_DEPTH=5>
 class Octree
 {
@@ -401,12 +433,10 @@ public:
     void insert(const DataT& data);
     void insert(const ContentT& data);
     void insert(ContentT&& data);
+
     inline bool remove(const UserDataT& udata)      { return root_->remove(udata); }
-
     inline void propagate()                         { root_->propagate(); }
-
     inline void traverse_leaves(DataVisitorT visit) { root_->traverse_leaves(visit); }
-
     template <typename RangeT>
     inline void traverse_range(const RangeT& query_range,
                                DataVisitorT visit)  { root_->traverse_range(query_range, visit); }

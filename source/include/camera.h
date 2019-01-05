@@ -196,7 +196,7 @@ inline void Camera::update_position(const math::vec3& d_pos)
 
 inline bool Camera::frustum_collides_sphere(const math::vec3& center, float radius) const
 {
-    return frusBox_.collides_sphere(center, radius);
+    return frusBox_.intersects(Sphere(center, radius));
 }
 
 inline const math::mat4& Camera::get_view_matrix() const

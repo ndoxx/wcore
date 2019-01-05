@@ -233,7 +233,7 @@ int main()
         std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
     });
 
-    /*octree.traverse_range(BoundingRegion({-500,500,0,50,-500,500}),
+    /*octree.traverse_range(BoundingRegion({0,28,0,20,-50,50}),
     [&](auto&& obj)
     {
         ++npoints;
@@ -242,9 +242,8 @@ int main()
 
     /*Camera camera(1024,768);
     camera.update(1/60.0f);
-    const FrustumBox& fb = camera.get_frustum_box();
 
-    octree.traverse_range(fb,
+    octree.traverse_range(camera.get_frustum_box(),
     [&](auto&& obj)
     {
         ++npoints;

@@ -37,6 +37,16 @@ struct BoundingRegion
     math::vec3 half;
 };
 
+struct Sphere
+{
+    Sphere(const math::vec3& center, float radius):
+    center(center),
+    radius(radius){}
+
+    math::vec3 center;
+    float radius;
+};
+
 class OBB
 {
 private:
@@ -127,7 +137,7 @@ public:
 
     void update(const Camera& camera);
     template <typename BB> bool intersects(const BB& bb) const;
-    bool collides_sphere(const math::vec3& center, float radius) const;
+    bool intersects(const Sphere& sphere) const;
     bool intersects(const math::vec3& point) const;
 
     math::vec3 split_center(uint32_t splitIndex) const;
@@ -178,6 +188,11 @@ inline bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData
     return ray_collides_extent(ray, aabb.get_extent(), data);
 }
 bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> model, RayCollisionData& data);
+
+// For octree
+inline const math::vec3& center(const math::vec3& point)  { return point; }
+inline const math::vec3& center(const BoundingRegion& br) { return br.mid_point; }
+inline const math::vec3& center(const AABB& aabb)         { return aabb.get_bounding_region().mid_point; }
 
 }
 
