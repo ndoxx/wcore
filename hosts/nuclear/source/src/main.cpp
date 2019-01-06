@@ -186,14 +186,15 @@ int main()
     typedef PointOctree::DataT       DataT;
     typedef PointOctree::ContentT    DataList;
 
-    BoundingRegion region({-100,100,0,100,-100,100});
+    BoundingRegion start_region({-100,0,0,50,0,100});
+    BoundingRegion world_region({-100,100,0,100,-100,100});
     DataList data_points;
     DataList remove_list;
 
     math::srand_vec3(42);
     for(int ii=0; ii<10000; ++ii)
     {
-        math::vec3 point(math::random_vec3(region.extent));
+        math::vec3 point(math::random_vec3(world_region.extent));
         UData user_data({point.norm(), ii});
         DataT obj(point,user_data);
         data_points.push_back(obj);
@@ -205,7 +206,7 @@ int main()
     }
 
     // Populate octree
-    PointOctree octree(region, std::move(data_points));
+    PointOctree octree(start_region, data_points);
     octree.propagate();
 
     // Remove some of the points
@@ -215,22 +216,15 @@ int main()
             std::cout << "Couldn't remove" << std::endl;
     }
 
-    // Insert out of bounds point
-    /*octree.insert(DataT(math::vec3(-120,10,40),UData({0,9901})));
-    octree.propagate();*/
-
-    /*for(int ii=0; ii<100; ++ii)
-    {
-        math::vec3 point(math::random_vec3(region.extent));
-        octree.insert(DataT(point,point.norm()));
-    }
-    octree.propagate();*/
+    // Insert out of bounds point, octree will grow
+    //octree.insert(DataT(math::vec3(-120,10,40),UData({0,9900})));
+    //octree.propagate();
 
     uint32_t npoints=0;
     octree.traverse_leaves([&](auto&& obj)
     {
         ++npoints;
-        std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+        //std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
     });
 
     /*octree.traverse_range(BoundingRegion({0,28,0,20,-50,50}),

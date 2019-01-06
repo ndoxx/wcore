@@ -13,18 +13,24 @@
 
 namespace wcore
 {
+
+template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH>
+class Octree;
+
 namespace detail
 {
 template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH>
 class OctreeNode
 {
 public:
+    friend class Octree<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>;
+
     struct DataT;
     typedef std::list<DataT> ContentT;
     typedef std::function<void(const DataT&)> DataVisitorT;
 
     OctreeNode();
-    OctreeNode(const BoundingRegion& bounding_region, ContentT&& content);
+    OctreeNode(const BoundingRegion& bounding_region);
     ~OctreeNode();
 
     // Lazy insertion of a single data element
@@ -38,7 +44,7 @@ public:
     bool remove(const UserDataT& udata, OctreeNode* current=nullptr);
 
     // Recursive object dispatch (will make effective any previous insertion)
-    void propagate(OctreeNode* current=nullptr);
+    void propagate(OctreeNode* current=nullptr, uint32_t current_depth=0);
 
     // Recursive depth first traversal of objects within specified range
     // Can be used with FrustumBox for visible range traversal
@@ -72,15 +78,14 @@ private:
     bool must_merge();
 
     // Only subdivide leaves when they exceed object capacity and are above max depth
-    inline bool must_subdivide() const
+    inline bool must_subdivide(uint32_t depth) const
     {
-        return (content_.size()>MAX_CELL_COUNT && depth_<(MAX_DEPTH-1) && is_leaf_node());
+        return (content_.size()>MAX_CELL_COUNT && depth<(MAX_DEPTH-1) && is_leaf_node());
     }
 
 private:
     OctreeNode* parent_;               // parent node, nullptr if root node
     OctreeNode** children_;            // array of 8 octants, nullptr if leaf node
-    uint32_t depth_;                   // depth at this node
     BoundingRegion bounding_region_;   // represents the volume spanned by this node
     ContentT content_;                 // data container at this node
 };
@@ -110,20 +115,18 @@ struct OCTREE_NODE::DataT
 template <OCTREE_NODE_ARGLIST>
 OCTREE_NODE::OctreeNode():
 parent_(nullptr),
-children_(nullptr),
-depth_(0)
+children_(nullptr)
 {
 
 }
 
 template <OCTREE_NODE_ARGLIST>
-OCTREE_NODE::OctreeNode(const BoundingRegion& bounding_region, ContentT&& content):
+OCTREE_NODE::OctreeNode(const BoundingRegion& bounding_region):
 parent_(nullptr),
 children_(nullptr),
-depth_(0),
 bounding_region_(bounding_region)
 {
-    content_.splice(content_.end(), content);
+
 }
 
 template <OCTREE_NODE_ARGLIST>
@@ -175,7 +178,6 @@ void OCTREE_NODE::subdivide()
     {
         children_[ii] = new OCTREE_NODE;
         children_[ii]->parent_ = this;
-        children_[ii]->depth_  = depth_ + 1;
     }
 
     // * Subdivide bounding region into 8 octants
@@ -199,14 +201,14 @@ void OCTREE_NODE::subdivide()
 }
 
 template <OCTREE_NODE_ARGLIST>
-void OCTREE_NODE::propagate(OctreeNode* current)
+void OCTREE_NODE::propagate(OctreeNode* current, uint32_t current_depth)
 {
     // * Initial condition
     if(current == nullptr)
         current = this;
 
     // * Check if we need to subdivide cell
-    if(current->must_subdivide())
+    if(current->must_subdivide(current_depth))
     {
         // Invalidate object placement at this level
         for(auto&& obj: current->content_)
@@ -243,7 +245,7 @@ void OCTREE_NODE::propagate(OctreeNode* current)
 
         // Recursively propagate data to children nodes
         for(int ii=0; ii<8; ++ii)
-            propagate(current->children_[ii]);
+            propagate(current->children_[ii], current_depth+1);
     }
     else // Stop condition
     {
@@ -401,12 +403,11 @@ public:
     typedef typename OctreeNode::DataVisitorT DataVisitorT;
 
     Octree();
-    Octree(const BoundingRegion& bounding_region, ContentT&& content);
+    Octree(const BoundingRegion& bounding_region, const ContentT& content);
     ~Octree();
 
     void insert(const DataT& data);
-    void insert(const ContentT& data);
-    void insert(ContentT&& data);
+    void insert(const ContentT& data_list);
 
     inline bool remove(const UserDataT& udata)      { return root_->remove(udata); }
     inline void propagate()                         { root_->propagate(); }
@@ -414,6 +415,9 @@ public:
     template <typename RangeT>
     inline void traverse_range(const RangeT& query_range,
                                DataVisitorT visit)  { root_->traverse_range(query_range, visit); }
+
+private:
+    void grow(uint8_t old_root_index);
 
 private:
     OctreeNode* root_;
@@ -430,9 +434,11 @@ OCTREE::Octree()
 }
 
 template <OCTREE_NODE_ARGLIST>
-OCTREE::Octree(const BoundingRegion& bounding_region, ContentT&& content)
+OCTREE::Octree(const BoundingRegion& bounding_region, const ContentT& content)
 {
-    root_ = new OctreeNode(bounding_region, std::move(content));
+    root_ = new OctreeNode(bounding_region);
+    for(auto&& data: content)
+        insert(data);
 }
 
 template <OCTREE_NODE_ARGLIST>
@@ -442,29 +448,62 @@ OCTREE::~Octree()
 }
 
 template <OCTREE_NODE_ARGLIST>
+void OCTREE::grow(uint8_t old_root_index)
+{
+    // Build new root
+    OctreeNode* new_root = new OctreeNode();
+    new_root->children_  = new OctreeNode*[8];
+    // New root spatial extent can be computed by using binary masking on old_root_index
+    math::vec3 new_half(2.0f*root_->bounding_region_.half);
+    math::vec3 new_center(root_->bounding_region_.mid_point
+                        + math::vec3(((old_root_index&1)?-1.f:1.f)*root_->bounding_region_.half.x(),
+                                     ((old_root_index&4)?-1.f:1.f)*root_->bounding_region_.half.y(),
+                                     ((old_root_index&2)?-1.f:1.f)*root_->bounding_region_.half.z()));
+    new_root->bounding_region_ = BoundingRegion(new_center, new_half);
+
+    // Subdivide new root iteratively, but at index old_root_index insert old root
+    // instead of creating a new node
+    const math::vec3 child_half = root_->bounding_region_.half;
+    for(uint8_t ii=0; ii<8; ++ii)
+    {
+        if(ii!=old_root_index)
+        {
+            new_root->children_[ii] = new OctreeNode();
+            math::vec3 child_center = new_center
+                                  + math::vec3(((ii&1)?1.f:-1.f)*child_half.x(),
+                                               ((ii&4)?1.f:-1.f)*child_half.y(),
+                                               ((ii&2)?1.f:-1.f)*child_half.z());
+            new_root->children_[ii]->bounding_region_ = BoundingRegion(child_center, child_half);
+        }
+        else
+            new_root->children_[ii] = root_;
+    }
+    root_ = new_root;
+}
+
+
+template <OCTREE_NODE_ARGLIST>
 void OCTREE::insert(const DataT& data)
 {
     // * Detect if object lies outside of bounds
     // If so, we need to expand tree in the direction of the outlier
     if(!root_->bounding_region_.contains(data.primitive))
     {
-        std::cout << "outlier: " << data.primitive << std::endl;
         // Create parent node with 8 children, one of which is current root node
+        // Compute old root index as a child of nex root
+        // I showed that it can be obtained by taking the 7's complement to best_fit_octant()
+        uint8_t old_root_index = 7 - root_->best_fit_octant(data.primitive);
+        grow(old_root_index);
     }
 
     root_->insert(data);
 }
 
 template <OCTREE_NODE_ARGLIST>
-void OCTREE::insert(const ContentT& data)
+void OCTREE::insert(const ContentT& data_list)
 {
-    root_->insert(data);
-}
-
-template <OCTREE_NODE_ARGLIST>
-void OCTREE::insert(ContentT&& data)
-{
-    root_->insert(data);
+    for(auto&& data: data_list)
+        insert(data);
 }
 
 } // namespace wcore
