@@ -186,42 +186,16 @@ void OCTREE_NODE::subdivide()
     // z>z_c ? 2 : 0
     // y>y_c ? 4 : 0
     // We add up the evaluations of these 3 decisions to get the index
-
-    // Lower octants
-    // Octant 0: x<x_c, y<y_c, z<z_c
-    children_[0]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                     bounding_region_.extent[2], center[1],
-                                                     bounding_region_.extent[4], center[2]});
-    // Octant 1: x>x_c, y<y_c, z<z_c
-    children_[1]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                     bounding_region_.extent[2], center[1],
-                                                     bounding_region_.extent[4], center[2]});
-    // Octant 2: x<x_c, y<y_c, z>z_c
-    children_[2]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                     bounding_region_.extent[2], center[1],
-                                                     center[2], bounding_region_.extent[5]});
-    // Octant 3: x>x_c, y<y_c, z>z_c
-    children_[3]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                     bounding_region_.extent[2], center[1],
-                                                     center[2], bounding_region_.extent[5]});
-
-    // Upper octants
-    // Octant 4: x<x_c, y>y_c, z<z_c
-    children_[4]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                     center[1], bounding_region_.extent[3],
-                                                     bounding_region_.extent[4], center[2]});
-    // Octant 5: x>x_c, y>y_c, z<z_c
-    children_[5]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                     center[1], bounding_region_.extent[3],
-                                                     bounding_region_.extent[4], center[2]});
-    // Octant 6: x<x_c, y>y_c, z>z_c
-    children_[6]->bounding_region_ = BoundingRegion({bounding_region_.extent[0], center[0],
-                                                     center[1], bounding_region_.extent[3],
-                                                     center[2], bounding_region_.extent[5]});
-    // Octant 7: x>x_c, y>y_c, z>z_c
-    children_[7]->bounding_region_ = BoundingRegion({center[0], bounding_region_.extent[1],
-                                                     center[1], bounding_region_.extent[3],
-                                                     center[2], bounding_region_.extent[5]});
+    // Conversely we can use binary masking on child indices to determine child extent
+    for(uint8_t ii=0; ii<8; ++ii)
+    {
+        math::vec3 new_half   = 0.5f*bounding_region_.half;
+        math::vec3 new_center = center
+                              + math::vec3(((ii&1)?1.f:-1.f)*new_half.x(),
+                                           ((ii&4)?1.f:-1.f)*new_half.y(),
+                                           ((ii&2)?1.f:-1.f)*new_half.z());
+        children_[ii]->bounding_region_ = BoundingRegion(new_center, new_half);
+    }
 }
 
 template <OCTREE_NODE_ARGLIST>

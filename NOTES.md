@@ -5943,18 +5943,19 @@ Pour calculer l'indice du meilleur octant pour envoyer les données, j'ai fait u
     X: x>x_c ? 1 : 0
     Z: z>z_c ? 2 : 0
     Y: y>y_c ? 4 : 0
-                                  X?
-                                 n/\y
-                                 /  \
-                                0    1
-                               Z?    Z?
-                               /\    /\
-                              /  \  /  \
-                             0   2  0   2
-                            Y?  Y?  Y?  Y?
-                            /\  /\  /\  /\
-                           /  \/  \/  \/  \
-                           0  40  40  40  4
+
+                      X?
+                     n/\y
+                     /  \
+                    0    1
+                   Z?    Z?
+                   /\    /\
+                  /  \  /  \
+                 0   2  0   2
+                Y?  Y?  Y?  Y?
+                /\  /\  /\  /\
+               /  \/  \/  \/  \
+               0  40  40  40  4
 Par exemple, pour l'octant droit (x < xc) vers l'avant (z > zc) supérieur (y > yc), l'indice vaut 0 + 2 + 4 = 6.
 Donc pour calculer l'indice du meilleur octant je fais :
 ```cpp
@@ -5968,6 +5969,7 @@ inline uint8_t OCTREE_NODE::best_fit_octant(const PrimitiveT& primitive)
 }
 ```
 Noter qu'il doit exister une fonction center(const PrimitiveT&) qui renvoie le centre de la primitive. Pour un point, c'est le point lui-même, pour un AABB, c'est son... centre, pour une sphère... son centre également etc.
+Un gros avantage est que je vais pouvoir utiliser cette fonction pour l'extension automatique de l'octree (et surement à d'autres endroits).
 
 ### Suppression et merge
 Pour faire référence à un objet à supprimer dans l'arbre, on utilise les user data communiquées avec la primitive lors de l'insertion. Le type UserDataT doit être comparable (définir bool operator==()). En pratique on peut former une structure du genre :
@@ -6041,3 +6043,42 @@ RangeT peut être n'importe quel objet volumétrique tant qu'il définit une fon
 
 * Sources :
 [1] https://github.com/Nition/UnityOctree/blob/master/Scripts/PointOctreeNode.cs
+
+#[06-01-19] Binary decision trees FUCK YEAH
+J'ai posé toutes les maths pour l'extension de l'octree. Mon approche a été de raisonner systématiquement dans le cas 2D avec un quadtree, d'intuiter des formules reliant ce que je dois calculer à des opérations binaires sur les indices des octants (en tirant partie du fait qu'ils sont construits via un arbre de décision binaire), puis d'étendre ces formules au cas 3D.
+
+## Iterative subdivision
+En particulier, j'ai pu réécrire très proprement ma fonction de subdivision comme suit :
+
+```cpp
+template <OCTREE_NODE_ARGLIST>
+void OCTREE_NODE::subdivide()
+{
+    // * Allocate children nodes
+    children_ = new OCTREE_NODE*[8];
+
+    // * Set children properties
+    for(int ii=0; ii<8; ++ii)
+    {
+        children_[ii] = new OCTREE_NODE;
+        children_[ii]->parent_ = this;
+        children_[ii]->depth_  = depth_ + 1;
+    }
+
+    // * Subdivide bounding region into 8 octants
+    const math::vec3& center = bounding_region_.mid_point;
+
+    // Arrange octants according to a binary decision tree :
+    for(uint8_t ii=0; ii<8; ++ii)
+    {
+        math::vec3 new_half   = 0.5f*bounding_region_.half;
+        math::vec3 new_center = center
+                              + math::vec3(((ii&1)?1.f:-1.f)*new_half.x(),
+                                           ((ii&4)?1.f:-1.f)*new_half.y(),
+                                           ((ii&2)?1.f:-1.f)*new_half.z());
+        children_[ii]->bounding_region_ = BoundingRegion(new_center, new_half);
+    }
+}
+```
+Simplement, j'ai remarqué que dans le cas 2D, lors d'une subdivision, on peut toujours calculer la position des centres des quadrants enfants comme la somme vectorielle du centre du quadrant parent avec un offset dépendant de l'indice. Cet offset est toujours la demi-dimension des quadrants enfants, mais chaque composante possède un signe qui dépend d'un masquage binaire sur l'indice. Voir le cahier pour les maths, c'est over-chiant à écrire en céfran.
+Mais intuitivement, si on peut additionner les évaluations des décisions binaires pour obtenir un indice, alors il existe une opération inverse qui depuis un indice permet de remonter aux évaluations des décisions binaires par masquage. Dans le cas 3D avec l'octree, il y a simplement une décision binaire supplémentaire, les maths restent les mêmes.

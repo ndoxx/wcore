@@ -21,6 +21,8 @@ struct BoundingRegion
     explicit BoundingRegion(math::extent_t&& value);
     explicit BoundingRegion(const math::extent_t& value);
 
+    BoundingRegion(const math::vec3& mid_point, const math::vec3& half);
+
     void update();
     bool intersects(const BoundingRegion& other) const;
     bool intersects(const math::vec3& point) const;

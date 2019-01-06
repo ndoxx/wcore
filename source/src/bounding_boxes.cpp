@@ -58,6 +58,23 @@ extent(value)
     update();
 }
 
+BoundingRegion::BoundingRegion(const math::vec3& mid_point, const math::vec3& half):
+mid_point(mid_point),
+half(half)
+{
+    // Compute extent
+    // [TODO] optimize this
+    math::vec3 coords_min(mid_point-half);
+    math::vec3 coords_max(mid_point+half);
+    extent[0] = coords_min.x();
+    extent[2] = coords_min.y();
+    extent[4] = coords_min.z();
+    extent[1] = coords_max.x();
+    extent[3] = coords_max.y();
+    extent[5] = coords_max.z();
+}
+
+
 void BoundingRegion::update()
 {
     mid_point = math::vec3((extent[1]+extent[0])*0.5f,
