@@ -28,6 +28,7 @@ public:
     struct DataT;
     typedef std::list<DataT> ContentT;
     typedef std::function<void(const DataT&)> DataVisitorT;
+    typedef std::function<void(const BoundingRegion&)> BoundsVisitorT;
 
     OctreeNode();
     OctreeNode(const BoundingRegion& bounding_region);
@@ -54,6 +55,11 @@ public:
     void traverse_range(const RangeT& query_range,
                         DataVisitorT visit,
                         OctreeNode* current=nullptr);
+
+    template <typename RangeT>
+    void traverse_bounds_range(const RangeT& query_range,
+                               BoundsVisitorT visit,
+                               OctreeNode* current=nullptr);
 
     // Recursive octree leaves traversal
     void traverse_leaves(DataVisitorT visit, OctreeNode* current=nullptr);
@@ -379,6 +385,30 @@ void OCTREE_NODE::traverse_range(const RangeT& query_range,
             traverse_range(query_range, visit, current->children_[ii]);
 }
 
+template <OCTREE_NODE_ARGLIST>
+template <typename RangeT>
+void OCTREE_NODE::traverse_bounds_range(const RangeT& query_range,
+                                        BoundsVisitorT visit,
+                                        OctreeNode* current)
+{
+    // * Initial condition
+    if(current == nullptr)
+        current = this;
+
+    // * Stop condition
+    // Check bounding region intersection, return if out of range
+    if(!query_range.intersects(current->bounding_region_))
+        return;
+
+    // * Visit region at this level
+    visit(current->bounding_region_);
+
+    // * Walk down the octree recursively
+    if(!current->is_leaf_node())
+        for(int ii=0; ii<8; ++ii)
+            traverse_bounds_range(query_range, visit, current->children_[ii]);
+}
+
 } // namespace detail
 
 /*
@@ -401,6 +431,7 @@ public:
     typedef typename OctreeNode::DataT DataT;
     typedef typename OctreeNode::ContentT ContentT;
     typedef typename OctreeNode::DataVisitorT DataVisitorT;
+    typedef typename OctreeNode::BoundsVisitorT BoundsVisitorT;
 
     Octree();
     Octree(const BoundingRegion& bounding_region, const ContentT& content);
@@ -409,18 +440,24 @@ public:
     void insert(const DataT& data);
     void insert(const ContentT& data_list);
 
+    inline void set_root_bounding_region(const BoundingRegion& bounds) { root_->bounding_region_ = bounds; initialized_ = true; }
+    inline bool is_initialized() const              { return initialized_; }
     inline bool remove(const UserDataT& udata)      { return root_->remove(udata); }
     inline void propagate()                         { root_->propagate(); }
     inline void traverse_leaves(DataVisitorT visit) { root_->traverse_leaves(visit); }
     template <typename RangeT>
     inline void traverse_range(const RangeT& query_range,
                                DataVisitorT visit)  { root_->traverse_range(query_range, visit); }
+    template <typename RangeT>
+    inline void traverse_bounds_range(const RangeT& query_range,
+                                      BoundsVisitorT visit)  { root_->traverse_bounds_range(query_range, visit); }
 
 private:
     void grow(uint8_t old_root_index);
 
 private:
     OctreeNode* root_;
+    bool initialized_;
 };
 
 // For convenience
@@ -428,13 +465,15 @@ private:
 #define OCTREE_ARGLIST class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
 
 template <OCTREE_NODE_ARGLIST>
-OCTREE::Octree()
+OCTREE::Octree():
+initialized_(false)
 {
     root_ = new OctreeNode();
 }
 
 template <OCTREE_NODE_ARGLIST>
-OCTREE::Octree(const BoundingRegion& bounding_region, const ContentT& content)
+OCTREE::Octree(const BoundingRegion& bounding_region, const ContentT& content):
+initialized_(true)
 {
     root_ = new OctreeNode(bounding_region);
     for(auto&& data: content)
@@ -487,13 +526,22 @@ void OCTREE::insert(const DataT& data)
 {
     // * Detect if object lies outside of bounds
     // If so, we need to expand tree in the direction of the outlier
-    if(!root_->bounding_region_.contains(data.primitive))
+    uint8_t count = 0;
+    while(!root_->bounding_region_.contains(data.primitive))
     {
         // Create parent node with 8 children, one of which is current root node
         // Compute old root index as a child of nex root
         // I showed that it can be obtained by taking the 7's complement to best_fit_octant()
         uint8_t old_root_index = 7 - root_->best_fit_octant(data.primitive);
         grow(old_root_index);
+
+        // APPROX, should be MAX_DEPTH-current_depth
+        // But depth is fucking hard to keep track of
+        if(++count>MAX_DEPTH)
+        {
+            std::cout << "Stopped octree growth, it was going to explode." << std::endl;
+            break;
+        }
     }
 
     root_->insert(data);

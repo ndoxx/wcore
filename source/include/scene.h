@@ -10,6 +10,7 @@
 #include "buffer_unit.hpp"
 #include "vertex_array.hpp"
 #include "chunk.h"
+#include "octree.hpp"
 #include "listener.h"
 
 namespace wcore
@@ -23,10 +24,24 @@ class Light;
 class HeightMap;
 class InputHandler;
 
+struct StaticOctreeData
+{
+    std::weak_ptr<Model> model;
+    int key;
+
+    bool operator==(const StaticOctreeData& other)
+    {
+        return key == other.key;
+    }
+};
+
 class Scene: public Singleton<Scene>, public Updatable, public Listener
 {
 private:
+    typedef Octree<math::vec3, StaticOctreeData> StaticOctree;
+
     std::map<uint32_t, Chunk*> chunks_;
+    StaticOctree static_scene_graph_;
 
     pLight directional_light_;              // The only directionnal light
     pCamera camera_;                        // Freefly camera (editor)
@@ -52,6 +67,9 @@ public:
 
     friend Scene& Singleton<Scene>::Instance();
     friend void Singleton<Scene>::Kill();
+
+    // TMP
+    StaticOctree& get_static_scene_graph() { return static_scene_graph_; }
 
     // Getters
     inline pCamera get_camera()                     { return camera_; }
@@ -83,8 +101,8 @@ public:
     // Setters
     inline void add_directional_light(pLight light)                 { directional_light_ = light; }
 
-    inline void set_chunk_size_meters(uint32_t chunk_size_m)        { chunk_size_m_ = chunk_size_m; }
-    inline void add_chunk(const math::i32vec2& coords);
+    void set_chunk_size_meters(uint32_t chunk_size_m);
+    void add_chunk(const math::i32vec2& coords);
     inline void remove_chunk(const math::i32vec2& coords);
     inline void remove_chunk(uint32_t chunk_index);
     inline void clear_chunks();
@@ -100,6 +118,8 @@ public:
     // Listener
     void onMouseEvent(const WData& data);
     void onKeyboardEvent(const WData& data);
+
+    void populate_scene_graph(uint32_t chunk_index);
 
     // Upload given chunk geometry to OpenGL
     inline void load_geometry(uint32_t chunk_index) { if(chunk_index) chunks_.at(chunk_index)->load_geometry(); }
@@ -144,21 +164,6 @@ private:
     void visibility_pass();
 };
 
-inline void Scene::add_chunk(const math::i32vec2& coords)
-{
-    Chunk* chunk = new Chunk(coords);
-#ifdef __DEBUG__
-    auto it = chunks_.find(chunk->get_index());
-    if(it!=chunks_.end())
-    {
-        DLOGE("[Scene] Chunk <n>" + std::to_string(chunk->get_index()) + "</n> "
-            + "already loaded. Possible hash collision.", "scene", Severity::CRIT);
-        delete chunk;
-        return;
-    }
-#endif
-    chunks_.insert(std::make_pair(chunk->get_index(), chunk));
-}
 inline void Scene::remove_chunk(const math::i32vec2& coords)
 {
     remove_chunk(std::hash<math::i32vec2>{}(coords));

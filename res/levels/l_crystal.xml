@@ -7,7 +7,7 @@
                 <Octaves>10</Octaves>
                 <Frequency>0.01</Frequency>
                 <Persistence>0.4</Persistence>
-                <LoBound>0.0</LoBound>
+                <LoBound>2.0</LoBound>
                 <HiBound>30.0</HiBound>
             </Generator>
             <HeightModifier>

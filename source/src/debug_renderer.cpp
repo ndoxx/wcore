@@ -26,7 +26,8 @@ line_shader_(ShaderResource("line.vert;line.frag")),
 display_line_models_(true),
 light_display_mode_(0),
 bb_display_mode_(0),
-enable_depth_test_(true)
+enable_depth_test_(true),
+show_static_octree_(true)
 {
     load_geometry();
 }
@@ -166,6 +167,30 @@ void DebugRenderer::render()
         {
             return plight->is_in_frustum(*SCENE.get_camera());
         });
+    }
+
+    // OCTREE DISPLAY
+    if(show_static_octree_)
+    {
+        float far = SCENE.get_camera()->get_far();
+        GFX::enable_blending();
+        GFX::set_std_blending();
+        auto&& static_octree = SCENE.get_static_scene_graph();
+        // For each bounding region that is visible
+        static_octree.traverse_bounds_range(SCENE.get_camera()->get_frustum_box(),
+        [&](auto&& bound)
+        {
+            // Display bounding cube
+            mat4 M;
+            M.init_scale(2.f*bound.half);
+            translate_matrix(M, bound.mid_point);
+            mat4 MVP = PV*M;
+            float alpha = 1.0f-std::min((bound.mid_point-SCENE.get_camera()->get_position()).norm()/far,1.0f);
+            line_shader_.send_uniform(H_("v4_line_color"), vec4(1,0,0,alpha));
+            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+        });
+        GFX::disable_blending();
     }
 
     // DRAW REQUESTS

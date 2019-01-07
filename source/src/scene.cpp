@@ -57,6 +57,49 @@ Scene::~Scene()
         delete chunk;
 }
 
+void Scene::set_chunk_size_meters(uint32_t chunk_size_m)
+{
+    chunk_size_m_ = chunk_size_m;
+}
+
+void Scene::add_chunk(const math::i32vec2& coords)
+{
+    Chunk* chunk = new Chunk(coords);
+#ifdef __DEBUG__
+    auto it = chunks_.find(chunk->get_index());
+    if(it!=chunks_.end())
+    {
+        DLOGE("[Scene] Chunk <n>" + std::to_string(chunk->get_index()) + "</n> "
+            + "already loaded. Possible hash collision.", "scene", Severity::CRIT);
+        delete chunk;
+        return;
+    }
+#endif
+    chunks_.insert(std::make_pair(chunk->get_index(), chunk));
+
+    // Setup static octree if first chunk inserted
+    if(!static_scene_graph_.is_initialized())
+    {
+        BoundingRegion bounds({float(coords.x())*chunk_size_m_, (float(coords.x())+1)*chunk_size_m_,
+                               float(coords.y())*chunk_size_m_, (float(coords.y())+1)*chunk_size_m_,
+                               0.f, float(chunk_size_m_)});
+        static_scene_graph_.set_root_bounding_region(bounds);
+    }
+}
+
+void Scene::populate_scene_graph(uint32_t chunk_index)
+{
+    Chunk* chunk = chunks_.at(chunk_index);
+    // Populate static octree with chunk content
+    chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
+    {
+        StaticOctreeData data;
+        data.model = pmdl;
+        static_scene_graph_.insert(StaticOctree::DataT(pmdl->get_position(),data));
+    });
+    static_scene_graph_.propagate();
+}
+
 void Scene::sort_chunks()
 {
     // Initialize order lists

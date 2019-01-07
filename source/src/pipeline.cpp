@@ -184,6 +184,14 @@ void RenderPipeline::generate_widget()
         }
 
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Scene graph"))
+        {
+            ImGui::Checkbox("Show static octree", &debug_renderer_->show_static_octree_);
+            ImGui::TreePop();
+            ImGui::Separator();
+        }
+
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
         if(ImGui::TreeNode("Windows"))
         {
             if(ImGui::Button("Framebuffer peek"))
