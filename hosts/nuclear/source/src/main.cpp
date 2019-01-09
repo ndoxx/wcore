@@ -196,7 +196,7 @@ int main()
     {
         math::vec3 point(math::random_vec3(world_region.extent));
         UData user_data({point.norm(), ii});
-        DataT obj(point,user_data);
+        DataT obj(point,user_data,ii/1000);
         data_points.push_back(obj);
         if(ii<100)
         {
@@ -215,6 +215,7 @@ int main()
         if(!octree.remove(rem.data))
             std::cout << "Couldn't remove" << std::endl;
     }
+    octree.remove_group(1); // remove objects from 1000 to 1999
 
     // Insert out of bounds point, octree will grow
     //octree.insert(DataT(math::vec3(-120,10,40),UData({0,9900})));

@@ -44,6 +44,9 @@ public:
     // Recursive removal of an object inserted with a given user data
     bool remove(const UserDataT& udata, OctreeNode* current=nullptr);
 
+    // Recursive removal of an object inserted with a given group id
+    void remove_group(uint32_t group_id, OctreeNode* current=nullptr);
+
     // Recursive object dispatch (will make effective any previous insertion)
     void propagate(OctreeNode* current=nullptr, uint32_t current_depth=0);
 
@@ -103,9 +106,10 @@ private:
 template <OCTREE_NODE_ARGLIST>
 struct OCTREE_NODE::DataT
 {
-    DataT(const PrimitiveT& p, const UserDataT& d):
+    DataT(const PrimitiveT& p, const UserDataT& d, uint32_t g=0):
     primitive(p),
     data(d),
+    group_id(g),
     is_placed(false){}
 
     inline bool operator==(const DataT& other)
@@ -115,6 +119,7 @@ struct OCTREE_NODE::DataT
 
     PrimitiveT primitive;
     UserDataT data;
+    uint32_t group_id;
     bool is_placed; // object arrived at its correct node and does not need to be propagated lower
 };
 
@@ -231,7 +236,7 @@ void OCTREE_NODE::propagate(OctreeNode* current, uint32_t current_depth)
         while(it != current->content_.end())
         {
             // If object already arrived at destination, skip tests
-            if(it->is_placed) continue;
+            //if(it->is_placed) continue;
             // Find index of child octant that will best fit our object
             uint8_t best_octant = current->best_fit_octant(it->primitive);
             // If object is within child bounding region, add it to child content
@@ -298,6 +303,37 @@ bool OCTREE_NODE::remove(const UserDataT& udata, OctreeNode* current)
 
     return false;
 }
+
+template <OCTREE_NODE_ARGLIST>
+void OCTREE_NODE::remove_group(uint32_t group_id, OctreeNode* current)
+{
+    // * Initial condition
+    if(current == nullptr)
+        current = this;
+
+    // * Try to remove objects at this level
+    auto it = current->content_.begin();
+    while(it != current->content_.end())
+    {
+        if(it->group_id == group_id)
+            current->content_.erase(it++);
+        else
+            ++it;
+    }
+
+    // * Try to remove objects lower in the tree
+    if(!current->is_leaf_node())
+    {
+        for(int ii=0; ii<8; ++ii)
+        {
+            remove_group(group_id, current->children_[ii]);
+        }
+        // Check if we can merge children nodes now that the object has been removed
+        if(current->must_merge())
+            current->merge();
+    }
+}
+
 
 template <OCTREE_NODE_ARGLIST>
 bool OCTREE_NODE::must_merge()
@@ -443,6 +479,7 @@ public:
     inline void set_root_bounding_region(const BoundingRegion& bounds) { root_->bounding_region_ = bounds; initialized_ = true; }
     inline bool is_initialized() const              { return initialized_; }
     inline bool remove(const UserDataT& udata)      { return root_->remove(udata); }
+    inline void remove_group(uint32_t group_id)     { root_->remove_group(group_id); }
     inline void propagate()                         { root_->propagate(); }
     inline void traverse_leaves(DataVisitorT visit) { root_->traverse_leaves(visit); }
     template <typename RangeT>

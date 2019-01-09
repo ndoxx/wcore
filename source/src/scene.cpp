@@ -95,7 +95,10 @@ void Scene::populate_scene_graph(uint32_t chunk_index)
     {
         StaticOctreeData data;
         data.model = pmdl;
-        static_scene_graph_.insert(StaticOctree::DataT(pmdl->get_position(),data));
+        // Use chunk index as a group id for later removal
+        static_scene_graph_.insert(StaticOctree::DataT(pmdl->get_AABB().get_bounding_region(),
+                                                       data,
+                                                       chunk_index));
     });
     static_scene_graph_.propagate();
 }

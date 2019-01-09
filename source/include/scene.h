@@ -38,7 +38,7 @@ struct StaticOctreeData
 class Scene: public Singleton<Scene>, public Updatable, public Listener
 {
 private:
-    typedef Octree<math::vec3, StaticOctreeData> StaticOctree;
+    typedef Octree<BoundingRegion, StaticOctreeData> StaticOctree;
 
     std::map<uint32_t, Chunk*> chunks_;
     StaticOctree static_scene_graph_;
@@ -170,6 +170,7 @@ inline void Scene::remove_chunk(const math::i32vec2& coords)
 }
 inline void Scene::remove_chunk(uint32_t chunk_index)
 {
+    static_scene_graph_.remove_group(chunk_index);
     auto it = chunks_.find(chunk_index);
     if(it!=chunks_.end())
     {
