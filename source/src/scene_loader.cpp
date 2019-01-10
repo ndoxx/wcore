@@ -357,7 +357,7 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
     dt_upload_us = 1e6*std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
 #endif
 
-    SCENE.populate_scene_graph(chunk_index);
+    SCENE.populate_static_octree(chunk_index);
 
 #ifdef __PROFILING_CHUNKS__
     float dt_total_us = dt_terrain_us + dt_models_us + dt_batches_us + dt_lights_us + dt_upload_us;

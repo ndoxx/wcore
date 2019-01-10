@@ -41,7 +41,7 @@ private:
     typedef Octree<BoundingRegion, StaticOctreeData> StaticOctree;
 
     std::map<uint32_t, Chunk*> chunks_;
-    StaticOctree static_scene_graph_;
+    StaticOctree static_octree;
 
     pLight directional_light_;              // The only directionnal light
     pCamera camera_;                        // Freefly camera (editor)
@@ -69,7 +69,8 @@ public:
     friend void Singleton<Scene>::Kill();
 
     // TMP
-    StaticOctree& get_static_scene_graph() { return static_scene_graph_; }
+    inline StaticOctree& get_static_octree() { return static_octree; }
+    void populate_static_octree(uint32_t chunk_index);
 
     // Getters
     inline pCamera get_camera()                     { return camera_; }
@@ -118,8 +119,6 @@ public:
     // Listener
     void onMouseEvent(const WData& data);
     void onKeyboardEvent(const WData& data);
-
-    void populate_scene_graph(uint32_t chunk_index);
 
     // Upload given chunk geometry to OpenGL
     inline void load_geometry(uint32_t chunk_index) { if(chunk_index) chunks_.at(chunk_index)->load_geometry(); }
@@ -170,7 +169,7 @@ inline void Scene::remove_chunk(const math::i32vec2& coords)
 }
 inline void Scene::remove_chunk(uint32_t chunk_index)
 {
-    static_scene_graph_.remove_group(chunk_index);
+    static_octree.remove_group(chunk_index);
     auto it = chunks_.find(chunk_index);
     if(it!=chunks_.end())
     {

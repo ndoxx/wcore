@@ -78,16 +78,16 @@ void Scene::add_chunk(const math::i32vec2& coords)
     chunks_.insert(std::make_pair(chunk->get_index(), chunk));
 
     // Setup static octree if first chunk inserted
-    if(!static_scene_graph_.is_initialized())
+    if(!static_octree.is_initialized())
     {
         BoundingRegion bounds({float(coords.x())*chunk_size_m_, (float(coords.x())+1)*chunk_size_m_,
                                float(coords.y())*chunk_size_m_, (float(coords.y())+1)*chunk_size_m_,
                                0.f, float(chunk_size_m_)});
-        static_scene_graph_.set_root_bounding_region(bounds);
+        static_octree.set_root_bounding_region(bounds);
     }
 }
 
-void Scene::populate_scene_graph(uint32_t chunk_index)
+void Scene::populate_static_octree(uint32_t chunk_index)
 {
     Chunk* chunk = chunks_.at(chunk_index);
     // Populate static octree with chunk content
@@ -96,11 +96,12 @@ void Scene::populate_scene_graph(uint32_t chunk_index)
         StaticOctreeData data;
         data.model = pmdl;
         // Use chunk index as a group id for later removal
-        static_scene_graph_.insert(StaticOctree::DataT(pmdl->get_AABB().get_bounding_region(),
+        static_octree.insert(StaticOctree::DataT(pmdl->get_AABB().get_bounding_region(),
                                                        data,
                                                        chunk_index));
     });
-    static_scene_graph_.propagate();
+
+    static_octree.propagate();
 }
 
 void Scene::sort_chunks()

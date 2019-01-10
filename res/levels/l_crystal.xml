@@ -422,7 +422,7 @@
 
     <Chunk coords="(1,1)">
         <ModelBatches>
-            <ModelBatch instances="10" seed="10" ypos="relative">
+            <ModelBatch instances="20" seed="10" ypos="relative">
                 <Mesh type="crystal"></Mesh>
                 <Material>
                     <Color space="hsl" variance="(0.15,0.1,0.0)">(0.0,0.1,1.0)</Color>

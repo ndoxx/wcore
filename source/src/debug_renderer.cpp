@@ -175,7 +175,7 @@ void DebugRenderer::render()
         float far = SCENE.get_camera()->get_far();
         GFX::enable_blending();
         GFX::set_std_blending();
-        auto&& static_octree = SCENE.get_static_scene_graph();
+        auto&& static_octree = SCENE.get_static_octree();
         // For each bounding region that is visible
         static_octree.traverse_bounds_range(SCENE.get_camera()->get_frustum_box(),
         [&](auto&& bound)

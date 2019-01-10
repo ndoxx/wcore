@@ -68,7 +68,7 @@ public:
     void traverse_leaves(DataVisitorT visit, OctreeNode* current=nullptr);
 
     // Find best fit octant for an input primitive
-    // There must exist a center() function that returns the center of a PrimitiveT
+    // There must exist a center trait (in namespace wcore::traits) for the type PrimitiveT
     inline uint8_t best_fit_octant(const PrimitiveT& primitive);
 
     inline bool is_leaf_node() const                 { return (children_ == nullptr); }
@@ -174,7 +174,7 @@ inline uint8_t OCTREE_NODE::best_fit_octant(const PrimitiveT& primitive)
 {
     // Octants are arranged in a binary decision tree fashion
     // We can use this to our advantage
-    math::vec3 diff(center(primitive) - bounding_region_.mid_point);
+    math::vec3 diff(traits::center<PrimitiveT>::get(primitive) - bounding_region_.mid_point);
     return (diff.x()<0 ? 0 : 1) + (diff.z()<0 ? 0 : 2) + (diff.y()<0 ? 0 : 4);
 }
 
@@ -229,7 +229,14 @@ void OCTREE_NODE::propagate(OctreeNode* current, uint32_t current_depth)
     }
 
     // * Propagate data to children nodes if current node is not a leaf, else return
-    if(!current->is_leaf_node())
+    if(current->is_leaf_node()) // Stop condition
+    {
+        // Objects at leaf nodes are definitely where they should be
+        for(auto&& obj: current->content_)
+            obj.is_placed = true;
+        return;
+    }
+    else
     {
         // Dispatch current content into children octants when possible
         auto it = current->content_.begin();
@@ -258,13 +265,7 @@ void OCTREE_NODE::propagate(OctreeNode* current, uint32_t current_depth)
         for(int ii=0; ii<8; ++ii)
             propagate(current->children_[ii], current_depth+1);
     }
-    else // Stop condition
-    {
-        // Objects at leaf nodes are definitely where they should be
-        for(auto&& obj: current->content_)
-            obj.is_placed = true;
-        return;
-    }
+
 }
 
 template <OCTREE_NODE_ARGLIST>

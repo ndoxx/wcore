@@ -192,9 +192,30 @@ inline bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData
 bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> model, RayCollisionData& data);
 
 // For octree
-inline const math::vec3& center(const math::vec3& point)  { return point; }
-inline const math::vec3& center(const BoundingRegion& br) { return br.mid_point; }
-inline const math::vec3& center(const AABB& aabb)         { return aabb.get_bounding_region().mid_point; }
+namespace traits
+{
+
+    template<class PrimitiveT>
+    struct center
+    {
+        inline static const math::vec3& get(const PrimitiveT& primitive);
+    };
+    template<>
+    struct center<math::vec3>
+    {
+        inline static const math::vec3& get(const math::vec3& primitive) { return primitive; }
+    };
+    template<>
+    struct center<BoundingRegion>
+    {
+        inline static const math::vec3& get(const BoundingRegion& primitive) { return primitive.mid_point; }
+    };
+    template<>
+    struct center<AABB>
+    {
+        inline static const math::vec3& get(const AABB& primitive) { return primitive.get_bounding_region().mid_point; }
+    };
+} // namespace traits
 
 }
 
