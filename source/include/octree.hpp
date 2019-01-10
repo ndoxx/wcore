@@ -14,13 +14,63 @@
 namespace wcore
 {
 
-template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH>
-class Octree;
-
-namespace detail
+/*
+    Octree class for spatial partitioning of data.
+    PrimitiveT is the type of objects that are checked against cell bounding regions
+        -> math::vec3 for a point octree
+        -> AABB for AABB octree
+        -> ...
+    UserDataT is any kind of data that will be carried along with the primitives.
+        -> Useful to store references to game objects so they can be querried later on.
+        -> Must be a comparable type
+*/
+template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT=16, uint32_t MAX_DEPTH=5>
+class Octree
 {
-template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH>
-class OctreeNode
+protected:
+    class OctreeNode;
+
+public:
+    typedef typename OctreeNode::DataT DataT;
+    typedef typename OctreeNode::ContentT ContentT;
+    typedef typename OctreeNode::DataVisitorT DataVisitorT;
+    typedef typename OctreeNode::BoundsVisitorT BoundsVisitorT;
+
+    Octree();
+    Octree(const BoundingRegion& bounding_region, const ContentT& content);
+    ~Octree();
+
+    void insert(const DataT& data);
+    void insert(const ContentT& data_list);
+
+    inline void set_root_bounding_region(const BoundingRegion& bounds) { root_->bounding_region_ = bounds; initialized_ = true; }
+    inline bool is_initialized() const              { return initialized_; }
+    inline bool remove(const UserDataT& udata)      { return root_->remove(udata); }
+    inline void remove_group(uint32_t group_id)     { root_->remove_group(group_id); }
+    inline void propagate()                         { root_->propagate(); }
+    inline void traverse_leaves(DataVisitorT visit) { root_->traverse_leaves(visit); }
+    template <typename RangeT>
+    inline void traverse_range(const RangeT& query_range,
+                               DataVisitorT visit)  { root_->traverse_range(query_range, visit); }
+    template <typename RangeT>
+    inline void traverse_bounds_range(const RangeT& query_range,
+                                      BoundsVisitorT visit)  { root_->traverse_bounds_range(query_range, visit); }
+
+private:
+    void grow(uint8_t old_root_index);
+
+private:
+    OctreeNode* root_;
+    bool initialized_;
+};
+
+// For convenience
+#define OCTREE         Octree<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>
+#define OCTREE_ARGLIST class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
+
+
+template <OCTREE_ARGLIST>
+class OCTREE::OctreeNode
 {
 public:
     friend class Octree<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>;
@@ -99,12 +149,8 @@ private:
     ContentT content_;                 // data container at this node
 };
 
-// For convenience
-#define OCTREE_NODE         OctreeNode<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>
-#define OCTREE_NODE_ARGLIST class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
-
-template <OCTREE_NODE_ARGLIST>
-struct OCTREE_NODE::DataT
+template <OCTREE_ARGLIST>
+struct OCTREE::OctreeNode::DataT
 {
     DataT(const PrimitiveT& p, const UserDataT& d, uint32_t g=0):
     primitive(p),
@@ -123,16 +169,16 @@ struct OCTREE_NODE::DataT
     bool is_placed; // object arrived at its correct node and does not need to be propagated lower
 };
 
-template <OCTREE_NODE_ARGLIST>
-OCTREE_NODE::OctreeNode():
+template <OCTREE_ARGLIST>
+OCTREE::OctreeNode::OctreeNode():
 parent_(nullptr),
 children_(nullptr)
 {
 
 }
 
-template <OCTREE_NODE_ARGLIST>
-OCTREE_NODE::OctreeNode(const BoundingRegion& bounding_region):
+template <OCTREE_ARGLIST>
+OCTREE::OctreeNode::OctreeNode(const BoundingRegion& bounding_region):
 parent_(nullptr),
 children_(nullptr),
 bounding_region_(bounding_region)
@@ -140,8 +186,8 @@ bounding_region_(bounding_region)
 
 }
 
-template <OCTREE_NODE_ARGLIST>
-OCTREE_NODE::~OctreeNode()
+template <OCTREE_ARGLIST>
+OCTREE::OctreeNode::~OctreeNode()
 {
     if(children_)
     {
@@ -151,26 +197,26 @@ OCTREE_NODE::~OctreeNode()
     delete[] children_;
 }
 
-template <OCTREE_NODE_ARGLIST>
-inline void OCTREE_NODE::insert(const DataT& data)
+template <OCTREE_ARGLIST>
+inline void OCTREE::OctreeNode::insert(const DataT& data)
 {
     content_.push_back(data);
 }
 
-template <OCTREE_NODE_ARGLIST>
-inline void OCTREE_NODE::insert(const ContentT& data)
+template <OCTREE_ARGLIST>
+inline void OCTREE::OctreeNode::insert(const ContentT& data)
 {
     content_.insert(content_.end(), data.begin(), data.end());
 }
 
-template <OCTREE_NODE_ARGLIST>
-inline void OCTREE_NODE::insert(ContentT&& data)
+template <OCTREE_ARGLIST>
+inline void OCTREE::OctreeNode::insert(ContentT&& data)
 {
     content_.splice(content_.end(), data);
 }
 
-template <OCTREE_NODE_ARGLIST>
-inline uint8_t OCTREE_NODE::best_fit_octant(const PrimitiveT& primitive)
+template <OCTREE_ARGLIST>
+inline uint8_t OCTREE::OctreeNode::best_fit_octant(const PrimitiveT& primitive)
 {
     // Octants are arranged in a binary decision tree fashion
     // We can use this to our advantage
@@ -178,16 +224,16 @@ inline uint8_t OCTREE_NODE::best_fit_octant(const PrimitiveT& primitive)
     return (diff.x()<0 ? 0 : 1) + (diff.z()<0 ? 0 : 2) + (diff.y()<0 ? 0 : 4);
 }
 
-template <OCTREE_NODE_ARGLIST>
-void OCTREE_NODE::subdivide()
+template <OCTREE_ARGLIST>
+void OCTREE::OctreeNode::subdivide()
 {
     // * Allocate children nodes
-    children_ = new OCTREE_NODE*[8];
+    children_ = new OCTREE::OctreeNode*[8];
 
     // * Set children properties
     for(int ii=0; ii<8; ++ii)
     {
-        children_[ii] = new OCTREE_NODE;
+        children_[ii] = new OCTREE::OctreeNode;
         children_[ii]->parent_ = this;
     }
 
@@ -211,8 +257,8 @@ void OCTREE_NODE::subdivide()
     }
 }
 
-template <OCTREE_NODE_ARGLIST>
-void OCTREE_NODE::propagate(OctreeNode* current, uint32_t current_depth)
+template <OCTREE_ARGLIST>
+void OCTREE::OctreeNode::propagate(OctreeNode* current, uint32_t current_depth)
 {
     // * Initial condition
     if(current == nullptr)
@@ -268,8 +314,8 @@ void OCTREE_NODE::propagate(OctreeNode* current, uint32_t current_depth)
 
 }
 
-template <OCTREE_NODE_ARGLIST>
-bool OCTREE_NODE::remove(const UserDataT& udata, OctreeNode* current)
+template <OCTREE_ARGLIST>
+bool OCTREE::OctreeNode::remove(const UserDataT& udata, OctreeNode* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -305,8 +351,8 @@ bool OCTREE_NODE::remove(const UserDataT& udata, OctreeNode* current)
     return false;
 }
 
-template <OCTREE_NODE_ARGLIST>
-void OCTREE_NODE::remove_group(uint32_t group_id, OctreeNode* current)
+template <OCTREE_ARGLIST>
+void OCTREE::OctreeNode::remove_group(uint32_t group_id, OctreeNode* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -336,8 +382,8 @@ void OCTREE_NODE::remove_group(uint32_t group_id, OctreeNode* current)
 }
 
 
-template <OCTREE_NODE_ARGLIST>
-bool OCTREE_NODE::must_merge()
+template <OCTREE_ARGLIST>
+bool OCTREE::OctreeNode::must_merge()
 {
     // * Nothing to merge if we are at the bottom of the tree
     if(is_leaf_node())
@@ -360,8 +406,8 @@ bool OCTREE_NODE::must_merge()
     return true;
 }
 
-template <OCTREE_NODE_ARGLIST>
-void OCTREE_NODE::merge()
+template <OCTREE_ARGLIST>
+void OCTREE::OctreeNode::merge()
 {
     // * Pull back children node content and cleanup
     for(int ii=0; ii<8; ++ii)
@@ -374,8 +420,8 @@ void OCTREE_NODE::merge()
     children_ = nullptr;
 }
 
-template <OCTREE_NODE_ARGLIST>
-void OCTREE_NODE::traverse_leaves(DataVisitorT visit, OctreeNode* current)
+template <OCTREE_ARGLIST>
+void OCTREE::OctreeNode::traverse_leaves(DataVisitorT visit, OctreeNode* current)
 {
     // * Initial condition
     if(current == nullptr)
@@ -396,9 +442,9 @@ void OCTREE_NODE::traverse_leaves(DataVisitorT visit, OctreeNode* current)
     }
 }
 
-template <OCTREE_NODE_ARGLIST>
+template <OCTREE_ARGLIST>
 template <typename RangeT>
-void OCTREE_NODE::traverse_range(const RangeT& query_range,
+void OCTREE::OctreeNode::traverse_range(const RangeT& query_range,
                                  DataVisitorT visit,
                                  OctreeNode* current)
 {
@@ -422,9 +468,9 @@ void OCTREE_NODE::traverse_range(const RangeT& query_range,
             traverse_range(query_range, visit, current->children_[ii]);
 }
 
-template <OCTREE_NODE_ARGLIST>
+template <OCTREE_ARGLIST>
 template <typename RangeT>
-void OCTREE_NODE::traverse_bounds_range(const RangeT& query_range,
+void OCTREE::OctreeNode::traverse_bounds_range(const RangeT& query_range,
                                         BoundsVisitorT visit,
                                         OctreeNode* current)
 {
@@ -446,70 +492,15 @@ void OCTREE_NODE::traverse_bounds_range(const RangeT& query_range,
             traverse_bounds_range(query_range, visit, current->children_[ii]);
 }
 
-} // namespace detail
 
-/*
-    Octree class for spatial partitioning of data.
-    PrimitiveT is the type of objects that are checked against cell bounding regions
-        -> math::vec3 for a point octree
-        -> AABB for AABB octree
-        -> ...
-    UserDataT is any kind of data that will be carried along with the primitives.
-        -> Useful to store references to game objects so they can be querried later on.
-        -> Must be a comparable type
-*/
-template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT=16, uint32_t MAX_DEPTH=5>
-class Octree
-{
-private:
-    typedef detail::OctreeNode<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH> OctreeNode;
-
-public:
-    typedef typename OctreeNode::DataT DataT;
-    typedef typename OctreeNode::ContentT ContentT;
-    typedef typename OctreeNode::DataVisitorT DataVisitorT;
-    typedef typename OctreeNode::BoundsVisitorT BoundsVisitorT;
-
-    Octree();
-    Octree(const BoundingRegion& bounding_region, const ContentT& content);
-    ~Octree();
-
-    void insert(const DataT& data);
-    void insert(const ContentT& data_list);
-
-    inline void set_root_bounding_region(const BoundingRegion& bounds) { root_->bounding_region_ = bounds; initialized_ = true; }
-    inline bool is_initialized() const              { return initialized_; }
-    inline bool remove(const UserDataT& udata)      { return root_->remove(udata); }
-    inline void remove_group(uint32_t group_id)     { root_->remove_group(group_id); }
-    inline void propagate()                         { root_->propagate(); }
-    inline void traverse_leaves(DataVisitorT visit) { root_->traverse_leaves(visit); }
-    template <typename RangeT>
-    inline void traverse_range(const RangeT& query_range,
-                               DataVisitorT visit)  { root_->traverse_range(query_range, visit); }
-    template <typename RangeT>
-    inline void traverse_bounds_range(const RangeT& query_range,
-                                      BoundsVisitorT visit)  { root_->traverse_bounds_range(query_range, visit); }
-
-private:
-    void grow(uint8_t old_root_index);
-
-private:
-    OctreeNode* root_;
-    bool initialized_;
-};
-
-// For convenience
-#define OCTREE         Octree<PrimitiveT, UserDataT, MAX_CELL_COUNT, MAX_DEPTH>
-#define OCTREE_ARGLIST class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT, uint32_t MAX_DEPTH
-
-template <OCTREE_NODE_ARGLIST>
+template <OCTREE_ARGLIST>
 OCTREE::Octree():
 initialized_(false)
 {
     root_ = new OctreeNode();
 }
 
-template <OCTREE_NODE_ARGLIST>
+template <OCTREE_ARGLIST>
 OCTREE::Octree(const BoundingRegion& bounding_region, const ContentT& content):
 initialized_(true)
 {
@@ -518,13 +509,13 @@ initialized_(true)
         insert(data);
 }
 
-template <OCTREE_NODE_ARGLIST>
+template <OCTREE_ARGLIST>
 OCTREE::~Octree()
 {
     delete root_;
 }
 
-template <OCTREE_NODE_ARGLIST>
+template <OCTREE_ARGLIST>
 void OCTREE::grow(uint8_t old_root_index)
 {
     // Build new root
@@ -559,7 +550,7 @@ void OCTREE::grow(uint8_t old_root_index)
 }
 
 
-template <OCTREE_NODE_ARGLIST>
+template <OCTREE_ARGLIST>
 void OCTREE::insert(const DataT& data)
 {
     // * Detect if object lies outside of bounds
@@ -585,7 +576,7 @@ void OCTREE::insert(const DataT& data)
     root_->insert(data);
 }
 
-template <OCTREE_NODE_ARGLIST>
+template <OCTREE_ARGLIST>
 void OCTREE::insert(const ContentT& data_list)
 {
     for(auto&& data: data_list)
@@ -596,8 +587,6 @@ void OCTREE::insert(const ContentT& data_list)
 
 
 #undef OCTREE
-#undef OCTREE_NODE
 #undef OCTREE_ARGLIST
-#undef OCTREE_NODE_ARGLIST
 
 #endif // OCTREE_H
