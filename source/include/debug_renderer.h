@@ -62,6 +62,9 @@ public:
 
     inline void clear_draw_requests() { draw_requests_.clear(); }
 
+    // Show static octree neighbors of selected object for 5s
+    void show_selection_neighbors(const math::vec3& half_bounds = math::vec3(10,10,10));
+
     void request_draw_segment(const math::vec3& world_start,
                               const math::vec3& world_end,
                               int ttl = 60,
@@ -74,6 +77,9 @@ public:
                              float radius,
                              int ttl = 60,
                              const math::vec3& color = math::vec3(0,1,0));
+    void request_draw_cube(const math::mat4& model_patrix,
+                           int ttl = 60,
+                           const math::vec3& color = math::vec3(0,1,0));
 };
 
 }

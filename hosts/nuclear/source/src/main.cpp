@@ -153,6 +153,7 @@ int main()
 
 #include <iostream>
 #include <list>
+#include <bitset>
 
 #include "octree.hpp"
 #include "math3d.h"

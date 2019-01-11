@@ -123,6 +123,9 @@ void RenderPipeline::onKeyboardEvent(const WData& data)
         case H_("k_test_key"):
             perform_test();
             break;
+        case H_("k_show_neighbors"):
+            debug_renderer_->show_selection_neighbors(math::vec3(5,5,5));
+            break;
     }
 }
 
@@ -157,6 +160,7 @@ static float SSAO_sigma = 1.8f;
 static int bloom_kernel_half_size = 3;
 static float bloom_sigma = 1.8f;
 static bool framebuffer_peek = false;
+static float neighbors_search_half_bound = 5.f;
 
 void RenderPipeline::generate_widget()
 {
@@ -187,6 +191,11 @@ void RenderPipeline::generate_widget()
         if(ImGui::TreeNode("Scene graph"))
         {
             ImGui::Checkbox("Show static octree", &debug_renderer_->show_static_octree_);
+            ImGui::SliderFloat("Sel. half-bnd", &neighbors_search_half_bound, 0.5f, 10.0f);
+            if(ImGui::Button("Show selection neighbors"))
+            {
+                debug_renderer_->show_selection_neighbors(math::vec3(neighbors_search_half_bound));
+            }
             ImGui::TreePop();
             ImGui::Separator();
         }

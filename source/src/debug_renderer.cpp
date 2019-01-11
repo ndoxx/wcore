@@ -216,6 +216,10 @@ void DebugRenderer::render()
             {
                 buffer_unit_.draw(SEG_X_NE, SEG_X_OFFSET);
             }
+            else if((*it).type == DebugDrawRequest::CUBE)
+            {
+                buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+            }
             else if((*it).type == DebugDrawRequest::SPHERE)
             {
                 buffer_unit_.draw(SPHERE_NE, SPHERE_OFFSET);
@@ -250,6 +254,23 @@ void DebugRenderer::render()
         GFX::disable_depth_testing();
 }
 
+void DebugRenderer::show_selection_neighbors(const math::vec3& half_bounds)
+{
+    if(auto&& psel = SCENE.get_editor_selection().lock())
+    {
+        const vec3& center = psel->get_position();
+        BoundingRegion bounds(center, half_bounds);
+        auto&& static_octree = SCENE.get_static_octree();
+        static_octree.traverse_range(bounds,
+        [&](auto&& obj)
+        {
+            // Display bounding cube
+            mat4 M(obj.data.model.lock()->get_AABB().get_model_matrix());
+            request_draw_cube(M, 60*5, vec3(1,0,1));
+        });
+    }
+}
+
 void DebugRenderer::request_draw_segment(const math::vec3& world_start,
                                          const math::vec3& world_end,
                                          int ttl,
@@ -274,7 +295,7 @@ void DebugRenderer::request_draw_sphere(const math::vec3& world_pos,
     request.ttl = ttl;
     request.color = color;
     request.color[3] = 1.0f;
-    request.model_matrix = math::scale_translate(world_pos, radius);;
+    request.model_matrix = math::scale_translate(world_pos, radius);
     draw_requests_.push_back(request);
 }
 
@@ -288,7 +309,20 @@ void DebugRenderer::request_draw_cross3(const math::vec3& world_pos,
     request.ttl = ttl;
     request.color = color;
     request.color[3] = 1.0f;
-    request.model_matrix = math::scale_translate(world_pos, radius);;
+    request.model_matrix = math::scale_translate(world_pos, radius);
+    draw_requests_.push_back(request);
+}
+
+void DebugRenderer::request_draw_cube(const math::mat4& model_patrix,
+                                      int ttl,
+                                      const math::vec3& color)
+{
+    DebugDrawRequest request;
+    request.type = DebugDrawRequest::CUBE;
+    request.ttl = ttl;
+    request.color = color;
+    request.color[3] = 1.0f;
+    request.model_matrix = model_patrix;
     draw_requests_.push_back(request);
 }
 
