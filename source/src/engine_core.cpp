@@ -156,7 +156,7 @@ static std::string dbg_display_sub_duration(const std::string& name,
 }
 #endif
 
-void GameLoop::onKeyboardEvent(const WData& data)
+bool GameLoop::onKeyboardEvent(const WData& data)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -186,9 +186,11 @@ void GameLoop::onKeyboardEvent(const WData& data)
     		game_clock_.require_next_frame();
     		break;
     }
+
+    return true; // Do NOT consume event
 }
 
-void GameLoop::onMouseFocus(const WData& data)
+bool GameLoop::onMouseFocus(const WData& data)
 {
     if(CONFIG.is(H_("root.gui.cursor.custom")))
     {
@@ -198,6 +200,8 @@ void GameLoop::onMouseFocus(const WData& data)
         else
             context_.hide_hard_cursor();
     }
+
+    return true; // Do NOT consume event
 }
 
 void GameLoop::handle_events()

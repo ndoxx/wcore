@@ -15,7 +15,7 @@ public:
     void track(hash_t channel, Informer& informer);
 
 private:
-    static void display(hash_t channel, const WData& wdata);
+    static bool display(hash_t channel, const WData& wdata);
 };
 
 }

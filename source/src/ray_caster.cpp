@@ -34,12 +34,14 @@ void RayCaster::init_events(InputHandler& handler)
     subscribe(H_("input.mouse.click"), handler, &RayCaster::onMouseEvent);
 }
 
-void RayCaster::onMouseEvent(const WData& data)
+bool RayCaster::onMouseEvent(const WData& data)
 {
     const MouseData& md = static_cast<const MouseData&>(data);
 
     Ray ray = cast_ray_from_screen(math::vec2(md.dx, md.dy));
     ray_scene_query(ray);
+
+    return true; // Do NOT consume event
 }
 
 void RayCaster::update(const GameClock& clock)

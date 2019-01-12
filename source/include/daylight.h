@@ -34,7 +34,7 @@ public:
 
     void debug_export_splines();
 
-    void onKeyboardEvent(const WData& data);
+    bool onKeyboardEvent(const WData& data);
     // Update sun position and global light attributes
     virtual void update(const GameClock& clock) override;
     // Initialize event listener

@@ -93,7 +93,7 @@ void RenderPipeline::set_pp_fog_color(const math::vec3& value) { post_processing
 void RenderPipeline::set_pp_saturation(float value)            { post_processing_renderer_->set_saturation(value); }
 void RenderPipeline::set_pp_fog_density(float value)           { post_processing_renderer_->set_fog_density(value); }
 
-void RenderPipeline::onKeyboardEvent(const WData& data)
+bool RenderPipeline::onKeyboardEvent(const WData& data)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -133,12 +133,16 @@ void RenderPipeline::onKeyboardEvent(const WData& data)
             debug_renderer_->show_selection_neighbors(locate<Scene>(H_("Scene")), math::vec3(5,5,5));
             break;
     }
+
+    return true; // Do NOT consume event
 }
 
-void RenderPipeline::onMouseEvent(const WData& data)
+bool RenderPipeline::onMouseEvent(const WData& data)
 {
     const MouseData& md = static_cast<const MouseData&>(data);
     gui_renderer_->set_cursor_position(md.dx, md.dy);
+
+    return true; // Do NOT consume event
 }
 
 #ifdef __PROFILE__

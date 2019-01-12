@@ -86,7 +86,7 @@ public:
     void reload_chunks();
     void reload_map();
 
-    void onKeyboardEvent(const WData& data);
+    bool onKeyboardEvent(const WData& data);
 
     inline uint32_t get_chunk_size_meters() const { return chunk_size_m_; }
     inline uint32_t get_chunk_size() const        { return chunk_size_; }

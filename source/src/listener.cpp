@@ -15,7 +15,7 @@ Listener::~Listener()
     //dtor
 }
 
-void Listener::subscribe(hash_t chan, Informer& informer, const WpFunc& delegate)
+void Listener::subscribe(hash_t chan, Informer& informer, WpFunc delegate)
 {
     // Compute key and look for previous equivalent subscription
     WID  inf_id = informer.get_WID();
@@ -34,7 +34,7 @@ void Listener::unsubscribe(hash_t chan, Informer& informer)
 {
     // Find delegate ID associated to message type and ask informer to drop it.
     auto key = std::make_pair(chan, informer.get_WID());
-    informer.remove_delegate(delegate_ids_.at(key));
+    informer.remove_delegate(chan, delegate_ids_.at(key));
     // Remove reference in the delegate ID map.
     delegate_ids_.erase(key);
 }

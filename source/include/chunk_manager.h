@@ -29,7 +29,7 @@ public:
     ChunkManager();
     ~ChunkManager();
 
-    void onKeyboardEvent(const WData& data);
+    bool onKeyboardEvent(const WData& data);
     void init();
     // Initialize event listener
     virtual void init_events(InputHandler& handler) override;

@@ -109,7 +109,7 @@ void DaylightSystem::debug_export_splines()
 #endif
 }
 
-void DaylightSystem::onKeyboardEvent(const WData& data)
+bool DaylightSystem::onKeyboardEvent(const WData& data)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -119,6 +119,8 @@ void DaylightSystem::onKeyboardEvent(const WData& data)
     		toggle();
     		break;
     }
+
+    return true; // Do NOT consume event
 }
 
 void DaylightSystem::update(const GameClock& clock)

@@ -75,7 +75,7 @@ void ChunkManager::init()
 }
 
 
-void ChunkManager::onKeyboardEvent(const WData& data)
+bool ChunkManager::onKeyboardEvent(const WData& data)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -85,6 +85,8 @@ void ChunkManager::onKeyboardEvent(const WData& data)
     		toggle();
     		break;
     }
+
+    return true; // Do NOT consume event
 }
 
 #ifdef __OPT_CHUNK_LOAD_DIRECTION_HINT__

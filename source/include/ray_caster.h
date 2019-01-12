@@ -23,7 +23,7 @@ public:
     // Initialize event listener
     virtual void init_events(InputHandler& handler) override;
 
-    void onMouseEvent(const WData& data);
+    bool onMouseEvent(const WData& data);
     Ray cast_ray_from_screen(const math::vec2& screen_coords);
     void ray_scene_query(const Ray& ray);
 

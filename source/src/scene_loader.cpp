@@ -80,7 +80,7 @@ void SceneLoader::load_level(const char* level_name)
     current_map_ = level_name;
 }
 
-void SceneLoader::onKeyboardEvent(const WData& data)
+bool SceneLoader::onKeyboardEvent(const WData& data)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -93,6 +93,8 @@ void SceneLoader::onKeyboardEvent(const WData& data)
     		reload_map();
     		break;
     }
+
+    return true; // Do NOT consume event
 }
 
 

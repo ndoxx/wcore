@@ -53,8 +53,8 @@ public:
     void set_pp_saturation(float value);
     void set_pp_fog_density(float value);
 
-    void onKeyboardEvent(const WData& data);
-    void onMouseEvent(const WData& data);
+    bool onKeyboardEvent(const WData& data);
+    bool onMouseEvent(const WData& data);
     void render();
     void render_gui();
     void dbg_show_statistics();

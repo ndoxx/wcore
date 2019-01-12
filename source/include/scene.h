@@ -111,8 +111,8 @@ public:
 
     // Methods
     // Listener
-    void onMouseEvent(const WData& data);
-    void onKeyboardEvent(const WData& data);
+    bool onMouseEvent(const WData& data);
+    bool onKeyboardEvent(const WData& data);
 
     // Upload given chunk geometry to OpenGL
     inline void load_geometry(uint32_t chunk_index) { if(chunk_index) chunks_.at(chunk_index)->load_geometry(); }

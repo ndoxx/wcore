@@ -47,8 +47,8 @@ public:
     void imgui_new_frame();
 #endif
 
-    void onKeyboardEvent(const WData& data);
-    void onMouseFocus(const WData& data);
+    bool onKeyboardEvent(const WData& data);
+    bool onMouseFocus(const WData& data);
     void handle_events();
     int run();
 };

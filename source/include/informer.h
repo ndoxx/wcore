@@ -5,6 +5,7 @@
 #include <list>
 #include <type_traits>
 #include <cassert>
+#include <iostream>
 
 #include "message.h"
 
@@ -17,11 +18,8 @@ class Informer
 
     protected:
         typedef std::list<WpFunc> DelegateList;
-
-        typedef std::multimap<hash_t,WpFunc> SubscriberMap;
-        typedef std::map<WDelegateID,SubscriberMap::iterator> DelegateIDMap;
-        typedef SubscriberMap::const_iterator  cIter;
-        typedef std::pair<cIter,cIter>         Range;
+        typedef std::map<hash_t,DelegateList> SubscriberMap;
+        typedef std::map<WDelegateID,DelegateList::iterator> DelegateIDMap;
 
     public:
         Informer();
@@ -38,12 +36,11 @@ class Informer
 
     private:
         WDelegateID add_delegate(hash_t, WpFunc delegate);
-        void remove_delegate(WDelegateID);
+        void remove_delegate(hash_t chan, WDelegateID);
         static size_t N_INST;
         static const size_t MAX_DELEGATES;
 
     protected:
-        DelegateList   delegates_;
         SubscriberMap  subscriber_map_;
         DelegateIDMap  delegate_ids_;
         WID id_;
@@ -63,9 +60,13 @@ template <typename T, typename>
 void Informer::post(hash_t message_type, T&& data)
 {
     data.sender_ = id_;
-    Range range = subscriber_map_.equal_range(message_type);
-    for(cIter it=range.first; it!=range.second; ++it)
-        (it->second)(std::forward<T>(data));
+    const DelegateList& dlist = subscriber_map_.at(message_type);
+    for(auto&& delegate: dlist)
+    {
+        // Execute delegate and break if event was consumed
+        if(!delegate(std::forward<T>(data)))
+            break;
+    }
 }
 
 }

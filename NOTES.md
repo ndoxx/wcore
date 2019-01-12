@@ -6083,7 +6083,9 @@ void OCTREE_NODE::subdivide()
 Simplement, j'ai remarqué que dans le cas 2D, lors d'une subdivision, on peut toujours calculer la position des centres des quadrants enfants comme la somme vectorielle du centre du quadrant parent avec un offset dépendant de l'indice. Cet offset est toujours la demi-dimension des quadrants enfants, mais chaque composante possède un signe qui dépend d'un masquage binaire sur l'indice. Voir le cahier pour les maths, c'est over-chiant à écrire en céfran.
 Mais intuitivement, si on peut additionner les évaluations des décisions binaires pour obtenir un indice, alors il existe une opération inverse qui depuis un indice permet de remonter aux évaluations des décisions binaires par masquage. Dans le cas 3D avec l'octree, il y a simplement une décision binaire supplémentaire, les maths restent les mêmes.
 
-#[12-01-19] Game systems
+#[12-01-19]
+
+##[REFACTOR] Game systems
 J'ai refactor une bonne partie du moteur afin d'homogénéiser l'utilisation et l'accès aux différents systèmes.
 
 La nouvelle class _GameSystem_ de game_system.h subsume _Updatable_ et forme l'interface des systèmes de jeu. C'est un _Listener_ qui peut donc recevoir des évenements, cette classe peut aussi être updatée et générer un widget pour l'éditeur. Les _GameSystem_ sont enregistrés dans un conteneur _GameSystemContainer_ dont un exemplaire est possédé par _GameLoop_. _GameSystemContainer_ enregistre les systèmes avec un nom (hash_t), et peut être itéré (via begin() et end(), ce qui le rend utilisable dans un range for). En interne, _GameSystemContainer_ enregistre les systèmes dans deux conteneurs : une liste ordonnée (c'est elle qui est itérable) et une map pour l'association aux noms de systèmes.
@@ -6107,3 +6109,10 @@ Voici comment on peut obtenir un pointeur vers la scène depuis un autre _GameSy
 ```
 
 La classe _Engine_ n'a plus qu'à enregistrer les systèmes via eimpl_->game_loop->register_game_system(), la classe _GameSystemContainer_ gère le reste. Il sera donc aisé de prévoir des systèmes utilisateur pouvant être enregistrés au même niveau que les autres.
+
+## Consume events
+La classe _Informer_ a été modifiée afin de permettre aux _Listener_ de consommer les évènements. Un évènement consommé par un délégué ne sera pas propagé aux autres délégués associés au même channel. Pour celà, il faut tenir compte de 2 choses :
+    - Les foncteurs WpFunc qui peuvent être passés en argument à subscribe() sont maintenant booléens, ils retournent true quand l'event doit être propagé, et false quand l'event doit être consommé.
+    - L'ordre de souscription détermine entièrement la priorité d'un _Listener_. Si A souscrit avant B au channel "input.keyboard" et que A consomme l'event dans sa fonction delegate, alors B ne recevra jamais l'event.
+
+En l'état, les _GameSystem_ souscrivent aux events via leur fonction GameSystem::init_events() qui est appelée dans GameSystemContainer::register_game_system(). **Donc l'ordre d'enregistrement des systèmes par Engine::Init() détermine à la fois l'ordre des updates ET la préséance de ces systèmes vis-à-vis de la consommation des évènements**. Ce comportement pourra être considéré comme néfaste à l'avenir et être amené à changer.

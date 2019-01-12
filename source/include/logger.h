@@ -200,7 +200,7 @@ public:
                      uint32_t severity=0u);
 
     // Logs any event the logger has subscribed to
-    void onTrack(const WData& data);
+    bool onTrack(const WData& data);
     // Subscribe to an event channel for a given informer
     void track(hash_t chan, Informer& informer);
     // Unsubscribe from a particular event channel

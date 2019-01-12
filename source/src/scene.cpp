@@ -335,13 +335,15 @@ void Scene::add_terrain(pTerrain terrain, uint32_t chunk_index)
     chunks_.at(chunk_index)->terrain_ = terrain;
 }
 
-void Scene::onMouseEvent(const WData& data)
+bool Scene::onMouseEvent(const WData& data)
 {
     const MouseData& md = static_cast<const MouseData&>(data);
     get_camera()->update_orientation(md.dx, md.dy);
+
+    return true; // Do NOT consume event
 }
 
-void Scene::onKeyboardEvent(const WData& data)
+bool Scene::onKeyboardEvent(const WData& data)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -372,6 +374,8 @@ void Scene::onKeyboardEvent(const WData& data)
             camera_->descend();
             break;
     }
+
+    return true; // Do NOT consume event
 }
 
 void Scene::visibility_pass()

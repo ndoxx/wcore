@@ -92,20 +92,20 @@ struct MouseFocusData : public WData
 
 struct NullData : public WData {};
 
-typedef std::function<void(const WData&)> WpFunc;
+typedef std::function<bool(const WData&)> WpFunc;
 
 // Delegate creation helper functions
 namespace dlg
 {
     template <typename T, typename INST>
-    static WpFunc make_delegate(void (T::*func)(const WData&), INST& inst)
+    static WpFunc make_delegate(bool (T::*func)(const WData&), INST& inst)
     {
         T* ptr = static_cast<T*>(&inst);
         return std::bind(func, ptr, std::placeholders::_1);
     }
 
     template <typename D>
-    static WpFunc make_delegate(void (*func)(const WData&))
+    static WpFunc make_delegate(bool (*func)(const WData&))
     {
         return std::bind(func, std::placeholders::_1);
     }
