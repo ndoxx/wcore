@@ -44,6 +44,9 @@ public:
 
     // Initialize event listener
     virtual void init_events(InputHandler& handler) override;
+#ifndef __DISABLE_EDITOR__
+    virtual void generate_widget() override;
+#endif
 
     void set_pp_gamma(const math::vec3& value);
     void set_pp_fog_color(const math::vec3& value);
@@ -56,9 +59,6 @@ public:
     void render_gui();
     void dbg_show_statistics();
 
-#ifndef __DISABLE_EDITOR__
-    void generate_widget();
-#endif
 #ifdef __DEBUG__
     void debug_draw_segment(const math::vec3& world_start,
                             const math::vec3& world_end,

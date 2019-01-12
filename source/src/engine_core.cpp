@@ -124,8 +124,7 @@ void GameLoop::generate_editor_widgets()
         }
     }
 
-    for(auto&& func: editor_widget_generators_)
-        func();
+    game_systems_.generate_widgets();
 
     if(show_log_window)
     {

@@ -89,7 +89,7 @@ struct Engine::EngineImpl
         pipeline      = new RenderPipeline();
         daylight      = new DaylightSystem(*pipeline);
         ray_caster    = new RayCaster(*pipeline);
-        chunk_manager = new ChunkManager(*scene_loader);
+        chunk_manager = new ChunkManager();
 #ifndef __DISABLE_EDITOR__
         editor        = new Editor();
 #endif
@@ -143,28 +143,21 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->init();
 
     // Initialize game_loop
-    eimpl_->game_loop->set_render_func([&]() { eimpl_->pipeline->render(); });
+    eimpl_->game_loop->set_render_func([&]()     { eimpl_->pipeline->render(); });
     eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
 
-    // Register game systems
-    eimpl_->game_loop->register_game_system(SCENE);
-    eimpl_->game_loop->register_game_system(*eimpl_->pipeline);
-    eimpl_->game_loop->register_game_system(*eimpl_->daylight);
-    eimpl_->game_loop->register_game_system(*eimpl_->ray_caster);
-    eimpl_->game_loop->register_game_system(*eimpl_->scene_loader);
-    eimpl_->game_loop->register_game_system(*eimpl_->chunk_manager);
+    // Register game systems (init events, register editor widgets, add to update list)
+    eimpl_->game_loop->register_game_system(H_("Scene"),        static_cast<GameSystem*>(&SCENE));
+    eimpl_->game_loop->register_game_system(H_("Pipeline"),     static_cast<GameSystem*>(eimpl_->pipeline));
+    eimpl_->game_loop->register_game_system(H_("Daylight"),     static_cast<GameSystem*>(eimpl_->daylight));
+    eimpl_->game_loop->register_game_system(H_("RayCaster"),    static_cast<GameSystem*>(eimpl_->ray_caster));
+    eimpl_->game_loop->register_game_system(H_("SceneLoader"),  static_cast<GameSystem*>(eimpl_->scene_loader));
+    eimpl_->game_loop->register_game_system(H_("ChunkManager"), static_cast<GameSystem*>(eimpl_->chunk_manager));
 
     //auto&& input_handler = eimpl_->game_loop->get_input_handler();
     //dbg::LOG.track(H_("input.mouse.locked"), input_handler);
     //dbg::LOG.track(H_("input.mouse.unlocked"), input_handler);
     //dbg::LOG.track(H_("input.mouse.focus"), input_handler);
-
-    // Editor widgets
-#ifndef __DISABLE_EDITOR__
-    eimpl_->game_loop->register_editor_widget([&](){ eimpl_->pipeline->generate_widget(); });
-    eimpl_->game_loop->register_editor_widget([&](){ eimpl_->daylight->generate_widget(); });
-    eimpl_->game_loop->register_editor_widget([&](){ SCENE.generate_widget(); });
-#endif
 
 #ifdef __DEBUG__
     show_driver_error("post Init() glGetError(): ");

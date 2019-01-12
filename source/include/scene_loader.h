@@ -18,6 +18,7 @@ namespace wcore
 {
 
 class MaterialFactory;
+class Scene;
 class Model;
 class LineModel;
 class Light;
@@ -61,7 +62,7 @@ private:
     float    texture_scale_;
 
     std::string current_map_;
-
+    Scene* pscene_;
 #ifdef __PROFILING_CHUNKS__
     nanoClock profile_clock_;
 #endif

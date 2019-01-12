@@ -126,6 +126,9 @@ public:
     virtual void init_events(InputHandler& handler) override;
     // Update camera and models that use basic updaters
     virtual void update(const GameClock& clock) override;
+#ifndef __DISABLE_EDITOR__
+    virtual void generate_widget() override;
+#endif
     // Sort models within each chunk according to distance to camera
     void sort_models();
     // Sort models within each chunk according to distance to light camera
@@ -154,7 +157,6 @@ public:
                      wcore::MODEL_CATEGORY model_cat=wcore::MODEL_CATEGORY::OPAQUE) const;
 
 #ifndef __DISABLE_EDITOR__
-    void generate_widget();
     inline void set_editor_selection(pModel pmdl)               { editor_selection_ = pmdl; }
     inline std::weak_ptr<Model> get_editor_selection() const    { return editor_selection_; }
 #endif

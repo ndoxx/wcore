@@ -35,15 +35,14 @@ public:
 
     void debug_export_splines();
 
-#ifndef __DISABLE_EDITOR__
-    void generate_widget();
-#endif
-
     void onKeyboardEvent(const WData& data);
     // Update sun position and global light attributes
     virtual void update(const GameClock& clock) override;
     // Initialize event listener
     virtual void init_events(InputHandler& handler) override;
+#ifndef __DISABLE_EDITOR__
+    virtual void generate_widget() override;
+#endif
 
     inline void toggle() { active_ = !active_; }
 

@@ -48,7 +48,8 @@ xml_parser_(),
 material_factory_(new MaterialFactory("assets.xml")),
 chunk_size_m_(32),
 lattice_scale_(1.0f),
-texture_scale_(1.0f)
+texture_scale_(1.0f),
+pscene_(nullptr)
 {
 
 }
@@ -70,6 +71,9 @@ static inline std::string level_file(const char* level_name)
 
 void SceneLoader::load_level(const char* level_name)
 {
+    // Locate scene game system
+    pscene_ = locate<Scene>(H_("Scene"));
+
     DLOGS("[SceneLoader] Parsing xml scene description.", "scene", Severity::LOW);
     fs::path file_path(io::get_file(H_("root.folders.level"), level_file(level_name)));
     xml_parser_.load_file_xml(file_path);
@@ -144,7 +148,7 @@ void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)
                                                              color,
                                                              brightness));
         dirlight->set_ambient_strength(ambient_strength);
-        SCENE.add_directional_light(dirlight);
+        pscene_->add_directional_light(dirlight);
     }
 
     xml_node<>* ambient_node = xml_parser_.get_root()->first_node("Ambient");
@@ -155,7 +159,7 @@ void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)
 
     float shadow_bias = 0.1f;
     if(xml::parse_node(dir_node, "ShadowBias", shadow_bias))
-        SCENE.shadow_bias_ = shadow_bias;
+        pscene_->shadow_bias_ = shadow_bias;
 }
 
 void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
@@ -173,7 +177,7 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
         DLOGI("Corrected: Chunk Size is now " + std::to_string(chunk_size_m_), "chunk", Severity::WARN);
     }
     chunk_size_ = uint32_t(floor(chunk_size_m_/lattice_scale_));
-    SCENE.set_chunk_size_meters(chunk_size_m_);
+    pscene_->set_chunk_size_meters(chunk_size_m_);
     TerrainChunk::set_chunk_size(chunk_size_);
 
     // For each terrain patch
@@ -308,7 +312,7 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
           dt_upload_us;
 #endif
 
-    SCENE.add_chunk(chunk_coords);
+    pscene_->add_chunk(chunk_coords);
     xml_node<>* chunk_node = it->second;
 
     // LOADING TERRAIN CHUNK
@@ -356,13 +360,13 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
 #ifdef __PROFILING_CHUNKS__
     profile_clock_.restart();
 #endif
-    SCENE.load_geometry(chunk_index);
+    pscene_->load_geometry(chunk_index);
 #ifdef __PROFILING_CHUNKS__
     period = profile_clock_.get_elapsed_time();
     dt_upload_us = 1e6*std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
 #endif
 
-    SCENE.populate_static_octree(chunk_index);
+    pscene_->populate_static_octree(chunk_index);
 
 #ifdef __PROFILING_CHUNKS__
     float dt_total_us = dt_terrain_us + dt_models_us + dt_batches_us + dt_lights_us + dt_upload_us;
@@ -396,9 +400,9 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
 void SceneLoader::reload_chunks()
 {
     std::vector<i32vec2> coords;
-    SCENE.get_loaded_chunks_coords(coords);
+    pscene_->get_loaded_chunks_coords(coords);
 
-    SCENE.clear_chunks();
+    pscene_->clear_chunks();
     for(uint32_t ii=0; ii<coords.size(); ++ii)
         load_chunk(coords[ii]);
 }
@@ -571,7 +575,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     }
 
     terrain->update_bounding_boxes();
-    SCENE.add_terrain(terrain, chunk_index);
+    pscene_->add_terrain(terrain, chunk_index);
 }
 
 void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
@@ -622,7 +626,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
             }
 
             // Translate according to chunk coordinates
-            auto chunk_coords = SCENE.get_chunk_coordinates(chunk_index);
+            auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
             pmdl->translate((chunk_size_m_-1)*chunk_coords.x(),
                             0,
                             (chunk_size_m_-1)*chunk_coords.y());
@@ -643,7 +647,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         }
 
         pmdl->update_bounding_boxes();
-        SCENE.add_model(pmdl, chunk_index);
+        pscene_->add_model(pmdl, chunk_index);
     }
 }
 
@@ -691,13 +695,13 @@ void SceneLoader::parse_line_models(xml_node<>* chunk_node, uint32_t chunk_index
             }
 
             // Translate according to chunk coordinates
-            auto chunk_coords = SCENE.get_chunk_coordinates(chunk_index);
+            auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
             pmdl->translate((chunk_size_m_-1)*chunk_coords.x(),
                             0,
                             (chunk_size_m_-1)*chunk_coords.y());
         }
 
-        SCENE.add_model(pmdl, chunk_index);
+        pscene_->add_model(pmdl, chunk_index);
     }
 }
 
@@ -783,7 +787,7 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
                 ground_model(pmdl, chunk_index);
             }
             // Translate according to chunk coordinates
-            auto chunk_coords = SCENE.get_chunk_coordinates(chunk_index);
+            auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
             pmdl->translate((chunk_size_m_-1)*chunk_coords.x(),
                             0,
                             (chunk_size_m_-1)*chunk_coords.y());
@@ -796,7 +800,7 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
             }
 
             pmdl->update_bounding_boxes();
-            SCENE.add_model(pmdl, chunk_index);
+            pscene_->add_model(pmdl, chunk_index);
         }
     }
 }
@@ -825,7 +829,7 @@ void SceneLoader::parse_lights(xml_node<>* chunk_node, uint32_t chunk_index)
         // Do we position the light relative to a heightmap?
         if(is_pos_relative(light))
         {
-            float height = SCENE.get_heightmap(chunk_index).get_height(position.xz());
+            float height = pscene_->get_heightmap(chunk_index).get_height(position.xz());
             position[1] += height;
         }
 
@@ -835,7 +839,7 @@ void SceneLoader::parse_lights(xml_node<>* chunk_node, uint32_t chunk_index)
                                                                  color,
                                                                  brightness));
             dirlight->set_ambient_strength(ambient_strength);
-            SCENE.add_directional_light(dirlight);
+            pscene_->add_directional_light(dirlight);
         }
         else if(!light_type.compare("point"))
         {
@@ -843,7 +847,7 @@ void SceneLoader::parse_lights(xml_node<>* chunk_node, uint32_t chunk_index)
             if(xml::parse_node(light, "Radius", radius))
             {
                 // Translate according to chunk coordinates
-                auto chunk_coords = SCENE.get_chunk_coordinates(chunk_index);
+                auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
                 vec3 offset((chunk_size_m_-1)*chunk_coords.x(),
                             0,
                             (chunk_size_m_-1)*chunk_coords.y());
@@ -853,7 +857,7 @@ void SceneLoader::parse_lights(xml_node<>* chunk_node, uint32_t chunk_index)
                                                                  radius,
                                                                  brightness));
                 pointlight->set_ambient_strength(ambient_strength);
-                SCENE.add_light(pointlight, chunk_index);
+                pscene_->add_light(pointlight, chunk_index);
 
                 // Motion
                 xml_node<>* mot_node = light->first_node("Motion");
@@ -872,11 +876,11 @@ void SceneLoader::parse_camera(xml_node<>* node)
 
     vec3 position;
     if(xml::parse_node(node, "Position", position))
-        SCENE.get_camera()->set_position(position);
+        pscene_->get_camera()->set_position(position);
 
     vec2 orientation;
     if(xml::parse_node(node, "Orientation", orientation))
-        SCENE.get_camera()->set_orientation(orientation.x(),orientation.y());
+        pscene_->get_camera()->set_orientation(orientation.x(),orientation.y());
 }
 
 void SceneLoader::parse_transformation(xml_node<>* trn_node, Transformation& trans)
@@ -1144,14 +1148,14 @@ void SceneLoader::ground_model(std::shared_ptr<Model> pmdl, const HeightMap& hm)
 void SceneLoader::ground_model(std::shared_ptr<Model> pmdl, uint32_t chunk_index)
 {
     // Find height at model (x,z) position and apply offset to model
-    float height = SCENE.get_heightmap(chunk_index).get_height(pmdl->get_position().xz());
+    float height = pscene_->get_heightmap(chunk_index).get_height(pmdl->get_position().xz());
     pmdl->translate_y(height);
 }
 
 void SceneLoader::ground_model(std::shared_ptr<LineModel> pmdl, uint32_t chunk_index)
 {
     // Find height at model (x,z) position and apply offset to model
-    float height = SCENE.get_heightmap(chunk_index).get_height(pmdl->get_position().xz());
+    float height = pscene_->get_heightmap(chunk_index).get_height(pmdl->get_position().xz());
     pmdl->translate_y(height);
 }
 
@@ -1169,7 +1173,7 @@ void SceneLoader::parse_bezier_interpolator(rapidxml::xml_node<>* bez_node,
         {
             if(relative_positioning)
             {
-                float height = SCENE.get_heightmap(chunk_index).get_height(control_point.xz());
+                float height = pscene_->get_heightmap(chunk_index).get_height(control_point.xz());
                 control_point[1] += height;
             }
             controls.push_back(control_point);
@@ -1187,7 +1191,7 @@ void SceneLoader::parse_motion(rapidxml::xml_node<>* mot_node, pModel target_mod
         if(updater)
         {
             target_model->set_dynamic(true);
-            SCENE.add_position_updater(updater, chunk_index);
+            pscene_->add_position_updater(updater, chunk_index);
         }
     }
 
@@ -1199,7 +1203,7 @@ void SceneLoader::parse_motion(rapidxml::xml_node<>* mot_node, pModel target_mod
         {
             ConstantRotator* rotator = new ConstantRotator(target_model, angular_rate);
             target_model->set_dynamic(true);
-            SCENE.add_rotator(rotator, chunk_index);
+            pscene_->add_rotator(rotator, chunk_index);
         }
     }
 }
@@ -1212,7 +1216,7 @@ void SceneLoader::parse_motion(rapidxml::xml_node<>* mot_node, pLight target_lig
         vec3& target_pos = target_light->get_position_nc();
         PositionUpdater* updater = parse_position_updater(pu_node, target_pos, chunk_index);
         if(updater)
-            SCENE.add_position_updater(updater, chunk_index);
+            pscene_->add_position_updater(updater, chunk_index);
     }
 }
 

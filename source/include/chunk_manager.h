@@ -10,13 +10,10 @@ namespace wcore
 //#define __OPT_CHUNK_LOAD_DIRECTION_HINT__
 #define __OPT_CHUNK_LOAD_FULL_DISK__
 
-class SceneLoader;
 class InputHandler;
-
 class ChunkManager: public GameSystem
 {
 private:
-    SceneLoader& loader_;
     bool active_;
 
     uint8_t view_radius_;
@@ -29,7 +26,7 @@ private:
 
 
 public:
-    ChunkManager(SceneLoader& loader);
+    ChunkManager();
     ~ChunkManager();
 
     void onKeyboardEvent(const WData& data);

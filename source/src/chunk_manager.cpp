@@ -14,8 +14,7 @@ namespace wcore
 
 using namespace math;
 
-ChunkManager::ChunkManager(SceneLoader& loader):
-loader_(loader),
+ChunkManager::ChunkManager():
 active_(true),
 view_radius_(2)
 #ifdef __OPT_CHUNK_LOAD_DIRECTION_HINT__
@@ -46,13 +45,17 @@ void ChunkManager::init_events(InputHandler& handler)
 
 void ChunkManager::init()
 {
+    // Locate game systems
+    Scene* pscene        = locate<Scene>(H_("Scene"));
+    SceneLoader* ploader = locate<SceneLoader>(H_("SceneLoader"));
+
     // * Load start chunk and some neighbors
     // compute current chunk coordinates
-    const vec3& cam_pos = SCENE.get_camera()->get_position();
-    uint32_t ck_size_m = loader_.get_chunk_size_meters();
+    const vec3& cam_pos = pscene->get_camera()->get_position();
+    uint32_t ck_size_m = ploader->get_chunk_size_meters();
     i32vec2 chunk_coords((uint32_t)floor(cam_pos.x()/ck_size_m),
                          (uint32_t)floor(cam_pos.z()/ck_size_m));
-    loader_.load_chunk(chunk_coords);
+    ploader->load_chunk(chunk_coords);
 
 #ifdef __OPT_CHUNK_LOAD_DIRECTION_HINT__
     // load neighbors
@@ -65,7 +68,7 @@ void ChunkManager::init()
                 continue;
             i32vec2 neighbor(chunk_coords.x()+ii,
                              chunk_coords.y()+jj);
-            loader_.load_chunk(neighbor);
+            ploader->load_chunk(neighbor);
         }
     }
 #endif
@@ -89,12 +92,16 @@ void ChunkManager::update(const GameClock& clock)
 {
     if(!active_) return;
 
+    // Locate game systems
+    Scene* pscene        = locate<Scene>(H_("Scene"));
+    SceneLoader* ploader = locate<SceneLoader>(H_("SceneLoader"));
+
     //float dt = clock.get_scaled_frame_duration();
 
     // * Check if camera transitions through current chunk quadrants
     // Compute centered normalized local coordinates
-    const vec3& cam_pos = SCENE.get_camera()->get_position();
-    uint32_t ck_size_m = loader_.get_chunk_size_meters();
+    const vec3& cam_pos = pscene->get_camera()->get_position();
+    uint32_t ck_size_m = ploader->get_chunk_size_meters();
     vec2 lcp(fmod(cam_pos.x(), ck_size_m)/ck_size_m - 0.5f,
              fmod(cam_pos.z(), ck_size_m)/ck_size_m - 0.5f);
     // Compute current quadrant
@@ -136,23 +143,23 @@ void ChunkManager::update(const GameClock& clock)
                 i32vec2 candidate(chunk_coords.x()+ii*hint_x,
                                   chunk_coords.y()+jj*hint_z);
                 uint32_t c_index = std::hash<i32vec2>{}(candidate);
-                if(SCENE.has_chunk(c_index))
+                if(pscene->has_chunk(c_index))
                     continue;
 
                 /*std::stringstream ss;
                 ss << candidate;
                 DLOGI(ss.str());*/
-                loader_.load_chunk(candidate);
+                ploader->load_chunk(candidate);
                 /*std::thread th_load_ck([&]()
                 {
-                    loader_.load_chunk(candidate);
+                    ploader->load_chunk(candidate);
                 });
                 th_load_ck.detach();*/
             }
         }
 
         // Sort chunks
-        SCENE.sort_chunks();
+        pscene->sort_chunks();
 
         last_quadrant_ = cur_quadrant;
     }
@@ -163,12 +170,16 @@ void ChunkManager::update(const GameClock& clock)
 {
     if(!active_) return;
 
+    // Locate game systems
+    Scene* pscene        = locate<Scene>(H_("Scene"));
+    SceneLoader* ploader = locate<SceneLoader>(H_("SceneLoader"));
+
     //float dt = clock.get_scaled_frame_duration();
 
     // * Check if camera enters new chunk
     // get current chunk coordinates
-    const i32vec2& chunk_coords = SCENE.get_current_chunk_coords();
-    uint32_t current_chunk = SCENE.get_current_chunk_index();
+    const i32vec2& chunk_coords = pscene->get_current_chunk_coords();
+    uint32_t current_chunk = pscene->get_current_chunk_index();
 
     // * If so, check for loadable neighbors in full visibility disk
     if(current_chunk!=last_chunk_)
@@ -188,21 +199,21 @@ void ChunkManager::update(const GameClock& clock)
                 // Check if chunk already loaded
                 i32vec2 candidate(new_x, new_y);
                 uint32_t c_index = std::hash<i32vec2>{}(candidate);
-                if(SCENE.has_chunk(c_index))
+                if(pscene->has_chunk(c_index))
                     continue;
                 // Load chunk
-                loader_.load_chunk(candidate);
+                ploader->load_chunk(candidate);
             }
         }
 
         // * And unload chunks that escaped the visibility disk
         std::vector<uint32_t> unload_candidates;
-        SCENE.get_far_chunks(view_radius_+1, unload_candidates);
+        pscene->get_far_chunks(view_radius_+1, unload_candidates);
         for(uint32_t index: unload_candidates)
-            SCENE.remove_chunk(index);
+            pscene->remove_chunk(index);
 
         // Sort chunks
-        SCENE.sort_chunks();
+        pscene->sort_chunks();
 
         last_chunk_ = current_chunk;
     }
@@ -212,8 +223,8 @@ void ChunkManager::update(const GameClock& clock)
     if(DINFO.active())
     {
         std::stringstream ss;
-        ss << "Vertex count: " << SCENE.get_vertex_count()
-           << " Triangles count: " << SCENE.get_triangles_count();
+        ss << "Vertex count: " << pscene->get_vertex_count()
+           << " Triangles count: " << pscene->get_triangles_count();
         DINFO.display(H_("sdiNGeom"), ss.str());
     }
 #endif

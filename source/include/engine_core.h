@@ -8,12 +8,11 @@
 #include "context.h"
 #include "game_clock.h"
 #include "input_handler.h"
+#include "game_system.h"
 #include "listener.h"
 
 namespace wcore
 {
-
-class GameSystem;
 
 class GameLoop: public Listener
 {
@@ -26,8 +25,7 @@ private:
     std::function<void(void)> render_func_;
     std::function<void(void)> render_gui_func_;
 
-    std::list<std::function<void(void)>> editor_widget_generators_;
-    std::list<GameSystem*> game_systems_;
+    GameSystemContainer game_systems_;
 
 #ifndef __DISABLE_EDITOR__
     void init_imgui();
@@ -42,16 +40,10 @@ public:
     inline void set_render_func(std::function<void(void)> render_func) { render_func_ = render_func;}
     inline void set_render_gui_func(std::function<void(void)> render_func) { render_gui_func_ = render_func;}
 
-    template <class T>
-    inline void register_game_system(T& system)
-    {
-        system.init_events(handler_);
-        game_systems_.push_back(static_cast<GameSystem*>(&system));
-    }
+    inline void register_game_system(hash_t name, GameSystem* system) { game_systems_.register_game_system(name, system, handler_); }
 
 #ifndef __DISABLE_EDITOR__
     inline void toggle_editor_GUI_rendering() { render_editor_GUI_ = !render_editor_GUI_; }
-    inline void register_editor_widget(std::function<void(void)> func) { editor_widget_generators_.push_back(func); }
     void imgui_new_frame();
 #endif
 
