@@ -11,6 +11,9 @@
 #include "vertex_array.hpp"
 #include "chunk.h"
 #include "octree.hpp"
+#ifndef __DISABLE_EDITOR__
+#include "editor.h"
+#endif
 
 namespace wcore
 {
@@ -49,10 +52,6 @@ private:
     uint32_t current_chunk_index_;          // Index of the chunk the camera is in
     math::i32vec2 current_chunk_coords_;    // Coordinates of the chunk the camera is in
     std::vector<uint32_t> chunks_order_;    // Permutation vector for chunk ordering
-
-#ifndef __DISABLE_EDITOR__
-    std::weak_ptr<Model> editor_selection_;
-#endif
 
     static uint32_t SHADOW_WIDTH;           // Width of shadow map
     static uint32_t SHADOW_HEIGHT;          // Height of shadow map
@@ -117,13 +116,13 @@ public:
 
     // Upload given chunk geometry to OpenGL
     inline void load_geometry(uint32_t chunk_index) { if(chunk_index) chunks_.at(chunk_index)->load_geometry(); }
-
     // Initialize event listener
     virtual void init_events(InputHandler& handler) override;
     // Update camera and models that use basic updaters
     virtual void update(const GameClock& clock) override;
 #ifndef __DISABLE_EDITOR__
     virtual void generate_widget() override;
+    inline Editor* locate_editor() { return locate<Editor>(H_("Editor")); }
 #endif
     // Sort models within each chunk according to distance to camera
     void sort_models();
@@ -151,11 +150,6 @@ public:
                      ModelEvaluator evaluate=wcore::DEFAULT_MODEL_EVALUATOR,
                      wcore::ORDER order=wcore::ORDER::IRRELEVANT,
                      wcore::MODEL_CATEGORY model_cat=wcore::MODEL_CATEGORY::OPAQUE) const;
-
-#ifndef __DISABLE_EDITOR__
-    inline void set_editor_selection(pModel pmdl)               { editor_selection_ = pmdl; }
-    inline std::weak_ptr<Model> get_editor_selection() const    { return editor_selection_; }
-#endif
 
 private:
     // Find which models are in view frustum

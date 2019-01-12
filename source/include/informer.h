@@ -2,6 +2,7 @@
 #define INFORMER_H
 
 #include <map>
+#include <list>
 #include <type_traits>
 #include <cassert>
 
@@ -15,16 +16,18 @@ class Informer
     friend class Listener;
 
     protected:
-        typedef std::multimap<hash_t,WpFunc> DelegateList;
-        typedef std::map<WDelegateID,DelegateList::iterator> DelegateIDMap;
-        typedef DelegateList::const_iterator   cIter;
+        typedef std::list<WpFunc> DelegateList;
+
+        typedef std::multimap<hash_t,WpFunc> SubscriberMap;
+        typedef std::map<WDelegateID,SubscriberMap::iterator> DelegateIDMap;
+        typedef SubscriberMap::const_iterator  cIter;
         typedef std::pair<cIter,cIter>         Range;
 
     public:
         Informer();
         virtual ~Informer();
 
-        inline const DelegateList& get_delegates() const;
+        inline const SubscriberMap& get_delegates() const;
         inline WID get_WID() const;
 
     protected:
@@ -41,13 +44,14 @@ class Informer
 
     protected:
         DelegateList   delegates_;
+        SubscriberMap  subscriber_map_;
         DelegateIDMap  delegate_ids_;
         WID id_;
 };
 
-inline const Informer::DelegateList& Informer::get_delegates() const
+inline const Informer::SubscriberMap& Informer::get_delegates() const
 {
-    return delegates_;
+    return subscriber_map_;
 }
 
 inline WID Informer::get_WID() const
@@ -59,7 +63,7 @@ template <typename T, typename>
 void Informer::post(hash_t message_type, T&& data)
 {
     data.sender_ = id_;
-    Range range = delegates_.equal_range(message_type);
+    Range range = subscriber_map_.equal_range(message_type);
     for(cIter it=range.first; it!=range.second; ++it)
         (it->second)(std::forward<T>(data));
 }

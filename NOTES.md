@@ -6082,3 +6082,28 @@ void OCTREE_NODE::subdivide()
 ```
 Simplement, j'ai remarqué que dans le cas 2D, lors d'une subdivision, on peut toujours calculer la position des centres des quadrants enfants comme la somme vectorielle du centre du quadrant parent avec un offset dépendant de l'indice. Cet offset est toujours la demi-dimension des quadrants enfants, mais chaque composante possède un signe qui dépend d'un masquage binaire sur l'indice. Voir le cahier pour les maths, c'est over-chiant à écrire en céfran.
 Mais intuitivement, si on peut additionner les évaluations des décisions binaires pour obtenir un indice, alors il existe une opération inverse qui depuis un indice permet de remonter aux évaluations des décisions binaires par masquage. Dans le cas 3D avec l'octree, il y a simplement une décision binaire supplémentaire, les maths restent les mêmes.
+
+#[12-01-19] Game systems
+J'ai refactor une bonne partie du moteur afin d'homogénéiser l'utilisation et l'accès aux différents systèmes.
+
+La nouvelle class _GameSystem_ de game_system.h subsume _Updatable_ et forme l'interface des systèmes de jeu. C'est un _Listener_ qui peut donc recevoir des évenements, cette classe peut aussi être updatée et générer un widget pour l'éditeur. Les _GameSystem_ sont enregistrés dans un conteneur _GameSystemContainer_ dont un exemplaire est possédé par _GameLoop_. _GameSystemContainer_ enregistre les systèmes avec un nom (hash_t), et peut être itéré (via begin() et end(), ce qui le rend utilisable dans un range for). En interne, _GameSystemContainer_ enregistre les systèmes dans deux conteneurs : une liste ordonnée (c'est elle qui est itérable) et une map pour l'association aux noms de systèmes.
+
+Chaque _GameSystem_ possède un pointeur vers son _GameSystemContainer_ parent. De fait il fut aisé d'implémenter une méthode GameSystem::locate(hash_t) qui permet à n'importe quel _GameSystem_ d'obtenir un pointeur vers un autre _GameSystem_ du même conteneur :
+```cpp
+    template <typename T>
+    inline T* locate(hash_t system_name)
+    {
+        return static_cast<T*>(parent_container_->get_system_by_name(system_name));
+    }
+
+```
+La résolution des noms équivaut à un accès map O(log(N)) et il convient donc de résoudre le nom en pointeur une seule fois avant de s'en servir pour éviter l'overhead.
+
+Grâce à cette méthode, la _Scene_ qui est devenu un _GameSystem_ n'avait plus de raison d'être un singleton, je lui ai donc retiré cet héritage.
+
+Voici comment on peut obtenir un pointeur vers la scène depuis un autre _GameSystem_ :
+```cpp
+    Scene* pscene = locate<Scene>(H_("Scene"));
+```
+
+La classe _Engine_ n'a plus qu'à enregistrer les systèmes via eimpl_->game_loop->register_game_system(), la classe _GameSystemContainer_ gère le reste. Il sera donc aisé de prévoir des systèmes utilisateur pouvant être enregistrés au même niveau que les autres.

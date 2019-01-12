@@ -9,6 +9,9 @@
 #include "bounding_boxes.h"
 #include "config.h"
 #include "logger.h"
+#ifndef __DISABLE_EDITOR__
+#include "editor.h"
+#endif
 
 namespace wcore
 {
@@ -117,7 +120,9 @@ void RayCaster::ray_scene_query(const Ray& ray)
 {
     Scene* pscene             = locate<Scene>(H_("Scene"));
     RenderPipeline* ppipeline = locate<RenderPipeline>(H_("Pipeline"));
-
+#ifndef __DISABLE_EDITOR__
+    Editor* peditor           = locate<Editor>(H_("Editor"));
+#endif
     // * Perform ray/AABB intersection test with objects in view frustum
     //   and return the closest object or nothing
     RayCollisionData data;
@@ -138,7 +143,9 @@ void RayCaster::ray_scene_query(const Ray& ray)
                                          math::vec3(1,0.7f,0));
         }
         #endif
-        pscene->set_editor_selection(pmdl);
+#ifndef __DISABLE_EDITOR__
+        peditor->set_model_selection(pmdl);
+#endif
     },
     [&](pModel pmdl) // Evaluator -> breaks from traversal loop when return value is false
     {

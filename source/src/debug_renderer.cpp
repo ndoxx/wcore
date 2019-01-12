@@ -14,6 +14,9 @@
 #include "camera.h"
 #include "globals.h"
 #include "logger.h"
+#ifndef __DISABLE_EDITOR__
+#include "editor.h"
+#endif
 
 namespace wcore
 {
@@ -139,7 +142,7 @@ void DebugRenderer::render(Scene* pscene)
 
 #ifndef __DISABLE_EDITOR__
     // EDITOR SELECTION
-    if(auto&& psel = pscene->get_editor_selection().lock())
+    if(auto&& psel = pscene->locate_editor()->get_model_selection().lock())
     {
         OBB& obb = psel->get_OBB();
         mat4 M = obb.get_model_matrix();
@@ -257,7 +260,7 @@ void DebugRenderer::render(Scene* pscene)
 void DebugRenderer::show_selection_neighbors(Scene* pscene, const math::vec3& half_bounds)
 {
 #ifndef __DISABLE_EDITOR__
-    if(auto&& psel = pscene->get_editor_selection().lock())
+    if(auto&& psel = pscene->locate_editor()->get_model_selection().lock())
     {
         const vec3& center = psel->get_position();
         BoundingRegion bounds(center, half_bounds);

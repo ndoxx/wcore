@@ -9,10 +9,12 @@
 #include "chunk_manager.h"
 #include "scene_loader.h"
 #include "input_handler.h"
-#include "editor.h"
 #include "pipeline.h"
 #include "daylight.h"
 #include "ray_caster.h"
+#ifndef __DISABLE_EDITOR__
+#include "editor.h"
+#endif
 #include "globals.h"
 #include "logger.h"
 
@@ -154,7 +156,9 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->register_game_system(H_("RayCaster"),    static_cast<GameSystem*>(eimpl_->ray_caster));
     eimpl_->game_loop->register_game_system(H_("SceneLoader"),  static_cast<GameSystem*>(eimpl_->scene_loader));
     eimpl_->game_loop->register_game_system(H_("ChunkManager"), static_cast<GameSystem*>(eimpl_->chunk_manager));
-
+#ifndef __DISABLE_EDITOR__
+    eimpl_->game_loop->register_game_system(H_("Editor"),       static_cast<GameSystem*>(eimpl_->editor));
+#endif
     //auto&& input_handler = eimpl_->game_loop->get_input_handler();
     //dbg::LOG.track(H_("input.mouse.locked"), input_handler);
     //dbg::LOG.track(H_("input.mouse.unlocked"), input_handler);

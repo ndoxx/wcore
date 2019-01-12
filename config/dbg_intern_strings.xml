@@ -47,6 +47,7 @@
     <string key="3190833881232144485" value="root.folders.font"/>
     <string key="3265510007544854032" value="inputTex"/>
     <string key="3280238715093492356" value="m4_projection"/>
+    <string key="3292785291232265657" value="ChunkManager"/>
     <string key="3433398725857282885" value="RIGHT_SUPER"/>
     <string key="3538540395244630929" value="tr.m4_ModelView"/>
     <string key="3669454362251956953" value="sdiRender"/>
@@ -60,6 +61,7 @@
     <string key="4078327762553393345" value="k_reload_chunks"/>
     <string key="4095489122264647498" value="mt.b_has_roughness"/>
     <string key="4128981603702996129" value="uint"/>
+    <string key="4174325718107188163" value="Pipeline"/>
     <string key="4183142239790756881" value="rd.b_enableFog"/>
     <string key="4298109543402824905" value="root.folders.shader"/>
     <string key="4324453728078389708" value="rd.v4_proj_params"/>
@@ -76,6 +78,7 @@
     <string key="5104577085432021867" value="NUM_LOCK"/>
     <string key="5290959391452669431" value="KP_ENTER"/>
     <string key="5374637301237950823" value="m4_LightSpace"/>
+    <string key="5375663403181666835" value="Scene"/>
     <string key="5413329254476999769" value="k_tg_fog"/>
     <string key="5417827944999695778" value="root.render.override.allow_shadow_mapping"/>
     <string key="5444861671349379636" value="mt.metallicTex"/>
@@ -104,6 +107,7 @@
     <string key="6158710824579030066" value="root.render.chunk.load_distance"/>
     <string key="6210033319470820478" value="lt.v3_lightPosition"/>
     <string key="6267565326467986890" value="rd.v3_viewPos"/>
+    <string key="6286384243454469031" value="Daylight"/>
     <string key="6295496275414265168" value="rd.f_bright_threshold"/>
     <string key="6325457071842862761" value="k_tg_chunk_mgr"/>
     <string key="6397362739859996101" value="rd.f_intensity"/>
@@ -130,6 +134,7 @@
     <string key="8091808378024623192" value="string"/>
     <string key="8123297531333910687" value="rd.f_wireframe_mix"/>
     <string key="8145572123296977505" value="rd.v2_screenSize"/>
+    <string key="8169366603910799856" value="SceneLoader"/>
     <string key="8248737789328649120" value="tr.m4_Model"/>
     <string key="8360812614045624869" value="RIGHT"/>
     <string key="8385221162674032681" value="SSAOtmpTex"/>
@@ -226,6 +231,7 @@
     <string key="12863514207781384271" value="depthTex"/>
     <string key="12950247791072433867" value="lt.f_ambientStrength"/>
     <string key="13027510015358381833" value="k_frame_slow_down"/>
+    <string key="13060999753206511191" value="RayCaster"/>
     <string key="13266389867668131512" value="root.display.target_fps"/>
     <string key="13299179948045175049" value="root.render.override.allow_normal_mapping"/>
     <string key="13306031419076402870" value="VARIANT_R_ONLY"/>
@@ -273,6 +279,7 @@
     <string key="16733900363094892041" value="KP_EQUAL"/>
     <string key="16804498396030224938" value="f_alpha"/>
     <string key="16864108800910258017" value="k_bb_next_mode"/>
+    <string key="17030330393165192822" value="k_show_neighbors"/>
     <string key="17067919005753676216" value="COMMA"/>
     <string key="17190761703808769086" value="f_normalOffset"/>
     <string key="17290000723479194119" value="k_tg_pause"/>
