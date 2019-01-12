@@ -24,8 +24,7 @@ typedef std::shared_ptr<Light> pLight;
 static float SUN_INCLINATION = 85.0f * M_PI/180.0f;
 static float MOON_INCLINATION = 70.0f * M_PI/180.0f;
 
-DaylightSystem::DaylightSystem(RenderPipeline& pipeline):
-pipeline_(pipeline),
+DaylightSystem::DaylightSystem():
 active_(true),
 daytime_(10.0),
 sun_angle_(0),
@@ -60,6 +59,7 @@ void DaylightSystem::init_events(InputHandler& handler)
 #ifndef __DISABLE_EDITOR__
 void DaylightSystem::generate_widget()
 {
+    Scene* pscene = locate<Scene>(H_("Scene"));
     //ImGui::Begin("Ambient parameters");
 
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
@@ -76,7 +76,7 @@ void DaylightSystem::generate_widget()
             ImGui::Separator();
         }
 
-        if(auto dir_light = SCENE.get_directional_light_nc().lock())
+        if(auto dir_light = pscene->get_directional_light_nc().lock())
         {
             ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
             if(ImGui::TreeNode("Directional light control"))
@@ -123,7 +123,10 @@ void DaylightSystem::onKeyboardEvent(const WData& data)
 
 void DaylightSystem::update(const GameClock& clock)
 {
-    if(auto dir_light = SCENE.get_directional_light_nc().lock())
+    Scene* pscene            = locate<Scene>(H_("Scene"));
+    RenderPipeline* pipeline = locate<RenderPipeline>(H_("Pipeline"));
+
+    if(auto dir_light = pscene->get_directional_light_nc().lock())
     {
         float dt = clock.get_scaled_frame_duration();
         if(DINFO.active())
@@ -168,10 +171,10 @@ void DaylightSystem::update(const GameClock& clock)
         dir_light->set_ambient_strength(ambient_strength_interpolator_->interpolate(daytime_));
 
         // Post processing variables
-        pipeline_.set_pp_gamma(pp_gamma_interpolator_->interpolate(daytime_));
-        pipeline_.set_pp_saturation(pp_saturation_interpolator_->interpolate(daytime_));
-        pipeline_.set_pp_fog_color(color_interpolator_->interpolate(daytime_));
-        pipeline_.set_pp_fog_density(pp_fog_density_interpolator_->interpolate(daytime_));
+        pipeline->set_pp_gamma(pp_gamma_interpolator_->interpolate(daytime_));
+        pipeline->set_pp_saturation(pp_saturation_interpolator_->interpolate(daytime_));
+        pipeline->set_pp_fog_color(color_interpolator_->interpolate(daytime_));
+        pipeline->set_pp_fog_density(pp_fog_density_interpolator_->interpolate(daytime_));
     }
 }
 

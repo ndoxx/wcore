@@ -14,7 +14,6 @@ class InputHandler;
 class DaylightSystem: public GameSystem
 {
 private:
-    RenderPipeline& pipeline_;
     bool active_;
     float daytime_; // Time of day in hours
     float minutes_;
@@ -30,7 +29,7 @@ private:
     math::CSplineCardinalF* ambient_strength_interpolator_;
 
 public:
-    DaylightSystem(RenderPipeline& pipeline);
+    DaylightSystem();
     ~DaylightSystem();
 
     void debug_export_splines();

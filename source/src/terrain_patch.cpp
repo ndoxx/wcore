@@ -32,11 +32,12 @@ TerrainChunk::~TerrainChunk()
 
 namespace terrain
 {
-void stitch_terrain_edges(std::shared_ptr<TerrainChunk> terrain,
+void stitch_terrain_edges(Scene* pscene,
+                          std::shared_ptr<TerrainChunk> terrain,
                           uint32_t chunk_index,
                           uint32_t chunk_size)
 {
-    SCENE.traverse_loaded_neighbor_chunks(chunk_index, [&](Chunk* chunk, wcore::NEIGHBOR location)
+    pscene->traverse_loaded_neighbor_chunks(chunk_index, [&](Chunk* chunk, wcore::NEIGHBOR location)
     {
         std::shared_ptr<TerrainChunk> nei_terrain = chunk->get_terrain_nc();
         switch(location)

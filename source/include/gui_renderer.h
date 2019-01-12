@@ -38,7 +38,7 @@ public:
     GuiRenderer();
     ~GuiRenderer();
 
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
     inline void render_cursor(bool value)  { cursor_props_.active = value; }
     inline void toggle_cursor()  { cursor_props_.active = !cursor_props_.active; }
     inline bool is_cursor_rendered() const { return cursor_props_.active; }

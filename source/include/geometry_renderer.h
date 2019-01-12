@@ -27,7 +27,7 @@ public:
     GeometryRenderer();
     virtual ~GeometryRenderer() = default;
 
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 
     inline void set_wireframe_mix(float value) { wireframe_mix_ = value; }
     inline float get_wireframe_mix() const     { return wireframe_mix_; }

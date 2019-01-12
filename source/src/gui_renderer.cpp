@@ -57,7 +57,7 @@ void GuiRenderer::set_cursor_hue(float hue)
 }
 
 
-void GuiRenderer::render()
+void GuiRenderer::render(Scene* pscene)
 {
     GFX::bind_default_frame_buffer();
     GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);

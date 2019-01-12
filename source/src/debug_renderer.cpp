@@ -80,11 +80,11 @@ void DebugRenderer::load_geometry()
     delete cross3_mesh;
 }
 
-void DebugRenderer::render()
+void DebugRenderer::render(Scene* pscene)
 {
     // Get camera matrices
-    mat4 V = SCENE.get_camera()->get_view_matrix();       // Camera View matrix
-    mat4 P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
+    mat4 V = pscene->get_camera()->get_view_matrix();       // Camera View matrix
+    mat4 P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
     GBuffer::Instance().blit_depth_to_screen(GLB.WIN_W, GLB.WIN_H);
@@ -94,14 +94,14 @@ void DebugRenderer::render()
     line_shader_.use();
     vertex_array_.bind();
 
-    // SCENE OBJECTS AABB/OBB
-    SCENE.traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
+    // pscene->OBJECTS AABB/OBB
+    pscene->traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
     {
         // Get model matrix and compute products
         if(bb_display_mode_ == 1 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::AABB))
         {
             AABB& aabb = pmodel->get_AABB();
-            if(!SCENE.get_camera()->frustum_collides(aabb)) return;
+            if(!pscene->get_camera()->frustum_collides(aabb)) return;
             mat4 M = aabb.get_model_matrix();
             line_shader_.send_uniform(H_("v4_line_color"), vec4(0,1,0,0));
             mat4 MVP = PV*M;
@@ -111,7 +111,7 @@ void DebugRenderer::render()
         if(bb_display_mode_ == 2 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::OBB))
         {
             OBB& obb = pmodel->get_OBB();
-            if(!SCENE.get_camera()->frustum_collides(obb)) return;
+            if(!pscene->get_camera()->frustum_collides(obb)) return;
             mat4 M = obb.get_model_matrix();
             line_shader_.send_uniform(H_("v4_line_color"), vec4(0,0,1,0));
             mat4 MVP = PV*M;
@@ -121,7 +121,7 @@ void DebugRenderer::render()
         if(bb_display_mode_ == 3 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
         {
             OBB& obb = pmodel->get_OBB();
-            if(!SCENE.get_camera()->frustum_collides(obb)) return;
+            if(!pscene->get_camera()->frustum_collides(obb)) return;
             mat4 M = pmodel->get_transformation().get_rotation_translation_matrix();
             mat4 MVP = PV*M;
             line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
@@ -139,7 +139,7 @@ void DebugRenderer::render()
 
 #ifndef __DISABLE_EDITOR__
     // EDITOR SELECTION
-    if(auto&& psel = SCENE.get_editor_selection().lock())
+    if(auto&& psel = pscene->get_editor_selection().lock())
     {
         OBB& obb = psel->get_OBB();
         mat4 M = obb.get_model_matrix();
@@ -153,7 +153,7 @@ void DebugRenderer::render()
     // LIGHT PROXY GEOMETRY
     if(light_display_mode_ > 0)
     {
-        SCENE.traverse_lights([&](std::shared_ptr<Light> plight, uint32_t chunk_index)
+        pscene->traverse_lights([&](std::shared_ptr<Light> plight, uint32_t chunk_index)
         {
             // Get model matrix and compute products
             // Scale model in display mode 2 only
@@ -165,19 +165,19 @@ void DebugRenderer::render()
         },
         [&](std::shared_ptr<Light> plight)
         {
-            return plight->is_in_frustum(*SCENE.get_camera());
+            return plight->is_in_frustum(*pscene->get_camera());
         });
     }
 
     // OCTREE DISPLAY
     if(show_static_octree_)
     {
-        float far = SCENE.get_camera()->get_far();
+        float far = pscene->get_camera()->get_far();
         GFX::enable_blending();
         GFX::set_std_blending();
-        auto&& static_octree = SCENE.get_static_octree();
+        auto&& static_octree = pscene->get_static_octree();
         // For each bounding region that is visible
-        static_octree.traverse_bounds_range(SCENE.get_camera()->get_frustum_box(),
+        static_octree.traverse_bounds_range(pscene->get_camera()->get_frustum_box(),
         [&](auto&& bound)
         {
             // Display bounding cube
@@ -185,7 +185,7 @@ void DebugRenderer::render()
             M.init_scale(2.f*bound.half);
             translate_matrix(M, bound.mid_point);
             mat4 MVP = PV*M;
-            float alpha = 1.0f-std::min((bound.mid_point-SCENE.get_camera()->get_position()).norm()/far,1.0f);
+            float alpha = 1.0f-std::min((bound.mid_point-pscene->get_camera()->get_position()).norm()/far,1.0f);
             line_shader_.send_uniform(H_("v4_line_color"), vec4(1,0,0,alpha));
             line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
@@ -239,7 +239,7 @@ void DebugRenderer::render()
     // LINE MODELS
     if(display_line_models_)
     {
-        SCENE.draw_line_models([&](pLineModel pmodel)
+        pscene->draw_line_models([&](pLineModel pmodel)
         {
             mat4 M(pmodel->get_model_matrix());
             mat4 MVP = PV*M;
@@ -254,14 +254,14 @@ void DebugRenderer::render()
         GFX::disable_depth_testing();
 }
 
-void DebugRenderer::show_selection_neighbors(const math::vec3& half_bounds)
+void DebugRenderer::show_selection_neighbors(Scene* pscene, const math::vec3& half_bounds)
 {
 #ifndef __DISABLE_EDITOR__
-    if(auto&& psel = SCENE.get_editor_selection().lock())
+    if(auto&& psel = pscene->get_editor_selection().lock())
     {
         const vec3& center = psel->get_position();
         BoundingRegion bounds(center, half_bounds);
-        auto&& static_octree = SCENE.get_static_octree();
+        auto&& static_octree = pscene->get_static_octree();
         static_octree.traverse_range(bounds,
         [&](auto&& obj)
         {

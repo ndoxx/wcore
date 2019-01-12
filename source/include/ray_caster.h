@@ -17,7 +17,7 @@ class RenderPipeline;
 class RayCaster: public GameSystem
 {
 public:
-    RayCaster(RenderPipeline& pipeline);
+    RayCaster();
 
     virtual void update(const GameClock& clock) override;
     // Initialize event listener
@@ -28,7 +28,6 @@ public:
     void ray_scene_query(const Ray& ray);
 
 private:
-    RenderPipeline& pipeline_;
     math::mat4 unproj_;
     math::vec4 eye_pos_world_;
 };

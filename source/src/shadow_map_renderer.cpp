@@ -50,12 +50,12 @@ ShadowMapRenderer::~ShadowMapRenderer()
     delete sbuffer_;
 }
 
-math::mat4 ShadowMapRenderer::render_directional_shadow_map(float normal_offset)
+math::mat4 ShadowMapRenderer::render_directional_shadow_map(Scene* pscene, float normal_offset)
 {
-    auto plcam = SCENE.get_light_camera();
+    auto plcam = pscene->get_light_camera();
 /*#ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
     // TODO Find a way to cache scene sorting
-    SCENE.sort_models_light();
+    pscene->sort_models_light();
 #endif*/
 
     // Get camera matrices
@@ -73,9 +73,9 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map(float normal_offset)
     GFX::unlock_depth_buffer();
     GFX::clear_depth();
 #endif
-    //sm_shader_.send_uniform(H_("lt.v3_lightPosition"), SCENE.get_directional_light().lock()->get_position());
+    //sm_shader_.send_uniform(H_("lt.v3_lightPosition"), pscene->get_directional_light().lock()->get_position());
     sm_shader_.send_uniform(H_("f_normalOffset"), normal_offset);
-    SCENE.draw_models([&](std::shared_ptr<Model> pmodel)
+    pscene->draw_models([&](std::shared_ptr<Model> pmodel)
     {
         uint32_t cull_face = pmodel->shadow_cull_face();
         switch(cull_face)

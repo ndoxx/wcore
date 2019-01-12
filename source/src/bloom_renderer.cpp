@@ -66,7 +66,7 @@ static inline float bloom_alpha(int index, int n_channels)
     return 1.0f - (index+0.5f)/(1.0f*n_channels);
 }
 
-void BloomRenderer::render()
+void BloomRenderer::render(Scene* pscene)
 {
     // Get access to lbuffer texture (texture index 1 is "brightTex")
     auto pscreen = Texture::get_named_texture(H_("lbuffer")).lock();

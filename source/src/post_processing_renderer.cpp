@@ -37,7 +37,7 @@ fog_density_(0.05)
     load_geometry();
 }
 
-void PostProcessingRenderer::render()
+void PostProcessingRenderer::render(Scene* pscene)
 {
     LBuffer& lbuffer = LBuffer::Instance();
 

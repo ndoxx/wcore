@@ -69,14 +69,14 @@ static const math::mat4 biasMatrix
 static uint32_t SHADOW_TEX = 3;
 static uint32_t SSAO_TEX = 4;
 
-void LightingRenderer::render()
+void LightingRenderer::render(Scene* pscene)
 {
     GBuffer& gbuffer = GBuffer::Instance();
     LBuffer& lbuffer = LBuffer::Instance();
 
     // Get camera matrices
-    const math::mat4& V = SCENE.get_camera()->get_view_matrix();       // Camera View matrix
-    const math::mat4& P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
+    const math::mat4& V = pscene->get_camera()->get_view_matrix();       // Camera View matrix
+    const math::mat4& P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
     math::mat4 V_inv;
     math::inverse_affine(V, V_inv);
     math::mat4 PV(P*V);
@@ -100,13 +100,13 @@ void LightingRenderer::render()
         GFX::set_light_blending();
         GFX::set_stencil_op_light_volume();
 
-        SCENE.traverse_lights([&](std::shared_ptr<const Light> plight, uint32_t chunk_index)
+        pscene->traverse_lights([&](std::shared_ptr<const Light> plight, uint32_t chunk_index)
         {
             // Get light properties
             if(plight->get_geometry() == 0) return;
             math::mat4 M = plight->get_model_matrix();
             // Is cam inside light volume?
-            //bool inside = plight->surrounds_camera(*SCENE.get_camera());
+            //bool inside = plight->surrounds_camera(*pscene->get_camera());
 
     // -------- STENCIL PASS
             GFX::lock_color_buffer(); // Do not write to color buffers
@@ -135,7 +135,7 @@ void LightingRenderer::render()
             lpass_point_shader_.use();
             //lpass_point_shader_.send_uniform(H_("rd.b_lighting_enabled"), lighting_enabled_);
             // view position uniform
-            //lpass_point_shader_.send_uniform(H_("rd.v3_viewPos"), SCENE.get_camera()->get_position());
+            //lpass_point_shader_.send_uniform(H_("rd.v3_viewPos"), pscene->get_camera()->get_position());
             // G-Buffer texture samplers
             lpass_point_shader_.send_uniforms(*pgbuffer);
             // Bright pass threshold
@@ -170,7 +170,7 @@ void LightingRenderer::render()
         },
         [&](std::shared_ptr<Light> plight)
         {
-            return plight->is_in_frustum(*SCENE.get_camera());
+            return plight->is_in_frustum(*pscene->get_camera());
         });
         GFX::disable_stencil();
 
@@ -180,12 +180,12 @@ void LightingRenderer::render()
         vertex_array_.unbind();
     }
 
-    if(auto dir_light = SCENE.get_directional_light().lock())
+    if(auto dir_light = pscene->get_directional_light().lock())
     {
         // Render shadow map
         math::mat4 lightMatrix;
         if(shadow_enabled_)
-            lightMatrix = math::mat4(biasMatrix*smr_.render_directional_shadow_map(normal_offset_)*V_inv);
+            lightMatrix = math::mat4(biasMatrix*smr_.render_directional_shadow_map(pscene, normal_offset_)*V_inv);
 
     // ---- DIRECTIONAL LIGHT PASS
         gbuffer.bind_as_source();
@@ -203,7 +203,7 @@ void LightingRenderer::render()
         lpass_dir_shader_.use();
         lpass_dir_shader_.send_uniform(H_("rd.b_lighting_enabled"), lighting_enabled_);
         // view position uniform
-        //lpass_dir_shader_.send_uniform(H_("rd.v3_viewPos"), SCENE.get_camera()->get_position());
+        //lpass_dir_shader_.send_uniform(H_("rd.v3_viewPos"), pscene->get_camera()->get_position());
         // G-Buffer texture samplers
         lpass_dir_shader_.send_uniforms(*pgbuffer);
         // For position reconstruction
@@ -229,7 +229,7 @@ void LightingRenderer::render()
             pshadow->generate_mipmaps(0);
 #else
             lpass_dir_shader_.send_uniform(H_("rd.v2_shadowTexelSize"), ShadowMapRenderer::SHADOW_TEXEL_SIZE);
-            lpass_dir_shader_.send_uniform(H_("rd.f_shadowBias"), SCENE.shadow_bias_ * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
+            lpass_dir_shader_.send_uniform(H_("rd.f_shadowBias"), pscene->shadow_bias_ * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
 #endif
         }
 

@@ -555,7 +555,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     );
 
     // Fix new terrain edge normals and tangents
-    terrain::stitch_terrain_edges(terrain, chunk_index, chunk_size_);
+    terrain::stitch_terrain_edges(pscene_, terrain, chunk_index, chunk_size_);
 
     // Spacial transformation
     Transformation trans;

@@ -28,11 +28,11 @@ allow_parallax_mapping_(true)
     CONFIG.get(H_("root.render.override.allow_parallax_mapping"), allow_parallax_mapping_);
 }
 
-void GeometryRenderer::render()
+void GeometryRenderer::render(Scene* pscene)
 {
     // Get camera matrices
-    mat4 V = SCENE.get_camera()->get_view_matrix();       // Camera View matrix
-    mat4 P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
+    mat4 V = pscene->get_camera()->get_view_matrix();       // Camera View matrix
+    mat4 P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
     GFX::disable_blending();
@@ -43,13 +43,13 @@ void GeometryRenderer::render()
     // Wireframe mix
     geometry_pass_shader_.send_uniform(H_("rd.f_wireframe_mix"), wireframe_mix_);
     // Camera (eye) position
-    //geometry_pass_shader_.send_uniform(H_("rd.v3_viewPos"), SCENE.get_camera()->get_position());
+    //geometry_pass_shader_.send_uniform(H_("rd.v3_viewPos"), pscene->get_camera()->get_position());
     // Draw to G-Buffer
     GBuffer::Instance().bind_as_target();
 
     GFX::clear_color_depth();
     // Bind VAO, draw, unbind VAO
-    SCENE.draw_models([&](std::shared_ptr<Model> pmodel)
+    pscene->draw_models([&](std::shared_ptr<Model> pmodel)
     {
         // Get model matrix and compute products
         mat4 M = pmodel->get_model_matrix();

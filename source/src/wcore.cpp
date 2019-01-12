@@ -72,23 +72,23 @@ struct Engine::EngineImpl
         delete daylight;
         delete pipeline;
         delete scene_loader;
+        delete scene;
         delete game_loop;
 
 #ifndef __DISABLE_EDITOR__
         delete editor;
 #endif
-
-        Scene::Kill();
         Config::Kill();
     }
 
     void init()
     {
         game_loop     = new GameLoop();
+        scene         = new Scene();
         scene_loader  = new SceneLoader();
         pipeline      = new RenderPipeline();
-        daylight      = new DaylightSystem(*pipeline);
-        ray_caster    = new RayCaster(*pipeline);
+        daylight      = new DaylightSystem();
+        ray_caster    = new RayCaster();
         chunk_manager = new ChunkManager();
 #ifndef __DISABLE_EDITOR__
         editor        = new Editor();
@@ -97,6 +97,7 @@ struct Engine::EngineImpl
     }
 
     GameLoop*       game_loop;
+    Scene*          scene;
     SceneLoader*    scene_loader;
     RenderPipeline* pipeline;
     DaylightSystem* daylight;
@@ -147,7 +148,7 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
 
     // Register game systems (init events, register editor widgets, add to update list)
-    eimpl_->game_loop->register_game_system(H_("Scene"),        static_cast<GameSystem*>(&SCENE));
+    eimpl_->game_loop->register_game_system(H_("Scene"),        static_cast<GameSystem*>(eimpl_->scene));
     eimpl_->game_loop->register_game_system(H_("Pipeline"),     static_cast<GameSystem*>(eimpl_->pipeline));
     eimpl_->game_loop->register_game_system(H_("Daylight"),     static_cast<GameSystem*>(eimpl_->daylight));
     eimpl_->game_loop->register_game_system(H_("RayCaster"),    static_cast<GameSystem*>(eimpl_->ray_caster));

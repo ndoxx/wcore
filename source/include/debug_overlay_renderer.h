@@ -50,7 +50,7 @@ public:
     inline bool& get_enabled_flag()     { return active_; }
     inline void next_mode() { if(active_) mode_ = (mode_+1)%debug_panes_.size(); }
 
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 
     void register_debug_pane(std::vector<unsigned int>&& texture_indices,
                              std::vector<std::string>&& sampler_names,

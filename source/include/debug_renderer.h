@@ -49,7 +49,7 @@ public:
     virtual ~DebugRenderer() = default;
 
     void load_geometry();
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 
     inline void toggle_line_models() { display_line_models_ = !display_line_models_; }
 
@@ -62,7 +62,7 @@ public:
     inline void clear_draw_requests() { draw_requests_.clear(); }
 
     // Show static octree neighbors of selected object for 5s
-    void show_selection_neighbors(const math::vec3& half_bounds = math::vec3(10,10,10));
+    void show_selection_neighbors(Scene* pscene, const math::vec3& half_bounds = math::vec3(10,10,10));
 
     void request_draw_segment(const math::vec3& world_start,
                               const math::vec3& world_end,

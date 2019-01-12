@@ -130,7 +130,7 @@ void RenderPipeline::onKeyboardEvent(const WData& data)
             perform_test();
             break;
         case H_("k_show_neighbors"):
-            debug_renderer_->show_selection_neighbors(math::vec3(5,5,5));
+            debug_renderer_->show_selection_neighbors(locate<Scene>(H_("Scene")), math::vec3(5,5,5));
             break;
     }
 }
@@ -170,9 +170,7 @@ static float neighbors_search_half_bound = 5.f;
 
 void RenderPipeline::generate_widget()
 {
-    // New window
-    //ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Once);
-    //ImGui::Begin("Rendering options");
+    Scene* pscene = locate<Scene>(H_("Scene"));
 
     // DEBUG DRAWING
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
@@ -200,7 +198,7 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Sel. half-bnd", &neighbors_search_half_bound, 0.5f, 10.0f);
             if(ImGui::Button("Show selection neighbors"))
             {
-                debug_renderer_->show_selection_neighbors(math::vec3(neighbors_search_half_bound));
+                debug_renderer_->show_selection_neighbors(pscene, math::vec3(neighbors_search_half_bound));
             }
             ImGui::TreePop();
             ImGui::Separator();
@@ -306,7 +304,7 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("Shadow control"))
         {
-            ImGui::SliderFloat("Depth bias", &SCENE.shadow_bias_, 0.0f, 5.0f);
+            ImGui::SliderFloat("Depth bias", &pscene->shadow_bias_, 0.0f, 5.0f);
             ImGui::SliderFloat("Slope bias", &lighting_renderer_->shadow_slope_bias_, 0.0f, 0.5f);
             ImGui::SliderFloat("Normal offset", &lighting_renderer_->normal_offset_, -1.0f, 1.0f);
         }
@@ -439,6 +437,8 @@ void RenderPipeline::generate_widget()
 
 void RenderPipeline::render()
 {
+    Scene* pscene = locate<Scene>(H_("Scene"));
+
     #ifdef __PROFILE__
     float dt = 0.0f;
     std::chrono::nanoseconds period;
@@ -454,7 +454,7 @@ void RenderPipeline::render()
     }
     #endif
 
-    geometry_renderer_->render();
+    geometry_renderer_->render(pscene);
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -475,7 +475,7 @@ void RenderPipeline::render()
     }
     #endif
 
-    SSAO_renderer_->render();
+    SSAO_renderer_->render(pscene);
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -496,7 +496,7 @@ void RenderPipeline::render()
     }
     #endif
 
-    lighting_renderer_->render();
+    lighting_renderer_->render(pscene);
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -517,7 +517,7 @@ void RenderPipeline::render()
     }
     #endif
 
-    forward_renderer_->render();
+    forward_renderer_->render(pscene);
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -539,7 +539,7 @@ void RenderPipeline::render()
     #endif
 
     if(bloom_enabled_)
-        bloom_renderer_->render();
+        bloom_renderer_->render(pscene);
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -560,7 +560,7 @@ void RenderPipeline::render()
     }
     #endif
 
-    post_processing_renderer_->render();
+    post_processing_renderer_->render(pscene);
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -573,9 +573,9 @@ void RenderPipeline::render()
     #endif
 
 // ------- OVERLAY AND TEXT (draw to screen with alpha blending) --------------
-    debug_renderer_->render();
-    debug_overlay_renderer_->render();
-    text_renderer_->render();
+    debug_renderer_->render(pscene);
+    debug_overlay_renderer_->render(pscene);
+    text_renderer_->render(pscene);
 
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -589,7 +589,8 @@ void RenderPipeline::render()
 
 void RenderPipeline::render_gui()
 {
-    gui_renderer_->render();    // Cursor...
+    Scene* pscene = locate<Scene>(H_("Scene"));
+    gui_renderer_->render(pscene);    // Cursor...
 }
 
 

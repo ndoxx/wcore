@@ -9,6 +9,7 @@
 namespace wcore
 {
 
+class Scene;
 template <typename VertexT>
 class Renderer
 {
@@ -24,7 +25,7 @@ public:
     ~Renderer() = default;
 
     void load_geometry() {}
-    virtual void render() = 0;
+    virtual void render(Scene* pscene) = 0;
 };
 
 
@@ -54,7 +55,7 @@ public:
         buffer_unit_.upload();
         delete pquadMesh;
     }
-    virtual void render() = 0;
+    virtual void render(Scene* pscene) = 0;
 };
 
 }

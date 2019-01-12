@@ -62,12 +62,12 @@ SSAORenderer::~SSAORenderer()
     SSAOBuffer::Kill();
 }
 
-void SSAORenderer::render()
+void SSAORenderer::render(Scene* pscene)
 {
     if(!active_) return;
 
     // For position reconstruction
-    const math::mat4& P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
+    const math::mat4& P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
     math::vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
     auto pgbuffer = Texture::get_named_texture(H_("gbuffer")).lock();
 
@@ -104,9 +104,9 @@ void SSAORenderer::render()
     }*/
 
     // Send uniforms
-    const math::mat4& V = SCENE.get_camera()->get_view_matrix();
+    const math::mat4& V = pscene->get_camera()->get_view_matrix();
     SSAO_shader_.send_uniform(H_("rd.v2_noiseScale"), noise_scale_);
-    //if(auto dir_light = SCENE.get_directional_light().lock())
+    //if(auto dir_light = pscene->get_directional_light().lock())
         //SSAO_shader_.send_uniform(H_("rd.v3_lightDir"), V.submatrix(3,3)*dir_light->get_position());
     SSAO_shader_.send_uniform(H_("rd.f_radius"), SSAO_radius_);
     SSAO_shader_.send_uniform(H_("rd.f_bias"), SSAO_bias_);

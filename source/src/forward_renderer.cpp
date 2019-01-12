@@ -30,7 +30,7 @@ void ForwardRenderer::load_geometry()
 }
 
 
-void ForwardRenderer::render()
+void ForwardRenderer::render(Scene* pscene)
 {
     if(!active_)
         return;
@@ -38,8 +38,8 @@ void ForwardRenderer::render()
     LBuffer& lbuffer = LBuffer::Instance();
 
     // Get camera matrices
-    mat4 V = SCENE.get_camera()->get_view_matrix();       // Camera View matrix
-    mat4 P = SCENE.get_camera()->get_projection_matrix(); // Camera Projection matrix
+    mat4 V = pscene->get_camera()->get_view_matrix();       // Camera View matrix
+    mat4 P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
     GFX::enable_depth_testing();
@@ -52,7 +52,7 @@ void ForwardRenderer::render()
         GFX::enable_blending();
         GFX::set_std_blending();
 
-        SCENE.draw_models([&](std::shared_ptr<Model> pmodel)
+        pscene->draw_models([&](std::shared_ptr<Model> pmodel)
         {
             // Get model matrix and compute products
             mat4 M = pmodel->get_model_matrix();

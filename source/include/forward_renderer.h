@@ -23,7 +23,7 @@ public:
     virtual ~ForwardRenderer() = default;
 
     void load_geometry();
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 };
 
 }

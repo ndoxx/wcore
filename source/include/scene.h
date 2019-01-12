@@ -34,7 +34,7 @@ struct StaticOctreeData
     }
 };
 
-class Scene: public Singleton<Scene>, public GameSystem
+class Scene: public GameSystem
 {
 private:
     typedef Octree<BoundingRegion, StaticOctreeData> StaticOctree;
@@ -57,15 +57,11 @@ private:
     static uint32_t SHADOW_WIDTH;           // Width of shadow map
     static uint32_t SHADOW_HEIGHT;          // Height of shadow map
 
-    Scene (const Scene&){};
+public:
     Scene();
    ~Scene();
 
-public:
     float shadow_bias_;                     // Bias parameter for PCF shadow mapping
-
-    friend Scene& Singleton<Scene>::Instance();
-    friend void Singleton<Scene>::Kill();
 
     // TMP
     inline StaticOctree& get_static_octree() { return static_octree; }
@@ -210,8 +206,6 @@ inline uint32_t Scene::get_triangles_count() const
         count += chunk_entry.second->get_triangles_count();
     return count;
 }
-
-#define SCENE Scene::Instance()
 
 }
 

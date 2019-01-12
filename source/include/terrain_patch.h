@@ -64,10 +64,12 @@ inline Vertex3P3N3T2U& TerrainChunk::north(uint32_t index)
     return (*pmesh_)[index*chunk_size_ + chunk_size_-1];
 }
 
+class Scene;
 namespace terrain
 {
 // Access loaded neighbor chunks and fix this terrain chunk's edges normals and tangents
-extern void stitch_terrain_edges(std::shared_ptr<TerrainChunk> terrain,
+extern void stitch_terrain_edges(Scene* pscene,
+                                 std::shared_ptr<TerrainChunk> terrain,
                                  uint32_t chunk_index,
                                  uint32_t chunk_size);
 }

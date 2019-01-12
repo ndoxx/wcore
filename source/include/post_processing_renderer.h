@@ -37,7 +37,7 @@ public:
     PostProcessingRenderer();
     virtual ~PostProcessingRenderer() = default;
 
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 
     inline void set_fog_enabled(bool value)   { fog_enabled_ = value; }
     inline void toggle_fog()                  { fog_enabled_ = !fog_enabled_; }

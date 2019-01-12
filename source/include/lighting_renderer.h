@@ -38,7 +38,7 @@ public:
     virtual ~LightingRenderer() = default;
 
     void load_geometry();
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 
     inline void toggle_SSAO() { SSAO_enabled_ = !SSAO_enabled_; }
     inline void set_SSAO_enabled(bool value) { SSAO_enabled_ = value; }

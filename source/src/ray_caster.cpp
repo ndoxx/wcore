@@ -18,8 +18,7 @@ static bool show_ray = false;
 static int ray_persistence = 0;
 #endif
 
-RayCaster::RayCaster(RenderPipeline& pipeline):
-pipeline_(pipeline)
+RayCaster::RayCaster()
 {
 #ifdef __DEBUG__
     CONFIG.get(H_("root.debug.raycast.geometry.show_on_click"), show_ray);
@@ -42,8 +41,9 @@ void RayCaster::onMouseEvent(const WData& data)
 
 void RayCaster::update(const GameClock& clock)
 {
+
     // * Get camera view-projection matrix for this frame and invert it
-    pCamera cam = SCENE.get_camera();
+    pCamera cam = locate<Scene>(H_("Scene"))->get_camera();
     const math::mat4& view = cam->get_view_matrix();
     const math::mat4& projection = cam->get_projection_matrix();
     eye_pos_world_ = cam->get_position(); // Also save camera position
@@ -103,10 +103,10 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
 
     if(show_ray)
     {
-        pipeline_.debug_draw_segment(ray.origin_w,
-                                     ray.end_w,
-                                     ray_persistence,
-                                     math::vec3(1,0.2,0));
+        locate<RenderPipeline>(H_("Pipeline"))->debug_draw_segment(ray.origin_w,
+                                                ray.end_w,
+                                                ray_persistence,
+                                                math::vec3(1,0.2,0));
     }
 #endif
 
@@ -115,28 +115,30 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
 
 void RayCaster::ray_scene_query(const Ray& ray)
 {
+    Scene* pscene             = locate<Scene>(H_("Scene"));
+    RenderPipeline* ppipeline = locate<RenderPipeline>(H_("Pipeline"));
+
     // * Perform ray/AABB intersection test with objects in view frustum
     //   and return the closest object or nothing
-
     RayCollisionData data;
-    SCENE.visit_model_first([&](pModel pmdl, uint32_t chunk_id)
+    pscene->visit_model_first([&](pModel pmdl, uint32_t chunk_id)
     {
         #ifdef __DEBUG__
         if(show_ray)
         {
             math::vec3 near_intersection(ray.origin_w + (ray.direction*data.near));
             math::vec3 far_intersection(ray.origin_w + (ray.direction*data.far));
-            pipeline_.debug_draw_cross3(near_intersection,
-                                        0.3f,
-                                        ray_persistence,
-                                        math::vec3(0,0.7f,1));
-            pipeline_.debug_draw_cross3(far_intersection,
-                                        0.3f,
-                                        ray_persistence,
-                                        math::vec3(1,0.7f,0));
+            ppipeline->debug_draw_cross3(near_intersection,
+                                         0.3f,
+                                         ray_persistence,
+                                         math::vec3(0,0.7f,1));
+            ppipeline->debug_draw_cross3(far_intersection,
+                                         0.3f,
+                                         ray_persistence,
+                                         math::vec3(1,0.7f,0));
         }
         #endif
-        SCENE.set_editor_selection(pmdl);
+        pscene->set_editor_selection(pmdl);
     },
     [&](pModel pmdl) // Evaluator -> breaks from traversal loop when return value is false
     {

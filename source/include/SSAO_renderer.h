@@ -37,7 +37,7 @@ public:
     SSAORenderer();
     virtual ~SSAORenderer();
 
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 
     inline void toggle() { active_ = !active_; }
     inline void set_enabled(bool value) { active_ = value; }

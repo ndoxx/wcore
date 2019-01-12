@@ -177,7 +177,7 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
     GFX::disable_blending();
 }
 
-void TextRenderer::render()
+void TextRenderer::render(Scene* pscene)
 {
     while (!line_queue_.empty())
     {

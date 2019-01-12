@@ -66,7 +66,7 @@ public:
                                      float y,
                                      float scale=1.0f,
                                      math::vec3 color=math::vec3(1,1,1));
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 
     inline void set_face(hash_t face_name);
 };

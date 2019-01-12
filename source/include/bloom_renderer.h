@@ -26,7 +26,7 @@ private:
 public:
     BloomRenderer();
     virtual ~BloomRenderer();
-    virtual void render() override;
+    virtual void render(Scene* pscene) override;
 
     inline void update_blur_kernel(uint32_t kernel_size, float sigma)
     {

@@ -131,7 +131,7 @@ void DebugOverlayRenderer::render_pane(uint32_t index)
     }
 }
 
-void DebugOverlayRenderer::render()
+void DebugOverlayRenderer::render(Scene* pscene)
 {
     if(!active_) return;
 
