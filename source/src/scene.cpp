@@ -57,6 +57,12 @@ Scene::~Scene()
         delete chunk;
 }
 
+void Scene::init_events(InputHandler& handler)
+{
+    subscribe(H_("input.mouse.locked"), handler, &Scene::onMouseEvent);
+    subscribe(H_("input.keyboard"), handler, &Scene::onKeyboardEvent);
+}
+
 void Scene::set_chunk_size_meters(uint32_t chunk_size_m)
 {
     chunk_size_m_ = chunk_size_m;

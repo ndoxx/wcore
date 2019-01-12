@@ -3,6 +3,7 @@
 #include "ray_caster.h"
 #include "pipeline.h"
 #include "scene.h"
+#include "input_handler.h"
 #include "model.h"
 #include "camera.h"
 #include "bounding_boxes.h"
@@ -24,6 +25,11 @@ pipeline_(pipeline)
     CONFIG.get(H_("root.debug.raycast.geometry.show_on_click"), show_ray);
     CONFIG.get(H_("root.debug.raycast.geometry.persistence"), ray_persistence);
 #endif
+}
+
+void RayCaster::init_events(InputHandler& handler)
+{
+    subscribe(H_("input.mouse.click"), handler, &RayCaster::onMouseEvent);
 }
 
 void RayCaster::onMouseEvent(const WData& data)

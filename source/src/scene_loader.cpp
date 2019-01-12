@@ -58,6 +58,11 @@ SceneLoader::~SceneLoader()
     delete material_factory_;
 }
 
+void SceneLoader::init_events(InputHandler& handler)
+{
+    subscribe(H_("input.keyboard"), handler, &SceneLoader::onKeyboardEvent);
+}
+
 static inline std::string level_file(const char* level_name)
 {
     return std::string("l_") + level_name + ".xml";

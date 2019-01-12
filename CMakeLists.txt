@@ -37,6 +37,7 @@ set(SRC_CORE
     ${CMAKE_SOURCE_DIR}/source/src/chunk_manager.cpp
     ${CMAKE_SOURCE_DIR}/source/src/scene.cpp
     ${CMAKE_SOURCE_DIR}/source/src/scene_loader.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/editor.cpp
     ${CMAKE_SOURCE_DIR}/source/src/input_handler.cpp
     ${CMAKE_SOURCE_DIR}/source/src/keymap.cpp
     ${CMAKE_SOURCE_DIR}/source/src/debug_info.cpp

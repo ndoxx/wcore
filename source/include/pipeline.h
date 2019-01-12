@@ -2,7 +2,7 @@
 #define PIPELINE_H
 
 #include "math3d.h"
-#include "listener.h"
+#include "game_system.h"
 
 namespace wcore
 {
@@ -20,7 +20,7 @@ class DebugOverlayRenderer;
 class GuiRenderer;
 class InputHandler;
 
-class RenderPipeline : public Listener
+class RenderPipeline : public GameSystem
 {
 private:
     GeometryRenderer*        geometry_renderer_;
@@ -41,6 +41,9 @@ public:
 
     RenderPipeline();
     ~RenderPipeline();
+
+    // Initialize event listener
+    virtual void init_events(InputHandler& handler) override;
 
     void set_pp_gamma(const math::vec3& value);
     void set_pp_fog_color(const math::vec3& value);

@@ -8,7 +8,7 @@
 
 #include "xml_parser.h"
 #include "math3d.h"
-#include "listener.h"
+#include "game_system.h"
 
 #ifdef __PROFILING_CHUNKS__
     #include "clock.hpp"
@@ -46,7 +46,7 @@ namespace math
     }
 }
 
-class SceneLoader: public Listener
+class SceneLoader: public GameSystem
 {
 private:
     XMLParser xml_parser_;
@@ -69,6 +69,9 @@ private:
 public:
     SceneLoader();
     ~SceneLoader();
+
+    // Initialize event listener
+    virtual void init_events(InputHandler& handler) override;
 
     void load_level(const char* level_name);
     inline void load_level(const std::string& level_name)

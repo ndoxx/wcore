@@ -10,7 +10,6 @@ namespace wcore
 {
 
 struct Vertex3P;
-class LBuffer;
 
 struct DebugDrawRequest
 {

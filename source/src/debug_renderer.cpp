@@ -27,7 +27,7 @@ display_line_models_(true),
 light_display_mode_(0),
 bb_display_mode_(0),
 enable_depth_test_(true),
-show_static_octree_(true)
+show_static_octree_(false)
 {
     load_geometry();
 }
@@ -256,6 +256,7 @@ void DebugRenderer::render()
 
 void DebugRenderer::show_selection_neighbors(const math::vec3& half_bounds)
 {
+#ifndef __DISABLE_EDITOR__
     if(auto&& psel = SCENE.get_editor_selection().lock())
     {
         const vec3& center = psel->get_position();
@@ -265,10 +266,11 @@ void DebugRenderer::show_selection_neighbors(const math::vec3& half_bounds)
         [&](auto&& obj)
         {
             // Display bounding cube
-            mat4 M(obj.data.model.lock()->get_AABB().get_model_matrix());
+            mat4 M(obj.data.model.lock()->get_OBB().get_model_matrix());
             request_draw_cube(M, 60*5, vec3(1,0,1));
         });
     }
+#endif
 }
 
 void DebugRenderer::request_draw_segment(const math::vec3& world_start,

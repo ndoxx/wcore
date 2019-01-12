@@ -6,12 +6,11 @@
 #include <functional>
 
 #include "singleton.hpp"
-#include "updatable.h"
+#include "game_system.h"
 #include "buffer_unit.hpp"
 #include "vertex_array.hpp"
 #include "chunk.h"
 #include "octree.hpp"
-#include "listener.h"
 
 namespace wcore
 {
@@ -35,7 +34,7 @@ struct StaticOctreeData
     }
 };
 
-class Scene: public Singleton<Scene>, public Updatable, public Listener
+class Scene: public Singleton<Scene>, public GameSystem
 {
 private:
     typedef Octree<BoundingRegion, StaticOctreeData> StaticOctree;
@@ -123,6 +122,8 @@ public:
     // Upload given chunk geometry to OpenGL
     inline void load_geometry(uint32_t chunk_index) { if(chunk_index) chunks_.at(chunk_index)->load_geometry(); }
 
+    // Initialize event listener
+    virtual void init_events(InputHandler& handler) override;
     // Update camera and models that use basic updaters
     virtual void update(const GameClock& clock) override;
     // Sort models within each chunk according to distance to camera

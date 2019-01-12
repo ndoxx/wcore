@@ -39,6 +39,11 @@ ChunkManager::~ChunkManager()
 
 }
 
+void ChunkManager::init_events(InputHandler& handler)
+{
+    subscribe(H_("input.keyboard"), handler, &ChunkManager::onKeyboardEvent);
+}
+
 void ChunkManager::init()
 {
     // * Load start chunk and some neighbors

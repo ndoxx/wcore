@@ -52,6 +52,11 @@ DaylightSystem::~DaylightSystem()
     delete ambient_strength_interpolator_;
 }
 
+void DaylightSystem::init_events(InputHandler& handler)
+{
+    subscribe(H_("input.keyboard"), handler, &DaylightSystem::onKeyboardEvent);
+}
+
 #ifndef __DISABLE_EDITOR__
 void DaylightSystem::generate_widget()
 {

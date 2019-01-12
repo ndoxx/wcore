@@ -76,6 +76,12 @@ RenderPipeline::~RenderPipeline()
     delete geometry_renderer_;
 }
 
+void RenderPipeline::init_events(InputHandler& handler)
+{
+    subscribe(H_("input.mouse.unlocked"), handler, &RenderPipeline::onMouseEvent);
+    subscribe(H_("input.keyboard"), handler, &RenderPipeline::onKeyboardEvent);
+}
+
 void RenderPipeline::perform_test()
 {
 

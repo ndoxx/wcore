@@ -5,7 +5,7 @@
 #include "engine_core.h"
 #include "config.h"
 #include "globals.h"
-#include "updatable.h"
+#include "game_system.h"
 #include "clock.hpp"
 #include "error.h"
 #include "input_handler.h"
@@ -263,7 +263,7 @@ int GameLoop::run()
             continue;
         game_clock_.update(dt);
 
-        for(auto&& system: updatables_)
+        for(auto&& system: game_systems_)
             system->update(game_clock_);
 
         // To allow frame by frame update

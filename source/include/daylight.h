@@ -1,10 +1,9 @@
 #ifndef DAYLIGHT_H
 #define DAYLIGHT_H
 
-#include "updatable.h"
+#include "game_system.h"
 #include "cspline.h"
 #include "math3d.h"
-#include "listener.h"
 
 namespace wcore
 {
@@ -12,7 +11,7 @@ namespace wcore
 class RenderPipeline;
 class InputHandler;
 
-class DaylightSystem: public Updatable, public Listener
+class DaylightSystem: public GameSystem
 {
 private:
     RenderPipeline& pipeline_;
@@ -41,7 +40,10 @@ public:
 #endif
 
     void onKeyboardEvent(const WData& data);
+    // Update sun position and global light attributes
     virtual void update(const GameClock& clock) override;
+    // Initialize event listener
+    virtual void init_events(InputHandler& handler) override;
 
     inline void toggle() { active_ = !active_; }
 

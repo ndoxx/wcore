@@ -1,8 +1,7 @@
 #ifndef RAY_CASTER_H
 #define RAY_CASTER_H
 
-#include "updatable.h"
-#include "listener.h"
+#include "game_system.h"
 #include "math3d.h"
 #include "ray.h"
 
@@ -15,12 +14,14 @@ class RenderPipeline;
     The RayCaster system is used to cast rays into the scene and return
     objects in the path of these rays.
 */
-class RayCaster: public Updatable, public Listener
+class RayCaster: public GameSystem
 {
 public:
     RayCaster(RenderPipeline& pipeline);
 
     virtual void update(const GameClock& clock) override;
+    // Initialize event listener
+    virtual void init_events(InputHandler& handler) override;
 
     void onMouseEvent(const WData& data);
     Ray cast_ray_from_screen(const math::vec2& screen_coords);

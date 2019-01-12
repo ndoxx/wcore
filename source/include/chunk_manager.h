@@ -1,9 +1,8 @@
 #ifndef CHUNK_MANAGER_H
 #define CHUNK_MANAGER_H
 
-#include "updatable.h"
+#include "game_system.h"
 #include "math3d.h"
-#include "listener.h"
 
 namespace wcore
 {
@@ -14,7 +13,7 @@ namespace wcore
 class SceneLoader;
 class InputHandler;
 
-class ChunkManager: public Updatable, public Listener
+class ChunkManager: public GameSystem
 {
 private:
     SceneLoader& loader_;
@@ -35,6 +34,9 @@ public:
 
     void onKeyboardEvent(const WData& data);
     void init();
+    // Initialize event listener
+    virtual void init_events(InputHandler& handler) override;
+    // Update chunks based on camera position
     virtual void update(const GameClock& clock) override;
 
     inline void toggle() { active_ = !active_; }

@@ -13,7 +13,7 @@
 namespace wcore
 {
 
-class Updatable;
+class GameSystem;
 
 class GameLoop: public Listener
 {
@@ -27,7 +27,7 @@ private:
     std::function<void(void)> render_gui_func_;
 
     std::list<std::function<void(void)>> editor_widget_generators_;
-    std::list<Updatable*> updatables_;
+    std::list<GameSystem*> game_systems_;
 
 #ifndef __DISABLE_EDITOR__
     void init_imgui();
@@ -43,9 +43,10 @@ public:
     inline void set_render_gui_func(std::function<void(void)> render_func) { render_gui_func_ = render_func;}
 
     template <class T>
-    inline void register_updatable_system(T& system)
+    inline void register_game_system(T& system)
     {
-        updatables_.push_back(static_cast<Updatable*>(&system));
+        system.init_events(handler_);
+        game_systems_.push_back(static_cast<GameSystem*>(&system));
     }
 
 #ifndef __DISABLE_EDITOR__
