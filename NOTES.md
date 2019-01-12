@@ -6115,4 +6115,7 @@ La classe _Informer_ a été modifiée afin de permettre aux _Listener_ de conso
     - Les foncteurs WpFunc qui peuvent être passés en argument à subscribe() sont maintenant booléens, ils retournent true quand l'event doit être propagé, et false quand l'event doit être consommé.
     - L'ordre de souscription détermine entièrement la priorité d'un _Listener_. Si A souscrit avant B au channel "input.keyboard" et que A consomme l'event dans sa fonction delegate, alors B ne recevra jamais l'event.
 
-En l'état, les _GameSystem_ souscrivent aux events via leur fonction GameSystem::init_events() qui est appelée dans GameSystemContainer::register_game_system(). **Donc l'ordre d'enregistrement des systèmes par Engine::Init() détermine à la fois l'ordre des updates ET la préséance de ces systèmes vis-à-vis de la consommation des évènements**. Ce comportement pourra être considéré comme néfaste à l'avenir et être amené à changer.
+En l'état, les _GameSystem_ souscrivent aux events via leur fonction GameSystem::init_events() qui est appelée dans GameSystemContainer::register_game_system(). **Donc l'ordre d'enregistrement des systèmes par Engine::Init() détermine à la fois l'ordre des updates ET la préséance de ces systèmes vis-à-vis de la consommation des évènements**. Ce comportement pourra être considéré comme non souhaitable à l'avenir et être amené à changer.
+
+Exemples illustrant l'intérêt de cette fonctionnalité :
+* Le (futur) GUI (non debug) du jeu doit pouvoir consommer les events, de sorte qu'un clic sur un bouton par exemple, ne soit pas propagé au reste des systèmes.

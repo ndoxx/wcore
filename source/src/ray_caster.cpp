@@ -29,21 +29,6 @@ RayCaster::RayCaster()
 #endif
 }
 
-void RayCaster::init_events(InputHandler& handler)
-{
-    subscribe(H_("input.mouse.click"), handler, &RayCaster::onMouseEvent);
-}
-
-bool RayCaster::onMouseEvent(const WData& data)
-{
-    const MouseData& md = static_cast<const MouseData&>(data);
-
-    Ray ray = cast_ray_from_screen(math::vec2(md.dx, md.dy));
-    ray_scene_query(ray);
-
-    return true; // Do NOT consume event
-}
-
 void RayCaster::update(const GameClock& clock)
 {
 
@@ -118,16 +103,57 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
     return ray;
 }
 
-void RayCaster::ray_scene_query(const Ray& ray)
+SceneQueryResult RayCaster::ray_scene_query(const Ray& ray)
 {
     Scene* pscene             = locate<Scene>(H_("Scene"));
     RenderPipeline* ppipeline = locate<RenderPipeline>(H_("Pipeline"));
-#ifndef __DISABLE_EDITOR__
-    Editor* peditor           = locate<Editor>(H_("Editor"));
-#endif
+
     // * Perform ray/AABB intersection test with objects in view frustum
     //   and return the closest object or nothing
     RayCollisionData data;
+    SceneQueryResult result;
+    pscene->traverse_models([&](pModel pmdl, uint32_t chunk_id)
+    {
+        #ifdef __DEBUG__
+        if(show_ray)
+        {
+            math::vec3 near_intersection(ray.origin_w + (ray.direction*data.near));
+            math::vec3 far_intersection(ray.origin_w + (ray.direction*data.far));
+            ppipeline->debug_draw_cross3(near_intersection,
+                                         0.3f,
+                                         ray_persistence,
+                                         math::vec3(0,0.7f,1));
+            ppipeline->debug_draw_cross3(far_intersection,
+                                         0.3f,
+                                         ray_persistence,
+                                         math::vec3(1,0.7f,0));
+        }
+        #endif
+
+        result.hit = true;
+        result.models.push_back(pmdl);
+    },
+    [&](pModel pmdl) // Evaluator -> breaks from traversal loop when return value is false
+    {
+        // Skip terrains for now
+        if(pmdl->is_terrain() || !pmdl->is_visible())
+            return false;
+        //return ray_collides_AABB(ray, pmdl->get_AABB(), data);
+        return ray_collides_OBB(ray, pmdl, data);
+    },
+    ORDER::FRONT_TO_BACK);
+    return result;
+}
+
+SceneQueryResult RayCaster::ray_scene_query_first(const Ray& ray)
+{
+    Scene* pscene             = locate<Scene>(H_("Scene"));
+    RenderPipeline* ppipeline = locate<RenderPipeline>(H_("Pipeline"));
+
+    // * Perform ray/AABB intersection test with objects in view frustum
+    //   and return the closest object or nothing
+    RayCollisionData data;
+    SceneQueryResult result;
     pscene->visit_model_first([&](pModel pmdl, uint32_t chunk_id)
     {
         #ifdef __DEBUG__
@@ -145,9 +171,9 @@ void RayCaster::ray_scene_query(const Ray& ray)
                                          math::vec3(1,0.7f,0));
         }
         #endif
-#ifndef __DISABLE_EDITOR__
-        peditor->set_model_selection(pmdl);
-#endif
+
+        result.hit = true;
+        result.models.push_back(pmdl);
     },
     [&](pModel pmdl) // Evaluator -> breaks from traversal loop when return value is false
     {
@@ -157,6 +183,7 @@ void RayCaster::ray_scene_query(const Ray& ray)
         //return ray_collides_AABB(ray, pmdl->get_AABB(), data);
         return ray_collides_OBB(ray, pmdl, data);
     });
+    return result;
 }
 
 
