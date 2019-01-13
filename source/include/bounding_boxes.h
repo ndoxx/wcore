@@ -161,7 +161,11 @@ namespace traits
     template<class VolumeA, class VolumeB>
     struct collision
     {
-        static bool intersects(const VolumeA& va, const VolumeB& vb);
+        static bool intersects(const VolumeA& va, const VolumeB& vb)
+        {
+            // To make the "intersects" relation symmetric
+            return collision<VolumeB,VolumeA>::intersects(vb,va);
+        }
         static bool contains(const VolumeA& va, const VolumeB& vb);
     };
 
@@ -208,6 +212,10 @@ namespace traits
     bool collision<BoundingRegion,BoundingRegion>::intersects(const BoundingRegion& va, const BoundingRegion& vb);
     template<>
     bool collision<BoundingRegion,math::vec3>::intersects(const BoundingRegion& va, const math::vec3& point);
+    template<>
+    bool collision<Sphere,math::vec3>::intersects(const Sphere& sphere, const math::vec3& point);
+    template<>
+    bool collision<Sphere,BoundingRegion>::intersects(const Sphere& sphere, const BoundingRegion& vb);
     template<>
     bool collision<BoundingRegion,BoundingRegion>::contains(const BoundingRegion& va, const BoundingRegion& vb);
     template<>

@@ -257,13 +257,12 @@ void DebugRenderer::render(Scene* pscene)
         GFX::disable_depth_testing();
 }
 
-void DebugRenderer::show_selection_neighbors(Scene* pscene, const math::vec3& half_bounds)
+void DebugRenderer::show_selection_neighbors(Scene* pscene, float radius)
 {
 #ifndef __DISABLE_EDITOR__
     if(auto&& psel = pscene->locate_editor()->get_model_selection().lock())
     {
-        const vec3& center = psel->get_position();
-        BoundingRegion bounds(center, half_bounds);
+        Sphere bounds(psel->get_position(), radius);
         auto&& static_octree = pscene->get_static_octree();
         static_octree.traverse_range(bounds,
         [&](auto&& obj)

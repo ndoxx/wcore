@@ -242,6 +242,16 @@ int main()
 
     std::cout << "traverse_range(BR): Recovered " << npoints << " points." << std::endl;
 
+    npoints=0;
+    octree.traverse_range(Sphere(math::vec3(-20,10,50),10),
+    [&](auto&& obj)
+    {
+        ++npoints;
+        //std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+    });
+
+    std::cout << "traverse_range(Sphere): Recovered " << npoints << " points." << std::endl;
+
     Camera camera(1024,768);
     camera.update(1/60.0f);
 

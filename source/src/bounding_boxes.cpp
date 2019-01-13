@@ -308,6 +308,28 @@ bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> pmdl, RayCollisionD
 namespace traits
 {
     // ------------------ WIP ------------------
+    namespace detail
+    {
+        // Compute the maximum squared distance between an input real number and two real bounds
+        // return 0 if input number is within bounds
+        static float max_dist2_point_bounds(float pn, float bmin, float bmax)
+        {
+            if(pn < bmin)
+            {
+                float val = (bmin - pn);
+                return val * val;
+            }
+
+            if(pn > bmax)
+            {
+                float val = (pn - bmax);
+                return val * val;
+            }
+
+            return 0.f;
+        }
+    }
+
     template<>
     bool collision<BoundingRegion,BoundingRegion>::intersects(const BoundingRegion& va, const BoundingRegion& vb)
     {
@@ -327,6 +349,25 @@ namespace traits
         }
 
         return true;
+    }
+    template<>
+    bool collision<Sphere,math::vec3>::intersects(const Sphere& sphere, const math::vec3& point)
+    {
+        float dist2 = (sphere.center-point).norm2();
+        return (dist2 <= sphere.radius*sphere.radius);
+    }
+    template<>
+    bool collision<Sphere,BoundingRegion>::intersects(const Sphere& sphere, const BoundingRegion& vb)
+    {
+        const math::vec3& center = sphere.center;
+
+        // Squared distance from center to furthest point
+        float sq = 0.0;
+        sq += detail::max_dist2_point_bounds(center[0], vb.extent[0], vb.extent[1]);
+        sq += detail::max_dist2_point_bounds(center[1], vb.extent[2], vb.extent[3]);
+        sq += detail::max_dist2_point_bounds(center[2], vb.extent[4], vb.extent[5]);
+
+        return (sq <= sphere.radius*sphere.radius);
     }
 
     template<>

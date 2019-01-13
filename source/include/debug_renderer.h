@@ -62,7 +62,7 @@ public:
     inline void clear_draw_requests() { draw_requests_.clear(); }
 
     // Show static octree neighbors of selected object for 5s
-    void show_selection_neighbors(Scene* pscene, const math::vec3& half_bounds = math::vec3(10,10,10));
+    void show_selection_neighbors(Scene* pscene, float radius=10.f);
 
     void request_draw_segment(const math::vec3& world_start,
                               const math::vec3& world_end,

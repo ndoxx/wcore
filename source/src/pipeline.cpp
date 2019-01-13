@@ -93,6 +93,8 @@ void RenderPipeline::set_pp_fog_color(const math::vec3& value) { post_processing
 void RenderPipeline::set_pp_saturation(float value)            { post_processing_renderer_->set_saturation(value); }
 void RenderPipeline::set_pp_fog_density(float value)           { post_processing_renderer_->set_fog_density(value); }
 
+static float neighbors_search_eadius = 5.f;
+
 bool RenderPipeline::onKeyboardEvent(const WData& data)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
@@ -130,7 +132,7 @@ bool RenderPipeline::onKeyboardEvent(const WData& data)
             perform_test();
             break;
         case H_("k_show_neighbors"):
-            debug_renderer_->show_selection_neighbors(locate<Scene>(H_("Scene")), math::vec3(5,5,5));
+            debug_renderer_->show_selection_neighbors(locate<Scene>(H_("Scene")), neighbors_search_eadius);
             break;
     }
 
@@ -170,7 +172,6 @@ static float SSAO_sigma = 1.8f;
 static int bloom_kernel_half_size = 3;
 static float bloom_sigma = 1.8f;
 static bool framebuffer_peek = false;
-static float neighbors_search_half_bound = 5.f;
 
 void RenderPipeline::generate_widget()
 {
@@ -199,10 +200,10 @@ void RenderPipeline::generate_widget()
         if(ImGui::TreeNode("Scene graph"))
         {
             ImGui::Checkbox("Show static octree", &debug_renderer_->show_static_octree_);
-            ImGui::SliderFloat("Sel. half-bnd", &neighbors_search_half_bound, 0.5f, 10.0f);
+            ImGui::SliderFloat("Sel. half-bnd", &neighbors_search_eadius, 0.5f, 10.0f);
             if(ImGui::Button("Show selection neighbors"))
             {
-                debug_renderer_->show_selection_neighbors(pscene, math::vec3(neighbors_search_half_bound));
+                debug_renderer_->show_selection_neighbors(pscene, neighbors_search_eadius);
             }
             ImGui::TreePop();
             ImGui::Separator();
