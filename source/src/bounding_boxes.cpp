@@ -85,58 +85,6 @@ void BoundingRegion::update()
                       (extent[5]-extent[4])*0.5f);
 }
 
-
-bool BoundingRegion::intersects(const BoundingRegion& other) const
-{
-    if(std::fabs(mid_point[0] - other.mid_point[0]) > (half[0] + other.half[0]) ) return false;
-    if(std::fabs(mid_point[1] - other.mid_point[1]) > (half[1] + other.half[1]) ) return false;
-    if(std::fabs(mid_point[2] - other.mid_point[2]) > (half[2] + other.half[2]) ) return false;
-
-    // We have an overlap
-    return true;
-};
-
-bool BoundingRegion::contains(const BoundingRegion& other) const
-{
-    if(other.extent[0] < extent[0]) return false;
-    if(other.extent[1] > extent[1]) return false;
-    if(other.extent[2] < extent[2]) return false;
-    if(other.extent[3] > extent[3]) return false;
-    if(other.extent[4] < extent[4]) return false;
-    if(other.extent[5] > extent[5]) return false;
-    return true;
-
-    /*return(other.extent[0]>=extent[0]
-        && other.extent[1]<=extent[1]
-        && other.extent[2]>=extent[2]
-        && other.extent[3]<=extent[3]
-        && other.extent[4]>=extent[4]
-        && other.extent[5]<=extent[5]);*/
-}
-
-bool BoundingRegion::contains(const AABB& aabb) const
-{
-    return contains(aabb.get_bounding_region());
-}
-
-bool BoundingRegion::intersects(const math::vec3& point) const
-{
-    if(point[0] <  extent[0]) return false;
-    if(point[0] >= extent[1]) return false;
-    if(point[1] <  extent[2]) return false;
-    if(point[1] >= extent[3]) return false;
-    if(point[2] <  extent[4]) return false;
-    if(point[2] >= extent[5]) return false;
-    return true;
-
-    /*return(point[0] >= extent[0]
-        && point[0] <  extent[1]
-        && point[1] >= extent[2]
-        && point[1] <  extent[3]
-        && point[2] >= extent[4]
-        && point[2] <  extent[5]);*/
-}
-
 std::array<math::vec3, 8> BoundingRegion::get_vertices() const
 {
     return std::array<math::vec3, 8>
@@ -284,27 +232,6 @@ void FrustumBox::update(const Camera& camera)
     normals_[5] = normal_F();
 }
 
-bool FrustumBox::intersects(const Sphere& sphere) const
-{
-   float dist01 = fmin(dist_to_plane(0, sphere.center), dist_to_plane(1, sphere.center));
-   float dist23 = fmin(dist_to_plane(2, sphere.center), dist_to_plane(3, sphere.center));
-   float dist45 = fmin(dist_to_plane(4, sphere.center), dist_to_plane(5, sphere.center));
-   return (fmin(fmin(dist01, dist23), dist45) + sphere.radius)>0;
-}
-
-bool FrustumBox::intersects(const math::vec3& point) const
-{
-    // * Point has to be above all frustum planes in order to be in frustum
-
-    // For each frustum plane, check if point is above plane, bail early if not the case
-    for(uint32_t ii=0; ii<6; ++ii)
-        if(dist_to_plane(ii, point)<0)
-            return false;
-
-    return true;
-}
-
-
 math::vec3 FrustumBox::split_center(uint32_t splitIndex) const
 {
     splitIndex = fmax(splitIndex, splits_.size()-2);
@@ -375,6 +302,76 @@ bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> pmdl, RayCollisionD
         data.far *= scale;
     }
     return ret;
+}
+
+// Collision traits full specs.
+namespace traits
+{
+    // ------------------ WIP ------------------
+    template<>
+    bool collision<BoundingRegion,BoundingRegion>::intersects(const BoundingRegion& va, const BoundingRegion& vb)
+    {
+        for(uint8_t ii=0; ii<3; ++ii)
+            if(std::fabs(va.mid_point[ii] - vb.mid_point[ii]) > (va.half[ii] + vb.half[ii]))
+                return false;
+
+        return true;
+    }
+    template<>
+    bool collision<BoundingRegion,math::vec3>::intersects(const BoundingRegion& va, const math::vec3& point)
+    {
+        for(uint8_t ii=0; ii<3; ++ii)
+        {
+            if(point[ii] <  va.extent[2*ii])   return false;
+            if(point[ii] >= va.extent[2*ii+1]) return false;
+        }
+
+        return true;
+    }
+
+    template<>
+    bool collision<BoundingRegion,BoundingRegion>::contains(const BoundingRegion& va, const BoundingRegion& vb)
+    {
+        for(uint8_t ii=0; ii<3; ++ii)
+        {
+            if(vb.extent[2*ii]   < va.extent[2*ii])   return false;
+            if(vb.extent[2*ii+1] > va.extent[2*ii+1]) return false;
+        }
+
+        return true;
+    }
+    template<>
+    bool collision<BoundingRegion,math::vec3>::contains(const BoundingRegion& va, const math::vec3& point)
+    {
+        for(uint8_t ii=0; ii<3; ++ii)
+        {
+            if(point[ii] <  va.extent[2*ii])   return false;
+            if(point[ii] >= va.extent[2*ii+1]) return false;
+        }
+
+        return true;
+    }
+
+    template<>
+    bool collision<FrustumBox,math::vec3>::intersects(const FrustumBox& fb, const math::vec3& point)
+    {
+        // * Point has to be above all frustum planes in order to be in frustum
+        // For each frustum plane, check if point is above plane, bail early if not the case
+        for(uint32_t ii=0; ii<6; ++ii)
+            if(fb.dist_to_plane(ii, point)<0)
+                return false;
+
+        return true;
+    }
+    template<>
+    bool collision<FrustumBox,Sphere>::intersects(const FrustumBox& fb, const Sphere& sphere)
+    {
+        float dist01 = fmin(fb.dist_to_plane(0, sphere.center), fb.dist_to_plane(1, sphere.center));
+        float dist23 = fmin(fb.dist_to_plane(2, sphere.center), fb.dist_to_plane(3, sphere.center));
+        float dist45 = fmin(fb.dist_to_plane(4, sphere.center), fb.dist_to_plane(5, sphere.center));
+        return (fmin(fmin(dist01, dist23), dist45) + sphere.radius)>0;
+    }
+    // ------------------ WIP ------------------
 }
 
 }

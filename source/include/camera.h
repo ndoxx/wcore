@@ -92,8 +92,8 @@ public:
     inline void strafe_right();
     inline void strafe_left();
 
-    inline bool frustum_collides(const AABB& aabb) { return frusBox_.intersects(aabb); }
-    inline bool frustum_collides(const OBB& obb)   { return frusBox_.intersects(obb); }
+    inline bool frustum_collides(const AABB& aabb) { return traits::collision<FrustumBox,AABB>::intersects(frusBox_, aabb);/*return frusBox_.intersects(aabb);*/ }
+    inline bool frustum_collides(const OBB& obb)   { return traits::collision<FrustumBox,OBB>::intersects(frusBox_, obb);/*return frusBox_.intersects(obb);*/ }
     inline bool frustum_collides_sphere(const math::vec3& center, float radius) const;
     inline void enable_frustum_update()  { update_frustum_ = true; }
     inline void disable_frustum_update() { update_frustum_ = false; }
@@ -196,7 +196,8 @@ inline void Camera::update_position(const math::vec3& d_pos)
 
 inline bool Camera::frustum_collides_sphere(const math::vec3& center, float radius) const
 {
-    return frusBox_.intersects(Sphere(center, radius));
+    //return frusBox_.intersects(Sphere(center, radius));
+    return traits::collision<FrustumBox,Sphere>::intersects(frusBox_, Sphere(center, radius));
 }
 
 inline const math::mat4& Camera::get_view_matrix() const

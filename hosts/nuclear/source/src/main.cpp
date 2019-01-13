@@ -218,6 +218,7 @@ int main()
     }
     octree.remove_group(1); // remove objects from 1000 to 1999
 
+
     // Insert out of bounds point, octree will grow
     //octree.insert(DataT(math::vec3(-120,10,40),UData({0,9900})));
     //octree.propagate();
@@ -229,25 +230,137 @@ int main()
         //std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
     });
 
-    /*octree.traverse_range(BoundingRegion({0,28,0,20,-50,50}),
+    std::cout << "traverse_leaves(): Recovered " << npoints << " points." << std::endl;
+
+    npoints=0;
+    octree.traverse_range(BoundingRegion({-28,0,0,20,0,50}),
     [&](auto&& obj)
     {
         ++npoints;
-        std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
-    });*/
+        //std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+    });
 
-    /*Camera camera(1024,768);
+    std::cout << "traverse_range(BR): Recovered " << npoints << " points." << std::endl;
+
+    Camera camera(1024,768);
     camera.update(1/60.0f);
 
+    npoints=0;
     octree.traverse_range(camera.get_frustum_box(),
     [&](auto&& obj)
     {
         ++npoints;
-        std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
-    });*/
+        //std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+    });
 
+    std::cout << "traverse_range(FB): Recovered " << npoints << " points." << std::endl;
 
-    std::cout << "Recovered " << npoints << " points." << std::endl;
+    npoints=0;
+    octree.traverse_bounds_range(camera.get_frustum_box(),
+    [&](auto&& obj)
+    {
+        ++npoints;
+        //std::cout << "\t" << obj.primitive << " data: " << obj.data << std::endl;
+    });
+
+    std::cout << "traverse_bounds_range(FB): Traversed " << npoints << " bounds." << std::endl;
 
     return 0;
 }
+
+
+/*
+int main()
+{
+    BoundingRegion point_bounds({-3,3,-3,3,-3,3});
+    BoundingRegion center_bounds({-3,3,-3,3,-3,3});
+    BoundingRegion half_bounds({1,2,1,2,1,2});
+
+    math::srand_vec3(42);
+    for(int ii=0; ii<1000; ++ii)
+    {
+        math::vec3 center1(math::random_vec3(center_bounds.extent));
+        math::vec3 half1(math::random_vec3(half_bounds.extent));
+        BoundingRegion B1(center1, half1);
+
+        math::vec3 center2(math::random_vec3(center_bounds.extent));
+        math::vec3 half2(math::random_vec3(half_bounds.extent));
+        BoundingRegion B2(center2, half2);
+
+        bool R1 = B1.intersects(B2);
+        bool R2 = traits::collision<BoundingRegion,BoundingRegion>::intersects(B1,B2);
+
+        //std::cout << R1 << " " << R2 << std::endl;
+
+        if(R1!=R2)
+            std::cout << "intersects: Not equal." << std::endl;
+
+        bool S1 = B1.contains(B2);
+        bool S2 = traits::collision<BoundingRegion,BoundingRegion>::contains(B1,B2);
+
+        //std::cout << S1 << " " << S2 << std::endl;
+
+        if(S1!=S2)
+            std::cout << "contains: Not equal." << std::endl;
+    }
+
+    for(int ii=0; ii<1000; ++ii)
+    {
+        math::vec3 center(math::random_vec3(center_bounds.extent));
+        math::vec3 half(math::random_vec3(half_bounds.extent));
+        BoundingRegion B(center, half);
+
+        math::vec3 point(math::random_vec3(point_bounds.extent));
+
+        bool R1 = B.intersects(point);
+        bool R2 = traits::collision<BoundingRegion,math::vec3>::intersects(B,point);
+
+        //std::cout << R1 << " " << R2 << std::endl;
+
+        if(R1!=R2)
+            std::cout << "Not equal." << std::endl;
+
+        bool S1 = B.contains(point);
+        bool S2 = traits::collision<BoundingRegion,math::vec3>::contains(B,point);
+
+        //std::cout << S1 << " " << S2 << std::endl;
+
+        if(S1!=S2)
+            std::cout << "contains: Not equal." << std::endl;
+    }
+
+    Camera camera(1024,768);
+    camera.update(1/60.0f);
+    const FrustumBox& FB = camera.get_frustum_box();
+
+    for(int ii=0; ii<1000; ++ii)
+    {
+        math::vec3 center(math::random_vec3(center_bounds.extent));
+        math::vec3 half(math::random_vec3(half_bounds.extent));
+        BoundingRegion B(center, half);
+
+        bool R1 = FB.intersects(B);
+        bool R2 = traits::collision<FrustumBox,BoundingRegion>::intersects(FB,B);
+
+        //std::cout << R1 << " " << R2 << std::endl;
+
+        if(R1!=R2)
+            std::cout << "Not equal." << std::endl;
+    }
+
+    for(int ii=0; ii<1000; ++ii)
+    {
+        math::vec3 point(math::random_vec3(point_bounds.extent));
+
+        bool R1 = FB.intersects(point);
+        bool R2 = traits::collision<FrustumBox,math::vec3>::intersects(FB,point);
+
+        //std::cout << R1 << " " << R2 << std::endl;
+
+        if(R1!=R2)
+            std::cout << "Not equal." << std::endl;
+    }
+
+    return 0;
+}
+*/

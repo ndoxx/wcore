@@ -3,7 +3,7 @@
 
 #include <filesystem>
 
-#include "rapidxml/rapidxml.hpp"
+#include "vendor/rapidxml/rapidxml.hpp"
 #include "xml_utils.hpp"
 
 namespace wcore

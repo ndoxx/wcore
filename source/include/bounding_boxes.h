@@ -24,14 +24,6 @@ struct BoundingRegion
     BoundingRegion(const math::vec3& mid_point, const math::vec3& half);
 
     void update();
-    bool intersects(const BoundingRegion& other) const;
-    bool intersects(const math::vec3& point) const;
-
-    bool contains(const BoundingRegion& other) const;
-    bool contains(const AABB& aabb) const;
-    // A point is contained if it intersects bounding region
-    inline bool contains(const math::vec3& point) const { return intersects(point); }
-
     std::array<math::vec3, 8> get_vertices() const;
 
     math::extent_t extent;
@@ -137,45 +129,15 @@ public:
     inline const std::array<math::vec3, 8>& get_corners() const { return vertices_; }
     inline const std::array<math::vec3, 6>& get_normals() const { return normals_; }
 
-    void update(const Camera& camera);
-    template <typename BB> bool intersects(const BB& bb) const;
-    bool intersects(const Sphere& sphere) const;
-    bool intersects(const math::vec3& point) const;
-
-    math::vec3 split_center(uint32_t splitIndex) const;
-
-private:
     inline float dist_to_plane(uint32_t index, math::vec3 vPoint) const;
+
+    void update(const Camera& camera);
+    math::vec3 split_center(uint32_t splitIndex) const;
 };
 
 inline float FrustumBox::dist_to_plane(uint32_t index, math::vec3 point) const
 {
     return math::dot(point-vertices_[planePoints[index]], normals_[index]);
-}
-
-template <typename BB>
-bool FrustumBox::intersects(const BB& bb) const
-{
-    const std::array<math::vec3, 8>& verts = bb.get_vertices();
-
-    // For each frustum plane
-    for(uint32_t ii=0; ii<6; ++ii)
-    {
-        // Bounding box is considered outside iif all its vertices are below the SAME plane
-        bool all_out = true;
-        for(auto p: verts)
-        {
-            // Check if point is above plane
-            if(dist_to_plane(ii, p)>0)
-            {
-                all_out = false;
-                break;
-            }
-        }
-        if(all_out)
-            return false;
-    }
-    return true;
 }
 
 struct RayCollisionData
@@ -184,6 +146,7 @@ struct RayCollisionData
     float far  = 0.0f;
 };
 
+// [MOVE] to traits
 bool ray_collides_extent(const Ray& ray, const math::extent_t& extent, RayCollisionData& data);
 inline bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData& data)
 {
@@ -191,14 +154,72 @@ inline bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData
 }
 bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> model, RayCollisionData& data);
 
-// For octree
 namespace traits
 {
+    // ------------------ WIP ------------------
+    // Colliding volumes
+    template<class VolumeA, class VolumeB>
+    struct collision
+    {
+        static bool intersects(const VolumeA& va, const VolumeB& vb);
+        static bool contains(const VolumeA& va, const VolumeB& vb);
+    };
 
-    template<class PrimitiveT>
+    // Partial spec. for FrustumBox and other "Box" type volumes
+    // Works for BoundingRegion, AABB and OBB and anything that defines
+    // a get_vertices() method that returns a world space vec3 array
+    template<class BoxT>
+    struct collision<FrustumBox,BoxT>
+    {
+        static bool intersects(const FrustumBox& fb, const BoxT& bb);
+        static bool contains(const FrustumBox& fb, const BoxT& bb);
+    };
+    template<class BoxT>
+    bool collision<FrustumBox,BoxT>::intersects(const FrustumBox& fb, const BoxT& bb)
+    {
+        const std::array<math::vec3, 8>& verts = bb.get_vertices();
+
+        // For each frustum plane
+        for(uint32_t ii=0; ii<6; ++ii)
+        {
+            // Bounding box is considered outside iif all its vertices are below the SAME plane
+            bool all_out = true;
+            for(auto p: verts)
+            {
+                // Check if point is above plane
+                if(fb.dist_to_plane(ii, p)>0)
+                {
+                    all_out = false;
+                    break;
+                }
+            }
+            if(all_out)
+                return false;
+        }
+        return true;
+    }
+    // Full spec. for FrustumBox and other geometries
+    template<>
+    bool collision<FrustumBox,math::vec3>::intersects(const FrustumBox& fb, const math::vec3& point);
+    template<>
+    bool collision<FrustumBox,Sphere>::intersects(const FrustumBox& fb, const Sphere& sphere);
+    // Other full specs.
+    template<>
+    bool collision<BoundingRegion,BoundingRegion>::intersects(const BoundingRegion& va, const BoundingRegion& vb);
+    template<>
+    bool collision<BoundingRegion,math::vec3>::intersects(const BoundingRegion& va, const math::vec3& point);
+    template<>
+    bool collision<BoundingRegion,BoundingRegion>::contains(const BoundingRegion& va, const BoundingRegion& vb);
+    template<>
+    bool collision<BoundingRegion,math::vec3>::contains(const BoundingRegion& va, const math::vec3& point);
+    // ------------------ WIP ------------------
+
+    // For octree
+    // Getting the center of some volume
+    template<class VolumeT>
     struct center
     {
-        inline static const math::vec3& get(const PrimitiveT& primitive);
+        inline static const math::vec3& get(const VolumeT& primitive);
     };
     template<>
     struct center<math::vec3>

@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "rapidxml/rapidxml.hpp"
+#include "vendor/rapidxml/rapidxml.hpp"
 #include "math3d.h"
 
 namespace wcore

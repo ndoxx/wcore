@@ -46,7 +46,7 @@ void split_string(const std::string& str, Container& cont, char delim = ' ')
 }
 
 #ifndef __IS_TOOL__
-#include "intern_string.h" // for HRESOLVE
+#include "include/intern_string.h" // for HRESOLVE
 #endif
 
 #endif

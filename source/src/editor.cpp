@@ -36,8 +36,10 @@ bool Editor::onMouseEvent(const WData& data)
         last_scene_query_ = ray_caster->ray_scene_query(ray);
 
         if(last_scene_query_.hit)
+        {
             set_model_selection(last_scene_query_.models[0]);
-
+            return false; // Consume event
+        }
         return true; // Do NOT consume event
     }
     // Advance selection to next model in line
@@ -46,7 +48,7 @@ bool Editor::onMouseEvent(const WData& data)
         if(!last_scene_query_.hit) return true;
         scene_query_index_ = (scene_query_index_+1)%last_scene_query_.models.size();
         set_model_selection(last_scene_query_.models[scene_query_index_]);
-        return true; // Do NOT consume event
+        return false; // Consume event
     }
 
     return true; // Do NOT consume event

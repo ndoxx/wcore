@@ -17,12 +17,19 @@ namespace wcore
 /*
     Octree class for spatial partitioning of data.
     PrimitiveT is the type of objects that are checked against cell bounding regions
-        -> math::vec3 for a point octree
-        -> AABB for AABB octree
+        -> math::vec3
+        -> BoundingRegion
+        -> Sphere
         -> ...
     UserDataT is any kind of data that will be carried along with the primitives.
         -> Useful to store references to game objects so they can be querried later on.
         -> Must be a comparable type
+
+    The following trait must exist in namespace wcore::traits:
+        -> traits::collision<BoundingRegion,PrimitiveT>
+    For range traversal within the bounds of a RangeT type, the two following traits must exist:
+        -> traits::collision<RangeT,BoundingRegion>
+        -> traits::collision<RangeT,PrimitiveT>
 */
 template <class PrimitiveT, class UserDataT, uint32_t MAX_CELL_COUNT=16, uint32_t MAX_DEPTH=5>
 class Octree
@@ -102,8 +109,9 @@ public:
 
     // Recursive depth first traversal of objects within specified range
     // Can be used with FrustumBox for visible range traversal
-    // RangeT must define a bool intersects() method that works
-    // with BoundingRegion AND PrimitiveT
+    // The two following traits must exist:
+    // - traits::collision<RangeT,BoundingRegion>
+    // - traits::collision<RangeT,PrimitiveT>
     template <typename RangeT>
     void traverse_range(const RangeT& query_range,
                         DataVisitorT visit,
@@ -294,7 +302,10 @@ void OCTREE::OctreeNode::propagate(OctreeNode* current, uint32_t current_depth)
             uint8_t best_octant = current->best_fit_octant(it->primitive);
             // If object is within child bounding region, add it to child content
             // otherwise it stays at this level
-            if(current->children_[best_octant]->bounding_region_.contains(it->primitive))
+            // if(current->children_[best_octant]->bounding_region_.contains(it->primitive))
+            if(traits::collision<BoundingRegion,PrimitiveT>::contains(
+                current->children_[best_octant]->bounding_region_,
+                it->primitive))
             {
                 current->children_[best_octant]->content_.push_back(*it);
                 // Remove moved object from current content
@@ -454,12 +465,17 @@ void OCTREE::OctreeNode::traverse_range(const RangeT& query_range,
 
     // * Stop condition
     // Check bounding region intersection, return if out of range
-    if(!query_range.intersects(current->bounding_region_))
+    // if(!query_range.intersects(current->bounding_region_))
+    //     return;
+    if(!traits::collision<RangeT,BoundingRegion>::intersects(query_range, current->bounding_region_))
         return;
 
     // * Visit objects within range at this level
+    // for(auto&& data: current->content_)
+    //     if(query_range.intersects(data.primitive))
+    //         visit(data);
     for(auto&& data: current->content_)
-        if(query_range.intersects(data.primitive))
+        if(traits::collision<RangeT,PrimitiveT>::intersects(query_range, data.primitive))
             visit(data);
 
     // * Walk down the octree recursively
@@ -480,7 +496,9 @@ void OCTREE::OctreeNode::traverse_bounds_range(const RangeT& query_range,
 
     // * Stop condition
     // Check bounding region intersection, return if out of range
-    if(!query_range.intersects(current->bounding_region_))
+    // if(!query_range.intersects(current->bounding_region_))
+    //     return;
+    if(!traits::collision<RangeT,BoundingRegion>::intersects(query_range,current->bounding_region_))
         return;
 
     // * Visit region at this level
@@ -549,14 +567,16 @@ void OCTREE::grow(uint8_t old_root_index)
     root_ = new_root;
 }
 
-
 template <OCTREE_ARGLIST>
 void OCTREE::insert(const DataT& data)
 {
     // * Detect if object lies outside of bounds
     // If so, we need to expand tree in the direction of the outlier
     uint8_t count = 0;
-    while(!root_->bounding_region_.contains(data.primitive))
+    //while(!root_->bounding_region_.contains(data.primitive))
+    while(!traits::collision<BoundingRegion,PrimitiveT>::contains(
+            root_->bounding_region_,
+            data.primitive))
     {
         // Create parent node with 8 children, one of which is current root node
         // Compute old root index as a child of nex root
