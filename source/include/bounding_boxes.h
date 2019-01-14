@@ -169,6 +169,9 @@ namespace traits
         static bool contains(const VolumeA& va, const VolumeB& vb);
     };
 
+    // template<class VolumeA, class VolumeB>
+    // collision(VolumeA const&, VolumeB const&) -> collision<VolumeA, VolumeB>;
+
     // Partial spec. for FrustumBox and other "Box" type volumes
     // Works for BoundingRegion, AABB and OBB and anything that defines
     // a get_vertices() method that returns a world space vec3 array
@@ -178,6 +181,10 @@ namespace traits
         static bool intersects(const FrustumBox& fb, const BoxT& bb);
         static bool contains(const FrustumBox& fb, const BoxT& bb);
     };
+
+    // template<class BoxT>
+    // collision(FrustumBox const&, BoxT const&) -> collision<FrustumBox, BoxT>;
+
     template<class BoxT>
     bool collision<FrustumBox,BoxT>::intersects(const FrustumBox& fb, const BoxT& bb)
     {

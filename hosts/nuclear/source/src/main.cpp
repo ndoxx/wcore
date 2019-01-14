@@ -181,8 +181,6 @@ std::ostream& operator<<(std::ostream& stream, const UData& data)
 
 int main()
 {
-
-
     typedef Octree<math::vec3,UData> PointOctree;
     typedef PointOctree::DataT       DataT;
     typedef PointOctree::ContentT    DataList;
@@ -280,96 +278,82 @@ int main()
 
 
 /*
+struct Circle {};
+struct Dick {};
+struct Bollock {};
+
+template<typename T, typename U>
+struct collides_static
+{
+    static bool intersects(const T&, const U&);
+};
+
+template<>
+struct collides_static<Dick,Circle>
+{
+    static bool intersects(const Dick&, const Circle&) { return true; }
+};
+template<>
+struct collides_static<Dick,Bollock>
+{
+    static bool intersects(const Dick&, const Bollock&) { return true; }
+};
+template<>
+struct collides_static<Dick,Dick>
+{
+    static bool intersects(const Dick&, const Dick&) { return false; }
+};
+
+
+template<typename T, typename U>
+struct collides
+{
+    // For CTAD
+    collides(const T& t, const U& u):
+    t_(t),
+    u_(u)
+    {}
+
+    bool intersects();
+
+private:
+    const T& t_;
+    const U& u_;
+};
+
+template<>
+bool collides<Dick,Circle>::intersects()
+{
+    return true;
+}
+template<>
+bool collides<Dick,Bollock>::intersects()
+{
+    return true;
+}
+template<>
+bool collides<Dick,Dick>::intersects()
+{
+    return false;
+}
+
+#include <chrono>
+
 int main()
 {
-    BoundingRegion point_bounds({-3,3,-3,3,-3,3});
-    BoundingRegion center_bounds({-3,3,-3,3,-3,3});
-    BoundingRegion half_bounds({1,2,1,2,1,2});
 
-    math::srand_vec3(42);
-    for(int ii=0; ii<1000; ++ii)
-    {
-        math::vec3 center1(math::random_vec3(center_bounds.extent));
-        math::vec3 half1(math::random_vec3(half_bounds.extent));
-        BoundingRegion B1(center1, half1);
+    Dick dick1;
+    Dick dick2;
+    Bollock bollock;
+    Circle circle;
 
-        math::vec3 center2(math::random_vec3(center_bounds.extent));
-        math::vec3 half2(math::random_vec3(half_bounds.extent));
-        BoundingRegion B2(center2, half2);
+    std::cout << collides_static<Dick,Dick>::intersects(dick1,dick2) << std::endl;
+    std::cout << collides_static<Dick,Bollock>::intersects(dick1,bollock) << std::endl;
+    std::cout << collides_static<Dick,Circle>::intersects(dick1,circle) << std::endl;
 
-        bool R1 = B1.intersects(B2);
-        bool R2 = traits::collision<BoundingRegion,BoundingRegion>::intersects(B1,B2);
-
-        //std::cout << R1 << " " << R2 << std::endl;
-
-        if(R1!=R2)
-            std::cout << "intersects: Not equal." << std::endl;
-
-        bool S1 = B1.contains(B2);
-        bool S2 = traits::collision<BoundingRegion,BoundingRegion>::contains(B1,B2);
-
-        //std::cout << S1 << " " << S2 << std::endl;
-
-        if(S1!=S2)
-            std::cout << "contains: Not equal." << std::endl;
-    }
-
-    for(int ii=0; ii<1000; ++ii)
-    {
-        math::vec3 center(math::random_vec3(center_bounds.extent));
-        math::vec3 half(math::random_vec3(half_bounds.extent));
-        BoundingRegion B(center, half);
-
-        math::vec3 point(math::random_vec3(point_bounds.extent));
-
-        bool R1 = B.intersects(point);
-        bool R2 = traits::collision<BoundingRegion,math::vec3>::intersects(B,point);
-
-        //std::cout << R1 << " " << R2 << std::endl;
-
-        if(R1!=R2)
-            std::cout << "Not equal." << std::endl;
-
-        bool S1 = B.contains(point);
-        bool S2 = traits::collision<BoundingRegion,math::vec3>::contains(B,point);
-
-        //std::cout << S1 << " " << S2 << std::endl;
-
-        if(S1!=S2)
-            std::cout << "contains: Not equal." << std::endl;
-    }
-
-    Camera camera(1024,768);
-    camera.update(1/60.0f);
-    const FrustumBox& FB = camera.get_frustum_box();
-
-    for(int ii=0; ii<1000; ++ii)
-    {
-        math::vec3 center(math::random_vec3(center_bounds.extent));
-        math::vec3 half(math::random_vec3(half_bounds.extent));
-        BoundingRegion B(center, half);
-
-        bool R1 = FB.intersects(B);
-        bool R2 = traits::collision<FrustumBox,BoundingRegion>::intersects(FB,B);
-
-        //std::cout << R1 << " " << R2 << std::endl;
-
-        if(R1!=R2)
-            std::cout << "Not equal." << std::endl;
-    }
-
-    for(int ii=0; ii<1000; ++ii)
-    {
-        math::vec3 point(math::random_vec3(point_bounds.extent));
-
-        bool R1 = FB.intersects(point);
-        bool R2 = traits::collision<FrustumBox,math::vec3>::intersects(FB,point);
-
-        //std::cout << R1 << " " << R2 << std::endl;
-
-        if(R1!=R2)
-            std::cout << "Not equal." << std::endl;
-    }
+    std::cout << collides(dick1,dick2).intersects() << std::endl;
+    std::cout << collides(dick1,bollock).intersects() << std::endl;
+    std::cout << collides(dick2,circle).intersects() << std::endl;
 
     return 0;
 }

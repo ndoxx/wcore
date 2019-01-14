@@ -467,9 +467,7 @@ void OCTREE::OctreeNode::traverse_range(const RangeT& query_range,
     // Check bounding region intersection, return if out of range
     // if(!query_range.intersects(current->bounding_region_))
     //     return;
-    /*if(!traits::collision<RangeT,BoundingRegion>::intersects(query_range, current->bounding_region_))
-        return;*/
-    if(!traits::collision<BoundingRegion,RangeT>::intersects(current->bounding_region_, query_range))
+    if(!traits::collision<RangeT,BoundingRegion>::intersects(query_range, current->bounding_region_))
         return;
 
     // * Visit objects within range at this level

@@ -86,9 +86,9 @@ void Scene::add_chunk(const math::i32vec2& coords)
     // Setup static octree if first chunk inserted
     if(!static_octree.is_initialized())
     {
-        BoundingRegion bounds({float(coords.x())*chunk_size_m_, (float(coords.x())+1)*chunk_size_m_,
-                               float(coords.y())*chunk_size_m_, (float(coords.y())+1)*chunk_size_m_,
-                               0.f, float(chunk_size_m_)});
+        BoundingRegion bounds({float(coords.x())*chunk_size_m_, (float(coords.x())+1)*chunk_size_m_-1,
+                               float(coords.y())*chunk_size_m_, (float(coords.y())+1)*chunk_size_m_-1,
+                               0.f, float(chunk_size_m_)-1});
         static_octree.set_root_bounding_region(bounds);
     }
 }

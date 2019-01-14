@@ -6119,3 +6119,118 @@ En l'état, les _GameSystem_ souscrivent aux events via leur fonction GameSystem
 
 Exemples illustrant l'intérêt de cette fonctionnalité :
 * Le (futur) GUI (non debug) du jeu doit pouvoir consommer les events, de sorte qu'un clic sur un bouton par exemple, ne soit pas propagé au reste des systèmes.
+
+#[13-01-19]
+## Collision traits
+J'ai viré les méthodes intersects() et contains() de mes classes de bounding volumes, et à la place déclaré des traits de collision dans le namespace wcore::traits.
+
+Un trait de collision est déclaré comme suit :
+```cpp
+    template<class VolumeA, class VolumeB>
+    struct collision
+    {
+        static bool intersects(const VolumeA& va, const VolumeB& vb)
+        {
+            // To make the "intersects" relation symmetric
+            return collision<VolumeB,VolumeA>::intersects(vb,va);
+        }
+        static bool contains(const VolumeA& va, const VolumeB& vb);
+    };
+```
+    -> intersects(a,b) renvoie true si a intersecte b
+    -> contains(a,b) renvoie true si a contient b
+
+Un truc malin que j'ai fait est le comportement par défaut d'intersects(). Si aucune spécialisation n'existe, alors on essaye de renvoyer le résultat de l'intersection pour la classe de trait avec les arguments template permutés. De fait, si collision<A,B> est spécialisée pour A et B mais pas pour B et A, alors collision<B,A>::intersects(b,a) renvoie le même résultat que collision<A,B>::intersects(a,b). Donc on n'a jamais à se casser les couilles pour définir 2 méthodes intersects() pour chaque paire de bounding volumes. En revanche, contains() n'est pas une relation symétrique, et donc on doit fournir 2 spécialisations.
+Ca implique que si l'on considère les traits collision<A,B> et collision<B,A> alors on n'aura vraisemblablement qu'une seule méthode *définie* entre intersects() et contains() dans les 2 specs respectives. Ca pose donc un problème lors du *linking*, s'il manque une implémentation pour contains(). Mais je préfère ce comportement à celui de renvoyer false par défaut pour contains, ce qui entrainera que le programme va compiler et linker mais dysfonctionner.
+
+Pour la collision d'un _FrustumBox_ avec n'importe quel type de "boîte" (AABB, OBB, BoundingRegion), j'ai défini une spécialisation partielle qui repose sur l'idée que le type de la boîte en question possède une méthode get_vertices() qui renvoie un std::array<math::vec3, 8> contenant les positions des vertices de la boîte en world space (ou en tout cas dans le même repère que les vertices de la _FrustumBox_).
+```cpp
+    template<class BoxT>
+    struct collision<FrustumBox,BoxT>
+    {
+        static bool intersects(const FrustumBox& fb, const BoxT& bb);
+        static bool contains(const FrustumBox& fb, const BoxT& bb);
+    };
+    template<class BoxT>
+    bool collision<FrustumBox,BoxT>::intersects(const FrustumBox& fb, const BoxT& bb)
+    {
+        const std::array<math::vec3, 8>& verts = bb.get_vertices();
+        // ...
+    }
+```
+
+* Note :
+Si plus tard je dois retourner un résultat plus complexe qu'un simple booléen (genre une variété d'intersection (intersection manifold)), et que le type de retour dépend des paramètres template (un peu comme mes fonctions ray_collides_X() qui écrivent dans des structures RayCollisionData), alors on peut immaginer un truc du genre :
+```cpp
+    template<typename Args...>
+    struct collision {};
+
+    template<class T>
+    struct collision<T,T>
+    {
+        static bool intersects(const T& t1, const T& t2) { return false; }
+        // ...
+    };
+
+    template<class VolumeA, class VolumeB>
+    struct collision
+    {
+        static decltype(std::declval<collision<VolumeA,VolumeB>>().intersects(
+            std::declval<VolumeA>(),std::declval<VolumeB>()))
+        intersects(const VolumeA& va, const VolumeB& vb)
+        {
+            return collision<VolumeB,VolumeA>::intersects(vb,va);
+        }
+        // ...
+    };
+
+    // + full specs.
+```
+Ca sort de vieilles notes dans mon carnet noir (!), j'ai collé ça ici pour référence.
+
+* Note :
+J'ai un problème moral avec l'idée suivante, mais je la note pour référence. On pourrait réécrire la struct collision, de sorte qu'elle utilise la déduction d'argument template (CTAD), mais au prix de lui rajouter un état :
+```cpp
+template<typename T, typename U>
+struct collision
+{
+    // For CTAD
+    collision(const T& t, const U& u):
+    t_(t),
+    u_(u)
+    {}
+
+    bool intersects();
+
+private:
+    const T& t_;
+    const U& u_;
+};
+
+template<>
+bool collision<Dick,Circle>::intersects()
+{
+    return do_some_stuff(t_,u_);
+}
+template<>
+bool collision<Dick,Bollock>::intersects()
+{
+    return do_some_stuff(t_,u_);
+}
+template<>
+bool collision<Dick,Dick>::intersects()
+{
+    return do_some_stuff(t_,u_);
+}
+```
+Utilisation :
+```cpp
+    Dick dick1;
+    Dick dick2;
+    Bollock bollock;
+    Circle circle;
+
+    std::cout << collision(dick1,dick2).intersects() << std::endl;
+    std::cout << collision(dick1,bollock).intersects() << std::endl;
+    std::cout << collision(dick2,circle).intersects() << std::endl;
+```
