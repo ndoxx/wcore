@@ -30,7 +30,7 @@ public:
     ~ChunkManager();
 
     bool onKeyboardEvent(const WData& data);
-    void init();
+    void load_start();
     // Initialize event listener
     virtual void init_events(InputHandler& handler) override;
     // Update chunks based on camera position

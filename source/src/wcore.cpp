@@ -170,12 +170,30 @@ void Engine::Init(int argc, char const *argv[],
 #endif
 }
 
+void Engine::LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry)
+{
+    eimpl_->scene_loader->load_chunk(math::i32vec2(xx,zz), send_geometry);
+}
+
+void Engine::SendChunk(uint32_t xx, uint32_t zz)
+{
+    uint32_t chunk_index = std::hash<math::i32vec2>{}(math::i32vec2(xx,zz));
+    eimpl_->scene->load_geometry(chunk_index);
+}
+
+void Engine::LoadLevel()
+{
+    // Load level
+    eimpl_->scene_loader->load_level(GLB.START_LEVEL);
+    eimpl_->scene_loader->load_global(*eimpl_->daylight);
+}
+
 void Engine::LoadStart()
 {
     // Load level
     eimpl_->scene_loader->load_level(GLB.START_LEVEL);
     eimpl_->scene_loader->load_global(*eimpl_->daylight);
-    eimpl_->chunk_manager->init();
+    eimpl_->chunk_manager->load_start();
 
 #ifdef __DEBUG__
     show_driver_error("post LoadStart() glGetError(): ");

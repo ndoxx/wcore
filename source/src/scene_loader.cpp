@@ -281,7 +281,7 @@ void SceneLoader::parse_ambient(DaylightSystem& daylight, rapidxml::xml_node<>* 
 }
 
 
-uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
+uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords, bool finalize)
 {
     // Compute chunk index, find corresponding node and load content
     uint32_t chunk_index = std::hash<i32vec2>{}(chunk_coords);
@@ -362,7 +362,8 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords)
 #ifdef __PROFILING_CHUNKS__
     profile_clock_.restart();
 #endif
-    pscene_->load_geometry(chunk_index);
+    if(finalize)
+        pscene_->load_geometry(chunk_index);
 #ifdef __PROFILING_CHUNKS__
     period = profile_clock_.get_elapsed_time();
     dt_upload_us = 1e6*std::chrono::duration_cast<std::chrono::duration<float>>(period).count();

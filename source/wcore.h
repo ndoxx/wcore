@@ -22,7 +22,12 @@ namespace wcore
         ~Engine();
 
         void Init(int argc, char const *argv[], void(*parse_arguments)(int, char const **)=nullptr);
+        // Load first level, load and send chunk geometry near to camera start position
         void LoadStart();
+        // Load first level global info, no chunk is loaded
+        void LoadLevel();
+        void LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry=true);
+        void SendChunk(uint32_t xx, uint32_t zz);
         int Run();
 
     private:

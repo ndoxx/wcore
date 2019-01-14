@@ -43,7 +43,7 @@ void ChunkManager::init_events(InputHandler& handler)
     subscribe(H_("input.keyboard"), handler, &ChunkManager::onKeyboardEvent);
 }
 
-void ChunkManager::init()
+void ChunkManager::load_start()
 {
     // Locate game systems
     Scene* pscene        = locate<Scene>(H_("Scene"));

@@ -113,6 +113,13 @@ struct MazeData
         }
     }
 
+    void traverse_cells(std::function<void(int xx, int zz, uint8_t state)> func)
+    {
+        for(int ii=0; ii<width_; ++ii)
+            for(int jj=0; jj<height_; ++jj)
+                func(ii, jj, cells_[index(ii,jj)]);
+    }
+
     void visit_neighbors(int xx, int zz, std::function<void(int xx, int zz)> func)
     {
         // Left cell
@@ -294,6 +301,34 @@ int main(int argc, char const *argv[])
     wcore::Engine engine;
     engine.Init(argc, argv, sandbox::parse_program_arguments);
     wcore::GlobalsSet(H_("START_LEVEL"), "maze");
-    engine.LoadStart();
+
+    // * Load level and first chunk, but don't send geometry yet
+    engine.LoadLevel();
+    engine.LoadChunk(0, 0, false);
+
+    // * Add wall models to scene
+    maze.traverse_cells([&](int xx, int zz, uint8_t state)
+    {
+        wcore::math::vec3 cell_center(xx+0.5f, 0.f, zz+0.5f);
+        if(state & CellState::WALL_LEFT)
+        {
+
+        }
+        if(state & CellState::WALL_RIGHT)
+        {
+
+        }
+        if(state & CellState::WALL_UP)
+        {
+
+        }
+        if(state & CellState::WALL_DOWN)
+        {
+
+        }
+    });
+
+    // * Send chunk geometry to GL and run
+    engine.SendChunk(0, 0);
     return engine.Run();
 }
