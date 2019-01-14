@@ -153,9 +153,9 @@ typedef std::array<std::string,3> PatternT;
 static PatternT get_pattern(uint8_t cell_state)
 {
     PatternT pattern;
-    pattern[0] = "   ";
-    pattern[1] = "   ";
-    pattern[2] = "   ";
+    pattern[0] = "      ";
+    pattern[1] = "      ";
+    pattern[2] = "      ";
 
     if(cell_state & CellState::WALL_LEFT)
     {
@@ -165,9 +165,9 @@ static PatternT get_pattern(uint8_t cell_state)
     }
     if(cell_state & CellState::WALL_RIGHT)
     {
-        pattern[0][2] = '|';
-        pattern[1][2] = '|';
-        pattern[2][2] = '|';
+        pattern[0][5] = '|';
+        pattern[1][5] = '|';
+        pattern[2][5] = '|';
     }
     if(cell_state & CellState::WALL_UP)
     {
@@ -175,9 +175,12 @@ static PatternT get_pattern(uint8_t cell_state)
             pattern[0][0] = '-';
 
         pattern[0][1] = '-';
+        pattern[0][2] = '-';
+        pattern[0][3] = '-';
+        pattern[0][4] = '-';
 
-        if(pattern[0][2] == ' ')
-            pattern[0][2] = '-';
+        if(pattern[0][5] == ' ')
+            pattern[0][5] = '-';
     }
     if(cell_state & CellState::WALL_DOWN)
     {
@@ -185,9 +188,12 @@ static PatternT get_pattern(uint8_t cell_state)
             pattern[2][0] = '-';
 
         pattern[2][1] = '-';
+        pattern[2][2] = '-';
+        pattern[2][3] = '-';
+        pattern[2][4] = '-';
 
-        if(pattern[2][2] == ' ')
-            pattern[2][2] = '-';
+        if(pattern[2][5] == ' ')
+            pattern[2][5] = '-';
     }
 
     return pattern;
@@ -197,6 +203,7 @@ std::ostream& operator <<(std::ostream& stream, const MazeData& maze)
 {
     for(int zz=maze.height_-1; zz>=0; --zz)
     {
+        // Save patterns for whole line
         std::vector<PatternT> line;
         for(int xx=0; xx<maze.width_; ++xx)
         {
@@ -206,10 +213,12 @@ std::ostream& operator <<(std::ostream& stream, const MazeData& maze)
         {
             for(auto&& pattern: line) // For each pattern in line
             {
-
+                stream << pattern[ii];
             }
+            stream << std::endl;
+
         }
-        stream << std::endl;
+        //stream << std::endl;
     }
     return stream;
 }
@@ -222,9 +231,9 @@ public:
     cur_z_(0)
     {}
 
-    void make_maze(MazeData& maze, int xx_start=0, int zz_start=0)
+    void make_maze(MazeData& maze, int seed=0, int xx_start=0, int zz_start=0)
     {
-        std::default_random_engine generator;
+        std::default_random_engine generator(seed);
 
         // * Make the initial cell the current cell and mark it as visited
         cur_x_ = xx_start;
@@ -275,18 +284,16 @@ private:
 
 int main(int argc, char const *argv[])
 {
-    /*wcore::Engine engine;
+    // * Generate maze
+    MazeData maze(8,8);
+    MazeRecursiveBacktracker generator;
+    generator.make_maze(maze,4);
+    std::cout << maze << std::endl << std::endl;
+
+    // * Start engine and load default map
+    wcore::Engine engine;
     engine.Init(argc, argv, sandbox::parse_program_arguments);
     wcore::GlobalsSet(H_("START_LEVEL"), "maze");
     engine.LoadStart();
-    return engine.Run();*/
-
-    MazeData maze(8,8);
-    std::cout << maze << std::endl << std::endl;
-
-    MazeRecursiveBacktracker generator;
-    generator.make_maze(maze);
-    std::cout << maze << std::endl << std::endl;
-
-    return 0;
+    return engine.Run();
 }
