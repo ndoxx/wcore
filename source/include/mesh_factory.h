@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "mesh.hpp"
+#include "wtypes.h"
 
 namespace wcore
 {

@@ -78,7 +78,9 @@
             <!-- Icospheres -->
             <Model ypos="relative">
                 <Mesh type="icosphere">
-                    <Density>0</Density>
+                    <Generator>
+                        <Density>0</Density>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(1.0,0.1,0.05)</Color>
@@ -91,7 +93,9 @@
             </Model>
             <Model ypos="relative">
                 <Mesh type="icosphere">
-                    <Density>1</Density>
+                    <Generator>
+                        <Density>1</Density>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(1.0,0.2,0.05)</Color>
@@ -104,7 +108,9 @@
             </Model>
             <Model ypos="relative">
                 <Mesh type="icosphere">
-                    <Density>2</Density>
+                    <Generator>
+                        <Density>2</Density>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(1.0,0.3,0.05)</Color>
@@ -117,7 +123,9 @@
             </Model>
             <Model ypos="relative">
                 <Mesh type="icosphere">
-                    <Density>3</Density>
+                    <Generator>
+                        <Density>3</Density>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(1.0,0.4,0.05)</Color>
@@ -132,7 +140,7 @@
             <!-- Procedural Rocks -->
             <Model ypos="relative">
                 <Mesh type="rock">
-                    <RockGenerator>
+                    <Generator>
                         <GeneratorSeed>0</GeneratorSeed>
                         <InstanceSeed>0</InstanceSeed>
                         <MeshDensity>2</MeshDensity>
@@ -142,7 +150,7 @@
                         <LoBound>0.7</LoBound>
                         <HiBound>1.7</HiBound>
                         <Scale>1.0</Scale>
-                    </RockGenerator>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(0.1,0.11,0.12)</Color>
@@ -172,7 +180,7 @@
             <!--
             <LineModel ypos="relative">
                 <Mesh type="tree">
-                    <TreeGenerator>
+                    <Generator>
                         <Seed>8</Seed>
                         <Recursion>2</Recursion>
                         <NodeProbability>0.7</NodeProbability>
@@ -183,7 +191,7 @@
                         <ScaleExponent>1.7</ScaleExponent>
                         <RadiusExponent>0.6</RadiusExponent>
                         <TrunkRadius>0.1</TrunkRadius>
-                    </TreeGenerator>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(0,1,0)</Color>
@@ -198,7 +206,7 @@
             <!-- Spline trees full 3D models -->
             <Model ypos="relative">
                 <Mesh type="tree">
-                    <TreeGenerator>
+                    <Generator>
                         <Seed>8</Seed>
                         <Recursion>2</Recursion>
                         <NodeProbability>0.7</NodeProbability>
@@ -215,7 +223,7 @@
                         <MinSections>5</MinSections>
                         <MaxSections>15</MaxSections>
                         <MaxNodes>8</MaxNodes>
-                    </TreeGenerator>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(0.5,0.6,0.3)</Color>
@@ -229,7 +237,7 @@
 
             <Model ypos="relative">
                 <Mesh type="tree">
-                    <TreeGenerator>
+                    <Generator>
                         <Seed>10</Seed>
                         <Recursion>2</Recursion>
                         <NodeProbability>0.5</NodeProbability>
@@ -246,7 +254,7 @@
                         <MinSections>3</MinSections>
                         <MaxSections>15</MaxSections>
                         <MaxNodes>8</MaxNodes>
-                    </TreeGenerator>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(0.2,0.1,0)</Color>
@@ -261,7 +269,7 @@
 
             <Model ypos="relative">
                 <Mesh type="tree">
-                    <TreeGenerator>
+                    <Generator>
                         <Seed>21</Seed>
                         <Recursion>3</Recursion>
                         <NodeProbability>0.4</NodeProbability>
@@ -278,7 +286,7 @@
                         <MinSections>3</MinSections>
                         <MaxSections>15</MaxSections>
                         <MaxNodes>8</MaxNodes>
-                    </TreeGenerator>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(0.1,0.08,0)</Color>
@@ -344,7 +352,7 @@
         <ModelBatches>
             <ModelBatch instances="25" seed="31" ypos="relative">
                 <Mesh type="rock">
-                    <RockGenerator>
+                    <Generator>
                         <GeneratorSeed>0</GeneratorSeed>
                         <MeshDensity>2</MeshDensity>
                         <Octaves>10</Octaves>
@@ -353,7 +361,7 @@
                         <LoBound>0.7</LoBound>
                         <HiBound>1.7</HiBound>
                         <Scale>1.0</Scale>
-                    </RockGenerator>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color space="hsl" variance="(0.2,0.1,0.0)">(0.5,0.1,0.1)</Color>

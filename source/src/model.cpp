@@ -33,7 +33,7 @@ shadow_cull_face_(0)
 
 Model::~Model()
 {
-    delete pmesh_;
+    //delete pmesh_;  // !! REMOVE when mesh caching is complete
     delete pmaterial_;
 }
 

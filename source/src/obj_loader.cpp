@@ -225,4 +225,12 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
     return (SurfaceMesh*)pmesh;
 }
 
+SurfaceMesh* ObjLoader::operator()(const fs::path& path, bool process_uv)
+{
+    if(fs::exists(path))
+        return operator()(path.string().c_str(), process_uv);
+    return nullptr;
+}
+
+
 }

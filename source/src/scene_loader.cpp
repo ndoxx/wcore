@@ -13,6 +13,7 @@
 #include "material.h"
 #include "math3d.h"
 #include "mesh_factory.h"
+#include "surface_mesh_factory.h"
 #include "obj_loader.h"
 #include "height_map.h"
 #include "heightmap_generator.h"
@@ -46,6 +47,7 @@ typedef std::shared_ptr<const Light>  pcLight;
 SceneLoader::SceneLoader():
 xml_parser_(),
 material_factory_(new MaterialFactory("assets.xml")),
+mesh_factory_(new SurfaceMeshFactory()),
 chunk_size_m_(32),
 lattice_scale_(1.0f),
 texture_scale_(1.0f),
@@ -57,6 +59,7 @@ pscene_(nullptr)
 SceneLoader::~SceneLoader()
 {
     delete material_factory_;
+    delete mesh_factory_;
 }
 
 void SceneLoader::init_events(InputHandler& handler)
@@ -1035,60 +1038,8 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
         return nullptr;
 
     SurfaceMesh* pmesh = nullptr;
-    if(!mesh.compare("cube"))
-        pmesh = (SurfaceMesh*)factory::make_cube();
-    else if(!mesh.compare("icosahedron"))
-    {
-        pmesh = (SurfaceMesh*)factory::make_icosahedron();
-    }
-    else if(!mesh.compare("icosphere"))
-    {
-        uint32_t density = 1;
-        xml::parse_node(mesh_node, "Density", density);
-        pmesh = (SurfaceMesh*)factory::make_ico_sphere(density);
-    }
-    else if(!mesh.compare("crystal"))
-    {
-        std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
-        pmesh = (SurfaceMesh*)factory::make_crystal(mesh_seed(rng));
-    }
-    else if(!mesh.compare("tentacle"))
-    {
-        CSplineCatmullV3 spline({0.0f, 0.33f, 0.66f, 1.0f},
-                                {vec3(0,0,0),
-                                 vec3(0.1,0.33,0.1),
-                                 vec3(0.4,0.66,-0.1),
-                                 vec3(-0.1,1.2,-0.5)});
-        pmesh = (SurfaceMesh*)factory::make_tentacle(spline, 50, 25, 0.1, 0.3);
-    }
-    else if(!mesh.compare("tree"))
-    {
-        // Procedural tree mesh, look for TreeGenerator node
-        xml_node<>* tg_node = mesh_node->first_node("TreeGenerator");
-        if(!tg_node)
-            return nullptr;
 
-        TreeProps props;
-        props.parse_xml(tg_node);
-
-        pmesh = TreeGenerator::generate_tree(props);
-    }
-    else if(!mesh.compare("rock"))
-    {
-        // Procedural rock mesh, look for RockGenerator node
-        xml_node<>* rg_node = mesh_node->first_node("RockGenerator");
-        if(!rg_node)
-            return nullptr;
-
-        RockProps props;
-        props.parse_xml(rg_node);
-
-        std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
-        props.seed = mesh_seed(rng);
-
-        pmesh = RockGenerator::generate_rock(props);
-    }
-    else if(!mesh.compare("obj"))
+    if(!mesh.compare("obj"))
     {
         // Acquire mesh from Wavefront .obj file
         std::string location;
@@ -1102,16 +1053,20 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
         bool centered = false;
         xml::parse_node(mesh_node, "ProcessUV", process_uv);
         xml::parse_node(mesh_node, "Centered", centered);
-        std::stringstream ss;
-        ss << "../res/models/" << location;
-        pmesh = LOADOBJ(ss.str().c_str(), process_uv);
-        pmesh->set_centered(centered);
+        pmesh = mesh_factory_->make_obj(location.c_str(), process_uv, centered);
     }
     else
     {
-        DLOGW("Unknown mesh name: ", "parsing", Severity::WARN);
+        xml_node<>* gen_node = mesh_node->first_node("Generator");
+        pmesh = mesh_factory_->make_procedural(H_(mesh.c_str()), rng, gen_node);
+    }
+
+    if(pmesh == nullptr)
+    {
+        DLOGW("Couldn't create mesh: name= ", "parsing", Severity::WARN);
         DLOGI(mesh, "parsing", Severity::WARN);
     }
+
     return pmesh;
 }
 

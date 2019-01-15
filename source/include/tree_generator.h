@@ -2,16 +2,12 @@
 #define TREE_GENERATOR_H
 
 #include <cstdint>
-
-namespace rapidxml
-{
-    template<class Ch> class xml_node;
-}
+#include "mesh_descriptor.h"
 
 namespace wcore
 {
 
-struct TreeProps
+struct TreeProps: public MeshDescriptor
 {
 public:
     uint32_t seed = 0;
@@ -32,7 +28,8 @@ public:
     float trunk_radius = 0.1f;
     float radius_exponent = 0.5f;
 
-    void parse_xml(rapidxml::xml_node<char>* node);
+    virtual void parse_xml(rapidxml::xml_node<char>* node) override;
+    virtual hash_t hash() override;
 };
 
 struct Vertex3P;

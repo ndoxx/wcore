@@ -1,8 +1,12 @@
 #ifndef OBJ_LOADER_H
 #define OBJ_LOADER_H
 
+#include <filesystem>
+
 #include "singleton.hpp"
 #include "math3d.h"
+
+namespace fs = std::filesystem;
 
 namespace wcore
 {
@@ -35,7 +39,7 @@ public:
     friend void Singleton<ObjLoader>::Kill();
 
     SurfaceMesh* operator()(const char* objfile, bool process_uv=false);
-
+    SurfaceMesh* operator()(const fs::path& path, bool process_uv=false);
 };
 
 #define LOADOBJ ObjLoader::Instance()

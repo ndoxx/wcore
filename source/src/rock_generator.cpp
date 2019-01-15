@@ -25,7 +25,10 @@ void RockProps::parse_xml(rapidxml::xml_node<char>* node)
     xml::parse_node(node, "Scale", scale);
 }
 
-
+hash_t RockProps::hash()
+{
+    return 0;
+}
 
 NoiseGenerator2D<SimplexNoise<>> RockGenerator::RNG_simplex_;
 uint32_t RockGenerator::last_seed_ = -1;

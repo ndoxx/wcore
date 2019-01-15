@@ -307,6 +307,20 @@ int main(int argc, char const *argv[])
     engine.LoadChunk(0, 0, false);
 
     // * Add wall models to scene
+
+    /* TODO
+        -> Decouple Mesh from Model
+            -> Meshes are cashed, Model has weak ptr to Mesh
+            -> In level XML, ability to declare Mesh instances
+                -> Instances are global in level
+                -> Model node can refer to a Mesh Instance instead of
+                   declaring the Mesh
+        -> Same for Material
+            -> Materials are cashed...
+        -> Make API handle scene insertion of models using declared instances
+    */
+
+
     maze.traverse_cells([&](int xx, int zz, uint8_t state)
     {
         wcore::math::vec3 cell_center(xx+0.5f, 0.f, zz+0.5f);

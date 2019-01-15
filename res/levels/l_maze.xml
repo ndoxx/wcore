@@ -21,7 +21,9 @@
         <Models>
             <Model ypos="relative">
                 <Mesh type="icosphere">
-                    <Density>2</Density>
+                    <Generator>
+                        <Density>2</Density>
+                    </Generator>
                 </Mesh>
                 <Material>
                     <Color>(1.0,0.4,0.05)</Color>

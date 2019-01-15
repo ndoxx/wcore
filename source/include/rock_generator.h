@@ -5,16 +5,12 @@
 
 #include "noise_generator.hpp"
 #include "noise_policy.hpp"
-
-namespace rapidxml
-{
-    template<class Ch> class xml_node;
-}
+#include "mesh_descriptor.h"
 
 namespace wcore
 {
 
-struct RockProps
+struct RockProps: public MeshDescriptor
 {
 public:
     uint32_t gen_seed;
@@ -29,7 +25,8 @@ public:
     //float  startZ;
     float  scale;
 
-    void parse_xml(rapidxml::xml_node<char>* node);
+    virtual void parse_xml(rapidxml::xml_node<char>* node) override;
+    virtual hash_t hash() override;
 };
 
 struct Vertex3P;
