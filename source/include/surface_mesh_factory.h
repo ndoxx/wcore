@@ -1,6 +1,7 @@
 #ifndef SURFACE_MESH_FACTORY_H
 #define SURFACE_MESH_FACTORY_H
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <list>
 #include <cstdint>
@@ -32,15 +33,23 @@ public:
 
     void retrieve_asset_descriptions();
 
-    SurfaceMesh* make_procedural(hash_t mesh_type, std::mt19937& rng, rapidxml::xml_node<char>* generator_node=nullptr);
+    SurfaceMesh* make_procedural(hash_t mesh_type,
+                                 std::mt19937& rng,
+                                 rapidxml::xml_node<char>* generator_node=nullptr,
+                                 bool owns=true);
     SurfaceMesh* make_obj(const char* filename, bool process_uv=true, bool centered=true);
     SurfaceMesh* make_instance(hash_t name);
 
 private:
+    SurfaceMesh* procedural_cache_lookup(hash_t mesh_type,
+                                         hash_t props,
+                                         std::function<SurfaceMesh*(void)>new_mesh,
+                                         bool owns=true);
+
     XMLParser xml_parser_;
     std::map<hash_t, MeshInstanceDescriptor> instance_descriptors_;
     std::map<hash_t, SurfaceMesh*> cache_; // Owns loaded meshes
-    std::list<SurfaceMesh*> procedural_meshes_; // TMP Owns loaded procedural meshes
+    std::map<hash_t, SurfaceMesh*> proc_cache_; // Owns loaded procedural meshes
     fs::path models_path_;
 };
 

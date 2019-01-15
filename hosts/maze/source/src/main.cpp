@@ -309,14 +309,14 @@ int main(int argc, char const *argv[])
     // * Add wall models to scene
 
     /* TODO
-        -> Decouple Mesh from Model
-            -> Meshes are cashed, Model has weak ptr to Mesh
-            -> In level XML, ability to declare Mesh instances
+        [x] Decouple Mesh from Model
+            [x] Meshes are cashed, Model has weak ptr to Mesh
+            [x] In level XML, ability to declare Mesh instances
                 -> Instances are global in level
                 -> Model node can refer to a Mesh Instance instead of
                    declaring the Mesh
-        -> Same for Material
-            -> Materials are cashed...
+        [x] Same for Material
+            [x] Materials are cashed...
         -> Make API handle scene insertion of models using declared instances
     */
 

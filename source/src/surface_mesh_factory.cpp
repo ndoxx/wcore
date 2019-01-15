@@ -29,7 +29,7 @@ SurfaceMeshFactory::~SurfaceMeshFactory()
 {
     for(auto&& [key,meshptr]: cache_)
         delete meshptr;
-    for(SurfaceMesh* meshptr: procedural_meshes_)
+    for(auto&& [key,meshptr]: proc_cache_)
         delete meshptr;
 }
 
@@ -59,9 +59,7 @@ SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
     // First, try to find in cache
     auto it = cache_.find(name);
     if(it != cache_.end())
-    {
         return it->second;
-    }
     else
     {
         // Run instance descriptor table
@@ -70,14 +68,36 @@ SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
         {
             const MeshInstanceDescriptor& desc = it_d->second;
             std::mt19937 rng(0);
-            return make_procedural(desc.type, rng, desc.generator_node);
+            SurfaceMesh* pmesh = make_procedural(desc.type, rng, desc.generator_node, false);
+            cache_.insert(std::pair(name, pmesh));
+            return pmesh;
         }
-        else
-            return nullptr;
+    }
+    return nullptr;
+}
+
+SurfaceMesh* SurfaceMeshFactory::procedural_cache_lookup(hash_t mesh_type,
+                                                         hash_t props,
+                                                         std::function<SurfaceMesh*(void)>new_mesh,
+                                                         bool owns)
+{
+    hash_t hash_comb = HCOMBINE_(mesh_type, props);
+    auto it = proc_cache_.find(hash_comb);
+    if(it!=proc_cache_.end())
+        return it->second;
+    else
+    {
+        SurfaceMesh* pmesh = new_mesh();
+        if(owns)
+            proc_cache_.insert(std::pair(hash_comb, pmesh));
+        return pmesh;
     }
 }
 
-SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type, std::mt19937& rng, rapidxml::xml_node<char>* generator_node)
+SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
+                                                 std::mt19937& rng,
+                                                 rapidxml::xml_node<char>* generator_node,
+                                                 bool owns)
 {
     SurfaceMesh* pmesh = nullptr;
 
@@ -89,15 +109,21 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type, std::mt19937&
             props.parse_xml(generator_node);
         else
             props.density = 1;
-        pmesh = (SurfaceMesh*)factory::make_ico_sphere(props.density);
-        procedural_meshes_.push_back(pmesh);
-        return pmesh;
+
+        pmesh = procedural_cache_lookup(mesh_type, std::hash<IcosphereProps>{}(props), [&]()
+        {
+            return (SurfaceMesh*)factory::make_ico_sphere(props.density);
+        },owns);
     }
     else if(mesh_type == H_("crystal"))
     {
         std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
-        pmesh = (SurfaceMesh*)factory::make_crystal(mesh_seed(rng));
-        return pmesh;
+        uint32_t seed = mesh_seed(rng);
+
+        pmesh = procedural_cache_lookup(mesh_type, seed, [&]()
+        {
+            return (SurfaceMesh*)factory::make_crystal(seed);
+        },owns);
     }
     else if(mesh_type == H_("tree"))
     {
@@ -107,9 +133,10 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type, std::mt19937&
         TreeProps props;
         props.parse_xml(generator_node);
 
-        pmesh = TreeGenerator::generate_tree(props);
-        procedural_meshes_.push_back(pmesh);
-        return pmesh;
+        pmesh = procedural_cache_lookup(mesh_type, std::hash<TreeProps>{}(props), [&]()
+        {
+            return TreeGenerator::generate_tree(props);
+        },owns);
     }
     else if(mesh_type == H_("rock"))
     {
@@ -122,10 +149,14 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type, std::mt19937&
         std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
         props.seed = mesh_seed(rng);
 
-        pmesh = RockGenerator::generate_rock(props);
-        procedural_meshes_.push_back(pmesh);
-        return pmesh;
+        pmesh = procedural_cache_lookup(mesh_type, std::hash<RockProps>{}(props), [&]()
+        {
+            return RockGenerator::generate_rock(props);
+        },owns);
     }
+
+    if(pmesh)
+        return pmesh;
 
     // Hard-coded procedural meshes
     // Find in cache first
@@ -150,7 +181,7 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type, std::mt19937&
             pmesh = (SurfaceMesh*)factory::make_tentacle(spline, 50, 25, 0.1, 0.3);
         }
 
-        if(pmesh)
+        if(pmesh && owns)
             cache_.insert(std::pair(mesh_type, pmesh));
     }
 

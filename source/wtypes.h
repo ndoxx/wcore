@@ -54,6 +54,12 @@ extern constexpr hash_t H_(const char* str)
     return detail::hash_one(str[0], str + 1, detail::basis);
 }
 
+inline hash_t HCOMBINE_(hash_t first, hash_t second, hash_t seed=0)
+{
+    seed = first + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    return seed ^ second + 0x9e3779b9 + (seed<<6) + (seed>>2);
+}
+
 template <class Container>
 void split_string(const std::string& str, Container& cont, char delim = ' ')
 {
