@@ -14,13 +14,11 @@ namespace wcore
 struct MeshDescriptor
 {
     virtual void parse_xml(rapidxml::xml_node<char>* node) = 0;
-    virtual hash_t hash() = 0;
 };
 
 struct IcosphereProps: public MeshDescriptor
 {
     virtual void parse_xml(rapidxml::xml_node<char>* node) override;
-    virtual hash_t hash() override;
 
     uint32_t density;
 };

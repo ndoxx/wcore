@@ -27,10 +27,10 @@ SurfaceMeshFactory::SurfaceMeshFactory(const char* xml_file)
 
 SurfaceMeshFactory::~SurfaceMeshFactory()
 {
-    for(auto&& [key,meshptr]: cache_)
+    /*for(auto&& [key,meshptr]: cache_)
         delete meshptr;
     for(auto&& [key,meshptr]: proc_cache_)
-        delete meshptr;
+        delete meshptr;*/
 }
 
 void SurfaceMeshFactory::retrieve_asset_descriptions()
@@ -57,11 +57,11 @@ void SurfaceMeshFactory::retrieve_asset_descriptions()
 SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
 {
     // First, try to find in cache
-    auto it = cache_.find(name);
+    /*auto it = cache_.find(name);
     if(it != cache_.end())
         return it->second;
     else
-    {
+    {*/
         // Run instance descriptor table
         auto it_d = instance_descriptors_.find(name);
         if(it_d != instance_descriptors_.end())
@@ -69,10 +69,11 @@ SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
             const MeshInstanceDescriptor& desc = it_d->second;
             std::mt19937 rng(0);
             SurfaceMesh* pmesh = make_procedural(desc.type, rng, desc.generator_node, false);
-            cache_.insert(std::pair(name, pmesh));
+            //cache_.insert(std::pair(name, pmesh));
+            pmesh->set_cached(true);
             return pmesh;
         }
-    }
+    //}
     return nullptr;
 }
 
@@ -82,16 +83,22 @@ SurfaceMesh* SurfaceMeshFactory::procedural_cache_lookup(hash_t mesh_type,
                                                          bool owns)
 {
     hash_t hash_comb = HCOMBINE_(mesh_type, props);
-    auto it = proc_cache_.find(hash_comb);
+    /*auto it = proc_cache_.find(hash_comb);
     if(it!=proc_cache_.end())
-        return it->second;
-    else
     {
-        SurfaceMesh* pmesh = new_mesh();
-        if(owns)
-            proc_cache_.insert(std::pair(hash_comb, pmesh));
-        return pmesh;
+        return it->second;
     }
+    else
+    {*/
+        SurfaceMesh* pmesh = new_mesh();
+
+        if(owns)
+        {
+            pmesh->set_cached(true);
+            //proc_cache_.insert(std::pair(hash_comb, pmesh));
+        }
+        return pmesh;
+    //}
 }
 
 SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
@@ -99,8 +106,6 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
                                                  rapidxml::xml_node<char>* generator_node,
                                                  bool owns)
 {
-    SurfaceMesh* pmesh = nullptr;
-
     // Procedural meshes that depend on extra data -> not cached ftm
     if(mesh_type == H_("icosphere"))
     {
@@ -110,20 +115,21 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         else
             props.density = 1;
 
-        pmesh = procedural_cache_lookup(mesh_type, std::hash<IcosphereProps>{}(props), [&]()
+        return procedural_cache_lookup(mesh_type, std::hash<IcosphereProps>{}(props), [&]()
         {
             return (SurfaceMesh*)factory::make_ico_sphere(props.density);
-        },owns);
+        }, owns);
     }
     else if(mesh_type == H_("crystal"))
     {
         std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
+        //std::uniform_int_distribution<uint32_t> mesh_seed(0,10);
         uint32_t seed = mesh_seed(rng);
 
-        pmesh = procedural_cache_lookup(mesh_type, seed, [&]()
+        return procedural_cache_lookup(mesh_type, seed, [&]()
         {
             return (SurfaceMesh*)factory::make_crystal(seed);
-        },owns);
+        }, owns);
     }
     else if(mesh_type == H_("tree"))
     {
@@ -133,10 +139,10 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         TreeProps props;
         props.parse_xml(generator_node);
 
-        pmesh = procedural_cache_lookup(mesh_type, std::hash<TreeProps>{}(props), [&]()
+        return procedural_cache_lookup(mesh_type, std::hash<TreeProps>{}(props), [&]()
         {
             return TreeGenerator::generate_tree(props);
-        },owns);
+        }, owns);
     }
     else if(mesh_type == H_("rock"))
     {
@@ -149,24 +155,20 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
         props.seed = mesh_seed(rng);
 
-        pmesh = procedural_cache_lookup(mesh_type, std::hash<RockProps>{}(props), [&]()
+        return procedural_cache_lookup(mesh_type, std::hash<RockProps>{}(props), [&]()
         {
             return RockGenerator::generate_rock(props);
-        },owns);
+        }, owns);
     }
-
-    if(pmesh)
-        return pmesh;
 
     // Hard-coded procedural meshes
     // Find in cache first
-    auto it = cache_.find(mesh_type);
+    SurfaceMesh* pmesh = nullptr;
+    /*auto it = cache_.find(mesh_type);
     if(it!=cache_.end())
-    {
         pmesh = it->second;
-    }
     else
-    {
+    {*/
         if(mesh_type == H_("cube"))
             pmesh = (SurfaceMesh*)factory::make_cube();
         else if(mesh_type == H_("icosahedron"))
@@ -182,8 +184,11 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         }
 
         if(pmesh && owns)
-            cache_.insert(std::pair(mesh_type, pmesh));
-    }
+        {
+            pmesh->set_cached(true);
+            //cache_.insert(std::pair(mesh_type, pmesh));
+        }
+    //}
 
     return pmesh;
 }
@@ -194,18 +199,19 @@ SurfaceMesh* SurfaceMeshFactory::make_obj(const char* filename, bool process_uv,
 
     // First, check if we have it in the map
     hash_t hname = H_(filename);
-    auto it = cache_.find(hname);
+    /*auto it = cache_.find(hname);
     if(it!=cache_.end())
     {
         pmesh = it->second;
     }
     // Acquire mesh from Wavefront .obj file
     else
-    {
+    {*/
         pmesh = LOADOBJ(models_path_ / filename, process_uv);
         pmesh->set_centered(centered);
-        cache_.insert(std::pair(hname, pmesh));
-    }
+        pmesh->set_cached(true);
+        //cache_.insert(std::pair(hname, pmesh));
+    //}
 
     return pmesh;
 }

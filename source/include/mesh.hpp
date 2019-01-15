@@ -30,28 +30,32 @@ protected:
     uint32_t              buffer_offset_;
     uint32_t              n_elements_;
     bool                  centered_;
+    bool                  cached_;
 
 public:
     Mesh():
     buffer_offset_(0),
     n_elements_(0),
-    centered_(false){}
+    centered_(false),
+    cached_(false){}
 
     Mesh(Mesh&& other) noexcept
     : vertices_(std::move(other.vertices_))
     , indices_(std::move(other.indices_))
     , dimensions_(other.dimensions_)
     , buffer_offset_(other.buffer_offset_)
-    , n_elements_(other.n_elements_),
-    centered_(false){}
+    , n_elements_(other.n_elements_)
+    , centered_(false)
+    , cached_(other.cached_){}
 
     Mesh(const Mesh& other)
     : vertices_(other.vertices_)
     , indices_(other.indices_)
     , dimensions_(other.dimensions_)
     , buffer_offset_(other.buffer_offset_)
-    , n_elements_(other.n_elements_),
-    centered_(false){}
+    , n_elements_(other.n_elements_)
+    , centered_(false)
+    , cached_(other.cached){}
 
     virtual ~Mesh() {}
 
@@ -63,6 +67,7 @@ public:
         n_elements_ = other.n_elements_;
         dimensions_ = other.dimensions_;
         centered_ = other.centered_;
+        cached_ = other.cached_;
         return *this;
     }
 
@@ -72,7 +77,9 @@ public:
     inline uint32_t get_buffer_offset() const { return buffer_offset_; }
 
     inline bool is_centered() const           { return centered_; }
+    inline bool is_cached() const             { return cached_; }
     inline void set_centered(bool value)      { centered_ = value; }
+    inline void set_cached(bool value)        { cached_ = value; }
 
     inline const std::vector<VertexT>&  get_vertex_buffer() const { return vertices_; }
     inline const std::vector<uint32_t>& get_index_buffer()  const { return indices_; }

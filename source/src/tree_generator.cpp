@@ -36,11 +36,6 @@ void TreeProps::parse_xml(rapidxml::xml_node<char>* node)
     xml::parse_node(node, "MaxNodes", max_nodes);
 }
 
-hash_t TreeProps::hash()
-{
-    return 0; // TODO
-}
-
 static void make_spline_tree_recursive(std::vector<CSplineCatmullV3>& splines,
                                        std::vector<float>& radii,
                                        std::mt19937 rng,

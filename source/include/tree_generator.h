@@ -29,7 +29,6 @@ public:
     float radius_exponent = 0.5f;
 
     virtual void parse_xml(rapidxml::xml_node<char>* node) override;
-    virtual hash_t hash() override;
 };
 
 struct Vertex3P;

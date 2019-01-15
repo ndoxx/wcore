@@ -27,8 +27,8 @@ MaterialFactory::MaterialFactory(const char* xml_file)
 
 MaterialFactory::~MaterialFactory()
 {
-    for(auto&& [key, mat_ptr]: cache_)
-        delete mat_ptr;
+    /*for(auto&& [key, mat_ptr]: cache_)
+        delete mat_ptr;*/
 }
 
 #ifdef __DEBUG__
@@ -114,15 +114,16 @@ void MaterialFactory::retrieve_asset_descriptions()
 Material* MaterialFactory::make_material(hash_t asset_name)
 {
     // Try to find in cache, make new material if not cached
-    auto it = cache_.find(asset_name);
+    /*auto it = cache_.find(asset_name);
     if(it != cache_.end())
         return it->second;
     else
-    {
+    {*/
         Material* ret = new Material(get_descriptor(asset_name));
-        cache_.insert(std::pair(asset_name, ret));
+        //cache_.insert(std::pair(asset_name, ret));
+        ret->set_cached(true);
         return ret;
-    }
+    //}
 }
 
 void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, MaterialDescriptor& descriptor)

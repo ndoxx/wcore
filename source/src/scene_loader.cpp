@@ -585,7 +585,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
     xml_node<>* mdls_node = chunk_node->first_node("Models");
     if(!mdls_node) return;
 
-    std::mt19937 rng;
+    std::mt19937 rng(0);
     for (xml_node<>* model=mdls_node->first_node("Model"); model; model=model->next_sibling("Model"))
     {
         // Get nodes

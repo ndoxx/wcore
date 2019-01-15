@@ -20,7 +20,8 @@ textured_(true),
 use_normal_map_(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL) && descriptor.enable_normal_mapping),
 use_parallax_map_(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH) && descriptor.enable_parallax_mapping),
 use_overlay_(false),
-blend_(false)
+blend_(false),
+cached_(false)
 {
 
 }
@@ -39,7 +40,8 @@ textured_(false),
 use_normal_map_(false),
 use_parallax_map_(false),
 use_overlay_(false),
-blend_(blend)
+blend_(blend),
+cached_(false)
 {
 
 }

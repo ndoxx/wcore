@@ -26,7 +26,6 @@ public:
     float  scale;
 
     virtual void parse_xml(rapidxml::xml_node<char>* node) override;
-    virtual hash_t hash() override;
 };
 
 struct Vertex3P;

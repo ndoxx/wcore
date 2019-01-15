@@ -6234,3 +6234,24 @@ Utilisation :
     std::cout << collision(dick1,bollock).intersects() << std::endl;
     std::cout << collision(dick2,circle).intersects() << std::endl;
 ```
+
+#[15-01-19]
+## Mesh instance
+
+## Mesh caching
+Mes _SurfaceMesh_ sont maintenant générées par la nouvelle classe _SurfaceMeshFactory_ qui joue un rôle symétrique à _MaterialFactory_ mais pour les _Mesh_. _SurfaceMeshFactory_ possède essentiellement 3 méthodes :
+    - make_procedural()
+        -> Produit un mesh depuis des calculs CPU. Il peut s'agir d'un mesh hard-codé, comme un simple cube, mais aussi de meshes plus complexes (arbre, rocher).
+    - make_obj()
+        -> Produit un mesh depuis un fichier Wavefront .obj
+    - make_instance()
+        -> Produit un mesh procédural depuis un descripteur stocké dans assets.xml
+        -> Utile pour référencer facilement un mesh procédural
+
+Les 3 méthodes tentent de rechercher l'objet à créer dans un cache avant d'en générer un nouveau.
+* Pour make_obj() et make_instance() c'est facile, il suffit de hasher respectivement le nom de fichier .obj ou le nom de l'instance. Les pointeurs vers les _SurfaceMesh_ des .obj et des instances sont dans la même map, associés aux fameux hash.
+* Pour make_procedural() c'est un peu plus compliqué. 2 mesh de même type générés avec des paramètres différents sont a priori des mesh différents. J'ai donc généralisé la méthode de regroupement des paramètres de génération de _TreeGenerator_ et _RockGenerator_. Les structures d'initialisation de générateurs telles que _TreeProps_ et _RockProps_ héritent d'une interface commune _MeshDescriptor_ qui déclare une méthode virtuelle pure :
+    - parse_xml()
+        -> Pour parser un noeud *Generator* dans un fichier XML
+J'utilise de plus la macro MAKE_HASHABLE de wtypes.h qui permet de générer automatiquement une structure de hashing dans le namespace std pour tout type de struct _MeshDescriptor_.
+Donc quand je dois créer un nouvel objet procédural, je regarde d'abord le hash de sa structure de description, je le combine au hash de son type avec la macro HCOMBINE_, et je cherche le hash combiné dans un cache réservé aux mesh procéduraux. Je ne crée un nouveau mesh que si la recherche à échoué, auquel cas je mets en cache le nouveau mesh.

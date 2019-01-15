@@ -175,7 +175,7 @@ void Chunk::traverse_models(ModelVisitor func,
         {
             for(auto rit=blend_models_order_.rbegin(); rit != blend_models_order_.rend(); ++rit)
             {
-                pModel pmodel = models_[*rit];
+                pModel pmodel = models_blend_[*rit];
                 if(ifFunc(pmodel))
                     func(pmodel, index_);
             }
