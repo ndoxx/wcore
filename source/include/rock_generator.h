@@ -45,4 +45,7 @@ private:
 
 }
 
+MAKE_HASHABLE(wcore::RockProps, t.gen_seed, t.seed, t.mesh_density, t.octaves,
+              t.frequency, t.persistence, t.loBound, t.hiBound, t.scale)
+
 #endif // ROCK_GENERATOR_H

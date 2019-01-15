@@ -205,26 +205,7 @@
 
             <!-- Spline trees full 3D models -->
             <Model ypos="relative">
-                <Mesh type="tree">
-                    <Generator>
-                        <Seed>8</Seed>
-                        <Recursion>2</Recursion>
-                        <NodeProbability>0.7</NodeProbability>
-                        <BranchProbability>0.7</BranchProbability>
-                        <Twist>0.02</Twist>
-                        <MaxBranch>2</MaxBranch>
-                        <BranchAngle>0.3</BranchAngle>
-                        <BranchHindrance>0.1</BranchHindrance>
-                        <ScaleExponent>1.5</ScaleExponent>
-                        <RadiusExponent>0.8</RadiusExponent>
-                        <TrunkRadius>0.1</TrunkRadius>
-                        <MinSamples>4</MinSamples>
-                        <MaxSamples>10</MaxSamples>
-                        <MinSections>5</MinSections>
-                        <MaxSections>15</MaxSections>
-                        <MaxNodes>8</MaxNodes>
-                    </Generator>
-                </Mesh>
+                <Mesh name=".tree01"/>
                 <Material>
                     <Color>(0.5,0.6,0.3)</Color>
                     <Roughness>0.8</Roughness>
@@ -236,26 +217,7 @@
             </Model>
 
             <Model ypos="relative">
-                <Mesh type="tree">
-                    <Generator>
-                        <Seed>10</Seed>
-                        <Recursion>2</Recursion>
-                        <NodeProbability>0.5</NodeProbability>
-                        <BranchProbability>0.5</BranchProbability>
-                        <Twist>0.1</Twist>
-                        <MaxBranch>3</MaxBranch>
-                        <BranchAngle>0.5</BranchAngle>
-                        <BranchHindrance>0.8</BranchHindrance>
-                        <ScaleExponent>1.8</ScaleExponent>
-                        <RadiusExponent>0.9</RadiusExponent>
-                        <TrunkRadius>0.24</TrunkRadius>
-                        <MinSamples>3</MinSamples>
-                        <MaxSamples>10</MaxSamples>
-                        <MinSections>3</MinSections>
-                        <MaxSections>15</MaxSections>
-                        <MaxNodes>8</MaxNodes>
-                    </Generator>
-                </Mesh>
+                <Mesh name=".tree02"/>
                 <Material>
                     <Color>(0.2,0.1,0)</Color>
                     <Roughness>0.8</Roughness>
@@ -268,26 +230,7 @@
             </Model>
 
             <Model ypos="relative">
-                <Mesh type="tree">
-                    <Generator>
-                        <Seed>21</Seed>
-                        <Recursion>3</Recursion>
-                        <NodeProbability>0.4</NodeProbability>
-                        <BranchProbability>0.5</BranchProbability>
-                        <Twist>0.1</Twist>
-                        <MaxBranch>4</MaxBranch>
-                        <BranchAngle>0.6</BranchAngle>
-                        <BranchHindrance>0.8</BranchHindrance>
-                        <ScaleExponent>1.8</ScaleExponent>
-                        <RadiusExponent>0.5</RadiusExponent>
-                        <TrunkRadius>0.30</TrunkRadius>
-                        <MinSamples>3</MinSamples>
-                        <MaxSamples>15</MaxSamples>
-                        <MinSections>3</MinSections>
-                        <MaxSections>15</MaxSections>
-                        <MaxNodes>8</MaxNodes>
-                    </Generator>
-                </Mesh>
+                <Mesh name=".tree03"/>
                 <Material>
                     <Color>(0.1,0.08,0)</Color>
                     <Roughness>0.7</Roughness>

@@ -97,7 +97,7 @@ public:
     // HIGHER LEVEL PARSERS --------------------------------------------
     // Chunk related
     void parse_terrain(const math::i32vec2& chunk_coords);
-    void parse_line_models(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
+    //void parse_line_models(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
     void parse_models(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
     void parse_model_batches(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
     void parse_lights(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);

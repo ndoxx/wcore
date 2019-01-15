@@ -34,7 +34,7 @@ shadow_cull_face_(0)
 Model::~Model()
 {
     //delete pmesh_;  // !! REMOVE when mesh caching is complete
-    delete pmaterial_;
+    //delete pmaterial_;
 }
 
 LineModel::LineModel(Mesh<Vertex3P>* pmesh, Material* material):

@@ -67,6 +67,7 @@
     <string key="4324453728078389708" value="rd.v4_proj_params"/>
     <string key="4397639838508282278" value="root.display.vsync"/>
     <string key="4533975874953402374" value="rd.f_vibrance"/>
+    <string key="4547761445480584395" value="icosphere"/>
     <string key="4551762947800415439" value="EQUAL"/>
     <string key="4558523308072059171" value="root.render.shadowmap.width"/>
     <string key="4630334286561570845" value="lt.f_light_radius"/>
@@ -85,6 +86,7 @@
     <string key="5453233685459444193" value="PRINT_SCREEN"/>
     <string key="5470672258687767110" value="ESCAPE"/>
     <string key="5497878670064540503" value="normalTex"/>
+    <string key="5503224543670688896" value="cube"/>
     <string key="5529597767193881776" value="KP_3"/>
     <string key="5529598866705509987" value="KP_2"/>
     <string key="5529599966217138198" value="KP_1"/>
@@ -114,6 +116,7 @@
     <string key="6443438359041303644" value="rd.f_fogDensity"/>
     <string key="6461287345427881327" value="WORLD_1"/>
     <string key="6461288444939509538" value="WORLD_2"/>
+    <string key="6567858969587397525" value="tree"/>
     <string key="6599388872338826344" value="rd.b_dither"/>
     <string key="6676740561313072862" value="PAGE_UP"/>
     <string key="6688223789818863754" value="DELETE"/>
@@ -139,6 +142,7 @@
     <string key="8360812614045624869" value="RIGHT"/>
     <string key="8385221162674032681" value="SSAOtmpTex"/>
     <string key="8561056698356545942" value="rd.v3_lightDir"/>
+    <string key="8570732526994039689" value="crystal"/>
     <string key="8653713800365802599" value="m4_transform"/>
     <string key="8693947887275505987" value="mt.v3_albedo"/>
     <string key="8710115332184903050" value="k_walk"/>
@@ -179,12 +183,16 @@
     <string key="10986755340644892234" value="SLASH"/>
     <string key="11158050064215466014" value="root.render.shadowmap.height"/>
     <string key="11168070871793128834" value="m4_ModelViewProjection"/>
+    <string key="11172949248662994988" value="k_editor_deselect"/>
     <string key="11415925803770215857" value="root.render.override.allow_parallax_mapping"/>
     <string key="11424401279738075663" value="LEFT_SHIFT"/>
     <string key="11532138274943533413" value="float"/>
     <string key="11573261714897842119" value="rd.b_invert_normals"/>
     <string key="11686224538548403115" value="root.folders.shaderinc"/>
+    <string key="11780878001689302868" value="rock"/>
     <string key="11784024025844851763" value="root.folders.texture"/>
+    <string key="12032221677502956178" value="icosahedron"/>
+    <string key="12059396907497688696" value="Editor"/>
     <string key="12094814583269164686" value="rd.f_scale"/>
     <string key="12329333359250199469" value="rd.v2_texelSize"/>
     <string key="12342839200479500345" value="mt.b_has_albedo"/>
@@ -275,6 +283,7 @@
     <string key="16049202465878217029" value="mt.f_roughness"/>
     <string key="16316995398477092277" value="sdiSun"/>
     <string key="16548070634278642392" value="k_tg_line_models"/>
+    <string key="16567012654237903811" value="tentacle"/>
     <string key="16679013307405797229" value="mt.b_has_metallic"/>
     <string key="16733900363094892041" value="KP_EQUAL"/>
     <string key="16804498396030224938" value="f_alpha"/>

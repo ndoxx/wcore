@@ -27,4 +27,6 @@ struct IcosphereProps: public MeshDescriptor
 
 } // namespace wcore
 
+MAKE_HASHABLE(wcore::IcosphereProps, t.density)
+
 #endif // MESH_DESCRIPTOR_H

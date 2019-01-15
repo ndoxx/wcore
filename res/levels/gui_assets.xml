@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Assets>
-    <Material>
-        <Name>cursor</Name>
-        <Texture>
-            <Albedo>cursor.png</Albedo>
-        </Texture>
-    </Material>
+    <Materials>
+        <Material>
+            <Name>cursor</Name>
+            <Texture>
+                <Albedo>cursor.png</Albedo>
+            </Texture>
+        </Material>
+    </Materials>
 </Assets>

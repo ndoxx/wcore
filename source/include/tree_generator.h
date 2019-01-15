@@ -45,4 +45,10 @@ public:
 
 }
 
+MAKE_HASHABLE(wcore::TreeProps, t.seed, t.recursion, t.max_branch, t.min_samples,
+              t.max_samples, t.min_sections, t.max_sections, t.max_nodes,
+              t.node_prob, t.branch_prob, t.hindrance, t.twist, t.branch_angle,
+              t.scale_exponent, t.trunk_radius, t.radius_exponent)
+
+
 #endif // TREE_GENERATOR_H

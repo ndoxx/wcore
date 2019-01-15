@@ -16,13 +16,14 @@ private:
 
     XMLParser xml_parser_;
     AssetMap  material_descriptors_;
+    std::map<hash_t, Material*> cache_;
     static std::map<TextureUnit, const char*> TEX_SAMPLERS_NODES;
 
 public:
     MaterialFactory(const char* xml_file);
     ~MaterialFactory();
 
-    void retrieve_asset_descriptions(rapidxml::xml_node<>* root);
+    void retrieve_asset_descriptions();
     Material* make_material(hash_t asset_name);
 
     inline const MaterialDescriptor& get_descriptor(hash_t asset_name)  { return material_descriptors_.at(asset_name); }

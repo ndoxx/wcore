@@ -22,12 +22,13 @@ MaterialFactory::MaterialFactory(const char* xml_file)
 {
     fs::path file_path(io::get_file(H_("root.folders.level"), xml_file));
     xml_parser_.load_file_xml(file_path);
-    retrieve_asset_descriptions(xml_parser_.get_root());
+    retrieve_asset_descriptions();
 }
 
 MaterialFactory::~MaterialFactory()
 {
-
+    for(auto&& [key, mat_ptr]: cache_)
+        delete mat_ptr;
 }
 
 #ifdef __DEBUG__
@@ -80,9 +81,11 @@ std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc)
 }
 #endif
 
-void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* root)
+void MaterialFactory::retrieve_asset_descriptions()
 {
-    for (xml_node<>* mat_node=xml_parser_.get_root()->first_node("Material");
+    xml_node<>* materials_node = xml_parser_.get_root()->first_node("Materials");
+
+    for (xml_node<>* mat_node=materials_node->first_node("Material");
          mat_node;
          mat_node=mat_node->next_sibling("Material"))
     {
@@ -110,7 +113,16 @@ void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* root)
 
 Material* MaterialFactory::make_material(hash_t asset_name)
 {
-    return new Material(get_descriptor(asset_name));
+    // Try to find in cache, make new material if not cached
+    auto it = cache_.find(asset_name);
+    if(it != cache_.end())
+        return it->second;
+    else
+    {
+        Material* ret = new Material(get_descriptor(asset_name));
+        cache_.insert(std::pair(asset_name, ret));
+        return ret;
+    }
 }
 
 void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, MaterialDescriptor& descriptor)

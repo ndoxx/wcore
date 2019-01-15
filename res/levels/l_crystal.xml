@@ -418,7 +418,22 @@
     </Chunk>
 
     <Chunk coords="(0,4)"/>
-    <Chunk coords="(1,0)"/>
+    <Chunk coords="(1,0)">
+        <Models>
+            <Model ypos="relative">
+                <Mesh name=".tree03"/>
+                <Material>
+                    <Color>(0.1,0.08,0)</Color>
+                    <Roughness>0.7</Roughness>
+                </Material>
+                <Transform>
+                    <Position>(5,-1.5,22)</Position>
+                    <Scale>15.0</Scale>
+                    <Angle>(30,150,0)</Angle>
+                </Transform>
+            </Model>
+        </Models>
+    </Chunk>
 
     <Chunk coords="(1,1)">
         <ModelBatches>

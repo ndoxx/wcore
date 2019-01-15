@@ -12,13 +12,9 @@
 #include "colors.h"
 #include "material.h"
 #include "math3d.h"
-#include "mesh_factory.h"
 #include "surface_mesh_factory.h"
-#include "obj_loader.h"
 #include "height_map.h"
 #include "heightmap_generator.h"
-#include "tree_generator.h"
-#include "rock_generator.h"
 #include "camera.h"
 #include "model.h"
 #include "terrain_patch.h"
@@ -47,7 +43,7 @@ typedef std::shared_ptr<const Light>  pcLight;
 SceneLoader::SceneLoader():
 xml_parser_(),
 material_factory_(new MaterialFactory("assets.xml")),
-mesh_factory_(new SurfaceMeshFactory()),
+mesh_factory_(new SurfaceMeshFactory("assets.xml")),
 chunk_size_m_(32),
 lattice_scale_(1.0f),
 texture_scale_(1.0f),
@@ -335,7 +331,7 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords, bool finalize)
     profile_clock_.restart();
 #endif
     parse_models(chunk_node, chunk_index);
-    parse_line_models(chunk_node, chunk_index);
+    //parse_line_models(chunk_node, chunk_index);
 #ifdef __PROFILING_CHUNKS__
     period = profile_clock_.get_elapsed_time();
     dt_models_us = 1e6*std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
@@ -656,7 +652,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         pscene_->add_model(pmdl, chunk_index);
     }
 }
-
+/*
 void SceneLoader::parse_line_models(xml_node<>* chunk_node, uint32_t chunk_index)
 {
     xml_node<>* mdls_node = chunk_node->first_node("Models");
@@ -709,7 +705,7 @@ void SceneLoader::parse_line_models(xml_node<>* chunk_node, uint32_t chunk_index
 
         pscene_->add_model(pmdl, chunk_index);
     }
-}
+}*/
 
 void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_index)
 {
@@ -1033,11 +1029,21 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
     if(!mesh_node)
         return nullptr;
 
+
+    SurfaceMesh* pmesh = nullptr;
+
+    // Has a "name" attribute -> mesh instance
+    std::string name;
+    bool is_instance = xml::parse_attribute(mesh_node, "name", name);
+
+    if(is_instance)
+    {
+        return mesh_factory_->make_instance(H_(name.c_str()));
+    }
+
     std::string mesh;
     if(!xml::parse_attribute(mesh_node, "type", mesh))
         return nullptr;
-
-    SurfaceMesh* pmesh = nullptr;
 
     if(!mesh.compare("obj"))
     {
@@ -1069,7 +1075,7 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
 
     return pmesh;
 }
-
+/*
 Mesh<Vertex3P>* SceneLoader::parse_line_mesh(rapidxml::xml_node<>* mesh_node)
 {
     if(!mesh_node)
@@ -1094,7 +1100,7 @@ Mesh<Vertex3P>* SceneLoader::parse_line_mesh(rapidxml::xml_node<>* mesh_node)
     }
 
     return pmesh;
-}
+}*/
 
 void SceneLoader::ground_model(std::shared_ptr<Model> pmdl, const HeightMap& hm)
 {
