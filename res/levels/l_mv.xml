@@ -14,8 +14,10 @@
                 <Position>(0,0,0)</Position>
             </Transform>
             <Material>
-                    <Color>(0.1,0.4,0.1)</Color>
+                <Uniform>
+                    <Albedo>(0.1,0.4,0.1)</Albedo>
                     <Roughness>0.8</Roughness>
+                </Uniform>
             </Material>
             <Shadow>
                 <CullFace>1</CullFace>
@@ -30,8 +32,10 @@
                     <Density>0</Density>
                 </Mesh>
                 <Material>
-                    <Color>(1.0,0.4,0.05)</Color>
-                    <Roughness>0.2</Roughness>
+                    <Uniform>
+                        <Albedo>(1.0,0.4,0.05)</Albedo>
+                        <Roughness>0.2</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(0,4,0)</Position>

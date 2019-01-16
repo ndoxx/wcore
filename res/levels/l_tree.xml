@@ -29,8 +29,10 @@
                 <Position>(0,0,0)</Position>
             </Transform>
             <Material>
-                    <Color>(0.1,0.4,0.1)</Color>
+                <Uniform>
+                    <Albedo>(0.1,0.4,0.1)</Albedo>
                     <Roughness>0.8</Roughness>
+                </Uniform>
             </Material>
             <Shadow>
                 <CullFace>1</CullFace>
@@ -44,8 +46,10 @@
             <Model>
                 <Mesh type="icosahedron"></Mesh>
                 <Material>
-                    <Color>(1,0,0)</Color>
-                    <Roughness>0.3</Roughness>
+                    <Uniform>
+                        <Albedo>(1,0,0)</Albedo>
+                        <Roughness>0.3</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(1,0,0)</Position>
@@ -55,8 +59,10 @@
             <Model>
                 <Mesh type="icosahedron"></Mesh>
                 <Material>
-                    <Color>(0,1,0)</Color>
-                    <Roughness>0.3</Roughness>
+                    <Uniform>
+                        <Albedo>(0,1,0)</Albedo>
+                        <Roughness>0.3</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(0,1,0)</Position>
@@ -66,8 +72,10 @@
             <Model>
                 <Mesh type="icosahedron"></Mesh>
                 <Material>
-                    <Color>(0,0,1)</Color>
-                    <Roughness>0.3</Roughness>
+                    <Uniform>
+                        <Albedo>(0,0,1)</Albedo>
+                        <Roughness>0.3</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(0,0,1)</Position>
@@ -83,8 +91,10 @@
                     </Generator>
                 </Mesh>
                 <Material>
-                    <Color>(1.0,0.1,0.05)</Color>
-                    <Roughness>0.2</Roughness>
+                    <Uniform>
+                        <Albedo>(1.0,0.1,0.05)</Albedo>
+                        <Roughness>0.2</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(5,2,10)</Position>
@@ -98,8 +108,10 @@
                     </Generator>
                 </Mesh>
                 <Material>
-                    <Color>(1.0,0.2,0.05)</Color>
-                    <Roughness>0.2</Roughness>
+                    <Uniform>
+                        <Albedo>(1.0,0.2,0.05)</Albedo>
+                        <Roughness>0.2</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(5,2,15)</Position>
@@ -113,8 +125,10 @@
                     </Generator>
                 </Mesh>
                 <Material>
-                    <Color>(1.0,0.3,0.05)</Color>
-                    <Roughness>0.2</Roughness>
+                    <Uniform>
+                        <Albedo>(1.0,0.3,0.05)</Albedo>
+                        <Roughness>0.2</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(5,2,20)</Position>
@@ -128,8 +142,10 @@
                     </Generator>
                 </Mesh>
                 <Material>
-                    <Color>(1.0,0.4,0.05)</Color>
-                    <Roughness>0.2</Roughness>
+                    <Uniform>
+                        <Albedo>(1.0,0.4,0.05)</Albedo>
+                        <Roughness>0.2</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(5,2,25)</Position>
@@ -153,8 +169,10 @@
                     </Generator>
                 </Mesh>
                 <Material>
-                    <Color>(0.1,0.11,0.12)</Color>
-                    <Roughness>0.8</Roughness>
+                    <Uniform>
+                        <Albedo>(0.1,0.11,0.12)</Albedo>
+                        <Roughness>0.8</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(25,0.5,15)</Position>
@@ -166,8 +184,10 @@
             <Model ypos="relative">
                 <Mesh type="tentacle"></Mesh>
                 <Material>
-                    <Color>(0.5,0.2,0)</Color>
-                    <Roughness>0.2</Roughness>
+                    <Uniform>
+                        <Albedo>(0.5,0.2,0)</Albedo>
+                        <Roughness>0.2</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(10,0.0,20)</Position>
@@ -194,7 +214,7 @@
                     </Generator>
                 </Mesh>
                 <Material>
-                    <Color>(0,1,0)</Color>
+                    <Albedo>(0,1,0)</Albedo>
                 </Material>
                 <Transform>
                     <Position>(20,0.0,20)</Position>
@@ -207,8 +227,10 @@
             <Model ypos="relative">
                 <Mesh name=".tree01"/>
                 <Material>
-                    <Color>(0.5,0.6,0.3)</Color>
-                    <Roughness>0.8</Roughness>
+                    <Uniform>
+                        <Albedo>(0.5,0.6,0.3)</Albedo>
+                        <Roughness>0.8</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(35,-0.5,20)</Position>
@@ -219,8 +241,10 @@
             <Model ypos="relative">
                 <Mesh name=".tree02"/>
                 <Material>
-                    <Color>(0.2,0.1,0)</Color>
-                    <Roughness>0.8</Roughness>
+                    <Uniform>
+                        <Albedo>(0.2,0.1,0)</Albedo>
+                        <Roughness>0.8</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(10,-1.1,35)</Position>
@@ -232,8 +256,10 @@
             <Model ypos="relative">
                 <Mesh name=".tree03"/>
                 <Material>
-                    <Color>(0.1,0.08,0)</Color>
-                    <Roughness>0.7</Roughness>
+                    <Uniform>
+                        <Albedo>(0.1,0.08,0)</Albedo>
+                        <Roughness>0.7</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(18,-1.3,10)</Position>
@@ -250,8 +276,10 @@
                     <Centered>true</Centered>
                 </Mesh>
                 <Material>
-                    <Color>(0.05,0.5,1.0)</Color>
-                    <Roughness>0.2</Roughness>
+                    <Uniform>
+                        <Albedo>(0.05,0.5,1.0)</Albedo>
+                        <Roughness>0.2</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(37,2,10)</Position>
@@ -307,8 +335,10 @@
                     </Generator>
                 </Mesh>
                 <Material>
-                    <Color space="hsl" variance="(0.2,0.1,0.0)">(0.5,0.1,0.1)</Color>
-                    <Roughness>0.6</Roughness>
+                    <Uniform>
+                        <Albedo space="hsl" variance="(0.2,0.1,0.0)">(0.5,0.1,0.1)</Albedo>
+                        <Roughness>0.6</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position variance="(15,0,15)">(30.0,1.4,30.0)</Position>

@@ -61,6 +61,7 @@ public:
     float      metallic = 0.0f;
     float      roughness = 0.1f;
     bool       has_transparency = false;
+    bool       is_textured = false;
 
     // Shading information
     float parallax_height_scale = 0.1f;

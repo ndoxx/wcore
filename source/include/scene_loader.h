@@ -116,7 +116,6 @@ private:
                               uint32_t n_instances,
                               std::vector<Transformation>& trans_vector,
                               std::mt19937& rng);
-    Material* parse_material(rapidxml::xml_node<>* mat_node);
     Mesh<Vertex3P3N3T2U>* parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt19937& rng);
     Mesh<Vertex3P>* parse_line_mesh(rapidxml::xml_node<>* mesh_node);
     void parse_bezier_interpolator(rapidxml::xml_node<>* bez_node,

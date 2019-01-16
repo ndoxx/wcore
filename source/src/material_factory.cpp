@@ -1,5 +1,6 @@
 #include "material_factory.h"
 #include "material.h"
+#include "colors.h"
 #include "io_utils.h"
 #include "logger.h"
 
@@ -129,7 +130,28 @@ Material* MaterialFactory::make_material(hash_t asset_name)
     //}
 }
 
-void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, MaterialDescriptor& descriptor)
+Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
+{
+    return new Material(descriptor);
+}
+
+Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node, VarRngT opt_rng)
+{
+    std::string asset;
+    bool use_asset = xml::parse_node(material_node, "Asset", asset);
+
+    if(use_asset)
+        return make_material(H_(asset.c_str()));
+
+    MaterialDescriptor desc;
+    parse_material_descriptor(material_node, desc, opt_rng);
+    return make_material(desc);
+}
+
+
+void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
+                                                MaterialDescriptor& descriptor,
+                                                VarRngT opt_rng)
 {
     // Register texture units
     xml_node<>* tex_node = node->first_node("Texture");
@@ -142,6 +164,7 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, Mate
             {
                 descriptor.texture_descriptor.locations[unit] = texture_map;
                 descriptor.texture_descriptor.add_unit(unit);
+                descriptor.is_textured = true;
             }
         }
     }
@@ -151,7 +174,28 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node, Mate
     if(uni_node)
     {
         if(!descriptor.texture_descriptor.has_unit(TextureUnit::ALBEDO))
+        {
+            // Get color space, to convert later to RGB if needed
+            std::string color_space;
+            xml::parse_attribute(uni_node->first_node("Albedo"), "space", color_space);
+            // Get color
             xml::parse_node(uni_node, "Albedo", descriptor.albedo);
+
+            // Check if an rng is in use
+            if(opt_rng.has_value())
+            {
+                std::mt19937& rng = opt_rng.value();
+                std::uniform_real_distribution<float> var_distrib(-1.0f,1.0f);
+                math::vec3 color_var(0);
+                xml::parse_attribute(uni_node->first_node("Albedo"), "variance", color_var);
+                descriptor.albedo += math::vec3(color_var.x() * var_distrib(rng),
+                                                color_var.y() * var_distrib(rng),
+                                                color_var.z() * var_distrib(rng));
+            }
+
+            if(!color_space.compare("hsl"))
+                descriptor.albedo = color::hsl2rgb(descriptor.albedo);
+        }
         if(!descriptor.texture_descriptor.has_unit(TextureUnit::METALLIC))
             xml::parse_node(uni_node, "Metallic", descriptor.metallic);
         if(!descriptor.texture_descriptor.has_unit(TextureUnit::ROUGHNESS))

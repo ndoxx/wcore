@@ -26,8 +26,10 @@
                     </Generator>
                 </Mesh>
                 <Material>
-                    <Color>(1.0,0.4,0.05)</Color>
-                    <Roughness>0.15</Roughness>
+                    <Uniform>
+                        <Albedo>(1.0,0.4,0.05)</Albedo>
+                        <Roughness>0.15</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(0,0,0)</Position>
@@ -39,8 +41,10 @@
             <Model ypos="relative">
                 <Mesh name=".wall01"/>
                 <Material>
-                    <Color>(0.4,1.0,0.05)</Color>
-                    <Roughness>0.15</Roughness>
+                    <Uniform>
+                        <Albedo>(0.4,1.0,0.05)</Albedo>
+                        <Roughness>0.15</Roughness>
+                    </Uniform>
                 </Material>
                 <Transform>
                     <Position>(5,0,5)</Position>

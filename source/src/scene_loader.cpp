@@ -450,7 +450,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     xml::parse_attribute(patch, "height", height);
 
     // Generate material and height map
-    Material* pmat = parse_material(mat_node);
+    Material* pmat = model_factory_->material_factory()->make_material(mat_node);
     // Add 1 to heightmap length for seamless terrain with hex terrain triangle mesh
     HeightMap* height_map = new HeightMap(chunk_size_, chunk_size_+1, height);
     height_map->set_scale(lattice_scale_);
@@ -605,7 +605,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         bool relative_positioning = is_pos_relative(model);
 
         // Generate mesh and material, then construct model
-        Material* pmat = parse_material(mat_node);
+        Material* pmat = model_factory_->material_factory()->make_material(mat_node);
         SurfaceMesh* pmesh = parse_mesh(mesh_node, rng);
         if(!pmesh)
         {
@@ -675,7 +675,7 @@ void SceneLoader::parse_line_models(xml_node<>* chunk_node, uint32_t chunk_index
         bool relative_positioning = is_pos_relative(lmodel);
 
         // Generate mesh and material, then construct line model
-        Material* pmat = parse_material(mat_node);
+        Material* pmat = model_factory_->material_factory()->make_material(mat_node);
         Mesh<Vertex3P>* pmesh = parse_line_mesh(mesh_node);
         if(!pmesh)
         {
@@ -744,11 +744,11 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
         float roughness;
 
         // Material
-        bool use_asset = xml::parse_node(mat_node, "Asset", asset);
-        xml::parse_node(mat_node, "Color", color);
-        xml::parse_node(mat_node, "Roughness", roughness);
-        xml::parse_attribute(mat_node->first_node("Color"), "variance", color_var);
-        xml::parse_attribute(mat_node->first_node("Color"), "space", color_space);
+        xml_node<>* unif_node = mat_node->first_node("Uniform");
+        xml::parse_node(unif_node, "Albedo", color);
+        xml::parse_node(unif_node, "Roughness", roughness);
+        xml::parse_attribute(unif_node->first_node("Albedo"), "variance", color_var);
+        xml::parse_attribute(unif_node->first_node("Albedo"), "space", color_space);
 
         // Generate batch transformations
         std::vector<Transformation> transforms;
@@ -763,25 +763,8 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
                 continue;
             }
 
-            pModel pmdl;
-            if(use_asset)
-            {
-                Material* pmat = model_factory_->material_factory()->make_material(H_(asset.c_str()));
-                pmdl = std::make_shared<Model>(pmesh, pmat);
-            }
-            else
-            {
-                // Instance color
-                vec3 inst_color = color + vec3(color_var.x() * var_distrib(rng),
-                                               color_var.y() * var_distrib(rng),
-                                               color_var.z() * var_distrib(rng));
-
-                if(!color_space.compare("hsl"))
-                    inst_color = color::hsl2rgb(inst_color);
-
-                Material* pmat = new Material(inst_color, roughness);
-                pmdl = std::make_shared<Model>(pmesh, pmat);
-            }
+            Material* pmat = model_factory_->material_factory()->make_material(mat_node, {rng});
+            pModel pmdl = std::make_shared<Model>(pmesh, pmat);
 
             // Transform
             pmdl->set_transformation(transforms[ii]);
@@ -986,53 +969,10 @@ void SceneLoader::parse_transformation(rapidxml::xml_node<>* trn_node,
     }
 }
 
-Material* SceneLoader::parse_material(rapidxml::xml_node<>* mat_node)
-{
-    std::string asset;
-    bool use_asset = xml::parse_node(mat_node, "Asset", asset);
-
-    Material* pmat = nullptr;
-
-    if(use_asset)
-    {
-        pmat = model_factory_->material_factory()->make_material(H_(asset.c_str()));
-    }
-    else
-    {
-        vec3 color;
-        float roughness = 0.2f;
-        float metallic = 0.0f;
-        float alpha = 1.0f;
-        xml::parse_node(mat_node, "Color", color);
-        xml::parse_node(mat_node, "Roughness", roughness);
-        xml::parse_node(mat_node, "Metallic", metallic);
-        bool blend = xml::parse_node(mat_node, "Transparency", alpha);
-        pmat = new Material(color, roughness, metallic, blend);
-        if(blend)
-            pmat->set_alpha(alpha);
-    }
-
-    float parallax_height_scale = 0.1f;
-    bool use_normal_map = false;
-    bool use_parallax_map = false;
-    bool use_overlay = false;
-    if(xml::parse_node(mat_node, "NormalMap", use_normal_map))
-        pmat->set_normal_map(use_normal_map);
-    if(xml::parse_node(mat_node, "ParallaxMap", use_parallax_map))
-        pmat->set_parallax_map(use_parallax_map);
-    if(xml::parse_node(mat_node, "ParallaxHeightScale", parallax_height_scale))
-        pmat->set_parallax_height_scale(parallax_height_scale);
-    if(xml::parse_node(mat_node, "Overlay", use_overlay))
-        pmat->set_overlay(use_overlay);
-
-    return pmat;
-}
-
 SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt19937& rng)
 {
     if(!mesh_node)
         return nullptr;
-
 
     SurfaceMesh* pmesh = nullptr;
 
