@@ -2,6 +2,7 @@
 #define MODEL_FACTORY_H
 
 #include <random>
+#include <map>
 
 #include "wtypes.h"
 #include "xml_parser.h"
@@ -9,6 +10,12 @@
 
 namespace wcore
 {
+
+struct ModelInstanceDescriptor
+{
+    hash_t mesh_name;
+    hash_t material_name;
+};
 
 class Model;
 class TerrainChunk;
@@ -28,18 +35,19 @@ public:
     std::shared_ptr<Model> make_model(rapidxml::xml_node<>* mesh_node,
                                       rapidxml::xml_node<>* mat_node,
                                       OptRngT opt_rng);
+    std::shared_ptr<Model> make_model_instance(hash_t name);
     std::shared_ptr<TerrainChunk> make_terrain_patch(const TerrainPatchDescriptor& desc,
                                                      OptRngT opt_rng=nullptr);
-    // TMP
-    inline SurfaceMeshFactory* mesh_factory()  { return mesh_factory_; }
-    inline MaterialFactory* material_factory() { return material_factory_; }
 
+    void retrieve_asset_descriptions(rapidxml::xml_node<>* models_node);
 private:
     XMLParser xml_parser_;
 
     SurfaceMeshFactory* mesh_factory_;
     MaterialFactory* material_factory_;
     TerrainFactory* terrain_factory_;
+
+    std::map<hash_t, ModelInstanceDescriptor> instance_descriptors_;
 };
 
 

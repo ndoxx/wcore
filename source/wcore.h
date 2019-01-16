@@ -26,7 +26,8 @@ namespace wcore
         void LoadStart();
         // Load first level global info, no chunk is loaded
         void LoadLevel();
-        void LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry=true);
+        uint32_t LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry=true);
+        void LoadModel(hash_t name, uint32_t chunk_index);
         void SendChunk(uint32_t xx, uint32_t zz);
         int Run();
 

@@ -304,7 +304,9 @@ int main(int argc, char const *argv[])
 
     // * Load level and first chunk, but don't send geometry yet
     engine.LoadLevel();
-    engine.LoadChunk(0, 0, false);
+    uint32_t chunk00 = engine.LoadChunk(0, 0, false);
+
+    engine.LoadModel(H_("brickWall01"), chunk00);
 
     // * Add wall models to scene
 

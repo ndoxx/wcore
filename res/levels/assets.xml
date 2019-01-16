@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Assets>
     <Materials>
-        <Material>
-            <Name>ball01</Name>
+        <Material name="ball01">
             <Texture>
                 <Albedo>ball01_albedo.png</Albedo>
             </Texture>
@@ -12,8 +11,7 @@
             </Uniform>
         </Material>
 
-        <Material>
-            <Name>beachSand</Name>
+        <Material name="beachSand">
             <Texture>
                 <Albedo>beachSand_albedo.png</Albedo>
                 <AO>beachSand_ao.png</AO>
@@ -37,15 +35,13 @@
             </Override>
         </Material>
 
-        <Material>
-            <Name>brickWall</Name>
+        <Material name="brickWall">
             <Texture>
                 <Albedo>brickWall_albedo.png</Albedo>
             </Texture>
         </Material>
 
-        <Material>
-            <Name>cube</Name>
+        <Material name="cube">
             <Texture>
                 <Albedo>cube_albedo.png</Albedo>
                 <Metallic>cube_metal.png</Metallic>
@@ -53,8 +49,7 @@
             </Texture>
         </Material>
 
-        <Material>
-            <Name>default</Name>
+        <Material name="default">
             <Uniform>
                 <Albedo>(1,0,0)</Albedo>
                 <Metallic>0</Metallic>
@@ -62,8 +57,7 @@
             </Uniform>
         </Material>
 
-        <Material>
-            <Name>dome01</Name>
+        <Material name="dome01">
             <Texture>
                 <Albedo>dome01_albedo.png</Albedo>
             </Texture>
@@ -73,8 +67,7 @@
             </Uniform>
         </Material>
 
-        <Material>
-            <Name>pavedFloor</Name>
+        <Material name="pavedFloor">
             <Texture>
                 <Albedo>pavedFloor_albedo.png</Albedo>
                 <AO>pavedFloor_ao.png</AO>
@@ -92,8 +85,7 @@
             </Override>
         </Material>
 
-        <Material>
-            <Name>sandstone</Name>
+        <Material name="sandstone">
             <Texture>
                 <Albedo>sandstone_albedo.png</Albedo>
                 <AO>sandstone_ao.png</AO>
@@ -184,4 +176,12 @@
             </Generator>
         </Mesh>
     </Meshes>
+
+    <!-- Model Instances -->
+    <Models>
+        <Model name="brickWall01">
+            <Mesh name=".wall01"/>
+            <Material name="brickWall"/>
+        </Model>
+    </Models>
 </Assets>

@@ -170,10 +170,16 @@ void Engine::Init(int argc, char const *argv[],
 #endif
 }
 
-void Engine::LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry)
+uint32_t Engine::LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry)
 {
-    eimpl_->scene_loader->load_chunk(math::i32vec2(xx,zz), send_geometry);
+    return eimpl_->scene_loader->load_chunk(math::i32vec2(xx,zz), send_geometry);
 }
+
+void Engine::LoadModel(hash_t name, uint32_t chunk_index)
+{
+    eimpl_->scene_loader->load_model_instance(name, chunk_index);
+}
+
 
 void Engine::SendChunk(uint32_t xx, uint32_t zz)
 {

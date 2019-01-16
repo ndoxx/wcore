@@ -38,7 +38,7 @@
                 </Transform>
             </Model>
 
-            <Model ypos="relative">
+            <!--<Model ypos="relative">
                 <Mesh name=".wall01"/>
                 <Material>
                     <Uniform>
@@ -51,7 +51,7 @@
                     <Scale>1.0</Scale>
                     <Angle>(0,0,0)</Angle>
                 </Transform>
-            </Model>
+            </Model>-->
         </Models>
 
         <Lights>

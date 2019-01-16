@@ -95,9 +95,25 @@ bool SceneLoader::onKeyboardEvent(const WData& data)
     return true; // Do NOT consume event
 }
 
-void SceneLoader::load_model_instance(hash_t name, const math::i32vec2& chunk_coords)
+void SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index)
 {
-    // TODO
+    // Create model from instance name
+    pModel pmdl = model_factory_->make_model_instance(name);
+
+    // Update model transformation
+    /*Transformation trans;
+    trans.set_position(vec3(0,0,0));
+
+    // Translate according to chunk coordinates
+    auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
+    trans.translate((chunk_size_m_-lattice_scale_)*chunk_coords.x(),
+                    0,
+                    (chunk_size_m_-lattice_scale_)*chunk_coords.y());
+    pmdl->set_transformation(trans);*/
+    pmdl->update_bounding_boxes();
+
+    // Add model to scene
+    pscene_->add_model(pmdl, chunk_index);
 }
 
 

@@ -84,7 +84,7 @@ public:
     // Load a chunk, send geometry to driver if finalize set to true
     uint32_t load_chunk(const math::i32vec2& chunk_coords, bool finalize=true);
 
-    void load_model_instance(hash_t name, const math::i32vec2& chunk_coords);
+    void load_model_instance(hash_t name, uint32_t chunk_index);
 
     void reload_chunks();
     void reload_map();

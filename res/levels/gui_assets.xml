@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Assets>
     <Materials>
-        <Material>
-            <Name>cursor</Name>
+        <Material name="cursor">
             <Texture>
                 <Albedo>cursor.png</Albedo>
             </Texture>

@@ -94,7 +94,7 @@ void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* material
          mat_node=mat_node->next_sibling("Material"))
     {
         std::string material_name;
-        if(xml::parse_node(mat_node, "Name", material_name))
+        if(xml::parse_attribute(mat_node, "name", material_name))
         {
 #ifdef __DEBUG__
             if(material_descriptors_.find(H_(material_name.c_str())) != material_descriptors_.end())
