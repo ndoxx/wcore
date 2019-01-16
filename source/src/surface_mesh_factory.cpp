@@ -48,6 +48,56 @@ void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshe
     }
 }
 
+SurfaceMesh* SurfaceMeshFactory::make_surface_mesh(rapidxml::xml_node<>* mesh_node,
+                                                   OptRngT opt_rng)
+{
+    if(!mesh_node)
+        return nullptr;
+
+    SurfaceMesh* pmesh = nullptr;
+
+    // Has a "name" attribute -> mesh instance
+    std::string name;
+    bool is_instance = xml::parse_attribute(mesh_node, "name", name);
+
+    if(is_instance)
+        return make_instance(H_(name.c_str()));
+
+    std::string mesh;
+    if(!xml::parse_attribute(mesh_node, "type", mesh))
+        return nullptr;
+
+    if(!mesh.compare("obj"))
+    {
+        // Acquire mesh from Wavefront .obj file
+        std::string location;
+        if(!xml::parse_node(mesh_node, "Location", location))
+        {
+            DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.", "parsing", Severity::WARN);
+            DLOGI("Missing <n>Location</n> node.", "parsing", Severity::WARN);
+            return nullptr;
+        }
+        bool process_uv = false;
+        bool centered = false;
+        xml::parse_node(mesh_node, "ProcessUV", process_uv);
+        xml::parse_node(mesh_node, "Centered", centered);
+        pmesh = make_obj(location.c_str(), process_uv, centered);
+    }
+    else
+    {
+        rapidxml::xml_node<>* gen_node = mesh_node->first_node("Generator");
+        pmesh = make_procedural(H_(mesh.c_str()), gen_node, opt_rng);
+    }
+
+    if(pmesh == nullptr)
+    {
+        DLOGW("Couldn't create mesh: name= ", "parsing", Severity::WARN);
+        DLOGI(mesh, "parsing", Severity::WARN);
+    }
+
+    return pmesh;
+}
+
 SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
 {
     // First, try to find in cache
@@ -62,7 +112,7 @@ SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
         {
             const MeshInstanceDescriptor& desc = it_d->second;
             std::mt19937 rng(0);
-            SurfaceMesh* pmesh = make_procedural(desc.type, rng, desc.generator_node, false);
+            SurfaceMesh* pmesh = make_procedural(desc.type, desc.generator_node, &rng, false);
             //cache_.insert(std::pair(name, pmesh));
             pmesh->set_cached(true);
             return pmesh;
@@ -96,8 +146,8 @@ SurfaceMesh* SurfaceMeshFactory::procedural_cache_lookup(hash_t mesh_type,
 }
 
 SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
-                                                 std::mt19937& rng,
                                                  rapidxml::xml_node<char>* generator_node,
+                                                 OptRngT opt_rng,
                                                  bool owns)
 {
     // Procedural meshes that depend on extra data -> not cached ftm
@@ -127,11 +177,11 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
             return (SurfaceMesh*)factory::make_box(props.extent);
         }, owns);
     }
-    else if(mesh_type == H_("crystal"))
+    else if(mesh_type == H_("crystal") && opt_rng)
     {
         std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
         //std::uniform_int_distribution<uint32_t> mesh_seed(0,10);
-        uint32_t seed = mesh_seed(rng);
+        uint32_t seed = mesh_seed(*opt_rng);
 
         return procedural_cache_lookup(mesh_type, seed, [&]()
         {
@@ -151,7 +201,7 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
             return TreeGenerator::generate_tree(props);
         }, owns);
     }
-    else if(mesh_type == H_("rock"))
+    else if(mesh_type == H_("rock") && opt_rng)
     {
         // Procedural rock mesh, look for RockGenerator node
         if(!generator_node) return nullptr;
@@ -160,7 +210,7 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         props.parse_xml(generator_node);
 
         std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
-        props.seed = mesh_seed(rng);
+        props.seed = mesh_seed(*opt_rng);
 
         return procedural_cache_lookup(mesh_type, std::hash<RockProps>{}(props), [&]()
         {

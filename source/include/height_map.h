@@ -12,7 +12,7 @@ namespace wcore
 class HeightMap
 {
 public:
-    HeightMap(uint32_t width, uint32_t length, float height=0.0f);
+    HeightMap(uint32_t width, uint32_t length, float height=0.0f, float scale=1.0f);
     HeightMap(const HeightMap& hm);
     ~HeightMap();
 

@@ -3,8 +3,14 @@
 #include "model_factory.h"
 #include "material_factory.h"
 #include "surface_mesh_factory.h"
+#include "terrain_factory.h"
 #include "io_utils.h"
 #include "xml_utils.hpp"
+#include "material.h"
+#include "surface_mesh.h"
+#include "terrain_patch.h"
+#include "model.h"
+#include "logger.h"
 
 namespace fs = std::filesystem;
 
@@ -13,7 +19,8 @@ namespace wcore
 
 ModelFactory::ModelFactory(const char* assetfile):
 mesh_factory_(new SurfaceMeshFactory()),
-material_factory_(new MaterialFactory())
+material_factory_(new MaterialFactory()),
+terrain_factory_(new TerrainFactory())
 {
     parse_asset_file(assetfile);
     rapidxml::xml_node<>* materials_node = xml_parser_.get_root()->first_node("Materials");
@@ -24,7 +31,9 @@ material_factory_(new MaterialFactory())
 
 ModelFactory::~ModelFactory()
 {
-
+    delete terrain_factory_;
+    delete material_factory_;
+    delete mesh_factory_;
 }
 
 void ModelFactory::parse_asset_file(const char* xmlfile)
@@ -33,6 +42,51 @@ void ModelFactory::parse_asset_file(const char* xmlfile)
     xml_parser_.load_file_xml(file_path);
 }
 
+std::shared_ptr<Model> ModelFactory::make_model(rapidxml::xml_node<>* mesh_node,
+                                                rapidxml::xml_node<>* mat_node,
+                                                OptRngT opt_rng)
+{
+    SurfaceMesh* pmesh = mesh_factory_->make_surface_mesh(mesh_node, opt_rng);
+    if(!pmesh)
+    {
+        DLOGW("[ModelFactory] Incomplete mesh declaration.", "parsing", Severity::WARN);
+        delete pmesh;
+        return nullptr;
+    }
+
+    Material* pmat = material_factory_->make_material(mat_node, opt_rng);
+    if(!pmat)
+    {
+        DLOGW("[ModelFactory] Incomplete material declaration.", "parsing", Severity::WARN);
+        delete pmat;
+        delete pmesh;
+        return nullptr;
+    }
+
+    return std::make_shared<Model>(pmesh, pmat);
+}
+
+std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatchDescriptor& desc,
+                                                               OptRngT opt_rng)
+{
+    // --- Material
+    Material* pmat = material_factory_->make_material(desc.material_node);
+    if(!pmat)
+    {
+        DLOGW("[ModelFactory] Incomplete material declaration.", "parsing", Severity::WARN);
+        delete pmat;
+        return nullptr;
+    }
+
+    HeightMap* heightmap = terrain_factory_->make_heightmap(desc);
+
+    return std::make_shared<TerrainChunk>(
+        heightmap,
+        pmat,
+        desc.lattice_scale,
+        desc.texture_scale
+    );
+}
 
 } // namespace wcore
 

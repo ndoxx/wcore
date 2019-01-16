@@ -449,116 +449,18 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     float height = 0.0f;
     xml::parse_attribute(patch, "height", height);
 
-    // Generate material and height map
-    Material* pmat = model_factory_->material_factory()->make_material(mat_node);
-    // Add 1 to heightmap length for seamless terrain with hex terrain triangle mesh
-    HeightMap* height_map = new HeightMap(chunk_size_, chunk_size_+1, height);
-    height_map->set_scale(lattice_scale_);
+    TerrainPatchDescriptor desc;
+    desc.chunk_size = chunk_size_;
+    desc.chunk_x = chunk_coords.x();
+    desc.chunk_z = chunk_coords.y();
+    desc.lattice_scale = lattice_scale_;
+    desc.texture_scale = texture_scale_;
+    desc.height = height;
+    desc.material_node = mat_node;
+    desc.generator_node = generator_node;
+    desc.height_modifier_node = height_modifier_node;
 
-    // TODO
-    // Parse generators first hand (instantiate) then use
-    // a table to select the correct generator for current chunk.
-    // Hightmap generation
-    bool success = true;
-    if(generator_node)
-    {
-        std::string type;
-        uint32_t seed = 0;
-        success = true;
-        success &= xml::parse_attribute(generator_node, "type", type);
-        xml::parse_attribute(generator_node, "seed", seed);
-
-        if(!success)
-        {
-            DLOGE("[SceneLoader] Generator node must have a 'type' attribute initialized.", "parsing", Severity::CRIT);
-            return;
-        }
-
-        std::mt19937 rng;
-        rng.seed(seed);
-        if(!type.compare("simplex"))
-        {
-            SimplexNoiseProps props;
-            props.scale = lattice_scale_;
-            props.parse_xml(generator_node);
-            props.hiBound /= lattice_scale_;
-            // Compute starting coordinates (bottom-rightmost)
-            props.startX = chunk_coords.x() * (chunk_size_-1);
-            props.startZ = chunk_coords.y() * (chunk_size_-1);
-
-            HeightmapGenerator::init_simplex_generator(rng);
-            HeightmapGenerator::heightmap_from_simplex_noise(*height_map, props);
-        }
-    }
-
-    // Apply modifiers to height map
-    if(height_modifier_node)
-    {
-        for (xml_node<>* modifier=height_modifier_node->first_node();
-             modifier; modifier=modifier->next_sibling())
-        {
-            if(!strcmp(modifier->name(),"Randomizer"))
-            {
-                uint32_t seed, xmin, xmax, ymin, ymax;
-                float height_variance;
-                success = true;
-                success &= xml::parse_attribute(modifier, "seed", seed);
-                success &= xml::parse_attribute(modifier, "xmin", xmin);
-                success &= xml::parse_attribute(modifier, "xmax", xmax);
-                success &= xml::parse_attribute(modifier, "ymin", ymin);
-                success &= xml::parse_attribute(modifier, "ymax", ymax);
-                success &= xml::parse_attribute(modifier, "variance", height_variance);
-                if(!success) return;
-
-                std::mt19937 rng;
-                rng.seed(seed);
-                std::uniform_real_distribution<float> var_distrib(-1.0f,1.0f);
-
-                height_map->traverse([&](math::vec2 pos2d, float& height)
-                {
-                    if(pos2d.x()>=xmin && pos2d.x()<=xmax && pos2d.y()>=ymin && pos2d.y()<=ymax)
-                        height += height_variance * var_distrib(rng);
-                });
-            }
-            else if(!strcmp(modifier->name(),"Erosion"))
-            {
-                std::string type;
-                if(!xml::parse_attribute(modifier, "type", type))
-                    return;
-
-                if(!type.compare("plateau"))
-                {
-                    PlateauErosionProps props;
-                    props.parse_xml(modifier);
-                    HeightmapGenerator::erode(*height_map, props);
-                }
-                else if(!type.compare("droplets"))
-                {
-                    DropletErosionProps props;
-                    props.parse_xml(modifier);
-                    HeightmapGenerator::erode_droplets(*height_map, props);
-                }
-            }
-            else if(!strcmp(modifier->name(),"Offset"))
-            {
-                float offset;
-                success = true;
-                success &= xml::parse_attribute(modifier, "y", offset);
-                offset /= lattice_scale_;
-                if(!success) return;
-
-                height_map->traverse([&](math::vec2 pos2d, float& height){ height += offset; });
-            }
-        }
-    }
-
-    // Make terrain chunk (model) from heightmap, material and scale params
-    pTerrain terrain = std::make_shared<TerrainChunk>(
-        height_map,
-        pmat,
-        lattice_scale_,
-        texture_scale_
-    );
+    pTerrain terrain = model_factory_->make_terrain_patch(desc);
 
     // Fix new terrain edge normals and tangents
     terrain::stitch_terrain_edges(pscene_, terrain, chunk_index, chunk_size_);
@@ -604,18 +506,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         // Do we position the models relative to a heightmap?
         bool relative_positioning = is_pos_relative(model);
 
-        // Generate mesh and material, then construct model
-        Material* pmat = model_factory_->material_factory()->make_material(mat_node);
-        SurfaceMesh* pmesh = parse_mesh(mesh_node, rng);
-        if(!pmesh)
-        {
-            DLOGW("[SceneLoader] Skipping incomplete mesh declaration.", "parsing", Severity::WARN);
-            if(pmat)
-                delete pmat;
-            continue;
-        }
-
-        pModel pmdl = std::make_shared<Model>(pmesh, pmat);
+        pModel pmdl = model_factory_->make_model(mesh_node, mat_node, &rng);
 
         // Spacial transformation
         if(trn_node)
@@ -739,7 +630,6 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
         std::uniform_real_distribution<float> var_distrib(-1.0f,1.0f);
 
         std::string color_space;
-        std::string asset;
         vec3 color, color_var;
         float roughness;
 
@@ -756,15 +646,7 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
 
         for(uint32_t ii=0; ii<instances; ++ii)
         {
-            SurfaceMesh* pmesh = parse_mesh(mesh_node, rng);
-            if(!pmesh)
-            {
-                DLOGW("[SceneLoader] Skipping incomplete mesh declaration.", "parsing", Severity::WARN);
-                continue;
-            }
-
-            Material* pmat = model_factory_->material_factory()->make_material(mat_node, {rng});
-            pModel pmdl = std::make_shared<Model>(pmesh, pmat);
+            pModel pmdl = model_factory_->make_model(mesh_node, mat_node, &rng);
 
             // Transform
             pmdl->set_transformation(transforms[ii]);
@@ -969,56 +851,6 @@ void SceneLoader::parse_transformation(rapidxml::xml_node<>* trn_node,
     }
 }
 
-SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt19937& rng)
-{
-    if(!mesh_node)
-        return nullptr;
-
-    SurfaceMesh* pmesh = nullptr;
-
-    // Has a "name" attribute -> mesh instance
-    std::string name;
-    bool is_instance = xml::parse_attribute(mesh_node, "name", name);
-
-    if(is_instance)
-    {
-        return model_factory_->mesh_factory()->make_instance(H_(name.c_str()));
-    }
-
-    std::string mesh;
-    if(!xml::parse_attribute(mesh_node, "type", mesh))
-        return nullptr;
-
-    if(!mesh.compare("obj"))
-    {
-        // Acquire mesh from Wavefront .obj file
-        std::string location;
-        if(!xml::parse_node(mesh_node, "Location", location))
-        {
-            DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.", "parsing", Severity::WARN);
-            DLOGI("Missing <n>Location</n> node.", "parsing", Severity::WARN);
-            return nullptr;
-        }
-        bool process_uv = false;
-        bool centered = false;
-        xml::parse_node(mesh_node, "ProcessUV", process_uv);
-        xml::parse_node(mesh_node, "Centered", centered);
-        pmesh = model_factory_->mesh_factory()->make_obj(location.c_str(), process_uv, centered);
-    }
-    else
-    {
-        xml_node<>* gen_node = mesh_node->first_node("Generator");
-        pmesh = model_factory_->mesh_factory()->make_procedural(H_(mesh.c_str()), rng, gen_node);
-    }
-
-    if(pmesh == nullptr)
-    {
-        DLOGW("Couldn't create mesh: name= ", "parsing", Severity::WARN);
-        DLOGI(mesh, "parsing", Severity::WARN);
-    }
-
-    return pmesh;
-}
 /*
 Mesh<Vertex3P>* SceneLoader::parse_line_mesh(rapidxml::xml_node<>* mesh_node)
 {

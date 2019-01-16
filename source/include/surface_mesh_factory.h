@@ -5,6 +5,7 @@
 #include <map>
 #include <list>
 #include <cstdint>
+#include <variant>
 #include <random>
 
 #include "mesh.hpp"
@@ -27,6 +28,7 @@ class SurfaceMeshFactory
 {
 public:
     typedef std::pair<hash_t, SurfaceMesh*> CacheEntryT;
+    typedef std::mt19937* OptRngT;
 
     SurfaceMeshFactory();
     ~SurfaceMeshFactory();
@@ -34,11 +36,13 @@ public:
     void retrieve_asset_descriptions(rapidxml::xml_node<>* meshes_node);
 
     SurfaceMesh* make_procedural(hash_t mesh_type,
-                                 std::mt19937& rng,
                                  rapidxml::xml_node<char>* generator_node=nullptr,
+                                 OptRngT opt_rng=nullptr,
                                  bool owns=true);
     SurfaceMesh* make_obj(const char* filename, bool process_uv=true, bool centered=true);
     SurfaceMesh* make_instance(hash_t name);
+    SurfaceMesh* make_surface_mesh(rapidxml::xml_node<>* mesh_node,
+                                   OptRngT opt_rng=nullptr);
 
 private:
     SurfaceMesh* procedural_cache_lookup(hash_t mesh_type,

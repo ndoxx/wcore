@@ -4,10 +4,10 @@
 namespace wcore
 {
 
-HeightMap::HeightMap(uint32_t width, uint32_t length, float height)
+HeightMap::HeightMap(uint32_t width, uint32_t length, float height, float scale)
 : width_(width)
 , length_(length)
-, scale_(1.0f)
+, scale_(scale)
 , heights_(new float[width_*length_])
 {
     for(uint32_t ii=0; ii<width_*length_; ++ii)

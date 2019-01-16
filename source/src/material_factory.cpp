@@ -135,7 +135,7 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
     return new Material(descriptor);
 }
 
-Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node, VarRngT opt_rng)
+Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node, OptRngT opt_rng)
 {
     std::string asset;
     bool use_asset = xml::parse_node(material_node, "Asset", asset);
@@ -151,7 +151,7 @@ Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node, Va
 
 void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
                                                 MaterialDescriptor& descriptor,
-                                                VarRngT opt_rng)
+                                                OptRngT opt_rng)
 {
     // Register texture units
     xml_node<>* tex_node = node->first_node("Texture");
@@ -182,9 +182,9 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
             xml::parse_node(uni_node, "Albedo", descriptor.albedo);
 
             // Check if an rng is in use
-            if(opt_rng.has_value())
+            if(opt_rng)
             {
-                std::mt19937& rng = opt_rng.value();
+                std::mt19937& rng = *opt_rng;
                 std::uniform_real_distribution<float> var_distrib(-1.0f,1.0f);
                 math::vec3 color_var(0);
                 xml::parse_attribute(uni_node->first_node("Albedo"), "variance", color_var);

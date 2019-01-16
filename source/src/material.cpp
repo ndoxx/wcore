@@ -20,7 +20,7 @@ textured_(descriptor.is_textured),
 use_normal_map_(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL) && descriptor.enable_normal_mapping),
 use_parallax_map_(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH) && descriptor.enable_parallax_mapping),
 use_overlay_(false),
-blend_(false),
+blend_(descriptor.has_transparency),
 cached_(false)
 {
     if(textured_)
