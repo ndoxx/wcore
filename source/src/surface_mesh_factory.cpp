@@ -15,14 +15,10 @@ namespace wcore
 
 using namespace math;
 
-SurfaceMeshFactory::SurfaceMeshFactory(const char* xml_file)
+SurfaceMeshFactory::SurfaceMeshFactory()
 {
     models_path_ = CONFIG.get_root_directory();
     models_path_ = models_path_ / "res/models";
-
-    fs::path file_path(io::get_file(H_("root.folders.level"), xml_file));
-    xml_parser_.load_file_xml(file_path);
-    retrieve_asset_descriptions();
 }
 
 SurfaceMeshFactory::~SurfaceMeshFactory()
@@ -33,10 +29,8 @@ SurfaceMeshFactory::~SurfaceMeshFactory()
         delete meshptr;*/
 }
 
-void SurfaceMeshFactory::retrieve_asset_descriptions()
+void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshes_node)
 {
-    rapidxml::xml_node<>* meshes_node = xml_parser_.get_root()->first_node("Meshes");
-
     for (rapidxml::xml_node<>* mesh_node=meshes_node->first_node("Mesh");
          mesh_node;
          mesh_node=mesh_node->next_sibling("Mesh"))
@@ -118,6 +112,19 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         return procedural_cache_lookup(mesh_type, std::hash<IcosphereProps>{}(props), [&]()
         {
             return (SurfaceMesh*)factory::make_ico_sphere(props.density);
+        }, owns);
+    }
+    else if(mesh_type == H_("box"))
+    {
+        BoxProps props;
+        if(generator_node)
+            props.parse_xml(generator_node);
+        else
+            props.extent = {-1.f,1.f,-1.f,1.f,-1.f,1.f};
+
+        return procedural_cache_lookup(mesh_type, std::hash<BoxProps>{}(props), [&]()
+        {
+            return (SurfaceMesh*)factory::make_box(props.extent);
         }, owns);
     }
     else if(mesh_type == H_("crystal"))

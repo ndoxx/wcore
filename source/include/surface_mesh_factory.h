@@ -28,10 +28,10 @@ class SurfaceMeshFactory
 public:
     typedef std::pair<hash_t, SurfaceMesh*> CacheEntryT;
 
-    SurfaceMeshFactory(const char* xml_file);
+    SurfaceMeshFactory();
     ~SurfaceMeshFactory();
 
-    void retrieve_asset_descriptions();
+    void retrieve_asset_descriptions(rapidxml::xml_node<>* meshes_node);
 
     SurfaceMesh* make_procedural(hash_t mesh_type,
                                  std::mt19937& rng,
@@ -46,7 +46,6 @@ private:
                                          std::function<SurfaceMesh*(void)>new_mesh,
                                          bool owns=true);
 
-    XMLParser xml_parser_;
     std::map<hash_t, MeshInstanceDescriptor> instance_descriptors_;
     std::map<hash_t, SurfaceMesh*> cache_; // Owns loaded meshes
     std::map<hash_t, SurfaceMesh*> proc_cache_; // Owns loaded procedural meshes

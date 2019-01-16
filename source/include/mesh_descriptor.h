@@ -2,6 +2,7 @@
 #define MESH_DESCRIPTOR_H
 
 #include "wtypes.h"
+#include "math3d.h"
 
 namespace rapidxml
 {
@@ -23,8 +24,16 @@ struct IcosphereProps: public MeshDescriptor
     uint32_t density;
 };
 
+struct BoxProps: public MeshDescriptor
+{
+    virtual void parse_xml(rapidxml::xml_node<char>* node) override;
+
+    math::extent_t extent;
+};
+
 } // namespace wcore
 
 MAKE_HASHABLE(wcore::IcosphereProps, t.density)
+MAKE_HASHABLE(wcore::BoxProps, t.extent[0], t.extent[1], t.extent[2], t.extent[3], t.extent[4], t.extent[5])
 
 #endif // MESH_DESCRIPTOR_H

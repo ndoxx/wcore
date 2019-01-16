@@ -51,6 +51,8 @@ set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/model.cpp
     ${CMAKE_SOURCE_DIR}/source/src/mesh_descriptor.cpp
     ${CMAKE_SOURCE_DIR}/source/src/surface_mesh_factory.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/material_factory.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/model_factory.cpp
     ${CMAKE_SOURCE_DIR}/source/src/sky.cpp
     ${CMAKE_SOURCE_DIR}/source/src/transformation.cpp
     ${CMAKE_SOURCE_DIR}/source/src/camera.cpp
@@ -93,8 +95,7 @@ set(SRC_RES
     ${CMAKE_SOURCE_DIR}/source/src/pixel_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/texture.cpp
     ${CMAKE_SOURCE_DIR}/source/src/material.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/material_common.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/material_factory.cpp)
+    ${CMAKE_SOURCE_DIR}/source/src/material_common.cpp)
 
 set(SRC_IMGUI
     ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui.cpp

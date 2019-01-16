@@ -6255,3 +6255,8 @@ Les 3 méthodes tentent de rechercher l'objet à créer dans un cache avant d'en
         -> Pour parser un noeud *Generator* dans un fichier XML
 J'utilise de plus la macro MAKE_HASHABLE de wtypes.h qui permet de générer automatiquement une structure de hashing dans le namespace std pour tout type de struct _MeshDescriptor_.
 Donc quand je dois créer un nouvel objet procédural, je regarde d'abord le hash de sa structure de description, je le combine au hash de son type avec la macro HCOMBINE_, et je cherche le hash combiné dans un cache réservé aux mesh procéduraux. Je ne crée un nouveau mesh que si la recherche à échoué, auquel cas je mets en cache le nouveau mesh.
+
+
+__BUUUUUUGS__
+    -> J'ai commenté tout ce qui touche à la mise en cache.
+    -> Commencer par refactor _Model_ pour utiliser des shared_ptr pour mesh et material.

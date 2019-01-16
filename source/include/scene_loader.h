@@ -17,8 +17,7 @@
 namespace wcore
 {
 
-class MaterialFactory;
-class SurfaceMeshFactory;
+class ModelFactory;
 class Scene;
 class Model;
 class LineModel;
@@ -52,8 +51,7 @@ class SceneLoader: public GameSystem
 {
 private:
     XMLParser xml_parser_;
-    MaterialFactory* material_factory_;
-    SurfaceMeshFactory* mesh_factory_;
+    ModelFactory* model_factory_;
 
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_nodes_;
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_patches_;
@@ -85,6 +83,8 @@ public:
     void load_global(DaylightSystem& daylight);
     // Load a chunk, send geometry to driver if finalize set to true
     uint32_t load_chunk(const math::i32vec2& chunk_coords, bool finalize=true);
+
+    void load_model_instance(hash_t name, const math::i32vec2& chunk_coords);
 
     void reload_chunks();
     void reload_map();

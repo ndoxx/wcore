@@ -173,5 +173,15 @@
                 <MaxNodes>8</MaxNodes>
             </Generator>
         </Mesh>
+        <Mesh name=".wall01" type="box">
+            <Generator>
+                <xmin>-0.125</xmin>
+                <xmax>0.125</xmax>
+                <ymin>0.0</ymin>
+                <ymax>2.0</ymax>
+                <zmin>-1.0</zmin>
+                <zmax>1.0</zmax>
+            </Generator>
+        </Mesh>
     </Meshes>
 </Assets>

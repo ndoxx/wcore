@@ -35,6 +35,19 @@
                     <Angle>(0,0,0)</Angle>
                 </Transform>
             </Model>
+
+            <Model ypos="relative">
+                <Mesh name=".wall01"/>
+                <Material>
+                    <Color>(0.4,1.0,0.05)</Color>
+                    <Roughness>0.15</Roughness>
+                </Material>
+                <Transform>
+                    <Position>(5,0,5)</Position>
+                    <Scale>1.0</Scale>
+                    <Angle>(0,0,0)</Angle>
+                </Transform>
+            </Model>
         </Models>
 
         <Lights>

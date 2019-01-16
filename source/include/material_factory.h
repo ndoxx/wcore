@@ -21,9 +21,10 @@ private:
 
 public:
     MaterialFactory(const char* xml_file);
+    MaterialFactory();
     ~MaterialFactory();
 
-    void retrieve_asset_descriptions();
+    void retrieve_asset_descriptions(rapidxml::xml_node<>* materials_node);
     Material* make_material(hash_t asset_name);
 
     inline const MaterialDescriptor& get_descriptor(hash_t asset_name)  { return material_descriptors_.at(asset_name); }

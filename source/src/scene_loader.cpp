@@ -12,7 +12,9 @@
 #include "colors.h"
 #include "material.h"
 #include "math3d.h"
-#include "surface_mesh_factory.h"
+#include "material_factory.h"      // TMP
+#include "surface_mesh_factory.h"  // TMP
+#include "model_factory.h"
 #include "height_map.h"
 #include "heightmap_generator.h"
 #include "camera.h"
@@ -23,7 +25,6 @@
 #include "bezier.h"
 #include "daylight.h"
 #include "input_handler.h"
-#include "material_factory.h"
 #include "io_utils.h"
 
 namespace wcore
@@ -42,8 +43,7 @@ typedef std::shared_ptr<const Light>  pcLight;
 
 SceneLoader::SceneLoader():
 xml_parser_(),
-material_factory_(new MaterialFactory("assets.xml")),
-mesh_factory_(new SurfaceMeshFactory("assets.xml")),
+model_factory_(new ModelFactory("assets.xml")),
 chunk_size_m_(32),
 lattice_scale_(1.0f),
 texture_scale_(1.0f),
@@ -54,8 +54,7 @@ pscene_(nullptr)
 
 SceneLoader::~SceneLoader()
 {
-    delete material_factory_;
-    delete mesh_factory_;
+    delete model_factory_;
 }
 
 void SceneLoader::init_events(InputHandler& handler)
@@ -94,6 +93,11 @@ bool SceneLoader::onKeyboardEvent(const WData& data)
     }
 
     return true; // Do NOT consume event
+}
+
+void SceneLoader::load_model_instance(hash_t name, const math::i32vec2& chunk_coords)
+{
+    // TODO
 }
 
 
@@ -762,7 +766,7 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
             pModel pmdl;
             if(use_asset)
             {
-                Material* pmat = material_factory_->make_material(H_(asset.c_str()));
+                Material* pmat = model_factory_->material_factory()->make_material(H_(asset.c_str()));
                 pmdl = std::make_shared<Model>(pmesh, pmat);
             }
             else
@@ -991,7 +995,7 @@ Material* SceneLoader::parse_material(rapidxml::xml_node<>* mat_node)
 
     if(use_asset)
     {
-        pmat = material_factory_->make_material(H_(asset.c_str()));
+        pmat = model_factory_->material_factory()->make_material(H_(asset.c_str()));
     }
     else
     {
@@ -1038,7 +1042,7 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
 
     if(is_instance)
     {
-        return mesh_factory_->make_instance(H_(name.c_str()));
+        return model_factory_->mesh_factory()->make_instance(H_(name.c_str()));
     }
 
     std::string mesh;
@@ -1059,12 +1063,12 @@ SurfaceMesh* SceneLoader::parse_mesh(rapidxml::xml_node<>* mesh_node, std::mt199
         bool centered = false;
         xml::parse_node(mesh_node, "ProcessUV", process_uv);
         xml::parse_node(mesh_node, "Centered", centered);
-        pmesh = mesh_factory_->make_obj(location.c_str(), process_uv, centered);
+        pmesh = model_factory_->mesh_factory()->make_obj(location.c_str(), process_uv, centered);
     }
     else
     {
         xml_node<>* gen_node = mesh_node->first_node("Generator");
-        pmesh = mesh_factory_->make_procedural(H_(mesh.c_str()), rng, gen_node);
+        pmesh = model_factory_->mesh_factory()->make_procedural(H_(mesh.c_str()), rng, gen_node);
     }
 
     if(pmesh == nullptr)

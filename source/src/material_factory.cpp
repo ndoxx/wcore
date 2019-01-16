@@ -22,7 +22,12 @@ MaterialFactory::MaterialFactory(const char* xml_file)
 {
     fs::path file_path(io::get_file(H_("root.folders.level"), xml_file));
     xml_parser_.load_file_xml(file_path);
-    retrieve_asset_descriptions();
+    retrieve_asset_descriptions(xml_parser_.get_root()->first_node("Materials"));
+}
+
+MaterialFactory::MaterialFactory()
+{
+
 }
 
 MaterialFactory::~MaterialFactory()
@@ -81,10 +86,8 @@ std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc)
 }
 #endif
 
-void MaterialFactory::retrieve_asset_descriptions()
+void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* materials_node)
 {
-    xml_node<>* materials_node = xml_parser_.get_root()->first_node("Materials");
-
     for (xml_node<>* mat_node=materials_node->first_node("Material");
          mat_node;
          mat_node=mat_node->next_sibling("Material"))
