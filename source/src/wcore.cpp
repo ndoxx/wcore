@@ -1,3 +1,5 @@
+#include <map>
+
 #include "wcore.h"
 
 #include "gfx_driver.h" // Won't compile if removed: ensures GLFW header included before GL
@@ -6,6 +8,7 @@
 #include "intern_string.h"
 #include "engine_core.h"
 #include "scene.h"
+#include "model.h"
 #include "chunk_manager.h"
 #include "scene_loader.h"
 #include "input_handler.h"
@@ -59,10 +62,11 @@ struct Engine::EngineImpl
     pipeline(nullptr),
     daylight(nullptr),
     ray_caster(nullptr),
-    chunk_manager(nullptr)
+    chunk_manager(nullptr),
 #ifndef __DISABLE_EDITOR__
-    ,editor(nullptr)
+    editor(nullptr),
 #endif
+    current_model_handle(0)
     {
 
     }
@@ -108,6 +112,10 @@ struct Engine::EngineImpl
 #ifndef __DISABLE_EDITOR__
     Editor*         editor;
 #endif
+
+    // TMP?
+    std::map<uint32_t, std::shared_ptr<Model>> handled_models;
+    uint32_t current_model_handle;
 };
 
 Engine::Engine():
@@ -175,15 +183,10 @@ uint32_t Engine::LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry)
     return eimpl_->scene_loader->load_chunk(math::i32vec2(xx,zz), send_geometry);
 }
 
-void Engine::LoadModel(hash_t name, uint32_t chunk_index)
-{
-    eimpl_->scene_loader->load_model_instance(name, chunk_index);
-}
-
-
 void Engine::SendChunk(uint32_t xx, uint32_t zz)
 {
     uint32_t chunk_index = std::hash<math::i32vec2>{}(math::i32vec2(xx,zz));
+    eimpl_->scene->populate_static_octree(chunk_index);
     eimpl_->scene->load_geometry(chunk_index);
 }
 
@@ -204,6 +207,29 @@ void Engine::LoadStart()
 #ifdef __DEBUG__
     show_driver_error("post LoadStart() glGetError(): ");
 #endif
+}
+
+uint32_t Engine::LoadModel(hash_t name, uint32_t chunk_index)
+{
+    auto pmdl = eimpl_->scene_loader->load_model_instance(name, chunk_index);
+    eimpl_->handled_models.insert(std::pair(eimpl_->current_model_handle, pmdl));
+    return eimpl_->current_model_handle++;
+}
+
+void Engine::SetModelPosition(uint32_t model_index, const math::vec3& position)
+{
+    std::shared_ptr<Model> pmdl = eimpl_->handled_models.at(model_index);
+    pmdl->set_position(position);
+    pmdl->update_bounding_boxes();
+}
+
+void Engine::SetModelOrientation(uint32_t model_index, const math::vec3& orientation)
+{
+    std::shared_ptr<Model> pmdl = eimpl_->handled_models.at(model_index);
+    pmdl->set_orientation(math::quat(orientation.z(),
+                          orientation.y(),
+                          orientation.x()));
+    pmdl->update_bounding_boxes();
 }
 
 int Engine::Run()

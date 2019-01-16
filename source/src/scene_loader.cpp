@@ -95,7 +95,7 @@ bool SceneLoader::onKeyboardEvent(const WData& data)
     return true; // Do NOT consume event
 }
 
-void SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index)
+pModel SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index)
 {
     // Create model from instance name
     pModel pmdl = model_factory_->make_model_instance(name);
@@ -114,6 +114,7 @@ void SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index)
 
     // Add model to scene
     pscene_->add_model(pmdl, chunk_index);
+    return pmdl;
 }
 
 

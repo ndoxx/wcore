@@ -117,7 +117,7 @@ struct MazeData
     {
         for(int ii=0; ii<width_; ++ii)
             for(int jj=0; jj<height_; ++jj)
-                func(ii, jj, cells_[index(ii,jj)]);
+                func(ii, jj, cells_[index(jj,ii)]);
     }
 
     void visit_neighbors(int xx, int zz, std::function<void(int xx, int zz)> func)
@@ -289,10 +289,12 @@ private:
     int cur_z_;
 };
 
+using namespace wcore;
+
 int main(int argc, char const *argv[])
 {
     // * Generate maze
-    MazeData maze(8,8);
+    MazeData maze(15,15);
     MazeRecursiveBacktracker generator;
     generator.make_maze(maze,4);
     std::cout << maze << std::endl << std::endl;
@@ -306,41 +308,31 @@ int main(int argc, char const *argv[])
     engine.LoadLevel();
     uint32_t chunk00 = engine.LoadChunk(0, 0, false);
 
-    engine.LoadModel(H_("brickWall01"), chunk00);
-
     // * Add wall models to scene
-
-    /* TODO
-        [x] Decouple Mesh from Model
-            [x] Meshes are cashed, Model has weak ptr to Mesh
-            [x] In level XML, ability to declare Mesh instances
-                -> Instances are global in level
-                -> Model node can refer to a Mesh Instance instead of
-                   declaring the Mesh
-        [x] Same for Material
-            [x] Materials are cashed...
-        -> Make API handle scene insertion of models using declared instances
-    */
-
-
     maze.traverse_cells([&](int xx, int zz, uint8_t state)
     {
-        wcore::math::vec3 cell_center(xx+0.5f, 0.f, zz+0.5f);
+        wcore::math::vec3 cell_center(2.0f*xx+2.0f, 0.f, 2.0f*zz+1.0f);
         if(state & CellState::WALL_LEFT)
         {
-
+            uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
+            engine.SetModelPosition(wall_index, cell_center+math::vec3(0,0,0));
+            engine.SetModelOrientation(wall_index, math::vec3(0,90,0));
         }
         if(state & CellState::WALL_RIGHT)
         {
-
+            uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
+            engine.SetModelPosition(wall_index, cell_center+math::vec3(0,0,2.0f+0.25f));
+            engine.SetModelOrientation(wall_index, math::vec3(0,90,0));
         }
         if(state & CellState::WALL_UP)
         {
-
+            uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
+            engine.SetModelPosition(wall_index, cell_center+math::vec3(1.0f,-0.01f,1.0));
         }
         if(state & CellState::WALL_DOWN)
         {
-
+            uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
+            engine.SetModelPosition(wall_index, cell_center+math::vec3(-1.0f,-0.01f,1.0));
         }
     });
 

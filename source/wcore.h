@@ -8,6 +8,8 @@
 #include "wtypes.h"
 #include "wecs.h"
 
+#include "include/math3d.h"
+
 using wcore::H_;
 
 namespace wcore
@@ -27,8 +29,13 @@ namespace wcore
         // Load first level global info, no chunk is loaded
         void LoadLevel();
         uint32_t LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry=true);
-        void LoadModel(hash_t name, uint32_t chunk_index);
         void SendChunk(uint32_t xx, uint32_t zz);
+
+
+        uint32_t LoadModel(hash_t name, uint32_t chunk_index);
+        void SetModelPosition(uint32_t model_index, const math::vec3& position);
+        void SetModelOrientation(uint32_t model_index, const math::vec3& orientation);
+
         int Run();
 
     private:
