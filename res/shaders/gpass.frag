@@ -58,10 +58,10 @@ void main()
     vec3 normal;
     if(mt.b_use_normal_map)
     {
-        vec3 viewDir = frag_tangent_viewDir;//normalize(frag_tangent_fragPos-frag_tangent_viewPos);
+        vec3 viewDir = -frag_tangent_viewDir;//normalize(frag_tangent_fragPos-frag_tangent_viewPos);
+        //viewDir.y=-viewDir.y;
         if(mt.b_use_parallax_map)
-            texCoords = parallax_map(frag_texCoord, viewDir, -mt.f_parallax_height_scale, mt.depthTex);
-            // WTF minus mt.f_parallax_height_scale? else inverted depth
+            texCoords = parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.depthTex);
 
         // Normal vector from normal map
         normal = texture(mt.normalTex, texCoords).rgb;

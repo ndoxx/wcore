@@ -296,7 +296,7 @@ int main(int argc, char const *argv[])
     // * Generate maze
     MazeData maze(15,15);
     MazeRecursiveBacktracker generator;
-    generator.make_maze(maze,4);
+    generator.make_maze(maze,82);
     std::cout << maze << std::endl << std::endl;
 
     // * Start engine and load default map
@@ -308,31 +308,48 @@ int main(int argc, char const *argv[])
     engine.LoadLevel();
     uint32_t chunk00 = engine.LoadChunk(0, 0, false);
 
+    std::default_random_engine rng;
+    std::uniform_real_distribution<float> distribution(0.0,1.0);
+
     // * Add wall models to scene
     maze.traverse_cells([&](int xx, int zz, uint8_t state)
     {
+        uint8_t nwalls = 0;
         wcore::math::vec3 cell_center(2.0f*xx+2.0f, 0.f, 2.0f*zz+1.0f);
         if(state & CellState::WALL_LEFT)
         {
             uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
             engine.SetModelPosition(wall_index, cell_center+math::vec3(0,0,0));
             engine.SetModelOrientation(wall_index, math::vec3(0,90,0));
+            ++nwalls;
         }
         if(state & CellState::WALL_RIGHT)
         {
             uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
             engine.SetModelPosition(wall_index, cell_center+math::vec3(0,0,2.0f+0.25f));
             engine.SetModelOrientation(wall_index, math::vec3(0,90,0));
+            ++nwalls;
         }
         if(state & CellState::WALL_UP)
         {
             uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
             engine.SetModelPosition(wall_index, cell_center+math::vec3(1.0f,-0.01f,1.0));
+            ++nwalls;
         }
         if(state & CellState::WALL_DOWN)
         {
             uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
             engine.SetModelPosition(wall_index, cell_center+math::vec3(-1.0f,-0.01f,1.0));
+            ++nwalls;
+        }
+
+        if(nwalls>=3 && distribution(rng) > 0.5f)
+        {
+            uint32_t light_index = engine.LoadPointLight(chunk00);
+            engine.SetLightPosition(light_index, cell_center+math::vec3(0.f,3.0f,1.f));
+            engine.SetLightColor(light_index, math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
+            engine.SetLightRadius(light_index, 5.0f);
+            engine.SetLightBrightness(light_index, 10.0f);
         }
     });
 

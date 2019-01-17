@@ -38,7 +38,7 @@ namespace factory
 
     // 3D primitives
     extern FaceMesh* make_cube(bool finalize=true);
-    extern FaceMesh* make_box(const math::extent_t& extent);
+    extern FaceMesh* make_box(const math::extent_t& extent, float texture_scale=1.0f);
     extern FaceMesh* make_terrain(const HeightMap& hm,
                                   float latScale=1.0f,
                                   float texScale=1.0f);

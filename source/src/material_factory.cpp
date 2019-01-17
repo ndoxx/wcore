@@ -204,7 +204,7 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
         descriptor.has_transparency = xml::parse_node(uni_node, "Transparency", descriptor.transparency);
 
         // Shading options
-        xml::parse_node(node, "ParallaxHeightScale", descriptor.parallax_height_scale);
+        xml::parse_node(uni_node, "ParallaxHeightScale", descriptor.parallax_height_scale);
     }
 
     // Override

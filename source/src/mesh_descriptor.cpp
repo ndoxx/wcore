@@ -16,6 +16,8 @@ void BoxProps::parse_xml(rapidxml::xml_node<char>* node)
     xml::parse_node(node, "ymax", extent[3]);
     xml::parse_node(node, "zmin", extent[4]);
     xml::parse_node(node, "zmax", extent[5]);
+    if(!xml::parse_node(node, "TextureScale", texture_scale))
+        texture_scale = 1.0f;
 }
 
 } // namespace wcore

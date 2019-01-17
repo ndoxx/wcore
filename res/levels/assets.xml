@@ -38,7 +38,15 @@
         <Material name="brickWall">
             <Texture>
                 <Albedo>brickWall_albedo.png</Albedo>
+                <Depth>brickWall_depth.png</Depth>
+                <Normal>brickWall_norm.png</Normal>
+                <Roughness>brickWall_rough.png</Roughness>
+                <AO>brickWall_ao.png</AO>
             </Texture>
+            <Uniform>
+                <Metallic>0</Metallic>
+                <ParallaxHeightScale>0.025</ParallaxHeightScale>
+            </Uniform>
         </Material>
 
         <Material name="cube">
@@ -173,6 +181,7 @@
                 <ymax>2.0</ymax>
                 <zmin>-1.0</zmin>
                 <zmax>1.0</zmax>
+                <TextureScale>3.0f</TextureScale>
             </Generator>
         </Mesh>
     </Meshes>

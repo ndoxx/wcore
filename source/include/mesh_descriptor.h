@@ -29,11 +29,13 @@ struct BoxProps: public MeshDescriptor
     virtual void parse_xml(rapidxml::xml_node<char>* node) override;
 
     math::extent_t extent;
+    float texture_scale;
 };
 
 } // namespace wcore
 
 MAKE_HASHABLE(wcore::IcosphereProps, t.density)
-MAKE_HASHABLE(wcore::BoxProps, t.extent[0], t.extent[1], t.extent[2], t.extent[3], t.extent[4], t.extent[5])
+MAKE_HASHABLE(wcore::BoxProps, t.extent[0], t.extent[1], t.extent[2],
+              t.extent[3], t.extent[4], t.extent[5], t.texture_scale)
 
 #endif // MESH_DESCRIPTOR_H

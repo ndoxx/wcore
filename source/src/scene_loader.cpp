@@ -118,6 +118,18 @@ pModel SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index)
 }
 
 
+pLight SceneLoader::load_point_light(uint32_t chunk_index)
+{
+    std::shared_ptr<Light> pointlight(new PointLight(vec3(0,0,0),
+                                                     vec3(1,1,1),
+                                                     1.f,
+                                                     10.f));
+    pointlight->set_ambient_strength(0.05);
+    pscene_->add_light(pointlight, chunk_index);
+    return pointlight;
+}
+
+
 void SceneLoader::load_global(DaylightSystem& daylight)
 {
     // Save chunk nodes

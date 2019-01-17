@@ -170,11 +170,14 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         if(generator_node)
             props.parse_xml(generator_node);
         else
+        {
             props.extent = {-1.f,1.f,-1.f,1.f,-1.f,1.f};
+            props.texture_scale = 1.0f;
+        }
 
         return procedural_cache_lookup(mesh_type, std::hash<BoxProps>{}(props), [&]()
         {
-            return (SurfaceMesh*)factory::make_box(props.extent);
+            return (SurfaceMesh*)factory::make_box(props.extent, props.texture_scale);
         }, owns);
     }
     else if(mesh_type == H_("crystal") && opt_rng)

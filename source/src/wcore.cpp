@@ -9,6 +9,7 @@
 #include "engine_core.h"
 #include "scene.h"
 #include "model.h"
+#include "lights.h"
 #include "chunk_manager.h"
 #include "scene_loader.h"
 #include "input_handler.h"
@@ -116,6 +117,8 @@ struct Engine::EngineImpl
     // TMP?
     std::map<uint32_t, std::shared_ptr<Model>> handled_models;
     uint32_t current_model_handle;
+    std::map<uint32_t, std::shared_ptr<Light>> handled_lights;
+    uint32_t current_light_handle;
 };
 
 Engine::Engine():
@@ -231,6 +234,36 @@ void Engine::SetModelOrientation(uint32_t model_index, const math::vec3& orienta
                           orientation.x()));
     pmdl->update_bounding_boxes();
 }
+
+uint32_t Engine::LoadPointLight(uint32_t chunk_index)
+{
+    auto plight = eimpl_->scene_loader->load_point_light(chunk_index);
+    eimpl_->handled_lights.insert(std::pair(eimpl_->current_light_handle, plight));
+    return eimpl_->current_light_handle++;
+}
+
+void Engine::SetLightPosition(uint32_t light_index, const math::vec3& value)
+{
+    eimpl_->handled_lights.at(light_index)->set_position(value);
+}
+
+void Engine::SetLightColor(uint32_t light_index, const math::vec3& value)
+{
+    eimpl_->handled_lights.at(light_index)->set_color(value);
+
+}
+
+void Engine::SetLightRadius(uint32_t light_index, float value)
+{
+    eimpl_->handled_lights.at(light_index)->set_radius(value);
+}
+
+void Engine::SetLightBrightness(uint32_t light_index, float value)
+{
+    eimpl_->handled_lights.at(light_index)->set_brightness(value);
+
+}
+
 
 int Engine::Run()
 {

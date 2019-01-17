@@ -54,6 +54,8 @@ public:
     inline float get_ambient_strength() const           { return ambient_strength_; }
     inline float& get_ambient_strength_nc()             { return ambient_strength_; }
 
+    virtual void set_radius(float value) {}
+
 protected:
     inline void send_uniform_float(unsigned int program_id, const char* name, float value) const;
     inline void send_uniform_vec3(unsigned int program_id, const char* name, const math::vec3& value) const;
@@ -100,6 +102,7 @@ public:
     ~PointLight();
 
     inline float get_radius() const { return radius_; }
+    virtual void set_radius(float value) override { radius_ = value; }
 
     virtual void update_uniforms(const Shader& shader) const override;
     virtual math::mat4 get_model_matrix(bool scaled=true) const override;

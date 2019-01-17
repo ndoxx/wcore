@@ -85,6 +85,7 @@ public:
     uint32_t load_chunk(const math::i32vec2& chunk_coords, bool finalize=true);
 
     pModel load_model_instance(hash_t name, uint32_t chunk_index);
+    pLight load_point_light(uint32_t chunk_index);
 
     void reload_chunks();
     void reload_map();
