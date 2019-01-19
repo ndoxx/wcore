@@ -11,6 +11,7 @@
 #include "model.h"
 #include "lights.h"
 #include "chunk_manager.h"
+#include "camera_controller.h"
 #include "scene_loader.h"
 #include "input_handler.h"
 #include "pipeline.h"
@@ -59,6 +60,8 @@ struct Engine::EngineImpl
 {
     EngineImpl():
     game_loop(nullptr),
+    scene(nullptr),
+    camera_controller(nullptr),
     scene_loader(nullptr),
     pipeline(nullptr),
     daylight(nullptr),
@@ -67,7 +70,8 @@ struct Engine::EngineImpl
 #ifndef __DISABLE_EDITOR__
     editor(nullptr),
 #endif
-    current_model_handle(0)
+    current_model_handle(0),
+    current_light_handle(0)
     {
 
     }
@@ -79,6 +83,7 @@ struct Engine::EngineImpl
         delete daylight;
         delete pipeline;
         delete scene_loader;
+        delete camera_controller;
         delete scene;
         delete game_loop;
 
@@ -90,26 +95,28 @@ struct Engine::EngineImpl
 
     void init()
     {
-        game_loop     = new GameLoop();
-        scene         = new Scene();
-        scene_loader  = new SceneLoader();
-        pipeline      = new RenderPipeline();
-        daylight      = new DaylightSystem();
-        ray_caster    = new RayCaster();
-        chunk_manager = new ChunkManager();
+        game_loop         = new GameLoop();
+        scene             = new Scene();
+        camera_controller = new CameraController();
+        scene_loader      = new SceneLoader();
+        pipeline          = new RenderPipeline();
+        daylight          = new DaylightSystem();
+        ray_caster        = new RayCaster();
+        chunk_manager     = new ChunkManager();
 #ifndef __DISABLE_EDITOR__
-        editor        = new Editor();
+        editor            = new Editor();
 #endif
 
     }
 
-    GameLoop*       game_loop;
-    Scene*          scene;
-    SceneLoader*    scene_loader;
-    RenderPipeline* pipeline;
-    DaylightSystem* daylight;
-    RayCaster*      ray_caster;
-    ChunkManager*   chunk_manager;
+    GameLoop*         game_loop;
+    Scene*            scene;
+    CameraController* camera_controller;
+    SceneLoader*      scene_loader;
+    RenderPipeline*   pipeline;
+    DaylightSystem*   daylight;
+    RayCaster*        ray_caster;
+    ChunkManager*     chunk_manager;
 #ifndef __DISABLE_EDITOR__
     Editor*         editor;
 #endif
@@ -162,14 +169,15 @@ void Engine::Init(int argc, char const *argv[],
 
     // Register game systems (init events, register editor widgets, add to update list)
 #ifndef __DISABLE_EDITOR__
-    eimpl_->game_loop->register_game_system(H_("Editor"),       static_cast<GameSystem*>(eimpl_->editor));
+    eimpl_->game_loop->register_game_system(H_("Editor"),           static_cast<GameSystem*>(eimpl_->editor));
 #endif
-    eimpl_->game_loop->register_game_system(H_("Scene"),        static_cast<GameSystem*>(eimpl_->scene));
-    eimpl_->game_loop->register_game_system(H_("Pipeline"),     static_cast<GameSystem*>(eimpl_->pipeline));
-    eimpl_->game_loop->register_game_system(H_("Daylight"),     static_cast<GameSystem*>(eimpl_->daylight));
-    eimpl_->game_loop->register_game_system(H_("RayCaster"),    static_cast<GameSystem*>(eimpl_->ray_caster));
-    eimpl_->game_loop->register_game_system(H_("SceneLoader"),  static_cast<GameSystem*>(eimpl_->scene_loader));
-    eimpl_->game_loop->register_game_system(H_("ChunkManager"), static_cast<GameSystem*>(eimpl_->chunk_manager));
+    eimpl_->game_loop->register_game_system(H_("CameraController"), static_cast<GameSystem*>(eimpl_->camera_controller));
+    eimpl_->game_loop->register_game_system(H_("Scene"),            static_cast<GameSystem*>(eimpl_->scene));
+    eimpl_->game_loop->register_game_system(H_("Pipeline"),         static_cast<GameSystem*>(eimpl_->pipeline));
+    eimpl_->game_loop->register_game_system(H_("Daylight"),         static_cast<GameSystem*>(eimpl_->daylight));
+    eimpl_->game_loop->register_game_system(H_("RayCaster"),        static_cast<GameSystem*>(eimpl_->ray_caster));
+    eimpl_->game_loop->register_game_system(H_("SceneLoader"),      static_cast<GameSystem*>(eimpl_->scene_loader));
+    eimpl_->game_loop->register_game_system(H_("ChunkManager"),     static_cast<GameSystem*>(eimpl_->chunk_manager));
 
     //auto&& input_handler = eimpl_->game_loop->get_input_handler();
     //dbg::LOG.track(H_("input.mouse.locked"), input_handler);

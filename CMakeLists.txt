@@ -57,6 +57,7 @@ set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/sky.cpp
     ${CMAKE_SOURCE_DIR}/source/src/transformation.cpp
     ${CMAKE_SOURCE_DIR}/source/src/camera.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/camera_controller.cpp
     ${CMAKE_SOURCE_DIR}/source/src/shader.cpp
     ${CMAKE_SOURCE_DIR}/source/src/height_map.cpp
     ${CMAKE_SOURCE_DIR}/source/src/obj_loader.cpp

@@ -59,8 +59,7 @@ Scene::~Scene()
 
 void Scene::init_events(InputHandler& handler)
 {
-    subscribe(H_("input.mouse.locked"), handler, &Scene::onMouseEvent);
-    subscribe(H_("input.keyboard"), handler, &Scene::onKeyboardEvent);
+
 }
 
 void Scene::set_chunk_size_meters(uint32_t chunk_size_m)
@@ -335,49 +334,6 @@ void Scene::add_terrain(pTerrain terrain, uint32_t chunk_index)
     chunks_.at(chunk_index)->terrain_ = terrain;
 }
 
-bool Scene::onMouseEvent(const WData& data)
-{
-    const MouseData& md = static_cast<const MouseData&>(data);
-    get_camera()->update_orientation(md.dx, md.dy);
-
-    return true; // Do NOT consume event
-}
-
-bool Scene::onKeyboardEvent(const WData& data)
-{
-    const KbdData& kbd = static_cast<const KbdData&>(data);
-
-    switch(kbd.key_binding)
-    {
-        case H_("k_run"):
-            camera_->set_speed(Camera::SPEED_FAST);
-            break;
-        case H_("k_walk"):
-            camera_->set_speed(Camera::SPEED_SLOW);
-            break;
-        case H_("k_forward"):
-            camera_->move_forward();
-            break;
-        case H_("k_backward"):
-            camera_->move_backward();
-            break;
-        case H_("k_strafe_left"):
-            camera_->strafe_left();
-            break;
-        case H_("k_strafe_right"):
-            camera_->strafe_right();
-            break;
-        case H_("k_ascend"):
-            camera_->ascend();
-            break;
-        case H_("k_descend"):
-            camera_->descend();
-            break;
-    }
-
-    return true; // Do NOT consume event
-}
-
 void Scene::visibility_pass()
 {
     traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_id)
@@ -405,10 +361,6 @@ void Scene::visibility_pass()
 void Scene::update(const GameClock& clock)
 {
     float scaled_dt = clock.get_scaled_frame_duration();
-    float dt = clock.get_frame_duration();
-
-    // Update camera
-    camera_->update(dt);
 
     // Tightly fit light camera orthographic frustum to view frustum bounding box
     light_camera_->set_orthographic_tight_fit(*camera_,

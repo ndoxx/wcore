@@ -110,10 +110,6 @@ public:
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_rotator(rotator); }
 
     // Methods
-    // Listener
-    bool onMouseEvent(const WData& data);
-    bool onKeyboardEvent(const WData& data);
-
     // Upload given chunk geometry to OpenGL
     inline void load_geometry(uint32_t chunk_index) { if(chunk_index) chunks_.at(chunk_index)->load_geometry(); }
     // Initialize event listener
