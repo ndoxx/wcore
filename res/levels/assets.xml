@@ -110,6 +110,19 @@
                 <ParallaxMap>true</ParallaxMap>
             </Override>
         </Material>
+
+        <Material name="darkWood">
+            <Uniform>
+                <Albedo>(0.1,0.08,0)</Albedo>
+                <Roughness>0.7</Roughness>
+            </Uniform>
+        </Material>
+        <Material name="teapot">
+            <Uniform>
+                <Albedo>(0.9,0.9,0.85)</Albedo>
+                <Roughness>0.2</Roughness>
+            </Uniform>
+        </Material>
     </Materials>
 
     <Meshes>
@@ -184,6 +197,22 @@
                 <TextureScale>3.0f</TextureScale>
             </Generator>
         </Mesh>
+        <Mesh name=".earthSquare01" type="box">
+            <Generator>
+                <xmin>-2.5</xmin>
+                <xmax>2.5</xmax>
+                <ymin>0.0</ymin>
+                <ymax>0.2</ymax>
+                <zmin>-2.5</zmin>
+                <zmax>2.5</zmax>
+                <TextureScale>3.0f</TextureScale>
+            </Generator>
+        </Mesh>
+        <Mesh name=".teapot01" type="obj">
+            <Location>teapot.obj</Location>
+            <ProcessUV>false</ProcessUV>
+            <Centered>true</Centered>
+        </Mesh>
     </Meshes>
 
     <!-- Model Instances -->
@@ -191,6 +220,18 @@
         <Model name="brickWall01">
             <Mesh name=".wall01"/>
             <Material name="brickWall"/>
+        </Model>
+        <Model name="tree03">
+            <Mesh name=".tree03"/>
+            <Material name="darkWood"/>
+        </Model>
+        <Model name="earthSquare01">
+            <Mesh name=".earthSquare01"/>
+            <Material name="beachSand"/>
+        </Model>
+        <Model name="teapot01">
+            <Mesh name=".teapot01"/>
+            <Material name="teapot"/>
         </Model>
     </Models>
 </Assets>

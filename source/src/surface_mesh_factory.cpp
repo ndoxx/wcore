@@ -44,6 +44,17 @@ void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshe
 
         desc.type = H_(mesh_type.c_str());
 
+        // Additional info for obj files
+        if(desc.type == H_("obj"))
+        {
+            std::string file_name;
+            xml::parse_node(mesh_node, "Location", file_name);
+            desc.file_path = models_path_ / file_name;
+            if(!fs::exists(desc.file_path)) continue;
+            xml::parse_node(mesh_node, "ProcessUV", desc.process_uv);
+            xml::parse_node(mesh_node, "Centered", desc.centered);
+        }
+
         instance_descriptors_.insert(std::pair(H_(mesh_name.c_str()), desc));
     }
 }
@@ -111,11 +122,17 @@ SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
         if(it_d != instance_descriptors_.end())
         {
             const MeshInstanceDescriptor& desc = it_d->second;
-            std::mt19937 rng(0);
-            SurfaceMesh* pmesh = make_procedural(desc.type, desc.generator_node, &rng, false);
+            if(desc.type==H_("obj"))
+            {
+                return make_obj(desc.file_path.string().c_str(), desc.process_uv, desc.centered);
+            }
+            else
+            {
+                std::mt19937 rng(0);
+                return make_procedural(desc.type, desc.generator_node, &rng, false);
+            }
             //cache_.insert(std::pair(name, pmesh));
-            pmesh->set_cached(true);
-            return pmesh;
+            //pmesh->set_cached(true);
         }
     //}
     return nullptr;

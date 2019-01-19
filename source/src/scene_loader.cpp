@@ -100,16 +100,6 @@ pModel SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index)
     // Create model from instance name
     pModel pmdl = model_factory_->make_model_instance(name);
 
-    // Update model transformation
-    /*Transformation trans;
-    trans.set_position(vec3(0,0,0));
-
-    // Translate according to chunk coordinates
-    auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
-    trans.translate((chunk_size_m_-lattice_scale_)*chunk_coords.x(),
-                    0,
-                    (chunk_size_m_-lattice_scale_)*chunk_coords.y());
-    pmdl->set_transformation(trans);*/
     pmdl->update_bounding_boxes();
 
     // Add model to scene
@@ -526,8 +516,6 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         // Get nodes
         xml_node<>* mat_node = model->first_node("Material");
         xml_node<>* mesh_node = model->first_node("Mesh");
-        if(!mat_node || !mesh_node) continue;
-
         xml_node<>* trn_node = model->first_node("Transform");
         xml_node<>* mot_node = model->first_node("Motion");
         xml_node<>* shadow_node = model->first_node("Shadow");
@@ -535,7 +523,22 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         // Do we position the models relative to a heightmap?
         bool relative_positioning = is_pos_relative(model);
 
-        pModel pmdl = model_factory_->make_model(mesh_node, mat_node, &rng);
+        pModel pmdl;
+        if(!mat_node || !mesh_node)
+        {
+            // Try to make model by instance name
+            std::string name;
+            if(xml::parse_attribute(model, "name", name))
+            {
+                hash_t hname = H_(name.c_str());
+                pmdl = model_factory_->make_model_instance(hname);
+            }
+            else continue;
+        }
+        else
+        {
+            pmdl = model_factory_->make_model(mesh_node, mat_node, &rng);
+        }
 
         // Spacial transformation
         if(trn_node)

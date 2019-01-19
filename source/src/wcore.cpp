@@ -226,6 +226,16 @@ void Engine::SetModelPosition(uint32_t model_index, const math::vec3& position)
     pmdl->update_bounding_boxes();
 }
 
+void Engine::SetModelScale(uint32_t model_index, float scale)
+{
+    auto it = eimpl_->handled_models.find(model_index);
+    if(it!=eimpl_->handled_models.end())
+    {
+        it->second->set_scale(scale);
+        it->second->update_bounding_boxes();
+    }
+}
+
 void Engine::SetModelOrientation(uint32_t model_index, const math::vec3& orientation)
 {
     std::shared_ptr<Model> pmdl = eimpl_->handled_models.at(model_index);
@@ -244,24 +254,30 @@ uint32_t Engine::LoadPointLight(uint32_t chunk_index)
 
 void Engine::SetLightPosition(uint32_t light_index, const math::vec3& value)
 {
-    eimpl_->handled_lights.at(light_index)->set_position(value);
+    auto it = eimpl_->handled_lights.find(light_index);
+    if(it!=eimpl_->handled_lights.end())
+        it->second->set_position(value);
 }
 
 void Engine::SetLightColor(uint32_t light_index, const math::vec3& value)
 {
-    eimpl_->handled_lights.at(light_index)->set_color(value);
-
+    auto it = eimpl_->handled_lights.find(light_index);
+    if(it!=eimpl_->handled_lights.end())
+        it->second->set_color(value);
 }
 
 void Engine::SetLightRadius(uint32_t light_index, float value)
 {
-    eimpl_->handled_lights.at(light_index)->set_radius(value);
+    auto it = eimpl_->handled_lights.find(light_index);
+    if(it!=eimpl_->handled_lights.end())
+        it->second->set_radius(value);
 }
 
 void Engine::SetLightBrightness(uint32_t light_index, float value)
 {
-    eimpl_->handled_lights.at(light_index)->set_brightness(value);
-
+    auto it = eimpl_->handled_lights.find(light_index);
+    if(it!=eimpl_->handled_lights.end())
+        it->second->set_brightness(value);
 }
 
 

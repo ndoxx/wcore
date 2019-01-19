@@ -29,7 +29,7 @@ lighting_enabled_(true),
 bright_threshold_(1.0f),
 bright_knee_(0.1f),
 shadow_slope_bias_(0.1f),
-normal_offset_(-0.03f)
+normal_offset_(-0.013f)
 {
     CONFIG.get(H_("root.render.override.allow_shadow_mapping"), shadow_enabled_);
     load_geometry();

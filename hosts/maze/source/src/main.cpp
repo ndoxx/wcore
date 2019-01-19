@@ -78,6 +78,11 @@ struct MazeData
         return (cells_[index(xx,zz)] & (1<<direction));
     }
 
+    inline void remove_walls(int xx, int zz)
+    {
+        cells_[index(xx,zz)] &= 0x10;
+    }
+
     inline void remove_wall(int xx, int zz, uint8_t wall_state)
     {
         int ind = index(xx,zz);
@@ -113,6 +118,15 @@ struct MazeData
         }
     }
 
+    void make_hole(int xmin, int xmax, int zmin, int zmax)
+    {
+        assert(xmin<=xmax);
+        assert(zmin<=zmax);
+        for(int xx=xmin; xx<=xmax; ++xx)
+            for(int zz=zmin; zz<=zmax; ++zz)
+                remove_walls(xx,zz);
+    }
+
     void traverse_cells(std::function<void(int xx, int zz, uint8_t state)> func)
     {
         for(int ii=0; ii<width_; ++ii)
@@ -134,6 +148,29 @@ struct MazeData
         // Down cell
         if(zz-1 >= 0)
             func(xx, zz-1);
+    }
+
+    // Remove redundant walls
+    void simplify()
+    {
+        for(int xx=0; xx<width_; ++xx)
+        {
+            for(int zz=0; zz<height_; ++zz)
+            {
+                // Remove left neighbor's right wall if current cell has left wall
+                if(xx-1 >= 0 && is_wall(0,xx,zz))
+                {
+                    if(is_wall(1,xx-1,zz))
+                        remove_wall(xx-1, zz, CellState::WALL_RIGHT);
+                }
+                // Remove down neighbor's up wall if current cell has down wall
+                if(zz-1 >= 0 && is_wall(3,xx,zz))
+                {
+                    if(is_wall(2,xx,zz-1))
+                        remove_wall(xx, zz-1, CellState::WALL_UP);
+                }
+            }
+        }
     }
 
     std::vector<std::pair<int,int>> get_unvisited_neighbors(int xx, int zz)
@@ -297,6 +334,8 @@ int main(int argc, char const *argv[])
     MazeData maze(15,15);
     MazeRecursiveBacktracker generator;
     generator.make_maze(maze,82);
+    // Make room for tree in the middle
+    maze.make_hole(6,8,6,8);
     std::cout << maze << std::endl << std::endl;
 
     // * Start engine and load default map
@@ -312,6 +351,44 @@ int main(int argc, char const *argv[])
     std::uniform_real_distribution<float> distribution(0.0,1.0);
 
     // * Add wall models to scene
+    // Traverse maze cells to place lights
+    maze.traverse_cells([&](int xx, int zz, uint8_t state)
+    {
+        uint8_t nwalls = 0;
+        if(state & CellState::WALL_LEFT)
+        {
+            ++nwalls;
+        }
+        if(state & CellState::WALL_RIGHT)
+        {
+            ++nwalls;
+        }
+        if(state & CellState::WALL_UP)
+        {
+            ++nwalls;
+        }
+        if(state & CellState::WALL_DOWN)
+        {
+            ++nwalls;
+        }
+
+        if(nwalls>=3 && distribution(rng) > 0.5f)
+        {
+            wcore::math::vec3 cell_center(2.0f*xx+2.0f, 0.f, 2.0f*zz+1.0f);
+            uint32_t light_index = engine.LoadPointLight(chunk00);
+            engine.SetLightPosition(light_index, cell_center+math::vec3(0.f,3.0f,1.f));
+            engine.SetLightColor(light_index, math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
+            engine.SetLightRadius(light_index, 5.0f);
+            engine.SetLightBrightness(light_index, 10.0f);
+
+            uint32_t teapot_index = engine.LoadModel(H_("teapot01"), chunk00);
+            engine.SetModelScale(teapot_index, 0.05f);
+            engine.SetModelPosition(teapot_index, cell_center+math::vec3(0,0.4f,1.0f));
+            engine.SetModelOrientation(teapot_index, math::vec3(0,90,0));
+        }
+    });
+    // Simplify geometry and place walls
+    maze.simplify();
     maze.traverse_cells([&](int xx, int zz, uint8_t state)
     {
         uint8_t nwalls = 0;
@@ -326,20 +403,20 @@ int main(int argc, char const *argv[])
         if(state & CellState::WALL_RIGHT)
         {
             uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
-            engine.SetModelPosition(wall_index, cell_center+math::vec3(0,0,2.0f+0.25f));
+            engine.SetModelPosition(wall_index, cell_center+math::vec3(0,0,2.0f));
             engine.SetModelOrientation(wall_index, math::vec3(0,90,0));
             ++nwalls;
         }
         if(state & CellState::WALL_UP)
         {
             uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
-            engine.SetModelPosition(wall_index, cell_center+math::vec3(1.0f,-0.01f,1.0));
+            engine.SetModelPosition(wall_index, cell_center+math::vec3(1.0f,0.f,1.0));
             ++nwalls;
         }
         if(state & CellState::WALL_DOWN)
         {
             uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
-            engine.SetModelPosition(wall_index, cell_center+math::vec3(-1.0f,-0.01f,1.0));
+            engine.SetModelPosition(wall_index, cell_center+math::vec3(-1.0f-0.01f,-0.01f,1.0));
             ++nwalls;
         }
 

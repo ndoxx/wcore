@@ -35,6 +35,7 @@ namespace wcore
         uint32_t LoadModel(hash_t name, uint32_t chunk_index);
         void SetModelPosition(uint32_t model_index, const math::vec3& position);
         void SetModelOrientation(uint32_t model_index, const math::vec3& orientation);
+        void SetModelScale(uint32_t model_index, float scale);
 
         uint32_t LoadPointLight(uint32_t chunk_index);
         void SetLightPosition(uint32_t light_index, const math::vec3& value);

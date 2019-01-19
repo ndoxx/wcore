@@ -22,6 +22,9 @@ struct MeshInstanceDescriptor
 {
     rapidxml::xml_node<char>* generator_node;
     hash_t type;
+    fs::path file_path;
+    bool process_uv;
+    bool centered;
 };
 
 class SurfaceMeshFactory
