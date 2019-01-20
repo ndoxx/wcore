@@ -17,6 +17,7 @@
 #include "globals.h"
 #include "config.h"
 #include "game_clock.h"
+#include "camera_controller.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"

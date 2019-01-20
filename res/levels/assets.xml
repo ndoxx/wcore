@@ -47,6 +47,10 @@
                 <Metallic>0</Metallic>
                 <ParallaxHeightScale>0.025</ParallaxHeightScale>
             </Uniform>
+            <Override>
+                <NormalMap>true</NormalMap>
+                <ParallaxMap>false</ParallaxMap>
+            </Override>
         </Material>
 
         <Material name="cube">

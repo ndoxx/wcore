@@ -179,6 +179,9 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->register_game_system(H_("SceneLoader"),      static_cast<GameSystem*>(eimpl_->scene_loader));
     eimpl_->game_loop->register_game_system(H_("ChunkManager"),     static_cast<GameSystem*>(eimpl_->chunk_manager));
 
+    // TMP
+    eimpl_->camera_controller->register_camera(eimpl_->scene->get_camera());
+
     //auto&& input_handler = eimpl_->game_loop->get_input_handler();
     //dbg::LOG.track(H_("input.mouse.locked"), input_handler);
     //dbg::LOG.track(H_("input.mouse.unlocked"), input_handler);

@@ -13,6 +13,9 @@ const float Quaternion::NORM_TOL = 1e-5;
 Quaternion::Quaternion():
 value_(0.0, 0.0, 0.0, 1.0){}
 
+Quaternion::Quaternion(float v):
+value_(v, v, v, 1.0){}
+
 Quaternion::Quaternion(float x, float y, float z, float w):
 value_(x, y, z, w){}
 
@@ -163,6 +166,13 @@ Quaternion& Quaternion::operator*=(const Quaternion& rhs)
 {
     value_ = (rhs * *this).value_;
     normalize();
+    return *this;
+}
+
+Quaternion& Quaternion::operator+=(const Quaternion& rhs)
+{
+    value_ = (rhs + *this).value_;
+    //normalize();
     return *this;
 }
 

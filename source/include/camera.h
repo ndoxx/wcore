@@ -141,8 +141,12 @@ inline void Camera::set_position(const math::vec3& newpos)
 
 inline void Camera::set_orientation(float yaw, float pitch)
 {
-    yaw_ = yaw;
-    pitch_ = std::min(MAX_PITCH, pitch);
+    pitch_ = (pitch<=MAX_PITCH)?pitch:MAX_PITCH;
+    yaw_   = yaw;
+    if(yaw_>=360.0f)
+        yaw_ -= 360.0f;
+    if(yaw_<0.0f)
+        yaw_ += 360.0f;
 }
 
 inline void Camera::move_forward()

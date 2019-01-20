@@ -14,6 +14,7 @@ namespace math
 class Quaternion{
 public:
     Quaternion();
+    Quaternion(float v);
     Quaternion(float x, float y, float z, float w);
     // ZYX convention (phi=rotZ, theta=rotY, psi=rotX)
     Quaternion(float phi, float theta, float psi);
@@ -45,6 +46,7 @@ public:
     inline float  operator[](unsigned index) const {return value_[index];}
     Quaternion&   operator= (const Quaternion& rhs);
     Quaternion&   operator*=(const Quaternion& rhs);
+    Quaternion&   operator+=(const Quaternion& rhs);
 
     friend Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs);
     friend Quaternion operator-(const Quaternion& lhs, const Quaternion& rhs);

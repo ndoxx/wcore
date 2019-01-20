@@ -178,7 +178,7 @@ std::ostream& operator<<(std::ostream& stream, const UData& data)
     stream << data.value;
     return stream;
 }
-
+/*
 int main()
 {
     typedef Octree<math::vec3,UData> PointOctree;
@@ -275,7 +275,7 @@ int main()
 
     return 0;
 }
-
+*/
 
 /*
 struct Circle {};
@@ -358,3 +358,22 @@ int main()
     return 0;
 }
 */
+
+int main()
+{
+    Camera camera(1024,768);
+    camera.set_orientation(45.f,-25.f);
+    camera.update(1/60.0f);
+
+    float yaw   = camera.get_yaw();
+    float pitch = camera.get_pitch();
+    float roll  = 0.f;
+
+    std::cout << yaw << " " << pitch << " " << roll << std::endl;
+
+    math::quat q(roll,pitch,yaw);
+    std::cout << q << std::endl;
+    std::cout << q.get_euler_angles() << std::endl;
+
+    return 0;
+}

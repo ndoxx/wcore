@@ -64,7 +64,7 @@ public:
     {
         for(uint32_t ii=1; ii<tangents.size()-1; ++ii)
         {
-            tangents[ii] = (points[ii+1]-points[ii-1]) / (domain[ii+1]-domain[ii-1]);
+            tangents[ii] = (points[ii+1]-points[ii-1]) * (1.f/(domain[ii+1]-domain[ii-1]));
         }
     }
 };
@@ -226,7 +226,7 @@ private:
             // Offput the part of the affine transformation that maps [0, x_{k+1}-x_k] to [0, 1] here
             for(uint32_t jj=0; jj<4; ++jj)
             {
-                coeffs_[ii][jj] /= pow(deltax, jj);
+                coeffs_[ii][jj] *= 1.f/pow(deltax, jj);
             }
         }
     }

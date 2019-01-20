@@ -11,15 +11,18 @@ namespace wcore
 CameraController::CameraController()
 {
     // Add freefly camera as first mode
-    CameraMode* dbg_freefly = new CameraModeFreefly();
-    camera_modes_.push_back(dbg_freefly);
-    current_mode_ = 0;
+    //     tracking shot as second mode
+    CameraState* dbg_freefly  = new CameraStateFreefly();
+    CameraState* dbg_tracking = new CameraStateTrackingShot();
+    camera_states_.push_back(dbg_freefly);
+    camera_states_.push_back(dbg_tracking);
+    current_state_ = 0;
 }
 
 CameraController::~CameraController()
 {
-    for(CameraMode* cm: camera_modes_)
-        delete cm;
+    for(CameraState* cs: camera_states_)
+        delete cs;
 }
 
 void CameraController::init_events(InputHandler& handler)
@@ -33,29 +36,54 @@ void CameraController::update(const GameClock& clock)
     float dt = clock.get_frame_duration();
 
     // Update camera
-    // TMP get scene camera -> later, write a register func
-    auto pscene = locate<Scene>(H_("Scene"));
-    auto pcam = pscene->get_camera();
-    pcam->update(dt);
+    camera_states_[current_state_]->control(camera_, dt);
+    camera_->update(dt);
+}
+
+void CameraController::register_camera(std::shared_ptr<Camera> camera)
+{
+    camera_ = camera;
+    camera_->update(1.f/60.f);
 }
 
 bool CameraController::onKeyboardEvent(const WData& data)
 {
-    // TMP get scene camera -> later, write a register func
-    auto pscene = locate<Scene>(H_("Scene"));
-    auto pcam = pscene->get_camera();
-    return camera_modes_[current_mode_]->onKeyboardEvent(data, pcam);
+    // * First, handle events that target this system
+    // Switch state based on kbd input for now
+    const KbdData& kbd = static_cast<const KbdData&>(data);
+    if(kbd.key_binding == H_("k_cam_new_keyframe"))
+    {
+        CameraStateTrackingShot* ts_state
+            = static_cast<CameraStateTrackingShot*>(camera_states_[CameraStateIndex::TRACKING]);
+        ts_state->add_keyframe(camera_->get_position(),
+                               math::quat(0.f,camera_->get_pitch(),camera_->get_yaw()));
+        return true;
+    }
+    else if(kbd.key_binding == H_("k_cam_gen_track"))
+    {
+        CameraStateTrackingShot* ts_state
+            = static_cast<CameraStateTrackingShot*>(camera_states_[CameraStateIndex::TRACKING]);
+        ts_state->generate_interpolator();
+        return true;
+    }
+    else if(kbd.key_binding == H_("k_cam_next_state"))
+    {
+        // TMP just advance state index
+        current_state_ = (current_state_+1)%camera_states_.size();
+        camera_states_[current_state_]->on_load();
+        return true;
+    }
+
+    // * Propagate events down to current camera state object
+    return camera_states_[current_state_]->onKeyboardEvent(data, camera_);
 }
 
 bool CameraController::onMouseEvent(const WData& data)
 {
-    // TMP get scene camera -> later, write a register func
-    auto pscene = locate<Scene>(H_("Scene"));
-    auto pcam = pscene->get_camera();
-    return camera_modes_[current_mode_]->onMouseEvent(data, pcam);
+    return camera_states_[current_state_]->onMouseEvent(data, camera_);
 }
 
-bool CameraModeFreefly::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
+bool CameraStateFreefly::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
 {
     const MouseData& md = static_cast<const MouseData&>(data);
     camera->update_orientation(md.dx, md.dy);
@@ -63,7 +91,7 @@ bool CameraModeFreefly::onMouseEvent(const WData& data, std::shared_ptr<Camera> 
     return true; // Do NOT consume event
 }
 
-bool CameraModeFreefly::onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera)
+bool CameraStateFreefly::onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -97,5 +125,107 @@ bool CameraModeFreefly::onKeyboardEvent(const WData& data, std::shared_ptr<Camer
 
     return true; // Do NOT consume event
 }
+
+CameraStateTrackingShot::CameraStateTrackingShot():
+position_interpolator_(nullptr),
+orientation_interpolator_(nullptr),
+t_(0.f),
+max_t_(0.f)
+{
+
+}
+
+CameraStateTrackingShot::~CameraStateTrackingShot()
+{
+    if(position_interpolator_)
+        delete position_interpolator_;
+    if(orientation_interpolator_)
+        delete orientation_interpolator_;
+}
+
+bool CameraStateTrackingShot::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
+{
+    const MouseData& md = static_cast<const MouseData&>(data);
+
+    return true; // Do NOT consume event
+}
+
+bool CameraStateTrackingShot::onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera)
+{
+    const KbdData& kbd = static_cast<const KbdData&>(data);
+
+    return true; // Do NOT consume event
+}
+
+void CameraStateTrackingShot::control(std::shared_ptr<Camera> camera, float dt)
+{
+    if(!position_interpolator_ || !orientation_interpolator_) return;
+
+    math::vec3 newpos(position_interpolator_->interpolate(t_));
+    math::vec3 newori(orientation_interpolator_->interpolate(t_).get_euler_angles());
+
+    camera->set_orientation(newori.x(), newori.y());
+    camera->set_position(newpos);
+
+    //dbg
+    /*float pitch = camera->get_pitch();
+    float yaw = camera->get_yaw();
+    std::cout << 0.f << " " << pitch << " " << yaw << " ";
+    math::quat q(0.f,pitch,yaw);
+    math::vec3 euler(q.get_euler_angles());
+    std::cout << euler << std::endl;
+    camera->set_orientation(euler.x(),euler.y());*/
+
+
+    //std::cout << t_ << " " << newpos << " " << newori << std::endl;
+
+    t_ += dt;
+    if(t_ > max_t_)
+        t_ = 0.f;
+}
+
+void CameraStateTrackingShot::on_load()
+{
+    t_ = 0.f; // Reset current parameter value
+}
+
+
+void CameraStateTrackingShot::add_keyframe(const math::vec3& position,
+                                           const math::quat& orientation)
+{
+    float parameter = 0.f;
+    if(key_frame_positions_.size()>0)
+        parameter = key_frame_parameters_.back() + (position-key_frame_positions_.back()).norm();
+
+    key_frame_positions_.push_back(position);
+    key_frame_orientations_.push_back(orientation);
+    key_frame_parameters_.push_back(parameter);
+
+    std::cout << parameter << " " << position << " " << orientation << std::endl;
+}
+
+void CameraStateTrackingShot::generate_interpolator()
+{
+    if(key_frame_parameters_.size() == 0) return;
+
+    if(position_interpolator_)
+        delete position_interpolator_;
+    if(orientation_interpolator_)
+        delete orientation_interpolator_;
+
+    position_interpolator_ = new math::CSpline<math::vec3>(key_frame_parameters_,
+                                                           key_frame_positions_);
+    orientation_interpolator_ = new math::CSpline<math::quat>(key_frame_parameters_,
+                                                              key_frame_orientations_,
+                                                              {key_frame_orientations_.front(),
+                                                               key_frame_orientations_.back()});
+
+    max_t_ = key_frame_parameters_.back();
+
+    key_frame_positions_.clear();
+    key_frame_orientations_.clear();
+    key_frame_parameters_.clear();
+}
+
 
 } // namespace wcore
