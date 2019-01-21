@@ -9,6 +9,8 @@
         <KB name="k_strafe_right"            key="D"                                            description="Freecam: Strafe to the right."/>
         <KB name="k_ascend"                  key="SPACE"                                        description="Freecam: Ascend."/>
         <KB name="k_descend"                 key="LEFT_CONTROL"                                 description="Freecam: Descend."/>
+        <KB name="k_tc_faster"               key="KP_8"         cooldown="20" repeat="true"     description="Tracking Shot: Faster pace."/>
+        <KB name="k_tc_slower"               key="KP_2"         cooldown="20" repeat="true"     description="Tracking Shot: Slower pace."/>
         <KB name="k_tg_fog"                  key="F"            cooldown="20"                   description="Toggle fog (daylight system must be stopped)."/>
         <KB name="k_bb_next_mode"            key="B"            cooldown="20"                   description="Toggle AABB debug display."/>
         <KB name="k_light_volumes_next_mode" key="L"            cooldown="20"                   description="Next light volumes debug display mode."/>

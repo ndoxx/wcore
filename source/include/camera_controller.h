@@ -7,6 +7,7 @@
 #include "game_system.h"
 #include "math3d.h"
 #include "cspline.h"
+#include "slerp_interpolator.h"
 
 namespace wcore
 {
@@ -81,9 +82,10 @@ private:
     std::vector<math::quat>    key_frame_orientations_;
     std::vector<float>         key_frame_parameters_;
     math::CSpline<math::vec3>* position_interpolator_;
-    math::CSpline<math::quat>* orientation_interpolator_;
+    SlerpInterpolator*         orientation_interpolator_;
     float t_; // Current parameter value
     float max_t_;
+    float speed_;
 };
 
 } // namespace wcore

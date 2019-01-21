@@ -12,6 +12,7 @@ set(SRC_MATHS
     ${CMAKE_SOURCE_DIR}/source/src/gaussian.cpp
     ${CMAKE_SOURCE_DIR}/source/src/bezier.cpp
     ${CMAKE_SOURCE_DIR}/source/src/cspline.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/slerp_interpolator.cpp
     ${CMAKE_SOURCE_DIR}/source/src/algorithms.cpp
     ${CMAKE_SOURCE_DIR}/source/src/moving_average.cpp
     ${CMAKE_SOURCE_DIR}/source/src/colors.cpp)

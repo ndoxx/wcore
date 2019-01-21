@@ -6260,3 +6260,10 @@ Donc quand je dois créer un nouvel objet procédural, je regarde d'abord le has
 __BUUUUUUGS__
     -> J'ai commenté tout ce qui touche à la mise en cache.
     -> Commencer par refactor _Model_ pour utiliser des shared_ptr pour mesh et material.
+
+
+# Notes à reprendre
+J'ai implémenté une machine à état pour la gestion du contrôle de la caméra. Un des modes permet de faire un travelling depuis des keyframes enregistrées depuis la cam freefly. L'interpolation des quats ne peut se faire au moyen d'une _CSpline_, et une lerp basique ne fonctionne pas non plus (produit un tour complet de la caméra quand on passe une singularité de l'assiette entre 2 keyframes). Pour interpoler 2 quats, il faut utiliser une Slerp (spherical lerp), j'ai pompé l'algo dans l'article wiki [1], la slerp fonctionne impeccablement et contourne les singularités de la lerp comme on s'y attend.
+
+* sources :
+[1] https://en.wikipedia.org/wiki/Slerp

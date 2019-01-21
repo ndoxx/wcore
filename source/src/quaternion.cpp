@@ -253,13 +253,15 @@ Quaternion slerp(const Quaternion& q0, const Quaternion& q1, float t)
     // the shorter path. Note that v1 and -v1 are equivalent when
     // the negation is applied to all four components. Fix by
     // reversing one quaternion.
-    if (dot < 0.0f) {
+    if(dot < 0.0f)
+    {
         v1 = -v1;
         dot = -dot;
     }
 
-    const float DOT_THRESHOLD = 0.9995;
-    if (dot > DOT_THRESHOLD) {
+    static const float DOT_THRESHOLD = 0.9995f;
+    if(dot > DOT_THRESHOLD)
+    {
         // If the inputs are too close for comfort, linearly interpolate
         // and normalize the result.
 
@@ -274,8 +276,8 @@ Quaternion slerp(const Quaternion& q0, const Quaternion& q1, float t)
     float sin_theta = sin(theta);     // compute this value only once
     float sin_theta_0 = sin(theta_0); // compute this value only once
 
-    float s0 = cos(theta) - dot * sin_theta / sin_theta_0;  // == sin(theta_0 - theta) / sin(theta_0)
     float s1 = sin_theta / sin_theta_0;
+    float s0 = cos(theta) - dot * s1;  // == sin(theta_0 - theta) / sin(theta_0)
 
     return (v0 * s0) + (v1 * s1);
 }
