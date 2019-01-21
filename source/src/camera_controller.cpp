@@ -162,9 +162,9 @@ void CameraStateTrackingShot::control(std::shared_ptr<Camera> camera, float dt)
     if(!position_interpolator_ || !orientation_interpolator_) return;
 
     math::vec3 newpos(position_interpolator_->interpolate(t_));
-    math::vec3 newori(orientation_interpolator_->interpolate(t_).get_euler_angles());
+    //math::vec3 newori(orientation_interpolator_->interpolate(t_).get_euler_angles());
 
-    camera->set_orientation(newori.x(), newori.y());
+    //camera->set_orientation(newori.x(), newori.y());
     camera->set_position(newpos);
 
     //dbg
@@ -176,10 +176,31 @@ void CameraStateTrackingShot::control(std::shared_ptr<Camera> camera, float dt)
     std::cout << euler << std::endl;
     camera->set_orientation(euler.x(),euler.y());*/
 
+    //dbg lerp quats
+    int imax=0;
+    for(int ii=0; ii<key_frame_parameters_.size();++ii)
+    {
+        if(key_frame_parameters_[ii]>t_)
+        {
+            imax = ii;
+            break;
+        }
+    }
+    float t_max = key_frame_parameters_[imax];
+    float t_min = key_frame_parameters_[imax-1];
+    float alpha = (t_-t_min)/(t_max-t_min);
+    const math::quat& q1(key_frame_orientations_[imax-1]);
+    const math::quat& q2(key_frame_orientations_[imax]);
+    math::quat q(math::slerp(q1,q2,alpha));
+    math::vec3 euler = q.get_euler_angles();
+    /*math::quat q(q1*(1.f-alpha) + q2*alpha);
+    math::vec3 euler = q.get_euler_angles();
+    std::cout << q << " " << euler << std::endl;*/
+    camera->set_orientation(euler.x(),euler.y());
 
     //std::cout << t_ << " " << newpos << " " << newori << std::endl;
 
-    t_ += dt;
+    t_ += 5*dt;
     if(t_ > max_t_)
         t_ = 0.f;
 }
@@ -201,7 +222,8 @@ void CameraStateTrackingShot::add_keyframe(const math::vec3& position,
     key_frame_orientations_.push_back(orientation);
     key_frame_parameters_.push_back(parameter);
 
-    std::cout << parameter << " " << position << " " << orientation << std::endl;
+    math::quat ori(orientation);
+    std::cout << parameter << " " << position << " " << ori.get_euler_angles() << std::endl;
 }
 
 void CameraStateTrackingShot::generate_interpolator()
@@ -222,9 +244,9 @@ void CameraStateTrackingShot::generate_interpolator()
 
     max_t_ = key_frame_parameters_.back();
 
-    key_frame_positions_.clear();
+    /*key_frame_positions_.clear();
     key_frame_orientations_.clear();
-    key_frame_parameters_.clear();
+    key_frame_parameters_.clear();*/
 }
 
 

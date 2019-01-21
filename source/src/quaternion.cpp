@@ -87,6 +87,13 @@ void Quaternion::conjugate()
     value_[2] = -value_[2];
 }
 
+float Quaternion::dot_vector(const Quaternion& other)
+{
+    return value_[0]*other.value_[0] + value_[1]*other.value_[1]
+         + value_[2]*other.value_[2] + value_[3]*other.value_[3];
+}
+
+
 Quaternion Quaternion::get_conjugate() const
 {
     return Quaternion(-value_[0], -value_[1], -value_[2], value_[3]);
@@ -176,6 +183,12 @@ Quaternion& Quaternion::operator+=(const Quaternion& rhs)
     return *this;
 }
 
+Quaternion Quaternion::operator-() const
+{
+    Quaternion result(-value_[0],-value_[1],-value_[2],-value_[3]);
+    return result;
+}
+
 Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs)
 {
     return Quaternion(lhs.value_ + rhs.value_);
@@ -224,6 +237,48 @@ std::ostream& operator<<(std::ostream& stream, const Quaternion& rhs)
     return stream;
 }
 
+
+
+Quaternion slerp(const Quaternion& q0, const Quaternion& q1, float t)
+{
+    // Only unit quaternions are valid rotations.
+    // Normalize to avoid undefined behavior.
+    Quaternion v0(q0.normalized());
+    Quaternion v1(q1.normalized());
+
+    // Compute the cosine of the angle between the two vectors.
+    float dot = v0.dot_vector(v1);
+
+    // If the dot product is negative, slerp won't take
+    // the shorter path. Note that v1 and -v1 are equivalent when
+    // the negation is applied to all four components. Fix by
+    // reversing one quaternion.
+    if (dot < 0.0f) {
+        v1 = -v1;
+        dot = -dot;
+    }
+
+    const float DOT_THRESHOLD = 0.9995;
+    if (dot > DOT_THRESHOLD) {
+        // If the inputs are too close for comfort, linearly interpolate
+        // and normalize the result.
+
+        Quaternion result(v0 + (v1 - v0)*t);
+        result.normalize();
+        return result;
+    }
+
+    // Since dot is in range [0, DOT_THRESHOLD], acos is safe
+    float theta_0 = acos(dot);        // theta_0 = angle between input vectors
+    float theta = theta_0*t;          // theta = angle between v0 and result
+    float sin_theta = sin(theta);     // compute this value only once
+    float sin_theta_0 = sin(theta_0); // compute this value only once
+
+    float s0 = cos(theta) - dot * sin_theta / sin_theta_0;  // == sin(theta_0 - theta) / sin(theta_0)
+    float s1 = sin_theta / sin_theta_0;
+
+    return (v0 * s0) + (v1 * s1);
+}
 
 } // namespace math
 } // namespace wcore

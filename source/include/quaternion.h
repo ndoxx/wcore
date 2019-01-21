@@ -31,6 +31,8 @@ public:
 
     void normalize(float tolerance=NORM_TOL);
     void conjugate();
+    float dot_vector(const Quaternion& other);
+    inline Quaternion normalized(float tolerance=NORM_TOL) const;
     Quaternion get_conjugate() const;
     Quaternion get_inverse() const;
     inline void set_identity() { value_[0]=0.0f; value_[1]=0.0f; value_[2]=0.0f; value_[3]=1.0f; }
@@ -47,6 +49,7 @@ public:
     Quaternion&   operator= (const Quaternion& rhs);
     Quaternion&   operator*=(const Quaternion& rhs);
     Quaternion&   operator+=(const Quaternion& rhs);
+    Quaternion    operator-() const;
 
     friend Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs);
     friend Quaternion operator-(const Quaternion& lhs, const Quaternion& rhs);
@@ -62,8 +65,17 @@ private:
     static const float NORM_TOL;
 };
 
+inline Quaternion Quaternion::normalized(float tolerance) const
+{
+    Quaternion result(*this);
+    result.normalize();
+    return result;
+}
+
 using quat = Quaternion;
 
-} // namespace quat
+extern Quaternion slerp(const Quaternion& q0, const Quaternion& q1, float t);
+
+} // namespace math
 } // namespace wcore
 #endif // QUATERNION_H
