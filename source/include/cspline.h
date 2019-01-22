@@ -251,10 +251,12 @@ private:
 
     template <unsigned N, typename T> class vec;
     using vec3 = vec<3, float>;
-    using CSplineCatmullV3 = CSpline<vec3, CSplineTangentPolicy::CatmullRom<vec3>>;
-    using CSplineCatmullF  = CSpline<float, CSplineTangentPolicy::CatmullRom<float>>;
-    using CSplineFiniteF   = CSpline<float, CSplineTangentPolicy::Finite<float>>;
-    using CSplineCardinalF = CSpline<float, CSplineTangentPolicy::Cardinal<float>>;
+    using CSplineCatmullV3  = CSpline<vec3, CSplineTangentPolicy::CatmullRom<vec3>>;
+    using CSplineFiniteV3   = CSpline<vec3, CSplineTangentPolicy::Cardinal<vec3>>;
+    using CSplineCardinalV3 = CSpline<vec3, CSplineTangentPolicy::Cardinal<vec3>>;
+    using CSplineCatmullF   = CSpline<float, CSplineTangentPolicy::CatmullRom<float>>;
+    using CSplineFiniteF    = CSpline<float, CSplineTangentPolicy::Finite<float>>;
+    using CSplineCardinalF  = CSpline<float, CSplineTangentPolicy::Cardinal<float>>;
 
 } // namsepace math
 } // namespace wcore

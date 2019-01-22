@@ -60,6 +60,7 @@ public:
     inline const std::array<math::vec3, 8>& get_vertices() const { return vertices_; }
     inline const math::mat4& get_model_matrix() const            { return proper_transform_; }
     inline const math::extent_t& get_extent() const              { return bounding_region_.extent; }
+    inline const BoundingRegion& get_bounding_region() const     { return bounding_region_; }
 };
 
 class AABB
@@ -250,6 +251,11 @@ namespace traits
     struct center<AABB>
     {
         inline static const math::vec3& get(const AABB& primitive) { return primitive.get_bounding_region().mid_point; }
+    };
+    template<>
+    struct center<OBB>
+    {
+        inline static math::vec3 get(const OBB& primitive) { return primitive.get_model_matrix()*primitive.get_bounding_region().mid_point; }
     };
 } // namespace traits
 

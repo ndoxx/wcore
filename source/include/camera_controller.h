@@ -14,6 +14,7 @@ namespace wcore
 
 struct WData;
 class Camera;
+class Model;
 
 enum CameraStateIndex: std::uint8_t
 {
@@ -40,9 +41,14 @@ public:
     class CameraState;
 
 private:
+    inline CameraState* current_state() { return camera_states_[current_state_]; }
+
+private:
     std::vector<CameraState*> camera_states_;
     uint32_t current_state_;
     std::shared_ptr<Camera> camera_;
+    bool recording_;
+    uint32_t frame_count_;
 };
 
 class CameraController::CameraState
@@ -77,15 +83,39 @@ public:
                       const math::quat& orientation);
     void generate_interpolator();
 
+    inline const math::vec3& last_position()    { return key_frame_positions_.back(); }
+    inline const math::quat& last_orientation() { return key_frame_orientations_.back(); }
+
 private:
     std::vector<math::vec3>    key_frame_positions_;
     std::vector<math::quat>    key_frame_orientations_;
     std::vector<float>         key_frame_parameters_;
-    math::CSpline<math::vec3>* position_interpolator_;
+    math::CSplineCardinalV3*   position_interpolator_;
     SlerpInterpolator*         orientation_interpolator_;
     float t_; // Current parameter value
     float max_t_;
     float speed_;
+};
+
+class CameraStateCircleAround: public CameraController::CameraState
+{
+public:
+    CameraStateCircleAround();
+    ~CameraStateCircleAround() = default;
+
+    virtual bool onMouseEvent(const WData& data, std::shared_ptr<Camera> camera) override;
+    virtual bool onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera) override;
+    virtual void control(std::shared_ptr<Camera> camera, float dt) override;
+    virtual void on_load() override;
+
+    void follow(std::weak_ptr<Model> target, std::shared_ptr<Camera> camera);
+
+private:
+    float radius_;
+    float speed_;
+    float t_;
+    math::vec3 lookat_pos_;
+    std::weak_ptr<Model> wtarget_;
 };
 
 } // namespace wcore

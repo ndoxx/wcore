@@ -262,10 +262,8 @@ Quaternion slerp(const Quaternion& q0, const Quaternion& q1, float t)
     static const float DOT_THRESHOLD = 0.9995f;
     if(dot > DOT_THRESHOLD)
     {
-        // If the inputs are too close for comfort, linearly interpolate
-        // and normalize the result.
-
-        Quaternion result(v0 + (v1 - v0)*t);
+        // If the inputs are too close for comfort, return nlerp
+        Quaternion result(v0*(1.f-t) + v1*t);
         result.normalize();
         return result;
     }

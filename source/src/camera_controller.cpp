@@ -2,13 +2,17 @@
 #include "message.h"
 #include "camera.h"
 #include "scene.h"
+#include "model.h"
+#include "bounding_boxes.h"
 #include "input_handler.h"
 #include "game_clock.h"
 
 namespace wcore
 {
 
-CameraController::CameraController()
+CameraController::CameraController():
+recording_(false),
+frame_count_(0)
 {
     // Add freefly camera as first mode
     //     tracking shot as second mode
@@ -16,7 +20,7 @@ CameraController::CameraController()
     CameraState* dbg_tracking = new CameraStateTrackingShot();
     camera_states_.push_back(dbg_freefly);
     camera_states_.push_back(dbg_tracking);
-    current_state_ = 0;
+    current_state_ = CameraStateIndex::FREEFLY; // 0
 }
 
 CameraController::~CameraController()
@@ -35,8 +39,30 @@ void CameraController::update(const GameClock& clock)
 {
     float dt = clock.get_frame_duration();
 
+    // Motion recording
+    if(recording_ && frame_count_++%10 && current_state_ == CameraStateIndex::FREEFLY)
+    {
+        CameraStateTrackingShot* ts_state
+            = static_cast<CameraStateTrackingShot*>(camera_states_[CameraStateIndex::TRACKING]);
+
+        const math::vec3& pos = camera_->get_position();
+        float pitch = camera_->get_pitch();
+        float yaw   = camera_->get_yaw();
+        math::quat q(0.f, pitch, yaw);
+
+        float dp = (pos-ts_state->last_position()).norm();
+        float dq = 1.f - std::abs(q.dot_vector(ts_state->last_orientation()));
+
+        if(dp>1.f || dq>0.05f)
+        {
+            std::cout << dp << " " << dq << std::endl;
+            std::cout << frame_count_ << " new keyframe" << std::endl;
+            ts_state->add_keyframe(pos, q);
+        }
+    }
+
     // Update camera
-    camera_states_[current_state_]->control(camera_, dt);
+    current_state()->control(camera_, dt);
     camera_->update(dt);
 }
 
@@ -59,8 +85,22 @@ bool CameraController::onKeyboardEvent(const WData& data)
                                math::quat(0.f,camera_->get_pitch(),camera_->get_yaw()));
         return true;
     }
+    else if(kbd.key_binding == H_("k_cam_tg_record"))
+    {
+        CameraStateTrackingShot* ts_state
+            = static_cast<CameraStateTrackingShot*>(camera_states_[CameraStateIndex::TRACKING]);
+        ts_state->add_keyframe(camera_->get_position(),
+                               math::quat(0.f,camera_->get_pitch(),camera_->get_yaw()));
+        recording_ = !recording_;
+        if(recording_)
+        {
+            frame_count_ = 0;
+        }
+        return true;
+    }
     else if(kbd.key_binding == H_("k_cam_gen_track"))
     {
+        recording_ = false;
         CameraStateTrackingShot* ts_state
             = static_cast<CameraStateTrackingShot*>(camera_states_[CameraStateIndex::TRACKING]);
         ts_state->generate_interpolator();
@@ -70,17 +110,17 @@ bool CameraController::onKeyboardEvent(const WData& data)
     {
         // TMP just advance state index
         current_state_ = (current_state_+1)%camera_states_.size();
-        camera_states_[current_state_]->on_load();
+        current_state()->on_load();
         return true;
     }
 
     // * Propagate events down to current camera state object
-    return camera_states_[current_state_]->onKeyboardEvent(data, camera_);
+    return current_state()->onKeyboardEvent(data, camera_);
 }
 
 bool CameraController::onMouseEvent(const WData& data)
 {
-    return camera_states_[current_state_]->onMouseEvent(data, camera_);
+    return current_state()->onMouseEvent(data, camera_);
 }
 
 bool CameraStateFreefly::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
@@ -146,7 +186,7 @@ CameraStateTrackingShot::~CameraStateTrackingShot()
 
 bool CameraStateTrackingShot::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
 {
-    const MouseData& md = static_cast<const MouseData&>(data);
+    //const MouseData& md = static_cast<const MouseData&>(data);
 
     return true; // Do NOT consume event
 }
@@ -215,8 +255,8 @@ void CameraStateTrackingShot::generate_interpolator()
     if(orientation_interpolator_)
         delete orientation_interpolator_;
 
-    position_interpolator_ = new math::CSpline<math::vec3>(key_frame_parameters_,
-                                                           key_frame_positions_);
+    position_interpolator_ = new math::CSplineCardinalV3(key_frame_parameters_,
+                                                         key_frame_positions_);
     orientation_interpolator_ = new SlerpInterpolator(key_frame_parameters_,
                                                       key_frame_orientations_);
 
@@ -226,6 +266,48 @@ void CameraStateTrackingShot::generate_interpolator()
     key_frame_orientations_.clear();
     key_frame_parameters_.clear();
 }
+
+
+CameraStateCircleAround::CameraStateCircleAround():
+radius_(1.f),
+speed_(1.f),
+t_(0.f)
+{
+
+}
+
+void CameraStateCircleAround::follow(std::weak_ptr<Model> target, std::shared_ptr<Camera> camera)
+{
+    wtarget_ = target;
+    if(auto ptarget = wtarget_.lock())
+    {
+        lookat_pos_ = traits::center<OBB>::get(ptarget->get_OBB());
+        auto& cam_pos = camera->get_position();
+        radius_ = (lookat_pos_-cam_pos).norm();
+    }
+}
+
+
+bool CameraStateCircleAround::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
+{
+    return true; // Do NOT consume event
+}
+
+bool CameraStateCircleAround::onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera)
+{
+    return true; // Do NOT consume event
+}
+
+void CameraStateCircleAround::control(std::shared_ptr<Camera> camera, float dt)
+{
+
+}
+
+void CameraStateCircleAround::on_load()
+{
+    t_ = 0.f;
+}
+
 
 
 } // namespace wcore
