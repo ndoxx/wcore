@@ -35,6 +35,11 @@ public:
         return model_factory_->make_model(mesh_node, mat_node, opt_rng);
     }
 
+    inline std::shared_ptr<WEntity> make_entity_blueprint(hash_t name)
+    {
+        return entity_factory_->make_entity_blueprint(name);
+    }
+
 private:
     ModelFactory*  model_factory_;
     EntityFactory* entity_factory_;

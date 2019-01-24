@@ -116,7 +116,6 @@ pLight SceneLoader::load_point_light(uint32_t chunk_index)
     return pointlight;
 }
 
-
 void SceneLoader::load_global(DaylightSystem& daylight)
 {
     // Save chunk nodes

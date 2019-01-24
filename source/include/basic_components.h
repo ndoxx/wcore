@@ -3,6 +3,7 @@
 
 #include "wcomponent.h"
 #include "transformation.h"
+#include "model.h"
 
 namespace wcore::component
 {
@@ -19,8 +20,15 @@ public:
                 float scale=1.0f): Transformation(position, orientation, scale) {}
 };
 
+class WCModel: public WComponent
+{
+public:
+    std::shared_ptr<Model> model;
+};
+
 } // namespace wcore::component
 
 REGISTER_COMPONENT(WCTransform);
+REGISTER_COMPONENT(WCModel);
 
 #endif // WCOMPONENTS_H
