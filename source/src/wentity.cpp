@@ -13,9 +13,7 @@ WEntity::WEntity()
 WEntity::~WEntity()
 {
     for(auto it: components_)
-    {
         delete it.second;
-    }
 }
 
 #ifdef __DEBUG__

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Entities>
+    <Blueprints>
+        <Entity name="entTeapot01">
+            <Components>
+                <Model name="teapot01"/>
+            </Components>
+        </Entity>
+    </Blueprints>
+</Entities>

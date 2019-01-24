@@ -13,6 +13,7 @@
 #include "chunk_manager.h"
 #include "camera_controller.h"
 #include "scene_loader.h"
+#include "game_object_factory.h"
 #include "input_handler.h"
 #include "pipeline.h"
 #include "daylight.h"
@@ -62,6 +63,7 @@ struct Engine::EngineImpl
     game_loop(nullptr),
     scene(nullptr),
     camera_controller(nullptr),
+    game_object_factory(nullptr),
     scene_loader(nullptr),
     pipeline(nullptr),
     daylight(nullptr),
@@ -83,6 +85,7 @@ struct Engine::EngineImpl
         delete daylight;
         delete pipeline;
         delete scene_loader;
+        delete game_object_factory;
         delete camera_controller;
         delete scene;
         delete game_loop;
@@ -95,30 +98,32 @@ struct Engine::EngineImpl
 
     void init()
     {
-        game_loop         = new GameLoop();
-        scene             = new Scene();
-        camera_controller = new CameraController();
-        scene_loader      = new SceneLoader();
-        pipeline          = new RenderPipeline();
-        daylight          = new DaylightSystem();
-        ray_caster        = new RayCaster();
-        chunk_manager     = new ChunkManager();
+        game_loop           = new GameLoop();
+        scene               = new Scene();
+        camera_controller   = new CameraController();
+        game_object_factory = new GameObjectFactory();
+        scene_loader        = new SceneLoader();
+        pipeline            = new RenderPipeline();
+        daylight            = new DaylightSystem();
+        ray_caster          = new RayCaster();
+        chunk_manager       = new ChunkManager();
 #ifndef __DISABLE_EDITOR__
-        editor            = new Editor();
+        editor              = new Editor();
 #endif
 
     }
 
-    GameLoop*         game_loop;
-    Scene*            scene;
-    CameraController* camera_controller;
-    SceneLoader*      scene_loader;
-    RenderPipeline*   pipeline;
-    DaylightSystem*   daylight;
-    RayCaster*        ray_caster;
-    ChunkManager*     chunk_manager;
+    GameLoop*          game_loop;
+    Scene*             scene;
+    CameraController*  camera_controller;
+    GameObjectFactory* game_object_factory;
+    SceneLoader*       scene_loader;
+    RenderPipeline*    pipeline;
+    DaylightSystem*    daylight;
+    RayCaster*         ray_caster;
+    ChunkManager*      chunk_manager;
 #ifndef __DISABLE_EDITOR__
-    Editor*         editor;
+    Editor*            editor;
 #endif
 
     // TMP?
@@ -169,15 +174,16 @@ void Engine::Init(int argc, char const *argv[],
 
     // Register game systems (init events, register editor widgets, add to update list)
 #ifndef __DISABLE_EDITOR__
-    eimpl_->game_loop->register_game_system(H_("Editor"),           static_cast<GameSystem*>(eimpl_->editor));
+    eimpl_->game_loop->register_game_system(H_("Editor"),            static_cast<GameSystem*>(eimpl_->editor));
 #endif
-    eimpl_->game_loop->register_game_system(H_("CameraController"), static_cast<GameSystem*>(eimpl_->camera_controller));
-    eimpl_->game_loop->register_game_system(H_("Scene"),            static_cast<GameSystem*>(eimpl_->scene));
-    eimpl_->game_loop->register_game_system(H_("Pipeline"),         static_cast<GameSystem*>(eimpl_->pipeline));
-    eimpl_->game_loop->register_game_system(H_("Daylight"),         static_cast<GameSystem*>(eimpl_->daylight));
-    eimpl_->game_loop->register_game_system(H_("RayCaster"),        static_cast<GameSystem*>(eimpl_->ray_caster));
-    eimpl_->game_loop->register_game_system(H_("SceneLoader"),      static_cast<GameSystem*>(eimpl_->scene_loader));
-    eimpl_->game_loop->register_game_system(H_("ChunkManager"),     static_cast<GameSystem*>(eimpl_->chunk_manager));
+    eimpl_->game_loop->register_game_system(H_("CameraController"),  static_cast<GameSystem*>(eimpl_->camera_controller));
+    eimpl_->game_loop->register_game_system(H_("Scene"),             static_cast<GameSystem*>(eimpl_->scene));
+    eimpl_->game_loop->register_game_system(H_("Pipeline"),          static_cast<GameSystem*>(eimpl_->pipeline));
+    eimpl_->game_loop->register_game_system(H_("Daylight"),          static_cast<GameSystem*>(eimpl_->daylight));
+    eimpl_->game_loop->register_game_system(H_("RayCaster"),         static_cast<GameSystem*>(eimpl_->ray_caster));
+    eimpl_->game_loop->register_game_system(H_("GameObjectFactory"), static_cast<GameSystem*>(eimpl_->game_object_factory));
+    eimpl_->game_loop->register_game_system(H_("SceneLoader"),       static_cast<GameSystem*>(eimpl_->scene_loader));
+    eimpl_->game_loop->register_game_system(H_("ChunkManager"),      static_cast<GameSystem*>(eimpl_->chunk_manager));
 
     // TMP
     eimpl_->camera_controller->register_camera(eimpl_->scene->get_camera());

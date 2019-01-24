@@ -55,6 +55,8 @@ set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/material_factory.cpp
     ${CMAKE_SOURCE_DIR}/source/src/model_factory.cpp
     ${CMAKE_SOURCE_DIR}/source/src/terrain_factory.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/entity_factory.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/game_object_factory.cpp
     ${CMAKE_SOURCE_DIR}/source/src/sky.cpp
     ${CMAKE_SOURCE_DIR}/source/src/transformation.cpp
     ${CMAKE_SOURCE_DIR}/source/src/camera.cpp

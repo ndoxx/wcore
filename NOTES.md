@@ -6269,18 +6269,25 @@ Le nouveau _GameSystem_ du nom de _CameraController_ repose sur la gestion de pl
 Depuis le mode freefly, la touche "I", permet d'enregistrer une keyframe. Une fois que l'on a accumulé suffisamment de keyframes, on peut générer un interpolateur au moyen de la touche "K", puis changer d'état avec la touche "C" pour parcourir un chemin interpolé en position et en orientation depuis les keyframes enregistrées.
 Au lieu d'enregistrer les keyframes une par une, on peut en tapant sur "J" démarrer un (fake) enregistrement de la position de la cam. Toutes les 10 frames, si la position ou l'orientation ont suffisamment changé depuis la dernière keyframe, alors une nouvelle keyframe est générée. Taper sur "J" ou "K" arrête l'enregistrement. Le résultat en mode _CameraStateTrackingShot_ est assez "shaky" et pas terrible, de plus, changer d'orientation sans changer de position induira un intervalle de taille nulle pour le paramètre (comme l'implémentation courante (de merde) fixe l'intervalle au prorata de la distance des positions de la cam d'une kf à l'autre) et donc le mouvement reproduit ressemblera à un sursaut de souris.
 
-L'interpolation des positions se fait avec une _CSpline_ (Catmull-Rom).
-L'interpolation des quats ne peut se faire au moyen d'une _CSpline_, et une lerp basique ne fonctionne pas non plus (produit un tour complet de la caméra quand l'assiette change de signe entre 2 keyframes). Pour interpoler 2 quats, on peut utiliser une Slerp (spherical lerp), j'ai pompé l'algo dans l'article wiki [1], la slerp fonctionne impeccablement et contourne les singularités de la lerp comme on s'y attend. L'algo d'origine vient de Shoemake [2]. Cette solution n'est pas toujours la meilleure, basiquement on a 3 caractéristiques que l'on peut souhaiter pour le résultat de l'interpolation, et 3 méthodes possibles qui ne garantissent que 2 de ces caractéristiques parmi les 3 (voir [3]) :
+L'interpolation des positions se fait avec une _CSpline_ (cardinale).
+L'interpolation des quats ne peut se faire au moyen d'une _CSpline_, et une lerp basique (+ normalisation) ne fonctionne pas non plus à tous les coups (produit un tour complet de la caméra quand l'assiette change de signe entre 2 keyframes).
+Pour interpoler 2 quats, on peut utiliser une Slerp (spherical lerp), j'ai pompé l'algo dans l'article wiki [1], la slerp fonctionne impeccablement et contourne les singularités de la lerp comme on s'y attend. L'algo d'origine vient de Shoemake [2]. Cette solution n'est pas toujours la meilleure, basiquement on a 3 caractéristiques que l'on peut souhaiter pour le résultat de l'interpolation, et 3 méthodes possibles qui ne garantissent que 2 de ces caractéristiques parmi les 3 (voir [3]) :
 
                       commutative   constant velocity   torque-minimal
 quaternion slerp           N                Y                 Y
 quaternion nlerp           Y                N                 Y
 log-quaternion lerp        Y                Y                 N
 
-[3] recommande une nlerp (lerp + normalize) en toutes circonstances, c'était mon premier réflexe ici mais ça n'empêchait pas la cam d'effectuer un tour complet d'elle-même quand l'assiette changeait de signe. Et c'est ça qui m'a motivé à chercher une autre solution. En réalité, ce problème vient d'ailleurs. S^3 est un revêtement double de SO(3) (à une rotation R de SO(3) correspondent les quaternions q ET -q), donc indépendamment de l'interpolation, il existe toujours 2 chemins de rotations entre un quat q1 et un quat q2 : un chemin court et un chemin long. Le chemin long produit un "tour complet". Pour forcer l'utilisation du chemin court, il faut inverser le signe d'un des 2 quats si le produit scalaire q1.q2 est négatif. math::slerp() de quaternion.h fait ça, ce qui rend la méthode robuste aux changements de signe de l'assiette. Mais en réalité, je pourrais tout aussi bien implémenter une nlerp qui réalise le même test (ce serait d'ailleurs plus rapide). Oh, well...
+   -> [3] recommande une nlerp (lerp + normalize) en toutes circonstances, c'était mon premier réflexe ici mais ça n'empêchait pas la cam d'effectuer un tour complet d'elle-même quand l'assiette changeait de signe. Et c'est ça qui m'a motivé à chercher une autre solution. En réalité, ce problème vient d'ailleurs. S^3 est un revêtement double de SO(3) (à une rotation R de SO(3) correspondent les quaternions q ET -q), donc indépendamment de l'interpolation, il existe toujours 2 chemins de rotations entre un quat q1 et un quat q2 : un chemin court et un chemin long. Le chemin long produit un "tour complet". Pour forcer l'utilisation du chemin court, il faut inverser le signe d'un des 2 quats si le produit scalaire q1.q2 est négatif. math::slerp() de quaternion.h fait ça, ce qui rend la méthode robuste aux changements de signe de l'assiette. Mais en réalité, je pourrais tout aussi bien implémenter une nlerp qui réalise le même test (ce serait d'ailleurs plus rapide). Oh, well...
 
 
 * sources :
 [1] https://en.wikipedia.org/wiki/Slerp
 [2] http://run.usc.edu/cs520-s15/assign2/p245-shoemake.pdf
 [3] http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
+
+
+#[23-01-19]
+##[TODO]
+[ ] Ecrire _EntityFactory_ qui permet de construire une entité depuis une description (XML).
+    [ ] Pour chaque type de composant, il faut enregistrer une factory method auprès de _EntityFactory_, et l'associer avec un nom de composant.

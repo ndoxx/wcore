@@ -10,13 +10,9 @@
 #include "scene.h"
 #include "lights.h"
 #include "colors.h"
-#include "material.h"
 #include "math3d.h"
-#include "material_factory.h"      // TMP
-#include "surface_mesh_factory.h"  // TMP
-#include "model_factory.h"
+#include "game_object_factory.h"
 #include "height_map.h"
-#include "heightmap_generator.h"
 #include "camera.h"
 #include "model.h"
 #include "terrain_patch.h"
@@ -43,7 +39,7 @@ typedef std::shared_ptr<const Light>  pcLight;
 
 SceneLoader::SceneLoader():
 xml_parser_(),
-model_factory_(new ModelFactory("assets.xml")),
+game_object_factory_(nullptr),
 chunk_size_m_(32),
 lattice_scale_(1.0f),
 texture_scale_(1.0f),
@@ -54,7 +50,7 @@ pscene_(nullptr)
 
 SceneLoader::~SceneLoader()
 {
-    delete model_factory_;
+
 }
 
 void SceneLoader::init_events(InputHandler& handler)
@@ -71,6 +67,7 @@ void SceneLoader::load_level(const char* level_name)
 {
     // Locate scene game system
     pscene_ = locate<Scene>(H_("Scene"));
+    game_object_factory_ = locate<GameObjectFactory>(H_("GameObjectFactory"));
 
     DLOGS("[SceneLoader] Parsing xml scene description.", "scene", Severity::LOW);
     fs::path file_path(io::get_file(H_("root.folders.level"), level_file(level_name)));
@@ -98,7 +95,7 @@ bool SceneLoader::onKeyboardEvent(const WData& data)
 pModel SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index)
 {
     // Create model from instance name
-    pModel pmdl = model_factory_->make_model_instance(name);
+    pModel pmdl = game_object_factory_->make_model_instance(name);
 
     pmdl->update_bounding_boxes();
 
@@ -479,7 +476,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     desc.generator_node = generator_node;
     desc.height_modifier_node = height_modifier_node;
 
-    pTerrain terrain = model_factory_->make_terrain_patch(desc);
+    pTerrain terrain = game_object_factory_->make_terrain_patch(desc);
 
     // Fix new terrain edge normals and tangents
     terrain::stitch_terrain_edges(pscene_, terrain, chunk_index, chunk_size_);
@@ -531,13 +528,13 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
             if(xml::parse_attribute(model, "name", name))
             {
                 hash_t hname = H_(name.c_str());
-                pmdl = model_factory_->make_model_instance(hname);
+                pmdl = game_object_factory_->make_model_instance(hname);
             }
             else continue;
         }
         else
         {
-            pmdl = model_factory_->make_model(mesh_node, mat_node, &rng);
+            pmdl = game_object_factory_->make_model(mesh_node, mat_node, &rng);
         }
 
         // Spacial transformation
@@ -598,7 +595,7 @@ void SceneLoader::parse_line_models(xml_node<>* chunk_node, uint32_t chunk_index
         bool relative_positioning = is_pos_relative(lmodel);
 
         // Generate mesh and material, then construct line model
-        Material* pmat = model_factory_->material_factory()->make_material(mat_node);
+        Material* pmat = game_object_factory_->material_factory()->make_material(mat_node);
         Mesh<Vertex3P>* pmesh = parse_line_mesh(mesh_node);
         if(!pmesh)
         {
@@ -678,7 +675,7 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
 
         for(uint32_t ii=0; ii<instances; ++ii)
         {
-            pModel pmdl = model_factory_->make_model(mesh_node, mat_node, &rng);
+            pModel pmdl = game_object_factory_->make_model(mesh_node, mat_node, &rng);
 
             // Transform
             pmdl->set_transformation(transforms[ii]);

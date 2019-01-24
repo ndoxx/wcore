@@ -17,7 +17,7 @@
 namespace wcore
 {
 
-class ModelFactory;
+class GameObjectFactory;
 class Scene;
 class Model;
 class LineModel;
@@ -51,7 +51,7 @@ class SceneLoader: public GameSystem
 {
 private:
     XMLParser xml_parser_;
-    ModelFactory* model_factory_;
+    GameObjectFactory* game_object_factory_;
 
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_nodes_;
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_patches_;
