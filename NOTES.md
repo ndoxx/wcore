@@ -6260,6 +6260,9 @@ Donc quand je dois créer un nouvel objet procédural, je regarde d'abord le has
 [ ] __BUUUUUUGS__
     -> J'ai commenté tout ce qui touche à la mise en cache.
     -> Commencer par refactor _Model_ pour utiliser des shared_ptr pour mesh et material.
+    -> __NE PAS OUBLIER__ que la méthode Chunk::load_geometry() va copier le mesh de _CHAQUE_ modèle du chunk, qu'il soit mis en cache ou non. De plus, un mesh mis en cache verra son buffer offset et son nelements modifiés _PLUSIEURS FOIS_.
+        -> Problèmes quand on a 2 références au même mesh dans 2 chunks. Comme chaque chunk possède son set de VBOs/IBOs, le mesh possède un couple buffer offset / nelements propre au dernier VBO qui l'a enregistré, et ce couple sera invalide pour référencer le mesh dans le VBO de l'autre chunk.
+            -> Abandonner l'idée de VBOs/IBOs par chunk et centraliser leur gestion dans un système spécialisé ?
 
 
 #[22-01-19]

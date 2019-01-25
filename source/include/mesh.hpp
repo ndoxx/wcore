@@ -18,6 +18,13 @@ namespace wcore
 template <typename VertexT>
 class BufferUnit;
 
+struct BufferToken
+{
+    uint32_t batch         = 0;
+    uint32_t buffer_offset = 0;
+    uint32_t n_elements    = 0;
+};
+
 template <typename VertexT>
 class Mesh
 {
@@ -27,15 +34,16 @@ protected:
     std::vector<VertexT>  vertices_;
     std::vector<uint32_t> indices_;
     std::array<float, 6>  dimensions_;
-    uint32_t              buffer_offset_;
-    uint32_t              n_elements_;
+    //uint32_t              buffer_offset_;
+    //uint32_t              n_elements_;
+    BufferToken           buffer_token_;
     bool                  centered_;
     bool                  cached_;
 
 public:
     Mesh():
-    buffer_offset_(0),
-    n_elements_(0),
+    //buffer_offset_(0),
+    //n_elements_(0),
     centered_(false),
     cached_(false){}
 
@@ -43,8 +51,9 @@ public:
     : vertices_(std::move(other.vertices_))
     , indices_(std::move(other.indices_))
     , dimensions_(other.dimensions_)
-    , buffer_offset_(other.buffer_offset_)
-    , n_elements_(other.n_elements_)
+    , buffer_token_(other.buffer_token_)
+    //, buffer_offset_(other.buffer_offset_)
+    //, n_elements_(other.n_elements_)
     , centered_(false)
     , cached_(other.cached_){}
 
@@ -52,8 +61,9 @@ public:
     : vertices_(other.vertices_)
     , indices_(other.indices_)
     , dimensions_(other.dimensions_)
-    , buffer_offset_(other.buffer_offset_)
-    , n_elements_(other.n_elements_)
+    , buffer_token_(other.buffer_token_)
+    //, buffer_offset_(other.buffer_offset_)
+    //, n_elements_(other.n_elements_)
     , centered_(false)
     , cached_(other.cached){}
 
@@ -63,8 +73,9 @@ public:
     {
         vertices_ = other.vertices_;
         indices_ = other.indices_;
-        buffer_offset_ = other.buffer_offset_;
-        n_elements_ = other.n_elements_;
+        buffer_token_ = other.buffer_token_;
+        //buffer_offset_ = other.buffer_offset_;
+        //n_elements_ = other.n_elements_;
         dimensions_ = other.dimensions_;
         centered_ = other.centered_;
         cached_ = other.cached_;
@@ -73,8 +84,11 @@ public:
 
     inline uint32_t get_nv() const            { return vertices_.size(); }
     inline uint32_t get_ni() const            { return indices_.size(); }
-    inline uint32_t get_n_elements() const    { return n_elements_; }
-    inline uint32_t get_buffer_offset() const { return buffer_offset_; }
+    inline uint32_t get_n_elements() const    { return buffer_token_.n_elements; }
+    inline uint32_t get_buffer_offset() const { return buffer_token_.buffer_offset; }
+    inline const BufferToken& get_buffer_token() const { return buffer_token_; }
+    // TMP
+    inline void set_buffer_batch(uint32_t value) { buffer_token_.batch = value; }
 
     inline bool is_centered() const           { return centered_; }
     inline bool is_cached() const             { return cached_; }
@@ -107,14 +121,14 @@ public:
         indices_.push_back(T1);
         indices_.push_back(T2);
         indices_.push_back(T3);
-        ++n_elements_;
+        ++buffer_token_.n_elements;
     }
 
     inline void push_line(uint32_t P1, uint32_t P2)
     {
         indices_.push_back(P1);
         indices_.push_back(P2);
-        ++n_elements_;
+        ++buffer_token_.n_elements;
     }
 
     inline const VertexT& operator[](uint32_t index) const
@@ -190,7 +204,7 @@ public:
 #endif
 
 private:
-    inline void set_buffer_offset(uint32_t offset) { buffer_offset_ = offset; }
+    inline void set_buffer_offset(uint32_t offset) { buffer_token_.buffer_offset = offset; }
 };
 
 struct Vertex3P3N3T2U;

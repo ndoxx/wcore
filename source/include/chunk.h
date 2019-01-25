@@ -68,9 +68,11 @@ private:
     math::i32vec2 coords_;
     uint32_t index_;
     BufferUnit<Vertex3P3N3T2U>  buffer_unit_;
+    BufferUnit<Vertex3P3N3T2U>  terrain_buffer_unit_;
     BufferUnit<Vertex3P3N3T2U>  blend_buffer_unit_;
     BufferUnit<Vertex3P>        line_buffer_unit_;
     VertexArray<Vertex3P3N3T2U> vertex_array_;
+    VertexArray<Vertex3P3N3T2U> terrain_vertex_array_;
     VertexArray<Vertex3P3N3T2U> blend_vertex_array_;
     VertexArray<Vertex3P>       line_vertex_array_;
     pTerrain terrain_;
@@ -119,14 +121,8 @@ public:
                          cLightEvaluator ifFunc=DEFAULT_CLIGHT_EVALUATOR) const;
 
     void load_geometry();
-    inline const BufferUnit<Vertex3P3N3T2U>& get_buffer_unit() const       { return buffer_unit_; }
-    inline const BufferUnit<Vertex3P3N3T2U>& get_blend_buffer_unit() const { return blend_buffer_unit_; }
-    inline void bind_vertex_array()   { vertex_array_.bind(); }
-    inline void bind_blend_vertex_array()   { blend_vertex_array_.bind(); }
-    inline void bind_line_vertex_array()   { line_vertex_array_.bind(); }
-    inline void draw(uint32_t nelements, uint32_t buffer_offset) const { buffer_unit_.draw(nelements, buffer_offset); }
-    inline void draw_transparent(uint32_t nelements, uint32_t buffer_offset) const { blend_buffer_unit_.draw(nelements, buffer_offset); }
-    inline void draw_line(uint32_t nelements, uint32_t buffer_offset) const { line_buffer_unit_.draw(nelements, buffer_offset); }
+
+    void draw(const BufferToken& buffer_token) const;
     void update(float dt);
 
     void dbg_show_statistics();

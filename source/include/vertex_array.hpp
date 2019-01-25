@@ -16,8 +16,8 @@ public:
     explicit VertexArray(const BufferUnit<VertexT>& buffer_unit);
     ~VertexArray();
 
-    void bind();
-    void unbind();
+    void bind() const;
+    void unbind() const;
 };
 
 template <typename VertexT>
@@ -36,13 +36,13 @@ template <typename VertexT>
 VertexArray<VertexT>::~VertexArray(){}
 
 template <typename VertexT>
-void VertexArray<VertexT>::bind()
+void VertexArray<VertexT>::bind() const
 {
     glBindVertexArray(VAO_);
 }
 
 template <typename VertexT>
-void VertexArray<VertexT>::unbind()
+void VertexArray<VertexT>::unbind() const
 {
     glBindVertexArray(0);
 }

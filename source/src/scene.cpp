@@ -36,7 +36,8 @@ Scene::Scene():
 camera_(std::make_shared<Camera>(GLB.WIN_W, GLB.WIN_H)),
 light_camera_(std::make_shared<Camera>(1, 1)),
 chunk_size_m_(32),
-current_chunk_index_(0)
+current_chunk_index_(0),
+unique_id_(0)
 {
     // Disable light camera frustum update
     light_camera_->disable_frustum_update();
@@ -187,12 +188,13 @@ void Scene::draw_line_models(std::function<void(pLineModel)> func)
     for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
     {
         Chunk* chunk = chunks_.at(chunks_order_[ii]);
-        chunk->bind_line_vertex_array();
+        //chunk->bind_line_vertex_array();
         chunk->traverse_line_models([&](pLineModel pmdl)
         {
             func(pmdl);
-            chunk->draw_line(pmdl->get_mesh().get_n_elements(),
-                             pmdl->get_mesh().get_buffer_offset());
+            /*chunk->draw_line(pmdl->get_mesh().get_n_elements(),
+                             pmdl->get_mesh().get_buffer_offset());*/
+            chunk->draw(pmdl->get_mesh().get_buffer_token());
         });
         //GFX::unbind_vertex_array();
     }
@@ -225,12 +227,13 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
             }
 
             // Bind VAO, and draw models
-            chunk->bind_vertex_array();
+            //chunk->bind_vertex_array();
             chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
             {
                 prepare(pmdl);
-                chunk->draw(pmdl->get_mesh().get_n_elements(),
-                            pmdl->get_mesh().get_buffer_offset());
+                /*chunk->draw(pmdl->get_mesh().get_n_elements(),
+                            pmdl->get_mesh().get_buffer_offset());*/
+                chunk->draw(pmdl->get_mesh().get_buffer_token());
             }, evaluate, order, model_cat);
             //GFX::unbind_vertex_array();
         }
@@ -255,11 +258,12 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
             }
 
             // Bind VAO, and draw terrains
-            chunk->bind_vertex_array();
+            //chunk->bind_terrain_vertex_array();
             pModel pterrain = chunk->get_terrain_nc();
             prepare(pterrain);
-            chunk->draw(pterrain->get_mesh().get_n_elements(),
-                        pterrain->get_mesh().get_buffer_offset());
+            /*chunk->draw_terrain(pterrain->get_mesh().get_n_elements(),
+                                pterrain->get_mesh().get_buffer_offset());*/
+            chunk->draw(pterrain->get_mesh().get_buffer_token());
         }
     }
     //Traverse chunks back to front for transparent geometry
@@ -277,12 +281,13 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
                 continue;
 
             // Bind VAO, and draw models
-            chunk->bind_blend_vertex_array();
+            //chunk->bind_blend_vertex_array();
             chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
             {
                 prepare(pmdl);
-                chunk->draw_transparent(pmdl->get_mesh().get_n_elements(),
-                                        pmdl->get_mesh().get_buffer_offset());
+                /*chunk->draw_transparent(pmdl->get_mesh().get_n_elements(),
+                                        pmdl->get_mesh().get_buffer_offset());*/
+                chunk->draw(pmdl->get_mesh().get_buffer_token());
             }, evaluate, order, model_cat);
             //GFX::unbind_vertex_array();
         }

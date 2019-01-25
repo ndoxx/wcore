@@ -169,6 +169,11 @@ public:
         glDrawElements(primitive_, dimensionality(primitive_)*n_elements, GL_UNSIGNED_INT,
                       (void*)(offset * sizeof(GLuint)));
     }
+
+    inline void draw(const BufferToken& buffer_token, bool condition=true) const
+    {
+        draw(buffer_token.n_elements, buffer_token.buffer_offset, condition);
+    }
 };
 
 }

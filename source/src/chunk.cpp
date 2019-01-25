@@ -34,9 +34,11 @@ Chunk::Chunk(i32vec2 coords):
 coords_(coords),
 index_(std::hash<i32vec2>{}(coords)),
 buffer_unit_(),
+terrain_buffer_unit_(),
 blend_buffer_unit_(),
 line_buffer_unit_(GL_LINES),
 vertex_array_(buffer_unit_),
+terrain_vertex_array_(terrain_buffer_unit_),
 blend_vertex_array_(blend_buffer_unit_),
 line_vertex_array_(line_buffer_unit_)
 {
@@ -260,14 +262,19 @@ void Chunk::load_geometry()
         DLOG(ss.str(), "model", Severity::DET);
 #endif //__DEBUG__
         buffer_unit_.submit(pmodel->get_mesh());
+        pmodel->get_mesh().set_buffer_batch(1); // TMP
     }
-    buffer_unit_.submit(terrain_->get_mesh());
     buffer_unit_.upload();
+
+    terrain_buffer_unit_.submit(terrain_->get_mesh());
+    terrain_->get_mesh().set_buffer_batch(2); // TMP
+    terrain_buffer_unit_.upload();
 
     // Geometry with alpha blending
     for(pModel pmodel: models_blend_)
     {
         blend_buffer_unit_.submit(pmodel->get_mesh());
+        pmodel->get_mesh().set_buffer_batch(3); // TMP
     }
     blend_buffer_unit_.upload();
 
@@ -275,6 +282,7 @@ void Chunk::load_geometry()
     for(pLineModel pmodel: line_models_)
     {
         line_buffer_unit_.submit(pmodel->get_mesh());
+        pmodel->get_mesh().set_buffer_batch(4); // TMP
     }
     line_buffer_unit_.upload();
 }
@@ -288,6 +296,31 @@ void Chunk::add_rotator(ConstantRotator* rotator)
 {
     constant_rotators_.push_back(rotator);
 }
+
+void Chunk::draw(const BufferToken& buffer_token) const
+{
+    // OPTIMIZE
+    switch(buffer_token.batch)
+    {
+        case 1:
+            vertex_array_.bind();
+            buffer_unit_.draw(buffer_token);
+            break;
+        case 2:
+            terrain_vertex_array_.bind();
+            terrain_buffer_unit_.draw(buffer_token);
+            break;
+        case 3:
+            blend_vertex_array_.bind();
+            blend_buffer_unit_.draw(buffer_token);
+            break;
+        case 4:
+            line_vertex_array_.bind();
+            line_buffer_unit_.draw(buffer_token);
+            break;
+    }
+}
+
 
 void Chunk::update(float dt)
 {

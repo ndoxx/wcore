@@ -10,6 +10,7 @@
 #include "buffer_unit.hpp"
 #include "vertex_array.hpp"
 #include "chunk.h"
+#include "wentity.h"
 #include "octree.hpp"
 #ifndef __DISABLE_EDITOR__
 #include "editor.h"
@@ -43,6 +44,7 @@ private:
     typedef Octree<BoundingRegion, StaticOctreeData> StaticOctree;
 
     std::map<uint32_t, Chunk*> chunks_;
+    std::map<uint64_t, std::shared_ptr<WEntity>> entities_;
     StaticOctree static_octree;
 
     pLight directional_light_;              // The only directionnal light
@@ -52,6 +54,8 @@ private:
     uint32_t current_chunk_index_;          // Index of the chunk the camera is in
     math::i32vec2 current_chunk_coords_;    // Coordinates of the chunk the camera is in
     std::vector<uint32_t> chunks_order_;    // Permutation vector for chunk ordering
+
+    uint64_t unique_id_;                    // Current unique id
 
     static uint32_t SHADOW_WIDTH;           // Width of shadow map
     static uint32_t SHADOW_HEIGHT;          // Height of shadow map
@@ -67,6 +71,7 @@ public:
     void populate_static_octree(uint32_t chunk_index);
 
     // Getters
+    inline uint64_t get_unique_id()                 { return unique_id_++; }
     inline pCamera get_camera()                     { return camera_; }
     inline pcCamera get_camera() const              { return camera_; }
     inline pCamera get_light_camera()               { return light_camera_; }
