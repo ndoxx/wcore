@@ -69,9 +69,7 @@ SurfaceMesh* SurfaceMeshFactory::make_surface_mesh(rapidxml::xml_node<>* mesh_no
 
     // Has a "name" attribute -> mesh instance
     std::string name;
-    bool is_instance = xml::parse_attribute(mesh_node, "name", name);
-
-    if(is_instance)
+    if(xml::parse_attribute(mesh_node, "name", name))
         return make_instance(H_(name.c_str()));
 
     std::string mesh;
@@ -143,7 +141,7 @@ SurfaceMesh* SurfaceMeshFactory::procedural_cache_lookup(hash_t mesh_type,
                                                          std::function<SurfaceMesh*(void)>new_mesh,
                                                          bool owns)
 {
-    hash_t hash_comb = HCOMBINE_(mesh_type, props);
+    //hash_t hash_comb = HCOMBINE_(mesh_type, props);
     /*auto it = proc_cache_.find(hash_comb);
     if(it!=proc_cache_.end())
     {
@@ -176,10 +174,10 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         else
             props.density = 1;
 
-        return procedural_cache_lookup(mesh_type, std::hash<IcosphereProps>{}(props), [&]()
-        {
+        //return procedural_cache_lookup(mesh_type, std::hash<IcosphereProps>{}(props), [&]()
+        //{
             return (SurfaceMesh*)factory::make_ico_sphere(props.density);
-        }, owns);
+        //}, owns);
     }
     else if(mesh_type == H_("box"))
     {
@@ -192,21 +190,21 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
             props.texture_scale = 1.0f;
         }
 
-        return procedural_cache_lookup(mesh_type, std::hash<BoxProps>{}(props), [&]()
-        {
+        //return procedural_cache_lookup(mesh_type, std::hash<BoxProps>{}(props), [&]()
+        //{
             return (SurfaceMesh*)factory::make_box(props.extent, props.texture_scale);
-        }, owns);
+        //}, owns);
     }
     else if(mesh_type == H_("crystal") && opt_rng)
     {
-        std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
-        //std::uniform_int_distribution<uint32_t> mesh_seed(0,10);
+        //std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
+        std::uniform_int_distribution<uint32_t> mesh_seed(0,10); // only N different meshes possible
         uint32_t seed = mesh_seed(*opt_rng);
 
-        return procedural_cache_lookup(mesh_type, seed, [&]()
-        {
+        //return procedural_cache_lookup(mesh_type, seed, [&]()
+        //{
             return (SurfaceMesh*)factory::make_crystal(seed);
-        }, owns);
+        //}, owns);
     }
     else if(mesh_type == H_("tree"))
     {
@@ -216,10 +214,10 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         TreeProps props;
         props.parse_xml(generator_node);
 
-        return procedural_cache_lookup(mesh_type, std::hash<TreeProps>{}(props), [&]()
-        {
+        //return procedural_cache_lookup(mesh_type, std::hash<TreeProps>{}(props), [&]()
+        //{
             return TreeGenerator::generate_tree(props);
-        }, owns);
+        //}, owns);
     }
     else if(mesh_type == H_("rock") && opt_rng)
     {
@@ -232,10 +230,10 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
         std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
         props.seed = mesh_seed(*opt_rng);
 
-        return procedural_cache_lookup(mesh_type, std::hash<RockProps>{}(props), [&]()
-        {
+        //return procedural_cache_lookup(mesh_type, std::hash<RockProps>{}(props), [&]()
+        //{
             return RockGenerator::generate_rock(props);
-        }, owns);
+        //}, owns);
     }
 
     // Hard-coded procedural meshes
@@ -250,7 +248,7 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
             pmesh = (SurfaceMesh*)factory::make_cube();
         else if(mesh_type == H_("icosahedron"))
             pmesh = (SurfaceMesh*)factory::make_icosahedron();
-        else if(mesh_type == H_("tentacle"))
+        else if(mesh_type == H_("tentacle")) // TMP
         {
             CSplineCatmullV3 spline({0.0f, 0.33f, 0.66f, 1.0f},
                                     {vec3(0,0,0),

@@ -15,6 +15,7 @@
 #include "scene_loader.h"
 #include "game_object_factory.h"
 #include "input_handler.h"
+#include "sound_system.h"
 #include "pipeline.h"
 #include "daylight.h"
 #include "ray_caster.h"
@@ -69,6 +70,7 @@ struct Engine::EngineImpl
     daylight(nullptr),
     ray_caster(nullptr),
     chunk_manager(nullptr),
+    sound_system(nullptr),
 #ifndef __DISABLE_EDITOR__
     editor(nullptr),
 #endif
@@ -80,6 +82,10 @@ struct Engine::EngineImpl
 
     ~EngineImpl()
     {
+#ifndef __DISABLE_EDITOR__
+        delete editor;
+#endif
+        delete sound_system;
         delete chunk_manager;
         delete ray_caster;
         delete daylight;
@@ -90,9 +96,6 @@ struct Engine::EngineImpl
         delete scene;
         delete game_loop;
 
-#ifndef __DISABLE_EDITOR__
-        delete editor;
-#endif
         Config::Kill();
     }
 
@@ -107,6 +110,7 @@ struct Engine::EngineImpl
         daylight            = new DaylightSystem();
         ray_caster          = new RayCaster();
         chunk_manager       = new ChunkManager();
+        sound_system        = new SoundSystem();
 #ifndef __DISABLE_EDITOR__
         editor              = new Editor();
 #endif
@@ -122,6 +126,7 @@ struct Engine::EngineImpl
     DaylightSystem*    daylight;
     RayCaster*         ray_caster;
     ChunkManager*      chunk_manager;
+    SoundSystem*       sound_system;
 #ifndef __DISABLE_EDITOR__
     Editor*            editor;
 #endif
@@ -184,6 +189,7 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->register_game_system(H_("GameObjectFactory"), static_cast<GameSystem*>(eimpl_->game_object_factory));
     eimpl_->game_loop->register_game_system(H_("SceneLoader"),       static_cast<GameSystem*>(eimpl_->scene_loader));
     eimpl_->game_loop->register_game_system(H_("ChunkManager"),      static_cast<GameSystem*>(eimpl_->chunk_manager));
+    eimpl_->game_loop->register_game_system(H_("SoundSystem"),       static_cast<GameSystem*>(eimpl_->sound_system));
 
     // TMP
     eimpl_->camera_controller->register_camera(eimpl_->scene->get_camera());

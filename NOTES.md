@@ -6292,5 +6292,11 @@ log-quaternion lerp        Y                Y                 N
 
 #[23-01-19]
 ##[TODO]
-[ ] Ecrire _EntityFactory_ qui permet de construire une entité depuis une description (XML).
-    [ ] Pour chaque type de composant, il faut enregistrer une factory method auprès de _EntityFactory_, et l'associer avec un nom de composant.
+[X] Ecrire _EntityFactory_ qui permet de construire une entité depuis une description (XML).
+    [X] Pour chaque type de composant, il faut enregistrer une factory method auprès de _EntityFactory_, et l'associer avec un nom de composant.
+[ ] Mesh caching
+    [ ] Un seul gros VBO pour tous les mesh instances d'un niveau.
+        [ ] Mesh pre-pass (dans SceneLoader::load_global() ?) pour générer à l'avance tous les mesh instances et les mesh importés, et les mettre en cache. Les mesh purement procéduraux restent générés à la volée.
+        [ ] Les modèles ne possèdent plus nécessairement leurs meshes. Donc utiliser un shared pointer en interne.
+        [ ] Les chunks ne doivent plus charger la géométrie des instances. Les instances chargent leur géométrie lors du level loading, dans un gros VBO (de la _Scene_ ?).
+            -> Les entités possédant un composant _WCModel_ ne peuvent qu'utiliser des instances, et donc leurs meshes seront déjà chargées dans ce VBO.

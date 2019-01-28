@@ -8,6 +8,8 @@
         <path name="shaderinc" value="res/shaders/include/"/>
         <path name="font"      value="res/fonts/"/>
         <path name="texture"   value="res/textures/"/>
+        <path name="soundfx"   value="res/sound/fx/"/>
+        <path name="soundbgm"  value="res/sound/bgm/"/>
         <path name="model"     value="res/models/"/>
     </folders>
     <display>
@@ -42,6 +44,14 @@
             <bool  name="y_inverted"  value="false"/>
         </mouse>
     </input>
+    <sound>
+        <general>
+            <uint name="max_channels" value="100"/>
+            <float name="distance_factor" value="1.0"/>
+            <float name="doppler_scale" value="1.0"/>
+            <float name="rolloff_scale" value="1.0"/>
+        </general>
+    </sound>
     <debug>
         <channel_verbosity>
             <uint name="texture"   value="0"/>
@@ -54,6 +64,7 @@
             <uint name="chunk"     value="0"/>
             <uint name="parsing"   value="0"/>
             <uint name="entity"    value="0"/>
+            <uint name="sound"     value="3"/>
             <uint name="scene"     value="0"/>
             <uint name="io"        value="0"/>
             <uint name="profile"   value="0"/>

@@ -51,6 +51,12 @@ set_target_properties(freetype PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/vendor/freetype"
 )
 
+add_library(fmod SHARED IMPORTED)
+set_target_properties(fmod PROPERTIES
+  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/libfmod.so"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/vendor/fmod"
+)
+
 # add_definitions(-D__DISABLE_EDITOR__)
 add_definitions(-D__DEBUG__)
 add_definitions(-D__PROFILE__)
@@ -79,6 +85,7 @@ target_link_libraries(wcore
                       glfw
                       GLEW
                       png
+                      fmod
                       z
                       freetype
                       pthread)

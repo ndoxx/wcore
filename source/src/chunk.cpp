@@ -266,6 +266,7 @@ void Chunk::load_geometry()
     }
     buffer_unit_.upload();
 
+    // Terrain
     terrain_buffer_unit_.submit(terrain_->get_mesh());
     terrain_->get_mesh().set_buffer_batch(2); // TMP
     terrain_buffer_unit_.upload();
