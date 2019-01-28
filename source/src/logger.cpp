@@ -78,6 +78,7 @@ color(std::move(color))
 Logger::Logger()
 : Listener()
 , file_mode_(FileMode::OVERWRITE)
+, backtrace_on_error_(false)
 , messages_()
 , start_time_(std::chrono::high_resolution_clock::now())
 {
@@ -226,7 +227,7 @@ void Logger::operator ()(const LogMessage& log_message)
         if(cur_verbosity >= log_message.verbosity_level)
         {
             print_console(log_message);
-            if(log_message.verbosity_level < 2)
+            if(log_message.verbosity_level < 2 && backtrace_on_error_)
                 print_backtrace();
         }
     }

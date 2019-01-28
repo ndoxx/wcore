@@ -29,6 +29,9 @@ public:
 #endif
 
     bool load_soundfx(const char* filename, bool loop=false);
+    void play_soundfx(hash_t name,
+                      const math::vec3& position = math::vec3(0),
+                      const math::vec3& velocity = math::vec3(0));
 
 private:
     float distance_factor_;

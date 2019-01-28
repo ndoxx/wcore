@@ -132,6 +132,7 @@ class Logger : public Singleton<Logger>, public Listener
 private:
     FileMode file_mode_;               // What to do with the log file (new, overwrite, append)
     bool widget_scroll_required_;      // When new message logged, widget needs to scroll down
+    bool backtrace_on_error_;
     LogMessage::TimePoint start_time_; // Start time for timestamp handling
     uint32_t last_section_size_;       // Size of last section message
 
@@ -177,6 +178,11 @@ public:
     inline uint32_t& get_channel_verbosity_nc(hash_t name)
     {
         return channels_.at(name).verbosity;
+    }
+    // (De)Activate backtrace printing on error message
+    inline void set_backtrace_on_error(bool value)
+    {
+        backtrace_on_error_ = value;
     }
 
     // Actual functions used for logging (functor style)

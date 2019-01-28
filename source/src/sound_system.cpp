@@ -12,6 +12,11 @@
     #include "vendor/fmod/fmod_errors.h"
 #endif
 
+#ifndef __DISABLE_EDITOR__
+    #include "imgui/imgui.h"
+    #include "gui_utils.h"
+#endif
+
 namespace wcore
 {
 
@@ -83,14 +88,20 @@ last_campos_(0.f)
     ERRCHECK(FMOD::System_Create(&fmodsys));
     ERRCHECK(fmodsys->getVersion(&version));
     assert(version < FMOD_VERSION && "FMOD header/lib version mismatch.");
-    ERRCHECK(fmodsys->init(max_channels, FMOD_INIT_NORMAL, extradriverdata));
+    ERRCHECK(fmodsys->init(max_channels, FMOD_INIT_3D_RIGHTHANDED, extradriverdata));
     ERRCHECK(fmodsys->set3DSettings(doppler_scale_, distance_factor_, rolloff_scale_));
+
+    // TMP test
+    load_soundfx("swish.wav");
 
     DLOGES("sound", Severity::LOW);
 }
 
 SoundSystem::~SoundSystem()
 {
+    for(auto&& [key,psound]: soundfx_)
+        ERRCHECK(psound->release());
+
     ERRCHECK(fmodsys->close());
     ERRCHECK(fmodsys->release());
 }
@@ -125,7 +136,14 @@ void SoundSystem::init_events(InputHandler& handler)
 #ifndef __DISABLE_EDITOR__
 void SoundSystem::generate_widget()
 {
-
+    ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
+    if(ImGui::CollapsingHeader("Sound System"))
+    {
+        if(ImGui::Button("Test 3D sound"))
+        {
+            play_soundfx(H_("swish.wav"), math::vec3(0), math::vec3(0));
+        }
+    }
 }
 #endif
 
@@ -148,13 +166,27 @@ bool SoundSystem::load_soundfx(const char* filename, bool loop)
         return false;
     }
 
-    FMOD::Sound* out_sound;
+    DLOGN("[SoundSystem] Loading sound fx: ", "sound", Severity::LOW);
+    DLOGI(filepath.string(), "sound", Severity::LOW);
+
+    FMOD::Sound* out_sound = nullptr;
     ERRCHECK(fmodsys->createSound(filepath.string().c_str(), FMOD_3D, 0, &out_sound));
     ERRCHECK(out_sound->set3DMinMaxDistance(0.5f * distance_factor_, 5000.0f * distance_factor_));
     if(loop) ERRCHECK(out_sound->setMode(FMOD_LOOP_NORMAL));
 
     soundfx_.insert(std::pair(hname, out_sound));
     return true;
+}
+
+void SoundSystem::play_soundfx(hash_t name, const math::vec3& position, const math::vec3& velocity)
+{
+    FMOD::Channel* channel = nullptr;
+    FMOD_VECTOR pos = to_fmod_vec(position * distance_factor_);
+    FMOD_VECTOR vel = to_fmod_vec(velocity);
+
+    ERRCHECK(fmodsys->playSound(soundfx_.at(name), 0, true, &channel));
+    ERRCHECK(channel->set3DAttributes(&pos, &vel));
+    ERRCHECK(channel->setPaused(false));
 }
 
 } // namespace wcore

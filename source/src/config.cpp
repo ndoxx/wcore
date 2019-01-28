@@ -79,6 +79,10 @@ void Config::init()
 
 #ifdef __DEBUG__
     init_logger_channels();
+    // Also, setup backtrace printing behavior
+    bool backtrace_on_error = false;
+    get(H_("root.debug.logger.print_backtrace_on_error"),  backtrace_on_error);
+    dbg::LOG.set_backtrace_on_error(backtrace_on_error);
 #endif
 
     DLOGES("core", Severity::LOW);
