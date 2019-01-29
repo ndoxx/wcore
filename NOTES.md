@@ -6322,3 +6322,13 @@ constexpr hash_t operator "" _h(const char* internstr, size_t)
     std::cout << "hello" << " " << "hello"_h << " " << H_("hello") << std::endl;
 ```
 >> hello 11831194018420276491 11831194018420276491
+
+L'utilitaire internstr a été modifié pour reconnaître le literal.
+
+
+* _SoundSystem_
+    -> Channel struct [1] 28'25"
+        -> Channels have states (initialize, to_play, playing, stopping, stopped) and an update func which handles state transitioning.
+
+* sources :
+[1] https://www.youtube.com/watch?v=M8Bd7uHH4Yg

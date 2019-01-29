@@ -2,14 +2,11 @@
 #define SOUND_SYSTEM_H
 
 #include <filesystem>
+#include <memory>
+#include <string>
 #include <map>
 
 #include "game_system.h"
-
-namespace FMOD
-{
-    class Sound;
-}
 
 namespace fs = std::filesystem;
 
@@ -19,6 +16,20 @@ namespace wcore
 class SoundSystem: public GameSystem
 {
 public:
+    struct SoundDescriptor
+    {
+        SoundDescriptor(const char* filename);
+
+        std::string filename;
+        float volume_dB;
+        float min_distance;
+        float max_distance;
+        bool loop;
+        bool stream;
+        bool is3d;
+        bool isfx;
+    };
+
     SoundSystem();
     ~SoundSystem();
 
@@ -28,14 +39,19 @@ public:
     virtual void generate_widget() override;
 #endif
 
-    bool load_soundfx(const char* filename, hash_t key, bool loop);
-    inline bool load_soundfx(const char* filename, bool loop=false);
+    void register_sound(const SoundDescriptor& descriptor, hash_t name=0);
+    bool load_sound(hash_t name);
+    bool unload_sound(hash_t name);
 
-    void play_soundfx(hash_t name,
-                      const math::vec3& position = math::vec3(0),
-                      const math::vec3& velocity = math::vec3(0));
+    int play_sound(hash_t name,
+                   const math::vec3& position = math::vec3(0),
+                   const math::vec3& velocity = math::vec3(0),
+                   float volume_dB=0.f);
 
 private:
+    struct SoundEngineImpl;
+    std::unique_ptr<SoundEngineImpl> pimpl_; // opaque pointer
+
     float distance_factor_;
     float doppler_scale_;
     float rolloff_scale_;
@@ -45,13 +61,13 @@ private:
     fs::path soundfx_path_;
     fs::path soundbgm_path_;
 
-    std::map<hash_t, FMOD::Sound*> soundfx_;
+    std::map<hash_t, SoundDescriptor> descriptors_;
 };
-
-inline bool SoundSystem::load_soundfx(const char* filename, bool loop)
+/*
+inline bool SoundSystem::load_soundfx(const char* filename, bool loop, bool stream, bool is3d)
 {
-    return load_soundfx(filename, H_(filename), loop);
-}
+    return load_soundfx(filename, H_(filename), loop, stream, is3d);
+}*/
 
 } // namespace wcore
 
