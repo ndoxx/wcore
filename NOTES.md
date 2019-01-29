@@ -6300,3 +6300,25 @@ log-quaternion lerp        Y                Y                 N
         [ ] Les modèles ne possèdent plus nécessairement leurs meshes. Donc utiliser un shared pointer en interne.
         [ ] Les chunks ne doivent plus charger la géométrie des instances. Les instances chargent leur géométrie lors du level loading, dans un gros VBO (de la _Scene_ ?).
             -> Les entités possédant un composant _WCModel_ ne peuvent qu'utiliser des instances, et donc leurs meshes seront déjà chargées dans ce VBO.
+
+
+* On peut maintenant utiliser un string litteral pour hasher une string compile-time :
+
+```cpp
+typedef unsigned long long hash_t;
+// compile-time hash
+extern constexpr hash_t H_(const char* str)
+{
+    return detail::hash_one(str[0], str + 1, detail::basis);
+}
+// string literal expression
+constexpr hash_t operator "" _h(const char* internstr, size_t)
+{
+    return H_(internstr);
+}
+```
+
+```cpp
+    std::cout << "hello" << " " << "hello"_h << " " << H_("hello") << std::endl;
+```
+>> hello 11831194018420276491 11831194018420276491

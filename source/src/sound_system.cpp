@@ -141,13 +141,13 @@ void SoundSystem::generate_widget()
     {
         if(ImGui::Button("Test 3D sound"))
         {
-            play_soundfx(H_("swish.wav"), math::vec3(0), math::vec3(0));
+            play_soundfx("swish.wav"_h, math::vec3(0), math::vec3(0));
         }
     }
 }
 #endif
 
-bool SoundSystem::load_soundfx(const char* filename, bool loop)
+bool SoundSystem::load_soundfx(const char* filename, hash_t key, bool loop)
 {
     fs::path filepath = soundfx_path_ / filename;
     if(!fs::exists(filepath))
@@ -157,8 +157,7 @@ bool SoundSystem::load_soundfx(const char* filename, bool loop)
         return false;
     }
 
-    hash_t hname = H_(filename);
-    if(soundfx_.find(hname) != soundfx_.end())
+    if(soundfx_.find(key) != soundfx_.end())
     {
         DLOGE("[SoundSystem] Already loaded sound fx (or possible collision): ", "sound", Severity::WARN);
         DLOGI(filepath.string(), "sound", Severity::WARN);
@@ -174,7 +173,7 @@ bool SoundSystem::load_soundfx(const char* filename, bool loop)
     ERRCHECK(out_sound->set3DMinMaxDistance(0.5f * distance_factor_, 5000.0f * distance_factor_));
     if(loop) ERRCHECK(out_sound->setMode(FMOD_LOOP_NORMAL));
 
-    soundfx_.insert(std::pair(hname, out_sound));
+    soundfx_.insert(std::pair(key, out_sound));
     return true;
 }
 

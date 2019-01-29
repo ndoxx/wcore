@@ -2,6 +2,7 @@
 <InternStrings>
     <string key="21724258439390450" value="box"/>
     <string key="43479738098588949" value="sdiNGeom"/>
+    <string key="46363932364146934" value="k_tc_faster"/>
     <string key="126269861530532084" value="texture"/>
     <string key="258029378701860198" value="v4_line_color"/>
     <string key="271672890340345462" value="path"/>
@@ -31,12 +32,16 @@
     <string key="1257079576020054407" value="PAGE_DOWN"/>
     <string key="1260601502544752171" value="k_tg_wireframe"/>
     <string key="1261501771575938509" value="ENTER"/>
+    <string key="1294221133309910365" value="root.sound.general.rolloff_scale"/>
     <string key="1354332443335044921" value="m3_Normal"/>
     <string key="1468727303474109060" value="mt.albedoTex"/>
     <string key="1494619669263255324" value="bloom"/>
     <string key="1668764284665207626" value="KP_DIVIDE"/>
     <string key="1835899233338147479" value="KP_SUBTRACT"/>
     <string key="1863603941557477773" value="sdiAngles"/>
+    <string key="1887491037416224730" value="obj"/>
+    <string key="2030094403841163005" value="root.debug.logger.print_backtrace_on_error"/>
+    <string key="2061688756796195041" value="swish.wav"/>
     <string key="2213964022818352189" value="shadowmap"/>
     <string key="2351491429091079500" value="lt.v3_lightColor"/>
     <string key="2758056727152387417" value="rd.f_bias"/>
@@ -67,6 +72,7 @@
     <string key="4298109543402824905" value="root.folders.shader"/>
     <string key="4324453728078389708" value="rd.v4_proj_params"/>
     <string key="4397639838508282278" value="root.display.vsync"/>
+    <string key="4475574453243228111" value="root.folders.soundbgm"/>
     <string key="4533975874953402374" value="rd.f_vibrance"/>
     <string key="4547761445480584395" value="icosphere"/>
     <string key="4551762947800415439" value="EQUAL"/>
@@ -123,16 +129,22 @@
     <string key="6688223789818863754" value="DELETE"/>
     <string key="6694020012810373739" value="KP_MULTIPLY"/>
     <string key="6709854473672668909" value="bloomTex"/>
+    <string key="6730832050610688589" value="k_tc_slower"/>
+    <string key="6747846868581204634" value="Model"/>
     <string key="6749946742734749719" value="mt.b_use_parallax_map"/>
+    <string key="6776674288011162496" value="k_cam_new_keyframe"/>
     <string key="6852621249730883206" value="KP_ADD"/>
+    <string key="7007482603673366505" value="root.sound.general.doppler_scale"/>
     <string key="7085902643359509389" value="k_ascend"/>
     <string key="7147820914469755098" value="rd.b_lighting_enabled"/>
+    <string key="7175216374236181665" value="root.folders.soundfx"/>
     <string key="7227899007148384440" value="sdiTime"/>
     <string key="7257860210090897713" value="mt.f_parallax_height_scale"/>
     <string key="7258870000167450457" value="rd.b_enableSSAO"/>
     <string key="7273895582857962616" value="mt.f_metallic"/>
     <string key="7543418176468789887" value="root.display.width"/>
     <string key="7763496791160610254" value="RIGHT_BRACKET"/>
+    <string key="7807768329891329634" value="GameObjectFactory"/>
     <string key="7814851573345229548" value="TAB"/>
     <string key="7952170930200309190" value="mt.normalTex"/>
     <string key="8091808378024623192" value="string"/>
@@ -149,10 +161,12 @@
     <string key="8710115332184903050" value="k_walk"/>
     <string key="8733447476909273272" value="k_tg_daysys"/>
     <string key="8736392868697252967" value="k_descend"/>
+    <string key="8765055733592539675" value="root.sound.general.distance_factor"/>
     <string key="8789155474940414302" value="SEMICOLON"/>
     <string key="8876691523862406279" value="rd.v2_frameBufSize"/>
     <string key="8989313031775417964" value="k_frame_speed_up"/>
     <string key="9064088918824115502" value="HOME"/>
+    <string key="9068244765153526487" value="root.sound.general.max_channels"/>
     <string key="9090677752621010663" value="rd.f_vignette_falloff"/>
     <string key="9181241725328318867" value="root.input.mouse.sensitivity"/>
     <string key="9267355454750825242" value="MENU"/>
@@ -185,6 +199,8 @@
     <string key="11158050064215466014" value="root.render.shadowmap.height"/>
     <string key="11168070871793128834" value="m4_ModelViewProjection"/>
     <string key="11172949248662994988" value="k_editor_deselect"/>
+    <string key="11247620841001398765" value="SoundSystem"/>
+    <string key="11414322001157692290" value="k_cam_tg_record"/>
     <string key="11415925803770215857" value="root.render.override.allow_parallax_mapping"/>
     <string key="11424401279738075663" value="LEFT_SHIFT"/>
     <string key="11532138274943533413" value="float"/>
@@ -262,6 +278,7 @@
     <string key="14508769518400755181" value="PAUSE"/>
     <string key="14514725303332153082" value="KP_DECIMAL"/>
     <string key="14531656747417305109" value="RIGHT_ALT"/>
+    <string key="14571082521896106696" value="k_cam_next_state"/>
     <string key="14648703000634606193" value=".frag"/>
     <string key="14769396876084068640" value="SSAOTex"/>
     <string key="14775082119282188654" value="root.folders.level"/>
@@ -283,6 +300,7 @@
     <string key="15984551272889041941" value="rd.f_shadowBias"/>
     <string key="16049202465878217029" value="mt.f_roughness"/>
     <string key="16316995398477092277" value="sdiSun"/>
+    <string key="16530587003638916335" value="k_cam_gen_track"/>
     <string key="16548070634278642392" value="k_tg_line_models"/>
     <string key="16567012654237903811" value="tentacle"/>
     <string key="16679013307405797229" value="mt.b_has_metallic"/>
@@ -314,6 +332,7 @@
     <string key="17418897624307187532" value="F25"/>
     <string key="17418898723818815743" value="F24"/>
     <string key="17453382643516468302" value="rd.f_vignette_bal"/>
+    <string key="17720195001682701390" value="CameraController"/>
     <string key="17953394579615142639" value="cursor"/>
     <string key="18100165628774196105" value=".geom"/>
     <string key="18162437537880849868" value="k_strafe_left"/>

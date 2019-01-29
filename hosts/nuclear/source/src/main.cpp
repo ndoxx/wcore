@@ -359,21 +359,11 @@ int main()
 }
 */
 
+#include "wtypes.h"
+
 int main()
 {
-    Camera camera(1024,768);
-    camera.set_orientation(45.f,-25.f);
-    camera.update(1/60.0f);
-
-    float yaw   = camera.get_yaw();
-    float pitch = camera.get_pitch();
-    float roll  = 0.f;
-
-    std::cout << yaw << " " << pitch << " " << roll << std::endl;
-
-    math::quat q(roll,pitch,yaw);
-    std::cout << q << std::endl;
-    std::cout << q.get_euler_angles() << std::endl;
+    std::cout << "hello" << " " << "hello"_h << " " << H_("hello") << std::endl;
 
     return 0;
 }

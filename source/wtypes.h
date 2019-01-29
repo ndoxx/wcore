@@ -53,6 +53,11 @@ extern constexpr hash_t H_(const char* str)
 {
     return detail::hash_one(str[0], str + 1, detail::basis);
 }
+// string literal expression
+constexpr hash_t operator "" _h(const char* internstr, size_t)
+{
+    return H_(internstr);
+}
 
 inline hash_t HCOMBINE_(hash_t first, hash_t second)
 {

@@ -28,7 +28,9 @@ public:
     virtual void generate_widget() override;
 #endif
 
-    bool load_soundfx(const char* filename, bool loop=false);
+    bool load_soundfx(const char* filename, hash_t key, bool loop);
+    inline bool load_soundfx(const char* filename, bool loop=false);
+
     void play_soundfx(hash_t name,
                       const math::vec3& position = math::vec3(0),
                       const math::vec3& velocity = math::vec3(0));
@@ -45,6 +47,11 @@ private:
 
     std::map<hash_t, FMOD::Sound*> soundfx_;
 };
+
+inline bool SoundSystem::load_soundfx(const char* filename, bool loop)
+{
+    return load_soundfx(filename, H_(filename), loop);
+}
 
 } // namespace wcore
 

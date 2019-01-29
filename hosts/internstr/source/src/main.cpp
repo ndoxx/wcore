@@ -25,6 +25,8 @@ static fs::path conf_path_;
 
 // Non greedy regex that matches the H_("any_str") macro
 static std::regex hash_str_tag("H_\\(\"(.+?)\"\\)");
+// Non greedy regex that matches the "abcd"_h string literal
+static std::regex hash_str_literal_tag("\"(.+?)\"_h");
 // Associates hashes to original strings
 static std::map<hash_t, std::string> intern_strings_;
 
@@ -52,6 +54,28 @@ static fs::path get_selfpath()
 #endif
 }
 
+static void register_intern_string(const std::string& intern)
+{
+    hash_t hash_intern = H_(intern.c_str()); // Hashed string
+
+    auto it = intern_strings_.find(hash_intern);
+    if(it == intern_strings_.end())
+    {
+        DLOGI("<v>" + std::to_string(hash_intern) + "</v> -> " + intern, "core", Severity::LOW);
+        intern_strings_.insert(std::make_pair(hash_intern, intern));
+    }
+    else if(it->second.compare(intern)) // Detect hash collision
+    {
+        DLOGW("Hash collision detected:", "core", Severity::WARN);
+        DLOGI(it->second + " -> " + std::to_string(it->first), "core", Severity::LOW);
+        DLOGI(intern + " -> " + std::to_string(hash_intern), "core", Severity::LOW);
+        do
+        {
+            std::cout << '\n' << "Press ENTER to continue...";
+        } while (std::cin.get() != '\n');
+    }
+}
+
 // Parse a single file for hash macros
 static void parse_entry(const fs::directory_entry& entry)
 {
@@ -68,31 +92,27 @@ static void parse_entry(const fs::directory_entry& entry)
 
 
     // * Match string hash macros and update table
-    std::regex_iterator<std::string::iterator> it(source_str.begin(), source_str.end(), hash_str_tag);
-    std::regex_iterator<std::string::iterator> end;
-
-    while(it != end)
     {
-        std::string intern((*it)[1]); // The intern string
-        hash_t hash_intern = H_(intern.c_str()); // Hashed string
+        std::regex_iterator<std::string::iterator> it(source_str.begin(), source_str.end(), hash_str_tag);
+        std::regex_iterator<std::string::iterator> end;
 
-        auto it2 = intern_strings_.find(hash_intern);
-        if(it2 == intern_strings_.end())
+        while(it != end)
         {
-            DLOGI("<v>" + std::to_string(hash_intern) + "</v> -> " + intern, "core", Severity::LOW);
-            intern_strings_.insert(std::make_pair(hash_intern, intern));
+            std::string intern((*it)[1]); // The intern string
+            register_intern_string(intern);
+            ++it;
         }
-        else if(it2->second.compare(intern)) // Detect hash collision
+    }
+    {
+        std::regex_iterator<std::string::iterator> it(source_str.begin(), source_str.end(), hash_str_literal_tag);
+        std::regex_iterator<std::string::iterator> end;
+
+        while(it != end)
         {
-            DLOGW("Hash collision detected:", "core", Severity::WARN);
-            DLOGI(it2->second + " -> " + std::to_string(it2->first), "core", Severity::LOW);
-            DLOGI(intern + " -> " + std::to_string(hash_intern), "core", Severity::LOW);
-            do
-            {
-                std::cout << '\n' << "Press ENTER to continue...";
-            } while (std::cin.get() != '\n');
+            std::string intern((*it)[1]); // The intern string
+            register_intern_string(intern);
+            ++it;
         }
-        ++it;
     }
 }
 
