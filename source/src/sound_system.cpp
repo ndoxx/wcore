@@ -1,5 +1,6 @@
 #include <map>
 #include <sstream>
+#include <filesystem>
 
 #include "scene.h"
 #include "sound_system.h"
@@ -20,45 +21,18 @@
     #include "gui_utils.h"
 #endif
 
+namespace fs = std::filesystem;
+
 namespace wcore
 {
+
+static fs::path SOUND_FX_PATH;
+static fs::path SOUND_BGM_PATH;
 
 inline FMOD_VECTOR to_fmod_vec(const math::vec3& input)
 {
     return { input.x(), input.y(), input.z() };
 }
-
-struct SoundSystem::SoundEngineImpl
-{
-    SoundEngineImpl():
-    fmodsys(nullptr),
-    next_channel_id(0)
-    {
-
-    }
-
-    typedef std::map<hash_t, FMOD::Sound*> SoundMap;
-    typedef std::map<int, FMOD::Channel*> ChannelMap;
-
-    FMOD::System* fmodsys;
-    SoundMap soundfx;
-    ChannelMap channels;
-    int next_channel_id;
-};
-
-SoundSystem::SoundDescriptor::SoundDescriptor(const char* filename):
-filename(filename),
-volume_dB(0.f),
-min_distance(0.5f),
-max_distance(100.f),
-loop(false),
-stream(false),
-is3d(true),
-isfx(true)
-{
-
-}
-
 
 #ifdef __DEBUG__
     void ERRCHECK_fn(FMOD_RESULT result, const char *file, int line)
@@ -75,6 +49,202 @@ isfx(true)
     #define ERRCHECK( result ) result
 #endif
 
+struct SoundSystem::SoundEngineImpl
+{
+    struct Channel;
+
+    SoundEngineImpl():
+    fmodsys(nullptr),
+    next_channel_id(0)
+    {
+
+    }
+
+    typedef std::map<hash_t, FMOD::Sound*> SoundMap;
+    //typedef std::map<int, FMOD::Channel*> ChannelMap;
+    typedef std::map<int, std::unique_ptr<Channel>> ChannelMap;
+
+    FMOD::System* fmodsys;
+    SoundMap      sounds;
+    ChannelMap    channels;
+    int           next_channel_id;
+};
+
+inline float db_to_linear(float value_dB)
+{
+    return pow(10.f, value_dB/20.f);
+}
+
+struct SoundSystem::SoundEngineImpl::Channel
+{
+    enum class State
+    {
+        INITIALIZING, LOADING, PREPARING, PLAYING, STOPPING, STOPPED
+    };
+
+    Channel(SoundEngineImpl& impl,
+            hash_t sound_id,
+            const SoundSystem::SoundDescriptor& descriptor,
+            const math::vec3& position,
+            const math::vec3& velocity,
+            float volume_dB):
+    impl(impl),
+    channel(nullptr),
+    state(State::INITIALIZING),
+    position(position),
+    velocity(velocity),
+    volume_dB(volume_dB),
+    sound_id(sound_id),
+    should_stop(false),
+    descriptor(descriptor)
+    {
+
+    }
+
+    Channel(SoundEngineImpl& impl,
+            const SoundSystem::SoundDescriptor& descriptor,
+            const math::vec3& position,
+            const math::vec3& velocity,
+            float volume_dB):
+    Channel(impl, H_(descriptor.filename.c_str()), descriptor, position, velocity, volume_dB)
+    {
+
+    }
+
+    SoundEngineImpl& impl;
+    FMOD::Channel*   channel;
+    State            state;
+    math::vec3       position;
+    math::vec3       velocity;
+    float            volume_dB;
+    hash_t           sound_id;
+    bool             should_stop;
+
+    const SoundSystem::SoundDescriptor& descriptor;
+
+    inline bool is_stopped() { return state == State::STOPPED; }
+    inline bool is_playing() { return state == State::PLAYING; }
+
+    void load_sound()
+    {
+        fs::path filepath = (descriptor.isfx ? SOUND_FX_PATH : SOUND_BGM_PATH) / descriptor.filename;
+
+        DLOGI("load: <p>" + filepath.string() + "</p>", "sound", Severity::LOW);
+
+        FMOD::Sound* out_sound = nullptr;
+        FMOD_MODE mode = FMOD_DEFAULT;
+        mode |= descriptor.is3d ? FMOD_3D : FMOD_2D;
+        mode |= descriptor.loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF;
+        mode |= descriptor.stream ? FMOD_CREATESTREAM : FMOD_CREATECOMPRESSEDSAMPLE;
+        ERRCHECK(impl.fmodsys->createSound(filepath.string().c_str(), mode, 0, &out_sound));
+        ERRCHECK(out_sound->set3DMinMaxDistance(descriptor.min_distance, descriptor.max_distance));
+
+        impl.sounds.insert(std::pair(sound_id, out_sound));
+    }
+
+    bool prepare_play()
+    {
+        ERRCHECK(impl.fmodsys->playSound(impl.sounds.at(sound_id), 0, true, &channel));
+
+        if(channel)
+        {
+            float volume = db_to_linear(volume_dB);
+            #ifdef __DEBUG__
+                std::stringstream ss;
+                ss << "position: " << position;
+                DLOGI(ss.str(), "sound", Severity::LOW);
+                ss.str("");
+
+                ss << "velocity: " << velocity;
+                DLOGI(ss.str(), "sound", Severity::LOW);
+                ss.str("");
+
+                ss << "volume: " << volume_dB << "dB = " << volume;
+                DLOGI(ss.str(), "sound", Severity::LOW);
+                ss.str("");
+
+                /*ss << "channel: " << channel_id;
+                DLOGI(ss.str(), "sound", Severity::LOW);*/
+            #endif
+
+            FMOD_VECTOR pos = to_fmod_vec(position);
+            FMOD_VECTOR vel = to_fmod_vec(velocity);
+            ERRCHECK(channel->set3DAttributes(&pos, &vel));
+            ERRCHECK(channel->setVolume(volume));
+            ERRCHECK(channel->setPaused(false));
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void update(float dt)
+    {
+        switch(state)
+        {
+            case State::INITIALIZING:
+                // Any randomization/adjustment of pitch/volume... goes here
+                state = State::LOADING;
+                [[fallthrough]];
+
+            case State::LOADING:
+            {
+                // Load sound if not already loaded
+                auto it = impl.sounds.find(sound_id);
+                if(it == impl.sounds.end())
+                    load_sound();
+                state = State::PREPARING;
+                [[fallthrough]];
+            }
+
+            case State::PREPARING:
+            {
+                state = prepare_play() ? State::PLAYING : State::STOPPING;
+                return;
+            }
+
+            case State::PLAYING:
+            {
+                // Update channel parameters here
+
+                bool is_playing = false;
+                channel->isPlaying(&is_playing);
+                if(!is_playing || should_stop)
+                {
+                    state = State::STOPPING;
+                    return;
+                }
+                return;
+            }
+
+            case State::STOPPING:
+            {
+                // Update fadeout...
+
+                channel->stop();
+                state = State::STOPPED;
+                return;
+            }
+
+            case State::STOPPED: break;
+        }
+    }
+};
+
+SoundSystem::SoundDescriptor::SoundDescriptor(const char* filename):
+filename(filename),
+volume_dB(0.f),
+min_distance(0.5f),
+max_distance(100.f),
+loop(false),
+stream(false),
+is3d(true),
+isfx(true)
+{
+
+}
+
 SoundSystem::SoundSystem():
 pimpl_(new SoundEngineImpl()),
 distance_factor_(1.0f),
@@ -87,29 +257,29 @@ last_campos_(0.f)
 
     // * Retrieve config data
     // Mandatory stuff
-    if(!CONFIG.get(H_("root.folders.soundfx"), soundfx_path_))
+    if(!CONFIG.get(H_("root.folders.soundfx"), SOUND_FX_PATH))
     {
         DLOGE("[SoundSystem] Cannot find config path 'soundfx'.", "sound", Severity::CRIT);
         fatal();
     }
-    if(!CONFIG.get(H_("root.folders.soundbgm"), soundbgm_path_))
+    if(!CONFIG.get(H_("root.folders.soundbgm"), SOUND_BGM_PATH))
     {
         DLOGE("[SoundSystem] Cannot find config path 'soundbgm'.", "sound", Severity::CRIT);
         fatal();
     }
-    if(!fs::exists(soundfx_path_))
+    if(!fs::exists(SOUND_FX_PATH))
     {
         DLOGE("[SoundSystem] Cannot find 'soundfx' folder.", "sound", Severity::CRIT);
         fatal();
     }
-    if(!fs::exists(soundbgm_path_))
+    if(!fs::exists(SOUND_BGM_PATH))
     {
         DLOGE("[SoundSystem] Cannot find 'soundbgm' folder.", "sound", Severity::CRIT);
         fatal();
     }
 
     // Optional stuff
-    uint32_t max_channels = 100;
+    uint32_t max_channels = 128;
     CONFIG.get(H_("root.sound.general.max_channels"), max_channels);
     CONFIG.get(H_("root.sound.general.distance_factor"), distance_factor_);
     CONFIG.get(H_("root.sound.general.doppler_scale"), doppler_scale_);
@@ -127,14 +297,14 @@ last_campos_(0.f)
 
     // TMP test
     register_sound(SoundDescriptor("swish.wav"));
-    load_sound("swish.wav"_h);
+    //load_sound("swish.wav"_h);
 
     DLOGES("sound", Severity::LOW);
 }
 
 SoundSystem::~SoundSystem()
 {
-    for(auto&& [key,psound]: pimpl_->soundfx)
+    for(auto&& [key,psound]: pimpl_->sounds)
         ERRCHECK(psound->release());
 
     ERRCHECK(pimpl_->fmodsys->close());
@@ -144,20 +314,20 @@ SoundSystem::~SoundSystem()
 void SoundSystem::update(const GameClock& clock)
 {
     // * First frame -> frame duration = 0.f -> do nothing
-    if(clock.get_frame_duration()>0.f)
+    float dt = clock.get_frame_duration();
+    if(dt>0.f)
     {
-        // * Cleanup channel map
         auto it = pimpl_->channels.begin();
-        while (it != pimpl_->channels.end())
+        while(it != pimpl_->channels.end())
         {
             // Remove dead channels
-            bool is_playing = false;
-            it->second->isPlaying(&is_playing);
-            if (!is_playing)
-            {
+            if(it->second->is_stopped())
                 pimpl_->channels.erase(it++);
+            else
+            {
+                it->second->update(dt);
+                ++it;
             }
-            else ++it;
         }
 
         // * Get camera position / axes and update listener
@@ -198,7 +368,7 @@ void SoundSystem::generate_widget()
 
 void SoundSystem::register_sound(const SoundDescriptor& descriptor, hash_t name)
 {
-    fs::path filepath = soundfx_path_ / descriptor.filename;
+    fs::path filepath = SOUND_FX_PATH / descriptor.filename;
     if(!fs::exists(filepath))
     {
         DLOGE("[SoundSystem] Cannot find sound fx: ", "sound", Severity::CRIT);
@@ -221,18 +391,11 @@ void SoundSystem::register_sound(const SoundDescriptor& descriptor, hash_t name)
     DLOGI(filepath.string(), "sound", Severity::LOW);
 
     descriptors_.insert(std::pair(name, descriptor));
+    // Multiply min_dist & max_dist by distance_factor here if needed
 }
 
 bool SoundSystem::load_sound(hash_t name)
 {
-    if(pimpl_->soundfx.find(name) != pimpl_->soundfx.end())
-    {
-        DLOGE("[SoundSystem] Already loaded sound fx (or possible collision): ", "sound", Severity::WARN);
-        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "sound", Severity::WARN);
-        DLOGI("Skipping.", "sound", Severity::WARN);
-        return false;
-    }
-
     auto it = descriptors_.find(name);
     if(it == descriptors_.end())
     {
@@ -243,7 +406,7 @@ bool SoundSystem::load_sound(hash_t name)
     }
 
     auto& desc = it->second;
-    fs::path filepath = (desc.isfx ? soundfx_path_ : soundbgm_path_) / desc.filename;
+    fs::path filepath = (desc.isfx ? SOUND_FX_PATH : SOUND_BGM_PATH) / desc.filename;
 
     DLOGN("[SoundSystem] Loading sound: ", "sound", Severity::LOW);
     DLOGI(filepath.string(), "sound", Severity::LOW);
@@ -256,27 +419,22 @@ bool SoundSystem::load_sound(hash_t name)
     ERRCHECK(pimpl_->fmodsys->createSound(filepath.string().c_str(), mode, 0, &out_sound));
     ERRCHECK(out_sound->set3DMinMaxDistance(desc.min_distance * distance_factor_, desc.max_distance * distance_factor_));
 
-    pimpl_->soundfx.insert(std::pair(name, out_sound));
+    pimpl_->sounds.insert(std::pair(name, out_sound));
     return true;
 }
 
 
 bool SoundSystem::unload_sound(hash_t name)
 {
-    auto it = pimpl_->soundfx.find(name);
-    if(it == pimpl_->soundfx.end())
+    auto it = pimpl_->sounds.find(name);
+    if(it == pimpl_->sounds.end())
     {
-        DLOGE("[SoundSystem] Cannot unload unknown soundfx: ", "sound", Severity::WARN);
+        DLOGE("[SoundSystem] Cannot unload unknown sounds: ", "sound", Severity::WARN);
         DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "sound", Severity::WARN);
         return false;
     }
-    pimpl_->soundfx.erase(it);
+    pimpl_->sounds.erase(it);
     return true;
-}
-
-inline float db_to_linear(float value_dB)
-{
-    return pow(10.f, value_dB/20.f);
 }
 
 int SoundSystem::play_sound(hash_t name,
@@ -284,42 +442,22 @@ int SoundSystem::play_sound(hash_t name,
                             const math::vec3& velocity,
                             float volume_dB)
 {
-    DLOGN("Playing soundfx: " + std::to_string(name) + " -> " + HRESOLVE(name), "sound", Severity::LOW);
+    DLOGN("Playing sounds: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::LOW);
 
     int channel_id = pimpl_->next_channel_id++;
-    FMOD::Channel* channel = nullptr;
-    ERRCHECK(pimpl_->fmodsys->playSound(pimpl_->soundfx.at(name), 0, true, &channel));
-
-    if(channel)
+    auto it = descriptors_.find(name);
+    if(it != descriptors_.end())
     {
-        float volume = db_to_linear(volume_dB);
-        #ifdef __DEBUG__
-            std::stringstream ss;
-            ss << "position: " << position;
-            DLOGI(ss.str(), "sound", Severity::LOW);
-            ss.str("");
-
-            ss << "velocity: " << velocity;
-            DLOGI(ss.str(), "sound", Severity::LOW);
-            ss.str("");
-
-            ss << "volume: " << volume_dB << "dB = " << volume;
-            DLOGI(ss.str(), "sound", Severity::LOW);
-            ss.str("");
-
-            ss << "channel: " << channel_id;
-            DLOGI(ss.str(), "sound", Severity::LOW);
-        #endif
-
-        FMOD_VECTOR pos = to_fmod_vec(position * distance_factor_);
-        FMOD_VECTOR vel = to_fmod_vec(velocity);
-        ERRCHECK(channel->set3DAttributes(&pos, &vel));
-        ERRCHECK(channel->setVolume(volume));
-        ERRCHECK(channel->setPaused(false));
-
-        pimpl_->channels[channel_id] = channel;
+        pimpl_->channels[channel_id] = std::make_unique<SoundEngineImpl::Channel>
+        (
+            *pimpl_,
+            name,
+            it->second,
+            position,
+            velocity,
+            volume_dB
+        );
     }
-
     return channel_id;
 }
 

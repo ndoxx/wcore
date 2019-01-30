@@ -46,7 +46,7 @@
     </input>
     <sound>
         <general>
-            <uint name="max_channels" value="100"/>
+            <uint name="max_channels" value="128"/>
             <float name="distance_factor" value="1.0"/>
             <float name="doppler_scale" value="1.0"/>
             <float name="rolloff_scale" value="1.0"/>

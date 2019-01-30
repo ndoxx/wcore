@@ -1,14 +1,10 @@
 #ifndef SOUND_SYSTEM_H
 #define SOUND_SYSTEM_H
-
-#include <filesystem>
 #include <memory>
 #include <string>
 #include <map>
 
 #include "game_system.h"
-
-namespace fs = std::filesystem;
 
 namespace wcore
 {
@@ -57,9 +53,6 @@ private:
     float rolloff_scale_;
 
     math::vec3 last_campos_;
-
-    fs::path soundfx_path_;
-    fs::path soundbgm_path_;
 
     std::map<hash_t, SoundDescriptor> descriptors_;
 };
