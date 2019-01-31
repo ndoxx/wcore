@@ -55,19 +55,20 @@ struct SoundSystem::SoundEngineImpl
 
     SoundEngineImpl():
     fmodsys(nullptr),
-    next_channel_id(0)
+    next_channel_id(0),
+    channel_fadeout_s(0.1f)
     {
 
     }
 
     typedef std::map<hash_t, FMOD::Sound*> SoundMap;
-    //typedef std::map<int, FMOD::Channel*> ChannelMap;
     typedef std::map<int, std::unique_ptr<Channel>> ChannelMap;
 
     FMOD::System* fmodsys;
     SoundMap      sounds;
     ChannelMap    channels;
     int           next_channel_id;
+    float         channel_fadeout_s;
 };
 
 inline float db_to_linear(float value_dB)
@@ -82,6 +83,17 @@ struct SoundSystem::SoundEngineImpl::Channel
         INITIALIZING, LOADING, PREPARING, PLAYING, STOPPING, STOPPED
     };
 
+    SoundEngineImpl& impl;
+    FMOD::Channel*   channel;
+    State            state;
+    math::vec3       position;
+    math::vec3       velocity;
+    float            volume_dB;
+    float            fadeout_accum;
+    hash_t           sound_id;
+    bool             should_stop;
+
+public:
     Channel(SoundEngineImpl& impl,
             hash_t sound_id,
             const SoundSystem::SoundDescriptor& descriptor,
@@ -94,6 +106,7 @@ struct SoundSystem::SoundEngineImpl::Channel
     position(position),
     velocity(velocity),
     volume_dB(volume_dB),
+    fadeout_accum(0.f),
     sound_id(sound_id),
     should_stop(false),
     descriptor(descriptor)
@@ -111,126 +124,146 @@ struct SoundSystem::SoundEngineImpl::Channel
 
     }
 
-    SoundEngineImpl& impl;
-    FMOD::Channel*   channel;
-    State            state;
-    math::vec3       position;
-    math::vec3       velocity;
-    float            volume_dB;
-    hash_t           sound_id;
-    bool             should_stop;
-
     const SoundSystem::SoundDescriptor& descriptor;
 
     inline bool is_stopped() { return state == State::STOPPED; }
     inline bool is_playing() { return state == State::PLAYING; }
+    inline void stop()       { should_stop = true; }
 
-    void load_sound()
-    {
-        fs::path filepath = (descriptor.isfx ? SOUND_FX_PATH : SOUND_BGM_PATH) / descriptor.filename;
+    void update(float dt);
 
-        DLOGI("load: <p>" + filepath.string() + "</p>", "sound", Severity::LOW);
-
-        FMOD::Sound* out_sound = nullptr;
-        FMOD_MODE mode = FMOD_DEFAULT;
-        mode |= descriptor.is3d ? FMOD_3D : FMOD_2D;
-        mode |= descriptor.loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF;
-        mode |= descriptor.stream ? FMOD_CREATESTREAM : FMOD_CREATECOMPRESSEDSAMPLE;
-        ERRCHECK(impl.fmodsys->createSound(filepath.string().c_str(), mode, 0, &out_sound));
-        ERRCHECK(out_sound->set3DMinMaxDistance(descriptor.min_distance, descriptor.max_distance));
-
-        impl.sounds.insert(std::pair(sound_id, out_sound));
-    }
-
-    bool prepare_play()
-    {
-        ERRCHECK(impl.fmodsys->playSound(impl.sounds.at(sound_id), 0, true, &channel));
-
-        if(channel)
-        {
-            float volume = db_to_linear(volume_dB);
-            #ifdef __DEBUG__
-                std::stringstream ss;
-                ss << "position: " << position;
-                DLOGI(ss.str(), "sound", Severity::LOW);
-                ss.str("");
-
-                ss << "velocity: " << velocity;
-                DLOGI(ss.str(), "sound", Severity::LOW);
-                ss.str("");
-
-                ss << "volume: " << volume_dB << "dB = " << volume;
-                DLOGI(ss.str(), "sound", Severity::LOW);
-                ss.str("");
-
-                /*ss << "channel: " << channel_id;
-                DLOGI(ss.str(), "sound", Severity::LOW);*/
-            #endif
-
-            FMOD_VECTOR pos = to_fmod_vec(position);
-            FMOD_VECTOR vel = to_fmod_vec(velocity);
-            ERRCHECK(channel->set3DAttributes(&pos, &vel));
-            ERRCHECK(channel->setVolume(volume));
-            ERRCHECK(channel->setPaused(false));
-
-            return true;
-        }
-
-        return false;
-    }
-
-    void update(float dt)
-    {
-        switch(state)
-        {
-            case State::INITIALIZING:
-                // Any randomization/adjustment of pitch/volume... goes here
-                state = State::LOADING;
-                [[fallthrough]];
-
-            case State::LOADING:
-            {
-                // Load sound if not already loaded
-                auto it = impl.sounds.find(sound_id);
-                if(it == impl.sounds.end())
-                    load_sound();
-                state = State::PREPARING;
-                [[fallthrough]];
-            }
-
-            case State::PREPARING:
-            {
-                state = prepare_play() ? State::PLAYING : State::STOPPING;
-                return;
-            }
-
-            case State::PLAYING:
-            {
-                // Update channel parameters here
-
-                bool is_playing = false;
-                channel->isPlaying(&is_playing);
-                if(!is_playing || should_stop)
-                {
-                    state = State::STOPPING;
-                    return;
-                }
-                return;
-            }
-
-            case State::STOPPING:
-            {
-                // Update fadeout...
-
-                channel->stop();
-                state = State::STOPPED;
-                return;
-            }
-
-            case State::STOPPED: break;
-        }
-    }
+private:
+    void update_channel_parameters();
+    void load_sound();
+    bool prepare_play();
 };
+
+void SoundSystem::SoundEngineImpl::Channel::update(float dt)
+{
+    switch(state)
+    {
+        case State::INITIALIZING:
+            // Any randomization/adjustment of pitch/volume... goes here
+            state = State::LOADING;
+            [[fallthrough]];
+
+        case State::LOADING:
+        {
+            // Load sound if not already loaded
+            auto it = impl.sounds.find(sound_id);
+            if(it == impl.sounds.end())
+                load_sound();
+            state = State::PREPARING;
+            [[fallthrough]];
+        }
+
+        case State::PREPARING:
+        {
+            state = prepare_play() ? State::PLAYING : State::STOPPED;
+            return;
+        }
+
+        case State::PLAYING:
+        {
+            update_channel_parameters();
+
+            bool is_playing = false;
+            channel->isPlaying(&is_playing);
+            if(!is_playing || should_stop)
+            {
+                state = State::STOPPING;
+                return;
+            }
+            return;
+        }
+
+        case State::STOPPING:
+        {
+            // Update fadeout
+            bool is_playing = false;
+            channel->isPlaying(&is_playing);
+            if(is_playing)
+            {
+                // Update volume linearly during fadeout phase
+                fadeout_accum += dt;
+                float alpha = 1.f - std::min(1.f, fadeout_accum / impl.channel_fadeout_s);
+                float volume = alpha * db_to_linear(volume_dB);
+                ERRCHECK(channel->setVolume(volume));
+
+                // Stop channel at the end of fadeout
+                if(fadeout_accum>=impl.channel_fadeout_s)
+                {
+                    channel->stop();
+                    state = State::STOPPED;
+                }
+            }
+            else
+                state = State::STOPPED;
+            return;
+        }
+
+        case State::STOPPED: break;
+    }
+}
+
+void SoundSystem::SoundEngineImpl::Channel::update_channel_parameters()
+{
+    float volume = db_to_linear(volume_dB);
+    FMOD_VECTOR pos = to_fmod_vec(position);
+    FMOD_VECTOR vel = to_fmod_vec(velocity);
+    ERRCHECK(channel->set3DAttributes(&pos, &vel));
+    ERRCHECK(channel->setVolume(volume));
+}
+
+void SoundSystem::SoundEngineImpl::Channel::load_sound()
+{
+    fs::path filepath = (descriptor.isfx ? SOUND_FX_PATH : SOUND_BGM_PATH) / descriptor.filename;
+
+    DLOGI("load: <p>" + filepath.string() + "</p>", "sound", Severity::LOW);
+
+    FMOD::Sound* out_sound = nullptr;
+    FMOD_MODE mode = FMOD_DEFAULT;
+    mode |= descriptor.is3d ? FMOD_3D : FMOD_2D;
+    mode |= descriptor.loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF;
+    mode |= descriptor.stream ? FMOD_CREATESTREAM : FMOD_CREATECOMPRESSEDSAMPLE;
+    ERRCHECK(impl.fmodsys->createSound(filepath.string().c_str(), mode, 0, &out_sound));
+    ERRCHECK(out_sound->set3DMinMaxDistance(descriptor.min_distance, descriptor.max_distance));
+
+    impl.sounds.insert(std::pair(sound_id, out_sound));
+}
+
+bool SoundSystem::SoundEngineImpl::Channel::prepare_play()
+{
+    ERRCHECK(impl.fmodsys->playSound(impl.sounds.at(sound_id), 0, true, &channel));
+
+    if(channel)
+    {
+        #ifdef __DEBUG__
+            std::stringstream ss;
+            ss << "position: " << position;
+            DLOGI(ss.str(), "sound", Severity::LOW);
+            ss.str("");
+
+            ss << "velocity: " << velocity;
+            DLOGI(ss.str(), "sound", Severity::LOW);
+            ss.str("");
+
+            ss << "volume: " << volume_dB << "dB";
+            DLOGI(ss.str(), "sound", Severity::LOW);
+            ss.str("");
+
+            /*ss << "channel: " << channel_id;
+            DLOGI(ss.str(), "sound", Severity::LOW);*/
+        #endif
+
+        update_channel_parameters();
+        ERRCHECK(channel->setPaused(false));
+
+        return true;
+    }
+
+    return false;
+}
 
 SoundSystem::SoundDescriptor::SoundDescriptor(const char* filename):
 filename(filename),
@@ -284,6 +317,7 @@ last_campos_(0.f)
     CONFIG.get(H_("root.sound.general.distance_factor"), distance_factor_);
     CONFIG.get(H_("root.sound.general.doppler_scale"), doppler_scale_);
     CONFIG.get(H_("root.sound.general.rolloff_scale"), rolloff_scale_);
+    CONFIG.get(H_("root.sound.general.channel_fadeout_s"), pimpl_->channel_fadeout_s);
 
     // * Initialize FMOD
     DLOGN("Initializing FMOD.", "sound", Severity::LOW);
@@ -297,7 +331,6 @@ last_campos_(0.f)
 
     // TMP test
     register_sound(SoundDescriptor("swish.wav"));
-    //load_sound("swish.wav"_h);
 
     DLOGES("sound", Severity::LOW);
 }
@@ -362,6 +395,15 @@ void SoundSystem::generate_widget()
         {
             play_sound("swish.wav"_h, math::vec3(0), math::vec3(0));
         }
+
+        for(auto&& [key,channel]: pimpl_->channels)
+        {
+            if(ImGui::Button(("Stop chan #" + std::to_string(key)).c_str()))
+            {
+                channel->stop();
+            }
+        }
+
     }
 }
 #endif

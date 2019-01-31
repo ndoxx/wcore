@@ -50,6 +50,7 @@
             <float name="distance_factor" value="1.0"/>
             <float name="doppler_scale" value="1.0"/>
             <float name="rolloff_scale" value="1.0"/>
+            <float name="channel_fadeout_s" value="0.2"/>
         </general>
     </sound>
     <debug>

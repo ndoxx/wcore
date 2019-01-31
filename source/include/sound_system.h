@@ -12,19 +12,7 @@ namespace wcore
 class SoundSystem: public GameSystem
 {
 public:
-    struct SoundDescriptor
-    {
-        SoundDescriptor(const char* filename);
-
-        std::string filename;
-        float volume_dB;
-        float min_distance;
-        float max_distance;
-        bool loop;
-        bool stream;
-        bool is3d;
-        bool isfx;
-    };
+    struct SoundDescriptor;
 
     SoundSystem();
     ~SoundSystem();
@@ -56,11 +44,20 @@ private:
 
     std::map<hash_t, SoundDescriptor> descriptors_;
 };
-/*
-inline bool SoundSystem::load_soundfx(const char* filename, bool loop, bool stream, bool is3d)
+
+struct SoundSystem::SoundDescriptor
 {
-    return load_soundfx(filename, H_(filename), loop, stream, is3d);
-}*/
+    SoundDescriptor(const char* filename);
+
+    std::string filename;
+    float volume_dB;
+    float min_distance;
+    float max_distance;
+    bool loop;
+    bool stream;
+    bool is3d;
+    bool isfx;
+};
 
 } // namespace wcore
 
