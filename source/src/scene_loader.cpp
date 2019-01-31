@@ -22,6 +22,7 @@
 #include "daylight.h"
 #include "input_handler.h"
 #include "io_utils.h"
+#include "sound_system.h"
 
 namespace wcore
 {
@@ -132,6 +133,8 @@ void SceneLoader::load_global(DaylightSystem& daylight)
         }
     }
 
+    // Parse audio data
+    parse_audio(xml_parser_.get_root()->first_node("Audio"));
     // Parse terrain patches
     parse_patches(xml_parser_.get_root()->first_node("Terrain"));
     // Parse camera information
@@ -140,6 +143,17 @@ void SceneLoader::load_global(DaylightSystem& daylight)
     parse_directional_light(xml_parser_.get_root()->first_node("Light"));
     // Parse ambient parameters
     parse_ambient(daylight, xml_parser_.get_root()->first_node("Ambient"));
+}
+
+void SceneLoader::parse_audio(rapidxml::xml_node<>* node)
+{
+    // Locate sound system
+    auto psound_ = locate<SoundSystem>(H_("SoundSystem"));
+
+    // Parse background music
+    std::string bgm_name;
+    if(xml::parse_node(node, "BGM", bgm_name))
+        psound_->play_bgm(H_(bgm_name.c_str()));
 }
 
 void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)

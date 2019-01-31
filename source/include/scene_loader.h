@@ -104,6 +104,7 @@ public:
     void parse_lights(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
 
     // Global
+    void parse_audio(rapidxml::xml_node<>* node);
     void parse_patches(rapidxml::xml_node<>* node);
     void parse_camera(rapidxml::xml_node<>* node);
     void parse_directional_light(rapidxml::xml_node<>* node);

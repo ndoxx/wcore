@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Scene>
+    <Audio>
+        <BGM>maze_bgm</BGM>
+    </Audio>
     <Terrain chunkSize="32" latticeScale="1.0" textureScale="1.0">
         <TerrainPatch origin="(0,0)" size="(2,2)" height="0">
             <HeightModifier>

@@ -34,6 +34,9 @@ public:
                    const math::vec3& position = math::vec3(0),
                    const math::vec3& velocity = math::vec3(0),
                    float volume_dB=0.f);
+    int play_bgm(hash_t name, float volume_dB=0.f);
+
+    inline void mute(bool value) { mute_ = value; }
 
 private:
     struct SoundEngineImpl;
@@ -44,6 +47,7 @@ private:
     float distance_factor_;
     float doppler_scale_;
     float rolloff_scale_;
+    bool mute_;
 
     math::vec3 last_campos_;
 
@@ -52,6 +56,11 @@ private:
 
 struct SoundSystem::SoundDescriptor
 {
+    enum class SoundType
+    {
+        FX, BGM
+    };
+
     SoundDescriptor(const std::string& filename);
 
     std::string filename;
@@ -61,7 +70,7 @@ struct SoundSystem::SoundDescriptor
     bool loop;
     bool stream;
     bool is3d;
-    bool isfx;
+    SoundType sound_type;
 };
 
 } // namespace wcore

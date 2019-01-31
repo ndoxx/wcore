@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Scene>
+    <Audio>
+        <BGM>desert_bgm</BGM>
+    </Audio>
     <Terrain chunkSize="33" latticeScale="1.0" textureScale="0.25">
         <TerrainPatch origin="(0,0)" size="(5,5)" height="0">
             <Generator type="simplex" seed="6">

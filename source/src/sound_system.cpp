@@ -36,6 +36,22 @@ inline FMOD_VECTOR to_fmod_vec(const math::vec3& input)
     return { input.x(), input.y(), input.z() };
 }
 
+static fs::path get_sound_path(const SoundSystem::SoundDescriptor& desc)
+{
+    fs::path filepath;
+    switch(desc.sound_type)
+    {
+        case SoundSystem::SoundDescriptor::SoundType::FX:
+            filepath = SOUND_FX_PATH;
+            break;
+
+        case SoundSystem::SoundDescriptor::SoundType::BGM:
+            filepath = SOUND_BGM_PATH;
+            break;
+    }
+    return filepath / desc.filename;
+}
+
 #ifdef __DEBUG__
     void ERRCHECK_fn(FMOD_RESULT result, const char *file, int line)
     {
@@ -131,6 +147,7 @@ public:
     inline bool is_stopped() { return state == State::STOPPED; }
     inline bool is_playing() { return state == State::PLAYING; }
     inline void stop()       { should_stop = true; }
+    inline void mute(bool value) { channel->setMute(value); }
 
     void update(float dt);
 
@@ -210,16 +227,19 @@ void SoundSystem::SoundEngineImpl::Channel::update(float dt)
 
 void SoundSystem::SoundEngineImpl::Channel::update_channel_parameters()
 {
+    if(descriptor.is3d)
+    {
+        FMOD_VECTOR pos = to_fmod_vec(position);
+        FMOD_VECTOR vel = to_fmod_vec(velocity);
+        ERRCHECK(channel->set3DAttributes(&pos, &vel));
+    }
     float volume = db_to_linear(volume_dB);
-    FMOD_VECTOR pos = to_fmod_vec(position);
-    FMOD_VECTOR vel = to_fmod_vec(velocity);
-    ERRCHECK(channel->set3DAttributes(&pos, &vel));
     ERRCHECK(channel->setVolume(volume));
 }
 
 void SoundSystem::SoundEngineImpl::Channel::load_sound()
 {
-    fs::path filepath = (descriptor.isfx ? SOUND_FX_PATH : SOUND_BGM_PATH) / descriptor.filename;
+    fs::path filepath = get_sound_path(descriptor);
 
     DLOGI("load: <p>" + filepath.string() + "</p>", "sound", Severity::LOW);
 
@@ -242,6 +262,10 @@ bool SoundSystem::SoundEngineImpl::Channel::prepare_play()
     {
         #ifdef __DEBUG__
             std::stringstream ss;
+            ss << "streamed: " << (descriptor.sound_type == SoundDescriptor::SoundType::FX ? "false" : "true");
+            DLOGI(ss.str(), "sound", Severity::LOW);
+            ss.str("");
+
             ss << "position: " << position;
             DLOGI(ss.str(), "sound", Severity::LOW);
             ss.str("");
@@ -275,7 +299,7 @@ max_distance(100.f),
 loop(false),
 stream(false),
 is3d(true),
-isfx(true)
+sound_type(SoundType::FX)
 {
 
 }
@@ -285,6 +309,7 @@ pimpl_(new SoundEngineImpl()),
 distance_factor_(1.0f),
 doppler_scale_(1.0f),
 rolloff_scale_(1.0f),
+mute_(false),
 last_campos_(0.f)
 {
     DLOGS("[SoundSystem] Initializing.", "sound", Severity::LOW);
@@ -315,6 +340,7 @@ last_campos_(0.f)
 
     // Optional stuff
     uint32_t max_channels = 128;
+    CONFIG.get(H_("root.sound.general.mute"), mute_);
     CONFIG.get(H_("root.sound.general.max_channels"), max_channels);
     CONFIG.get(H_("root.sound.general.distance_factor"), distance_factor_);
     CONFIG.get(H_("root.sound.general.doppler_scale"), doppler_scale_);
@@ -350,26 +376,40 @@ void SoundSystem::parse_asset_file(const char* xmlfile)
     fs::path file_path(io::get_file(H_("root.folders.level"), xmlfile));
     xml_parser_.load_file_xml(file_path);
 
-    for (rapidxml::xml_node<>* soundfx_node=xml_parser_.get_root()->first_node("SoundFX");
-         soundfx_node;
-         soundfx_node=soundfx_node->next_sibling("SoundFX"))
+    for (rapidxml::xml_node<>* sound_node=xml_parser_.get_root()->first_node("Sound");
+         sound_node;
+         sound_node=sound_node->next_sibling("Sound"))
     {
-        std::string fx_name, fx_location;
-        if(xml::parse_attribute(soundfx_node, "location", fx_location))
+        std::string snd_type, snd_name, snd_location;
+        if(xml::parse_attribute(sound_node, "location", snd_location))
         {
-            bool has_name = xml::parse_attribute(soundfx_node, "name", fx_name);
-            hash_t hname = has_name ? H_(fx_name.c_str()) : 0;
+            bool has_name = xml::parse_attribute(sound_node, "name", snd_name);
+            hash_t hname = has_name ? H_(snd_name.c_str()) : 0;
 
-            SoundDescriptor desc(fx_location);
-            xml::parse_node(soundfx_node, "Volume",      desc.volume_dB);
-            xml::parse_node(soundfx_node, "MinDistance", desc.min_distance);
-            xml::parse_node(soundfx_node, "MaxDistance", desc.max_distance);
-            xml::parse_node(soundfx_node, "Loop",        desc.loop);
-            desc.isfx = true;
+            SoundDescriptor desc(snd_location);
+
+            if(xml::parse_attribute(sound_node, "type", snd_type))
+            switch(H_(snd_type.c_str()))
+            {
+                case "fx"_h:
+                    desc.sound_type = SoundDescriptor::SoundType::FX;
+                    break;
+
+                case "bgm"_h:
+                    desc.sound_type = SoundDescriptor::SoundType::BGM;
+                    desc.is3d = false;
+                    desc.stream = true;
+                    break;
+            }
+
+            xml::parse_node(sound_node, "Volume",      desc.volume_dB);
+            xml::parse_node(sound_node, "MinDistance", desc.min_distance);
+            xml::parse_node(sound_node, "MaxDistance", desc.max_distance);
+            xml::parse_node(sound_node, "Loop",        desc.loop);
 
             register_sound(desc, hname);
 #ifdef __DEBUG__
-            HRESOLVE.add_intern_string(has_name ? fx_name : fx_location);
+            HRESOLVE.add_intern_string(has_name ? snd_name : snd_location);
 #endif
         }
     }
@@ -423,6 +463,12 @@ void SoundSystem::generate_widget()
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Sound System"))
     {
+        if(ImGui::Checkbox("Mute", &mute_))
+        {
+            for(auto&& [key,channel]: pimpl_->channels)
+                channel->mute(mute_);
+        }
+
         if(ImGui::Button("Swish sound"))
         {
             play_sound("swish"_h, math::vec3(0), math::vec3(0));
@@ -431,7 +477,10 @@ void SoundSystem::generate_widget()
         {
             play_sound("drumloop"_h, math::vec3(9.f,2.f,17.f), math::vec3(0));
         }
-
+        if(ImGui::Button("music"))
+        {
+            play_bgm("maze_bgm"_h);
+        }
         for(auto&& [key,channel]: pimpl_->channels)
         {
             if(ImGui::Button(("Stop chan #" + std::to_string(key)).c_str()))
@@ -446,7 +495,7 @@ void SoundSystem::generate_widget()
 
 void SoundSystem::register_sound(const SoundDescriptor& descriptor, hash_t name)
 {
-    fs::path filepath = SOUND_FX_PATH / descriptor.filename;
+    fs::path filepath = get_sound_path(descriptor);
     if(!fs::exists(filepath))
     {
         DLOGE("[SoundSystem] Cannot find sound fx: ", "sound", Severity::CRIT);
@@ -466,7 +515,7 @@ void SoundSystem::register_sound(const SoundDescriptor& descriptor, hash_t name)
     }
 
     DLOGN("[SoundSystem] Loading descriptor: ", "sound", Severity::LOW);
-    DLOGI(filepath.string(), "sound", Severity::LOW);
+    DLOGI("<p>" + filepath.string() + "</p>", "sound", Severity::LOW);
 
     descriptors_.insert(std::pair(name, descriptor));
     // Multiply min_dist & max_dist by distance_factor here if needed
@@ -484,7 +533,7 @@ bool SoundSystem::load_sound(hash_t name)
     }
 
     auto& desc = it->second;
-    fs::path filepath = (desc.isfx ? SOUND_FX_PATH : SOUND_BGM_PATH) / desc.filename;
+    fs::path filepath = get_sound_path(desc);
 
     DLOGN("[SoundSystem] Loading sound: ", "sound", Severity::LOW);
     DLOGI(filepath.string(), "sound", Severity::LOW);
@@ -520,7 +569,9 @@ int SoundSystem::play_sound(hash_t name,
                             const math::vec3& velocity,
                             float volume_dB)
 {
-    DLOGN("Playing sounds: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::LOW);
+    if(mute_) return 0;
+
+    DLOGN("Playing sound: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::LOW);
 
     int channel_id = pimpl_->next_channel_id++;
     auto it = descriptors_.find(name);
@@ -536,7 +587,41 @@ int SoundSystem::play_sound(hash_t name,
             volume_dB
         );
     }
+    else
+    {
+        DLOGW("Unable to find sound: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::WARN);
+        DLOGI("Skipping.", "sound", Severity::WARN);
+    }
     return channel_id;
 }
+
+int SoundSystem::play_bgm(hash_t name, float volume_dB)
+{
+    if(mute_) return 0;
+
+    DLOGN("Playing background music: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::LOW);
+
+    int channel_id = pimpl_->next_channel_id++;
+    auto it = descriptors_.find(name);
+    if(it != descriptors_.end())
+    {
+        pimpl_->channels[channel_id] = std::make_unique<SoundEngineImpl::Channel>
+        (
+            *pimpl_,
+            name,
+            it->second,
+            math::vec3(0),
+            math::vec3(0),
+            volume_dB
+        );
+    }
+    else
+    {
+        DLOGW("Unable to find background music: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::WARN);
+        DLOGI("Skipping.", "sound", Severity::WARN);
+    }
+    return channel_id;
+}
+
 
 } // namespace wcore
