@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Sounds>
+    <!-- fx -->
+    <SoundFX name="swish" location="swish.wav">
+        <Volume>0</Volume>
+        <MinDistance>0.5</MinDistance>
+        <MaxDistance>100</MaxDistance>
+        <Loop>false</Loop>
+    </SoundFX>
+    <SoundFX name="drumloop" location="drumloop.wav">
+        <Volume>0</Volume>
+        <MinDistance>0.5</MinDistance>
+        <MaxDistance>100</MaxDistance>
+        <Loop>true</Loop>
+    </SoundFX>
+    <!-- bgm -->
+</Sounds>

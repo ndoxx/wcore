@@ -5,6 +5,7 @@
 #include <map>
 
 #include "game_system.h"
+#include "xml_parser.h"
 
 namespace wcore
 {
@@ -23,6 +24,8 @@ public:
     virtual void generate_widget() override;
 #endif
 
+    void parse_asset_file(const char* xmlfile);
+
     void register_sound(const SoundDescriptor& descriptor, hash_t name=0);
     bool load_sound(hash_t name);
     bool unload_sound(hash_t name);
@@ -36,6 +39,8 @@ private:
     struct SoundEngineImpl;
     std::unique_ptr<SoundEngineImpl> pimpl_; // opaque pointer
 
+    XMLParser xml_parser_;
+
     float distance_factor_;
     float doppler_scale_;
     float rolloff_scale_;
@@ -47,7 +52,7 @@ private:
 
 struct SoundSystem::SoundDescriptor
 {
-    SoundDescriptor(const char* filename);
+    SoundDescriptor(const std::string& filename);
 
     std::string filename;
     float volume_dB;

@@ -4,6 +4,8 @@
 
 #include "scene.h"
 #include "sound_system.h"
+#include "xml_utils.hpp"
+#include "io_utils.h"
 #include "input_handler.h"
 #include "game_clock.h"
 #include "camera.h"
@@ -265,7 +267,7 @@ bool SoundSystem::SoundEngineImpl::Channel::prepare_play()
     return false;
 }
 
-SoundSystem::SoundDescriptor::SoundDescriptor(const char* filename):
+SoundSystem::SoundDescriptor::SoundDescriptor(const std::string& filename):
 filename(filename),
 volume_dB(0.f),
 min_distance(0.5f),
@@ -329,8 +331,7 @@ last_campos_(0.f)
     ERRCHECK(pimpl_->fmodsys->init(max_channels, FMOD_INIT_3D_RIGHTHANDED, extradriverdata));
     ERRCHECK(pimpl_->fmodsys->set3DSettings(doppler_scale_, distance_factor_, rolloff_scale_));
 
-    // TMP test
-    register_sound(SoundDescriptor("swish.wav"));
+    parse_asset_file("sounds.xml");
 
     DLOGES("sound", Severity::LOW);
 }
@@ -342,6 +343,36 @@ SoundSystem::~SoundSystem()
 
     ERRCHECK(pimpl_->fmodsys->close());
     ERRCHECK(pimpl_->fmodsys->release());
+}
+
+void SoundSystem::parse_asset_file(const char* xmlfile)
+{
+    fs::path file_path(io::get_file(H_("root.folders.level"), xmlfile));
+    xml_parser_.load_file_xml(file_path);
+
+    for (rapidxml::xml_node<>* soundfx_node=xml_parser_.get_root()->first_node("SoundFX");
+         soundfx_node;
+         soundfx_node=soundfx_node->next_sibling("SoundFX"))
+    {
+        std::string fx_name, fx_location;
+        if(xml::parse_attribute(soundfx_node, "location", fx_location))
+        {
+            bool has_name = xml::parse_attribute(soundfx_node, "name", fx_name);
+            hash_t hname = has_name ? H_(fx_name.c_str()) : 0;
+
+            SoundDescriptor desc(fx_location);
+            xml::parse_node(soundfx_node, "Volume",      desc.volume_dB);
+            xml::parse_node(soundfx_node, "MinDistance", desc.min_distance);
+            xml::parse_node(soundfx_node, "MaxDistance", desc.max_distance);
+            xml::parse_node(soundfx_node, "Loop",        desc.loop);
+            desc.isfx = true;
+
+            register_sound(desc, hname);
+#ifdef __DEBUG__
+            HRESOLVE.add_intern_string(has_name ? fx_name : fx_location);
+#endif
+        }
+    }
 }
 
 void SoundSystem::update(const GameClock& clock)
@@ -377,6 +408,7 @@ void SoundSystem::update(const GameClock& clock)
         FMOD_VECTOR forward     = to_fmod_vec(cam->get_forward());
         FMOD_VECTOR up          = to_fmod_vec(cam->get_up());
         ERRCHECK(pimpl_->fmodsys->set3DListenerAttributes(0, &listenerpos, &listenervel, &forward, &up));
+        ERRCHECK(pimpl_->fmodsys->update());
     }
 }
 
@@ -391,9 +423,13 @@ void SoundSystem::generate_widget()
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Sound System"))
     {
-        if(ImGui::Button("Test 3D sound"))
+        if(ImGui::Button("Swish sound"))
         {
-            play_sound("swish.wav"_h, math::vec3(0), math::vec3(0));
+            play_sound("swish"_h, math::vec3(0), math::vec3(0));
+        }
+        if(ImGui::Button("Loop sound"))
+        {
+            play_sound("drumloop"_h, math::vec3(9.f,2.f,17.f), math::vec3(0));
         }
 
         for(auto&& [key,channel]: pimpl_->channels)
