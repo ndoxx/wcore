@@ -33,7 +33,8 @@ public:
     int play_sound(hash_t name,
                    const math::vec3& position = math::vec3(0),
                    const math::vec3& velocity = math::vec3(0),
-                   float volume_dB=0.f);
+                   float volume_dB=0.f,
+                   bool dist_filter=false);
     int play_bgm(hash_t name, float volume_dB=0.f);
 
     inline void mute(bool value) { mute_ = value; }
@@ -47,6 +48,9 @@ private:
     float distance_factor_;
     float doppler_scale_;
     float rolloff_scale_;
+    float vol_fx_;
+    float vol_bgm_;
+    float vol_master_;
     bool mute_;
 
     math::vec3 last_campos_;

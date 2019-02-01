@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "scene.h"
+#include "algorithms.h"
 #include "sound_system.h"
 #include "xml_utils.hpp"
 #include "io_utils.h"
@@ -73,6 +74,9 @@ struct SoundSystem::SoundEngineImpl
 
     SoundEngineImpl():
     fmodsys(nullptr),
+    channel_group_bgm(nullptr),
+    channel_group_fx(nullptr),
+    channel_group_master(nullptr),
     next_channel_id(0),
     channel_fadeout_s(0.1f)
     {
@@ -83,6 +87,10 @@ struct SoundSystem::SoundEngineImpl
     typedef std::map<int, std::unique_ptr<Channel>> ChannelMap;
 
     FMOD::System* fmodsys;
+    FMOD::ChannelGroup* channel_group_bgm;
+    FMOD::ChannelGroup* channel_group_fx;
+    FMOD::ChannelGroup* channel_group_master;
+
     SoundMap      sounds;
     ChannelMap    channels;
     int           next_channel_id;
@@ -103,6 +111,7 @@ struct SoundSystem::SoundEngineImpl::Channel
 
     SoundEngineImpl& impl;
     FMOD::Channel*   channel;
+    FMOD::DSP*       lowpass;
     State            state;
     math::vec3       position;
     math::vec3       velocity;
@@ -110,6 +119,7 @@ struct SoundSystem::SoundEngineImpl::Channel
     float            fadeout_accum;
     hash_t           sound_id;
     bool             should_stop;
+    bool             dist_filter;
 
 public:
     Channel(SoundEngineImpl& impl,
@@ -117,9 +127,11 @@ public:
             const SoundSystem::SoundDescriptor& descriptor,
             const math::vec3& position,
             const math::vec3& velocity,
-            float volume_dB):
+            float volume_dB,
+            bool dist_filter=false):
     impl(impl),
     channel(nullptr),
+    lowpass(nullptr),
     state(State::INITIALIZING),
     position(position),
     velocity(velocity),
@@ -127,6 +139,7 @@ public:
     fadeout_accum(0.f),
     sound_id(sound_id),
     should_stop(false),
+    dist_filter(dist_filter),
     descriptor(descriptor)
     {
 
@@ -136,8 +149,9 @@ public:
             const SoundSystem::SoundDescriptor& descriptor,
             const math::vec3& position,
             const math::vec3& velocity,
-            float volume_dB):
-    Channel(impl, H_(descriptor.filename.c_str()), descriptor, position, velocity, volume_dB)
+            float volume_dB,
+            bool dist_filter=false):
+    Channel(impl, H_(descriptor.filename.c_str()), descriptor, position, velocity, volume_dB, dist_filter)
     {
 
     }
@@ -147,17 +161,20 @@ public:
     inline bool is_stopped() { return state == State::STOPPED; }
     inline bool is_playing() { return state == State::PLAYING; }
     inline void stop()       { should_stop = true; }
-    inline void mute(bool value) { channel->setMute(value); }
+    inline void mute(bool value)  { ERRCHECK(channel->setMute(value)); }
+    inline void set_channel_bgm() { ERRCHECK(channel->setChannelGroup(impl.channel_group_bgm)); }
+    inline void set_channel_fx()  { ERRCHECK(channel->setChannelGroup(impl.channel_group_fx)); }
 
-    void update(float dt);
+    void update(float dt, const math::vec3& campos);
 
 private:
     void update_channel_parameters();
+    void update_filter(const math::vec3& campos);
     void load_sound();
     bool prepare_play();
 };
 
-void SoundSystem::SoundEngineImpl::Channel::update(float dt)
+void SoundSystem::SoundEngineImpl::Channel::update(float dt, const math::vec3& campos)
 {
     switch(state)
     {
@@ -184,6 +201,8 @@ void SoundSystem::SoundEngineImpl::Channel::update(float dt)
 
         case State::PLAYING:
         {
+            if(dist_filter)
+                update_filter(campos);
             update_channel_parameters();
 
             bool is_playing = false;
@@ -233,8 +252,28 @@ void SoundSystem::SoundEngineImpl::Channel::update_channel_parameters()
         FMOD_VECTOR vel = to_fmod_vec(velocity);
         ERRCHECK(channel->set3DAttributes(&pos, &vel));
     }
+
+    switch(descriptor.sound_type)
+    {
+        case SoundDescriptor::SoundType::FX:
+            set_channel_fx();
+            break;
+
+        case SoundDescriptor::SoundType::BGM:
+            set_channel_bgm();
+            break;
+    }
+
     float volume = db_to_linear(volume_dB);
     ERRCHECK(channel->setVolume(volume));
+}
+
+void SoundSystem::SoundEngineImpl::Channel::update_filter(const math::vec3& campos)
+{
+    // Filter sound according to emitter distance
+    float dist = (position-campos).norm();
+    float cutoff = 1000.f + 19000.f * (1.f-std::min(1.f, dist / descriptor.max_distance));
+    ERRCHECK(lowpass->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff));
 }
 
 void SoundSystem::SoundEngineImpl::Channel::load_sound()
@@ -285,6 +324,13 @@ bool SoundSystem::SoundEngineImpl::Channel::prepare_play()
         update_channel_parameters();
         ERRCHECK(channel->setPaused(false));
 
+        if(dist_filter)
+        {
+            ERRCHECK(impl.fmodsys->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &lowpass));
+            ERRCHECK(lowpass->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, 20000.0f));
+            ERRCHECK(channel->addDSP(0, lowpass));
+        }
+
         return true;
     }
 
@@ -309,6 +355,9 @@ pimpl_(new SoundEngineImpl()),
 distance_factor_(1.0f),
 doppler_scale_(1.0f),
 rolloff_scale_(1.0f),
+vol_fx_(100.f),
+vol_bgm_(100.f),
+vol_master_(100.f),
 mute_(false),
 last_campos_(0.f)
 {
@@ -341,11 +390,19 @@ last_campos_(0.f)
     // Optional stuff
     uint32_t max_channels = 128;
     CONFIG.get(H_("root.sound.general.mute"), mute_);
+    CONFIG.get(H_("root.sound.general.volume_fx"), vol_fx_);
+    CONFIG.get(H_("root.sound.general.volume_bgm"), vol_bgm_);
+    CONFIG.get(H_("root.sound.general.volume_master"), vol_master_);
     CONFIG.get(H_("root.sound.general.max_channels"), max_channels);
     CONFIG.get(H_("root.sound.general.distance_factor"), distance_factor_);
     CONFIG.get(H_("root.sound.general.doppler_scale"), doppler_scale_);
     CONFIG.get(H_("root.sound.general.rolloff_scale"), rolloff_scale_);
     CONFIG.get(H_("root.sound.general.channel_fadeout_s"), pimpl_->channel_fadeout_s);
+
+    // Sanity check
+    vol_fx_     = math::clamp(vol_fx_, 0.f, 100.f);
+    vol_bgm_    = math::clamp(vol_bgm_, 0.f, 100.f);
+    vol_master_ = math::clamp(vol_master_, 0.f, 100.f);
 
     // * Initialize FMOD
     DLOGN("Initializing FMOD.", "sound", Severity::LOW);
@@ -357,6 +414,17 @@ last_campos_(0.f)
     ERRCHECK(pimpl_->fmodsys->init(max_channels, FMOD_INIT_3D_RIGHTHANDED, extradriverdata));
     ERRCHECK(pimpl_->fmodsys->set3DSettings(doppler_scale_, distance_factor_, rolloff_scale_));
 
+    // * Channel groups
+    ERRCHECK(pimpl_->fmodsys->createChannelGroup("fx",  &pimpl_->channel_group_fx));
+    ERRCHECK(pimpl_->fmodsys->createChannelGroup("bgm", &pimpl_->channel_group_bgm));
+    ERRCHECK(pimpl_->fmodsys->getMasterChannelGroup(&pimpl_->channel_group_master));
+    ERRCHECK(pimpl_->channel_group_master->addGroup(pimpl_->channel_group_fx));
+    ERRCHECK(pimpl_->channel_group_master->addGroup(pimpl_->channel_group_bgm));
+    ERRCHECK(pimpl_->channel_group_fx->setVolume(vol_fx_/100.f));
+    ERRCHECK(pimpl_->channel_group_bgm->setVolume(vol_bgm_/100.f));
+    ERRCHECK(pimpl_->channel_group_master->setVolume(vol_master_/100.f));
+
+    // * Parse sound descriptions
     parse_asset_file("sounds.xml");
 
     DLOGES("sound", Severity::LOW);
@@ -421,6 +489,13 @@ void SoundSystem::update(const GameClock& clock)
     float dt = clock.get_frame_duration();
     if(dt>0.f)
     {
+        // * Get camera position / axes and update listener
+        auto pscene = locate<Scene>(H_("Scene"));
+        auto cam = pscene->get_camera();
+
+        const math::vec3& campos = cam->get_position();
+
+
         auto it = pimpl_->channels.begin();
         while(it != pimpl_->channels.end())
         {
@@ -429,16 +504,10 @@ void SoundSystem::update(const GameClock& clock)
                 pimpl_->channels.erase(it++);
             else
             {
-                it->second->update(dt);
+                it->second->update(dt, campos);
                 ++it;
             }
         }
-
-        // * Get camera position / axes and update listener
-        auto pscene = locate<Scene>(H_("Scene"));
-        auto cam = pscene->get_camera();
-
-        const math::vec3& campos = cam->get_position();
 
         math::vec3 camvel((campos-last_campos_) * 1.f/clock.get_frame_duration());
         last_campos_ = campos;
@@ -464,31 +533,30 @@ void SoundSystem::generate_widget()
     if(ImGui::CollapsingHeader("Sound System"))
     {
         if(ImGui::Checkbox("Mute", &mute_))
-        {
             for(auto&& [key,channel]: pimpl_->channels)
                 channel->mute(mute_);
-        }
+
+        if(ImGui::SliderFloat("Master volume", &vol_master_, 0.0f, 100.0f))
+            pimpl_->channel_group_master->setVolume(vol_master_/100.f);
+
+        if(ImGui::SliderFloat("FX volume", &vol_fx_, 0.0f, 100.0f))
+            pimpl_->channel_group_fx->setVolume(vol_fx_/100.f);
+
+        if(ImGui::SliderFloat("BGM volume", &vol_bgm_, 0.0f, 100.0f))
+            pimpl_->channel_group_bgm->setVolume(vol_bgm_/100.f);
 
         if(ImGui::Button("Swish sound"))
-        {
             play_sound("swish"_h, math::vec3(0), math::vec3(0));
-        }
-        if(ImGui::Button("Loop sound"))
-        {
-            play_sound("drumloop"_h, math::vec3(9.f,2.f,17.f), math::vec3(0));
-        }
-        if(ImGui::Button("music"))
-        {
-            play_bgm("maze_bgm"_h);
-        }
-        for(auto&& [key,channel]: pimpl_->channels)
-        {
-            if(ImGui::Button(("Stop chan #" + std::to_string(key)).c_str()))
-            {
-                channel->stop();
-            }
-        }
 
+        if(ImGui::Button("Loop sound"))
+            play_sound("drumloop"_h, math::vec3(9.f,2.f,17.f), math::vec3(0), 0.f, true);
+
+        if(ImGui::Button("music"))
+            play_bgm("maze_bgm"_h);
+
+        for(auto&& [key,channel]: pimpl_->channels)
+            if(ImGui::Button(("Stop chan #" + std::to_string(key)).c_str()))
+                channel->stop();
     }
 }
 #endif
@@ -567,7 +635,8 @@ bool SoundSystem::unload_sound(hash_t name)
 int SoundSystem::play_sound(hash_t name,
                             const math::vec3& position,
                             const math::vec3& velocity,
-                            float volume_dB)
+                            float volume_dB,
+                            bool dist_filter)
 {
     if(mute_) return 0;
 
@@ -584,7 +653,8 @@ int SoundSystem::play_sound(hash_t name,
             it->second,
             position,
             velocity,
-            volume_dB
+            volume_dB,
+            dist_filter
         );
     }
     else
