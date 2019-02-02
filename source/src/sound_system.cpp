@@ -135,7 +135,7 @@ public:
     state(State::INITIALIZING),
     position(position),
     velocity(velocity),
-    volume_dB(volume_dB),
+    volume_dB(volume_dB + descriptor.volume_dB),
     fadeout_accum(0.f),
     sound_id(sound_id),
     should_stop(false),
@@ -366,12 +366,12 @@ last_campos_(0.f)
 
     // * Retrieve config data
     // Mandatory stuff
-    if(!CONFIG.get(H_("root.folders.soundfx"), SOUND_FX_PATH))
+    if(!CONFIG.get("root.folders.soundfx"_h, SOUND_FX_PATH))
     {
         DLOGE("[SoundSystem] Cannot find config path 'soundfx'.", "sound", Severity::CRIT);
         fatal();
     }
-    if(!CONFIG.get(H_("root.folders.soundbgm"), SOUND_BGM_PATH))
+    if(!CONFIG.get("root.folders.soundbgm"_h, SOUND_BGM_PATH))
     {
         DLOGE("[SoundSystem] Cannot find config path 'soundbgm'.", "sound", Severity::CRIT);
         fatal();
@@ -389,15 +389,15 @@ last_campos_(0.f)
 
     // Optional stuff
     uint32_t max_channels = 128;
-    CONFIG.get(H_("root.sound.general.mute"), mute_);
-    CONFIG.get(H_("root.sound.general.volume_fx"), vol_fx_);
-    CONFIG.get(H_("root.sound.general.volume_bgm"), vol_bgm_);
-    CONFIG.get(H_("root.sound.general.volume_master"), vol_master_);
-    CONFIG.get(H_("root.sound.general.max_channels"), max_channels);
-    CONFIG.get(H_("root.sound.general.distance_factor"), distance_factor_);
-    CONFIG.get(H_("root.sound.general.doppler_scale"), doppler_scale_);
-    CONFIG.get(H_("root.sound.general.rolloff_scale"), rolloff_scale_);
-    CONFIG.get(H_("root.sound.general.channel_fadeout_s"), pimpl_->channel_fadeout_s);
+    CONFIG.get("root.sound.general.mute"_h,              mute_);
+    CONFIG.get("root.sound.general.volume_fx"_h,         vol_fx_);
+    CONFIG.get("root.sound.general.volume_bgm"_h,        vol_bgm_);
+    CONFIG.get("root.sound.general.volume_master"_h,     vol_master_);
+    CONFIG.get("root.sound.general.max_channels"_h,      max_channels);
+    CONFIG.get("root.sound.general.distance_factor"_h,   distance_factor_);
+    CONFIG.get("root.sound.general.doppler_scale"_h,     doppler_scale_);
+    CONFIG.get("root.sound.general.rolloff_scale"_h,     rolloff_scale_);
+    CONFIG.get("root.sound.general.channel_fadeout_s"_h, pimpl_->channel_fadeout_s);
 
     // Sanity check
     vol_fx_     = math::clamp(vol_fx_, 0.f, 100.f);
@@ -441,7 +441,7 @@ SoundSystem::~SoundSystem()
 
 void SoundSystem::parse_asset_file(const char* xmlfile)
 {
-    fs::path file_path(io::get_file(H_("root.folders.level"), xmlfile));
+    fs::path file_path(io::get_file("root.folders.level"_h, xmlfile));
     xml_parser_.load_file_xml(file_path);
 
     for (rapidxml::xml_node<>* sound_node=xml_parser_.get_root()->first_node("Sound");
@@ -490,7 +490,7 @@ void SoundSystem::update(const GameClock& clock)
     if(dt>0.f)
     {
         // * Get camera position / axes and update listener
-        auto pscene = locate<Scene>(H_("Scene"));
+        auto pscene = locate<Scene>("Scene"_h);
         auto cam = pscene->get_camera();
 
         const math::vec3& campos = cam->get_position();
