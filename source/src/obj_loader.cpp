@@ -47,7 +47,7 @@ static char* trim_whitespaces(char* str)
 }
 
 #define MAXLINE 512
-SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
+std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile, bool process_uv)
 {
 #ifdef __DEBUG__
     DLOGN("[ObjLoader] Loading obj file: ", "model", Severity::LOW);
@@ -206,7 +206,7 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
     fclose(fn);
 
     // TMP
-    TriangularMesh* pmesh = new TriangularMesh;
+    std::shared_ptr<TriangularMesh> pmesh(new TriangularMesh);
     for(uint32_t ii=0; ii<positions.size(); ++ii)
     {
         pmesh->emplace_vertex(positions[ii], vec3(0), vec3(0), vec2(0));
@@ -222,10 +222,10 @@ SurfaceMesh* ObjLoader::operator()(const char* objfile, bool process_uv)
     pmesh->build_normals_and_tangents();
     pmesh->compute_dimensions();
 
-    return (SurfaceMesh*)pmesh;
+    return static_cast<std::shared_ptr<SurfaceMesh>>(pmesh);
 }
 
-SurfaceMesh* ObjLoader::operator()(const fs::path& path, bool process_uv)
+std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const fs::path& path, bool process_uv)
 {
     if(fs::exists(path))
         return operator()(path.string().c_str(), process_uv);

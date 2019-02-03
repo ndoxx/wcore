@@ -1,5 +1,6 @@
 #include "terrain_patch.h"
 #include "mesh_factory.h"
+#include "surface_mesh.h"
 #include "height_map.h"
 #include "scene.h"
 
@@ -14,9 +15,9 @@ TerrainChunk::TerrainChunk(HeightMap* phm,
                            Material* pmat,
                            float latticeScale,
                            float textureScale):
-Model((Mesh<Vertex3P3N3T2U>*)factory::make_terrain_tri_mesh(*phm,
+Model(static_cast<std::shared_ptr<SurfaceMesh>>(factory::make_terrain_tri_mesh(*phm,
                             latticeScale,
-                            textureScale),
+                            textureScale)),
       pmat),
 heightmap_(phm)
 //lattice_scale_(latticeScale),

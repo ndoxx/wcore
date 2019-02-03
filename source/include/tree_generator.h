@@ -34,12 +34,13 @@ public:
 struct Vertex3P;
 struct Vertex3P3N3T2U;
 template <typename VertexT> class Mesh;
+using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
 
 class TreeGenerator
 {
 public:
     static Mesh<Vertex3P>* generate_spline_tree(const TreeProps& props);
-    static Mesh<Vertex3P3N3T2U>* generate_tree(const TreeProps& props);
+    static std::shared_ptr<SurfaceMesh> generate_tree(const TreeProps& props);
 };
 
 }

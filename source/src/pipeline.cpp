@@ -64,6 +64,7 @@ bloom_enabled_(true)
 
 RenderPipeline::~RenderPipeline()
 {
+    delete gui_renderer_;
     delete debug_overlay_renderer_;
     delete debug_renderer_;
     delete text_renderer_;

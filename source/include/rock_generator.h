@@ -31,11 +31,12 @@ public:
 struct Vertex3P;
 struct Vertex3P3N3T2U;
 template <typename VertexT> class Mesh;
+using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
 
 class RockGenerator
 {
 public:
-    static Mesh<Vertex3P3N3T2U>* generate_rock(const RockProps& props);
+    static std::shared_ptr<SurfaceMesh> generate_rock(const RockProps& props);
 
 private:
     static NoiseGenerator2D<SimplexNoise<>> RNG_simplex_;

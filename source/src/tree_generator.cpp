@@ -182,7 +182,7 @@ Mesh<Vertex3P>* TreeGenerator::generate_spline_tree(const TreeProps& props)
     return pmesh;
 }
 
-Mesh<Vertex3P3N3T2U>* TreeGenerator::generate_tree(const TreeProps& props)
+std::shared_ptr<SurfaceMesh> TreeGenerator::generate_tree(const TreeProps& props)
 {
     // RNG stuff
     std::mt19937 rng;
@@ -190,7 +190,7 @@ Mesh<Vertex3P3N3T2U>* TreeGenerator::generate_tree(const TreeProps& props)
     //std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
     std::uniform_real_distribution<float> var_distrib(-1.0f,1.0f);
 
-    FaceMesh* pmesh = new FaceMesh;
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
 
     // From trunk spline, generate whole tree recursively
     std::vector<CSplineCatmullV3> splines;
@@ -220,7 +220,7 @@ Mesh<Vertex3P3N3T2U>* TreeGenerator::generate_tree(const TreeProps& props)
     pmesh->smooth_normals_and_tangents();
     pmesh->compute_dimensions();
 
-    return pmesh;
+    return static_cast<std::shared_ptr<SurfaceMesh>>(pmesh);
 }
 
 }

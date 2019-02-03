@@ -38,8 +38,8 @@ public:
     friend ObjLoader& Singleton<ObjLoader>::Instance();
     friend void Singleton<ObjLoader>::Kill();
 
-    SurfaceMesh* operator()(const char* objfile, bool process_uv=false);
-    SurfaceMesh* operator()(const fs::path& path, bool process_uv=false);
+    std::shared_ptr<SurfaceMesh> operator()(const char* objfile, bool process_uv=false);
+    std::shared_ptr<SurfaceMesh> operator()(const fs::path& path, bool process_uv=false);
 };
 
 #define LOADOBJ ObjLoader::Instance()

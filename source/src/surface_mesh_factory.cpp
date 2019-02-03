@@ -59,13 +59,13 @@ void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshe
     }
 }
 
-SurfaceMesh* SurfaceMeshFactory::make_surface_mesh(rapidxml::xml_node<>* mesh_node,
-                                                   OptRngT opt_rng)
+std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_surface_mesh(rapidxml::xml_node<>* mesh_node,
+                                                                   OptRngT opt_rng)
 {
     if(!mesh_node)
         return nullptr;
 
-    SurfaceMesh* pmesh = nullptr;
+    std::shared_ptr<SurfaceMesh> pmesh = nullptr;
 
     // Has a "name" attribute -> mesh instance
     std::string name;
@@ -107,7 +107,7 @@ SurfaceMesh* SurfaceMeshFactory::make_surface_mesh(rapidxml::xml_node<>* mesh_no
     return pmesh;
 }
 
-SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
+std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
 {
     // First, try to find in cache
     /*auto it = cache_.find(name);
@@ -136,9 +136,9 @@ SurfaceMesh* SurfaceMeshFactory::make_instance(hash_t name)
     return nullptr;
 }
 
-SurfaceMesh* SurfaceMeshFactory::procedural_cache_lookup(hash_t mesh_type,
+std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::procedural_cache_lookup(hash_t mesh_type,
                                                          hash_t props,
-                                                         std::function<SurfaceMesh*(void)>new_mesh,
+                                                         std::function<std::shared_ptr<SurfaceMesh>(void)>new_mesh,
                                                          bool owns)
 {
     //hash_t hash_comb = HCOMBINE_(mesh_type, props);
@@ -149,7 +149,7 @@ SurfaceMesh* SurfaceMeshFactory::procedural_cache_lookup(hash_t mesh_type,
     }
     else
     {*/
-        SurfaceMesh* pmesh = new_mesh();
+        std::shared_ptr<SurfaceMesh> pmesh = new_mesh();
 
         if(owns)
         {
@@ -160,7 +160,7 @@ SurfaceMesh* SurfaceMeshFactory::procedural_cache_lookup(hash_t mesh_type,
     //}
 }
 
-SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
+std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_type,
                                                  rapidxml::xml_node<char>* generator_node,
                                                  OptRngT opt_rng,
                                                  bool owns)
@@ -176,7 +176,7 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
 
         //return procedural_cache_lookup(mesh_type, std::hash<IcosphereProps>{}(props), [&]()
         //{
-            return (SurfaceMesh*)factory::make_ico_sphere(props.density);
+            return (std::shared_ptr<SurfaceMesh>)factory::make_ico_sphere(props.density);
         //}, owns);
     }
     else if(mesh_type == H_("box"))
@@ -192,7 +192,7 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
 
         //return procedural_cache_lookup(mesh_type, std::hash<BoxProps>{}(props), [&]()
         //{
-            return (SurfaceMesh*)factory::make_box(props.extent, props.texture_scale);
+            return (std::shared_ptr<SurfaceMesh>)factory::make_box(props.extent, props.texture_scale);
         //}, owns);
     }
     else if(mesh_type == H_("crystal") && opt_rng)
@@ -203,7 +203,7 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
 
         //return procedural_cache_lookup(mesh_type, seed, [&]()
         //{
-            return (SurfaceMesh*)factory::make_crystal(seed);
+            return (std::shared_ptr<SurfaceMesh>)factory::make_crystal(seed);
         //}, owns);
     }
     else if(mesh_type == H_("tree"))
@@ -238,16 +238,16 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
 
     // Hard-coded procedural meshes
     // Find in cache first
-    SurfaceMesh* pmesh = nullptr;
+    std::shared_ptr<SurfaceMesh> pmesh = nullptr;
     /*auto it = cache_.find(mesh_type);
     if(it!=cache_.end())
         pmesh = it->second;
     else
     {*/
         if(mesh_type == H_("cube"))
-            pmesh = (SurfaceMesh*)factory::make_cube();
+            pmesh = (std::shared_ptr<SurfaceMesh>)factory::make_cube();
         else if(mesh_type == H_("icosahedron"))
-            pmesh = (SurfaceMesh*)factory::make_icosahedron();
+            pmesh = (std::shared_ptr<SurfaceMesh>)factory::make_icosahedron();
         else if(mesh_type == H_("tentacle")) // TMP
         {
             CSplineCatmullV3 spline({0.0f, 0.33f, 0.66f, 1.0f},
@@ -255,7 +255,7 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
                                      vec3(0.1,0.33,0.1),
                                      vec3(0.4,0.66,-0.1),
                                      vec3(-0.1,1.2,-0.5)});
-            pmesh = (SurfaceMesh*)factory::make_tentacle(spline, 50, 25, 0.1, 0.3);
+            pmesh = (std::shared_ptr<SurfaceMesh>)factory::make_tentacle(spline, 50, 25, 0.1, 0.3);
         }
 
         if(pmesh && owns)
@@ -268,9 +268,9 @@ SurfaceMesh* SurfaceMeshFactory::make_procedural(hash_t mesh_type,
     return pmesh;
 }
 
-SurfaceMesh* SurfaceMeshFactory::make_obj(const char* filename, bool process_uv, bool centered)
+std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_obj(const char* filename, bool process_uv, bool centered)
 {
-    SurfaceMesh* pmesh;
+    std::shared_ptr<SurfaceMesh> pmesh;
 
     // First, check if we have it in the map
     hash_t hname = H_(filename);

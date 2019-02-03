@@ -359,11 +359,8 @@ int main()
 }
 */
 
-#include "wtypes.h"
-
 int main()
 {
-    std::cout << "hello" << " " << "hello"_h << " " << H_("hello") << std::endl;
 
     return 0;
 }

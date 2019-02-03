@@ -53,7 +53,7 @@ struct DebugDisplayOptions
 class Model
 {
 protected:
-    Mesh<Vertex3P3N3T2U>* pmesh_;
+    std::shared_ptr<SurfaceMesh> pmesh_;
     Material*             pmaterial_;
     Transformation        trans_;
     OBB                   obb_;
@@ -69,7 +69,7 @@ public:
     DebugDisplayOptions debug_display_opts_;
 #endif
 
-    Model(Mesh<Vertex3P3N3T2U>* pmesh, Material* material);
+    Model(std::shared_ptr<SurfaceMesh> pmesh, Material* material);
     ~Model();
 
     inline const Mesh<Vertex3P3N3T2U>& get_mesh() const         { return *pmesh_; }

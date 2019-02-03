@@ -16,9 +16,9 @@ using namespace math;
 namespace factory
 {
 
-FaceMesh* make_cube(bool finalize)
+std::shared_ptr<FaceMesh> make_cube(bool finalize)
 {
-    FaceMesh* pmesh = new FaceMesh;
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
     //                  /--------POSITION------  /----------UV----------
     //Front 1          |                        |
     pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
@@ -79,9 +79,9 @@ FaceMesh* make_cube(bool finalize)
 }
 
 // TODO: Fix UVs
-FaceMesh* make_box(const math::extent_t& extent, float texture_scale)
+std::shared_ptr<FaceMesh> make_box(const math::extent_t& extent, float texture_scale)
 {
-    FaceMesh* pmesh = new FaceMesh;
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
 
     //Front 1
     pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[5]), texture_scale*vec2(1.0f/3.0f, 0.5f));
@@ -334,10 +334,10 @@ MeshP* make_uv_sphere_3P(uint32_t nRings,
     return pmesh;
 }
 
-FaceMesh* make_uv_sphere(uint32_t nRings,
+std::shared_ptr<FaceMesh> make_uv_sphere(uint32_t nRings,
                          uint32_t nRingPoints)
 {
-    FaceMesh* pmesh = new FaceMesh;
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
 
     // Angle increments
     float deltaTheta = M_PI/nRings;
@@ -403,9 +403,9 @@ static const float PHI = (1.0f + sqrt(5.0f)) / 2.0f;
 static const float ONE_N = 1.0f/(sqrt(2.0f+PHI)); // norm of any icosahedron vertex position
 static const float PHI_N = PHI*ONE_N;
 
-TriangularMesh* make_icosahedron(bool finalize)
+std::shared_ptr<TriangularMesh> make_icosahedron(bool finalize)
 {
-    TriangularMesh* pmesh = new TriangularMesh;
+    std::shared_ptr<TriangularMesh> pmesh(new TriangularMesh);
 
     pmesh->emplace_vertex(vec3(-ONE_N,  PHI_N,  0), vec3(0), vec3(0), vec2(0));
     pmesh->emplace_vertex(vec3( ONE_N,  PHI_N,  0), vec3(0), vec3(0), vec2(0));
@@ -568,7 +568,7 @@ MeshP* make_cross3D_3P()
 
 
 static uint32_t get_mid_point(const i32vec2& edge,
-                              TriangularMesh* pmesh,
+                              std::shared_ptr<TriangularMesh> pmesh,
                               std::unordered_map<i32vec2, uint32_t>& lookup)
 {
     auto it = lookup.find(edge);
@@ -592,7 +592,7 @@ static inline i32vec2 ordered_edge(uint32_t p1, uint32_t p2)
     return (p1<p2)?i32vec2(p1,p2):i32vec2(p2,p1);
 }
 
-void subdivide_mesh(TriangularMesh* pmesh)
+void subdivide_mesh(std::shared_ptr<TriangularMesh> pmesh)
 {
     // Copy indices list
     std::vector<uint32_t> indices(pmesh->get_index_buffer());
@@ -621,10 +621,10 @@ void subdivide_mesh(TriangularMesh* pmesh)
     }
 }
 
-TriangularMesh* make_ico_sphere(uint32_t refine, bool finalize)
+std::shared_ptr<TriangularMesh> make_ico_sphere(uint32_t refine, bool finalize)
 {
     // * Generate an icosahedron, but don't compute normals and tangents ftm
-    TriangularMesh* pmesh = make_icosahedron(false);
+    std::shared_ptr<TriangularMesh> pmesh = make_icosahedron(false);
 
     // * Subdivide: replace each triangle by 4 triangles
     for(uint32_t kk=0; kk<refine; ++kk)
@@ -640,9 +640,9 @@ TriangularMesh* make_ico_sphere(uint32_t refine, bool finalize)
 }
 
 
-FaceMesh* make_terrain(const HeightMap& hm, float latScale, float texScale)
+std::shared_ptr<FaceMesh> make_terrain(const HeightMap& hm, float latScale, float texScale)
 {
-    FaceMesh* pmesh = new FaceMesh;
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
     // For each quad
     for(uint32_t ii=0; ii+1<hm.get_width(); ++ii)
     {
@@ -683,11 +683,11 @@ FaceMesh* make_terrain(const HeightMap& hm, float latScale, float texScale)
 }
 
 
-TriangularMesh* make_terrain_tri_mesh(const HeightMap& hm,
+std::shared_ptr<TriangularMesh> make_terrain_tri_mesh(const HeightMap& hm,
                                             float latScale,
                                             float texScale)
 {
-    TriangularMesh* pmesh = new TriangularMesh;
+    std::shared_ptr<TriangularMesh> pmesh(new TriangularMesh);
 
     // Hex terrain triangle mesh is 1 tile longer to allow for seamless terrain
     // Actual length is heightmap length minus 1.
@@ -774,7 +774,7 @@ MeshPU* make_quad_3P2U()
 
 
 
-FaceMesh* make_crystal(unsigned seed)
+std::shared_ptr<FaceMesh> make_crystal(unsigned seed)
 {
 
     //std::random_device rd;
@@ -790,7 +790,7 @@ FaceMesh* make_crystal(unsigned seed)
 
     int n_sides = polygon_sides_distrib(generator);
 
-    FaceMesh* pmesh = new FaceMesh;
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
 
     float radius = 0.7f;
     float height[3]{0.0f,
@@ -874,13 +874,13 @@ FaceMesh* make_crystal(unsigned seed)
     return pmesh;
 }
 
-FaceMesh* make_tentacle(const math::CSplineCatmullV3& spline,
+std::shared_ptr<FaceMesh> make_tentacle(const math::CSplineCatmullV3& spline,
                                     uint32_t nRings,
                                     uint32_t nRingPoints,
                                     float radius_0,
                                     float radius_exponent)
 {
-    FaceMesh* pmesh = new FaceMesh;
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
     skin_spline(pmesh, spline, nRings, nRingPoints, radius_0, radius_exponent);
     pmesh->build_normals_and_tangents();
     pmesh->compute_dimensions();
@@ -888,7 +888,7 @@ FaceMesh* make_tentacle(const math::CSplineCatmullV3& spline,
     return pmesh;
 }
 
-void skin_spline(FaceMesh* pmesh,
+void skin_spline(std::shared_ptr<FaceMesh> pmesh,
                  const math::CSplineCatmullV3& spline,
                  uint32_t nRings,
                  uint32_t nRingPoints,

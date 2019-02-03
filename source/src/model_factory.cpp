@@ -82,11 +82,10 @@ std::shared_ptr<Model> ModelFactory::make_model_instance(hash_t name)
     {
         const ModelInstanceDescriptor& desc = it->second;
 
-        SurfaceMesh* pmesh = mesh_factory_->make_instance(desc.mesh_name);
+        std::shared_ptr<SurfaceMesh> pmesh = mesh_factory_->make_instance(desc.mesh_name);
         if(!pmesh)
         {
             DLOGE("[ModelFactory] Incomplete mesh declaration.", "parsing", Severity::CRIT);
-            delete pmesh;
             return nullptr;
         }
 
@@ -95,7 +94,6 @@ std::shared_ptr<Model> ModelFactory::make_model_instance(hash_t name)
         {
             DLOGE("[ModelFactory] Incomplete material declaration.", "parsing", Severity::CRIT);
             delete pmat;
-            delete pmesh;
             return nullptr;
         }
 
@@ -109,11 +107,10 @@ std::shared_ptr<Model> ModelFactory::make_model(rapidxml::xml_node<>* mesh_node,
                                                 rapidxml::xml_node<>* mat_node,
                                                 OptRngT opt_rng)
 {
-    SurfaceMesh* pmesh = mesh_factory_->make_surface_mesh(mesh_node, opt_rng);
+    std::shared_ptr<SurfaceMesh> pmesh = mesh_factory_->make_surface_mesh(mesh_node, opt_rng);
     if(!pmesh)
     {
         DLOGW("[ModelFactory] Incomplete mesh declaration.", "parsing", Severity::WARN);
-        delete pmesh;
         return nullptr;
     }
 
@@ -122,7 +119,6 @@ std::shared_ptr<Model> ModelFactory::make_model(rapidxml::xml_node<>* mesh_node,
     {
         DLOGW("[ModelFactory] Incomplete material declaration.", "parsing", Severity::WARN);
         delete pmat;
-        delete pmesh;
         return nullptr;
     }
 

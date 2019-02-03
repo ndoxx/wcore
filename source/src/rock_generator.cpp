@@ -28,7 +28,7 @@ void RockProps::parse_xml(rapidxml::xml_node<char>* node)
 NoiseGenerator2D<SimplexNoise<>> RockGenerator::RNG_simplex_;
 uint32_t RockGenerator::last_seed_ = -1;
 
-Mesh<Vertex3P3N3T2U>* RockGenerator::generate_rock(const RockProps& props)
+std::shared_ptr<SurfaceMesh> RockGenerator::generate_rock(const RockProps& props)
 {
     // * RNG stuff
     std::mt19937 rng;
@@ -48,7 +48,7 @@ Mesh<Vertex3P3N3T2U>* RockGenerator::generate_rock(const RockProps& props)
     float startY = pos_distrib(rng_inst);
 
     // * First, generate an icosphere with suitable mesh density
-    Mesh<Vertex3P3N3T2U>* pmesh = factory::make_ico_sphere(props.mesh_density, false);
+    std::shared_ptr<SurfaceMesh> pmesh = factory::make_ico_sphere(props.mesh_density, false);
 
     // * Deform mesh with periodic simplex noise
     // For each vertex

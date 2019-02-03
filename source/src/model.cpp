@@ -10,7 +10,7 @@ namespace wcore
 
 using namespace math;
 
-Model::Model(Mesh<Vertex3P3N3T2U>* pmesh, Material* material):
+Model::Model(std::shared_ptr<SurfaceMesh> pmesh, Material* material):
 pmesh_(pmesh),
 pmaterial_(material),
 trans_(),
@@ -34,7 +34,7 @@ shadow_cull_face_(0)
 Model::~Model()
 {
     //if(!pmesh_->is_cached())
-        delete pmesh_;
+        //delete pmesh_;
     //if(!pmaterial_->is_cached())
         delete pmaterial_;
 }
