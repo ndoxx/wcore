@@ -90,9 +90,7 @@ void Chunk::sort_models(pCamera camera)
     // Get camera position
     vec3 cam_pos(camera->get_position());
     if(camera->is_orthographic())
-    {
         cam_pos *= 1000.0f;
-    }
 
     // Sort order list according to models distance
     std::sort(models_order_.begin(), models_order_.end(),

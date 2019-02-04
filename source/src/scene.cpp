@@ -33,6 +33,8 @@ uint32_t Scene::SHADOW_HEIGHT = 1024;
 uint32_t Scene::SHADOW_WIDTH  = 1024;
 
 Scene::Scene():
+instance_buffer_unit_(),
+instance_vertex_array_(instance_buffer_unit_),
 camera_(std::make_shared<Camera>(GLB.WIN_W, GLB.WIN_H)),
 light_camera_(std::make_shared<Camera>(1, 1)),
 chunk_size_m_(32),
@@ -67,6 +69,23 @@ void Scene::init_events(InputHandler& handler)
 void Scene::set_chunk_size_meters(uint32_t chunk_size_m)
 {
     chunk_size_m_ = chunk_size_m;
+}
+
+void Scene::add_model_instance(pModel model, uint32_t chunk_index)
+{
+    model_instances_.push_back(model);
+    model_instances_order_.push_back(model_instances_.size()-1);
+}
+
+void Scene::submit_mesh_instance(std::shared_ptr<SurfaceMesh> mesh)
+{
+    instance_buffer_unit_.submit(*mesh);
+    mesh->set_buffer_batch(0);
+}
+
+void Scene::load_instance_geometry()
+{
+    instance_buffer_unit_.upload();
 }
 
 void Scene::add_chunk(const math::i32vec2& coords)
@@ -104,8 +123,8 @@ void Scene::populate_static_octree(uint32_t chunk_index)
         data.model = pmdl;
         // Use chunk index as a group id for later removal
         static_octree.insert(StaticOctree::DataT(pmdl->get_AABB().get_bounding_region(),
-                                                       data,
-                                                       chunk_index));
+                                                 data,
+                                                 chunk_index));
     });
 
     static_octree.propagate();
@@ -135,6 +154,22 @@ void Scene::sort_chunks()
 // Sort models front to back with respect to camera position in all chunks
 void Scene::sort_models()
 {
+    // * Sort instances
+    // Get camera position
+    vec3 cam_pos(camera_->get_position());
+    if(camera_->is_orthographic())
+        cam_pos *= 1000.0f;
+
+    // Sort order list according to models distance
+    std::sort(model_instances_order_.begin(), model_instances_order_.end(),
+    [&](uint32_t a, uint32_t b)
+    {
+        float dist_a = norm2(model_instances_[a]->get_position()-cam_pos);
+        float dist_b = norm2(model_instances_[b]->get_position()-cam_pos);
+        return (dist_a < dist_b); // sort front to back
+    });
+
+    // * Sort models in chunks
     for(auto&& [key, chunk]: chunks_)
         chunk->sort_models(camera_);
 }
@@ -208,6 +243,16 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
     //Traverse chunks front to back for opaque geometry
     if(model_cat==wcore::MODEL_CATEGORY::OPAQUE)
     {
+        // INSTANCES
+        for(uint32_t ii=0; ii<model_instances_order_.size(); ++ii)
+        {
+            pModel pmdl = model_instances_.at(model_instances_order_[ii]);
+            if(!evaluate(pmdl)) continue;
+            prepare(pmdl);
+            instance_vertex_array_.bind();
+            instance_buffer_unit_.draw(pmdl->get_mesh().get_buffer_token());
+        }
+
         // STATIC MODELS
         for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
         {
@@ -226,16 +271,12 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
                     continue;
             }
 
-            // Bind VAO, and draw models
-            //chunk->bind_vertex_array();
+            // Draw models
             chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
             {
                 prepare(pmdl);
-                /*chunk->draw(pmdl->get_mesh().get_n_elements(),
-                            pmdl->get_mesh().get_buffer_offset());*/
                 chunk->draw(pmdl->get_mesh().get_buffer_token());
             }, evaluate, order, model_cat);
-            //GFX::unbind_vertex_array();
         }
         // TERRAINS
         // Terrains are heavily occluded by the static geometry on top,
@@ -257,12 +298,9 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
                     continue;
             }
 
-            // Bind VAO, and draw terrains
-            //chunk->bind_terrain_vertex_array();
+            // Draw terrains
             pModel pterrain = chunk->get_terrain_nc();
             prepare(pterrain);
-            /*chunk->draw_terrain(pterrain->get_mesh().get_n_elements(),
-                                pterrain->get_mesh().get_buffer_offset());*/
             chunk->draw(pterrain->get_mesh().get_buffer_token());
         }
     }
@@ -280,16 +318,12 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
             if(!camera_->frustum_collides(aabb))
                 continue;
 
-            // Bind VAO, and draw models
-            //chunk->bind_blend_vertex_array();
+            // Draw models
             chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
             {
                 prepare(pmdl);
-                /*chunk->draw_transparent(pmdl->get_mesh().get_n_elements(),
-                                        pmdl->get_mesh().get_buffer_offset());*/
                 chunk->draw(pmdl->get_mesh().get_buffer_token());
             }, evaluate, order, model_cat);
-            //GFX::unbind_vertex_array();
         }
     }
 }
@@ -342,6 +376,22 @@ void Scene::add_terrain(pTerrain terrain, uint32_t chunk_index)
 
 void Scene::visibility_pass()
 {
+    // Model instances
+    for(auto&& pmodel: model_instances_)
+    {
+        // Non cullable models are passed
+        if(!pmodel->can_frustum_cull())
+        {
+            pmodel->set_visibility(true);
+            break;
+        }
+        // Get model OBB
+        OBB& obb = pmodel->get_OBB();
+        // Frustum culling
+        pmodel->set_visibility(camera_->frustum_collides(obb));
+    }
+
+    // Models in chunks
     traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_id)
     {
         // Non cullable models are passed
@@ -350,12 +400,6 @@ void Scene::visibility_pass()
             pmodel->set_visibility(true);
             return;
         }
-/*
-        // Get model AABB
-        AABB& aabb = pmodel->get_AABB();
-        // Frustum culling
-        pmodel->set_visibility(camera_->frustum_collides(aabb));
-*/
         // Get model OBB
         OBB& obb = pmodel->get_OBB();
         // Frustum culling

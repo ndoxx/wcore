@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <InternStrings>
+    <string key="14103543345773809" value="bgm"/>
     <string key="21724258439390450" value="box"/>
     <string key="43479738098588949" value="sdiNGeom"/>
     <string key="46363932364146934" value="k_tc_faster"/>
@@ -12,6 +13,7 @@
     <string key="403435119425249191" value="v2_texelSize"/>
     <string key="493120509362761803" value="tr.m3_Normal"/>
     <string key="524679559595785586" value="rd.i_blindness_type"/>
+    <string key="619319748659883923" value="fx"/>
     <string key="649929052871594752" value="F9"/>
     <string key="649930152383222963" value="F8"/>
     <string key="649937848964620440" value="F1"/>
@@ -41,7 +43,6 @@
     <string key="1863603941557477773" value="sdiAngles"/>
     <string key="1887491037416224730" value="obj"/>
     <string key="2030094403841163005" value="root.debug.logger.print_backtrace_on_error"/>
-    <string key="2061688756796195041" value="swish.wav"/>
     <string key="2213964022818352189" value="shadowmap"/>
     <string key="2351491429091079500" value="lt.v3_lightColor"/>
     <string key="2758056727152387417" value="rd.f_bias"/>
@@ -78,6 +79,7 @@
     <string key="4551762947800415439" value="EQUAL"/>
     <string key="4558523308072059171" value="root.render.shadowmap.width"/>
     <string key="4630334286561570845" value="lt.f_light_radius"/>
+    <string key="4665132351978436081" value="root.sound.general.volume_master"/>
     <string key="4673174041737129020" value="root.display.full"/>
     <string key="4740562018029365625" value="k_tg_debug_overlay"/>
     <string key="4749526036288485924" value="PERIOD"/>
@@ -138,10 +140,12 @@
     <string key="7085902643359509389" value="k_ascend"/>
     <string key="7147820914469755098" value="rd.b_lighting_enabled"/>
     <string key="7175216374236181665" value="root.folders.soundfx"/>
+    <string key="7225370650316100005" value="root.sound.general.mute"/>
     <string key="7227899007148384440" value="sdiTime"/>
     <string key="7257860210090897713" value="mt.f_parallax_height_scale"/>
     <string key="7258870000167450457" value="rd.b_enableSSAO"/>
     <string key="7273895582857962616" value="mt.f_metallic"/>
+    <string key="7540258471201886724" value="root.sound.general.channel_fadeout_s"/>
     <string key="7543418176468789887" value="root.display.width"/>
     <string key="7763496791160610254" value="RIGHT_BRACKET"/>
     <string key="7807768329891329634" value="GameObjectFactory"/>
@@ -178,6 +182,7 @@
     <string key="9515249342394563380" value="sdiFPS"/>
     <string key="9583412447785380786" value="k_backward"/>
     <string key="9624714238657457210" value="rd.b_shadow_enabled"/>
+    <string key="9662499253076612565" value="root.sound.general.volume_fx"/>
     <string key="9686246174941609651" value="rd.f_ca_shift"/>
     <string key="9871780175443147334" value="LEFT_CONTROL"/>
     <string key="9942867538528568546" value="root.display.height"/>
@@ -208,6 +213,7 @@
     <string key="11686224538548403115" value="root.folders.shaderinc"/>
     <string key="11780878001689302868" value="rock"/>
     <string key="11784024025844851763" value="root.folders.texture"/>
+    <string key="11805411964498681057" value="swish"/>
     <string key="12032221677502956178" value="icosahedron"/>
     <string key="12059396907497688696" value="Editor"/>
     <string key="12094814583269164686" value="rd.f_scale"/>
@@ -286,6 +292,7 @@
     <string key="14842996496848261588" value="rd.v2_noiseScale"/>
     <string key="14966128695250958968" value="root.debug.raycast.geometry.persistence"/>
     <string key="15153117092499878903" value="BACKSLASH"/>
+    <string key="15156167788070324883" value="root.sound.general.volume_bgm"/>
     <string key="15161495031171096249" value="k_strafe_right"/>
     <string key="15444513718703857025" value="lbuffer"/>
     <string key="15472625294094695145" value="kernel.i_half_size"/>
@@ -334,9 +341,11 @@
     <string key="17453382643516468302" value="rd.f_vignette_bal"/>
     <string key="17720195001682701390" value="CameraController"/>
     <string key="17953394579615142639" value="cursor"/>
+    <string key="18097647533062089343" value="maze_bgm"/>
     <string key="18100165628774196105" value=".geom"/>
     <string key="18162437537880849868" value="k_strafe_left"/>
     <string key="18190119953385349643" value="v3_textColor"/>
     <string key="18279612623632775884" value="BACKSPACE"/>
     <string key="18364607093200934249" value="rd.f_exposure"/>
+    <string key="18395973286856620803" value="drumloop"/>
 </InternStrings>

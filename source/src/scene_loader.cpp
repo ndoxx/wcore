@@ -206,12 +206,12 @@ void SceneLoader::preload_instances()
             // Load mesh in scene
             if(pmesh != nullptr)
             {
-
+                pscene_->submit_mesh_instance(pmesh);
             }
         }
     }
     // Upload scene meshes
-
+    pscene_->load_instance_geometry();
 }
 
 
@@ -604,6 +604,8 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
 
         // Do we position the models relative to a heightmap?
         bool relative_positioning = is_pos_relative(model);
+        // Is model an instance?
+        bool is_instance = false;
 
         pModel pmdl;
         if(!mat_node || !mesh_node)
@@ -614,6 +616,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
             {
                 hash_t hname = H_(name.c_str());
                 pmdl = game_object_factory_->make_model_instance(hname);
+                is_instance = true;
             }
             else continue;
         }
@@ -658,7 +661,12 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         }
 
         pmdl->update_bounding_boxes();
-        pscene_->add_model(pmdl, chunk_index);
+        if(!is_instance)
+            pscene_->add_model(pmdl, chunk_index);
+        else
+        {
+            pscene_->add_model_instance(pmdl, chunk_index);
+        }
     }
 }
 /*

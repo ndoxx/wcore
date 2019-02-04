@@ -36,7 +36,7 @@ class GuiRenderer : public Renderer<Vertex2P2U>
 {
 public:
     GuiRenderer();
-    ~GuiRenderer();
+    virtual ~GuiRenderer();
 
     virtual void render(Scene* pscene) override;
     inline void render_cursor(bool value)  { cursor_props_.active = value; }

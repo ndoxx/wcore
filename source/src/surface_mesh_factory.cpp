@@ -56,6 +56,9 @@ void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshe
         }
 
         instance_descriptors_.insert(std::pair(H_(mesh_name.c_str()), desc));
+        #ifdef __DEBUG__
+            HRESOLVE.add_intern_string(mesh_name);
+        #endif
     }
 }
 
@@ -109,30 +112,40 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_surface_mesh(rapidxml::xml
 
 std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
 {
+    DLOGN("Instance mesh from name: " + std::to_string(name) + " -> " + HRESOLVE(name), "model", Severity::LOW);
     // First, try to find in cache
-    /*auto it = cache_.find(name);
+    auto it = cache_.find(name);
     if(it != cache_.end())
+    {
+        DLOGI("Using cache.", "model", Severity::LOW);
         return it->second;
+    }
     else
-    {*/
+    {
         // Run instance descriptor table
         auto it_d = instance_descriptors_.find(name);
         if(it_d != instance_descriptors_.end())
         {
+            std::shared_ptr<SurfaceMesh> pmesh = nullptr;
             const MeshInstanceDescriptor& desc = it_d->second;
             if(desc.type==H_("obj"))
             {
-                return make_obj(desc.file_path.string().c_str(), desc.process_uv, desc.centered);
+                DLOGI("From obj file.", "model", Severity::LOW);
+                pmesh = make_obj(desc.file_path.string().c_str(), desc.process_uv, desc.centered);
             }
             else
             {
+                DLOGI("Procedural.", "model", Severity::LOW);
                 std::mt19937 rng(0);
-                return make_procedural(desc.type, desc.generator_node, &rng, false);
+                pmesh = make_procedural(desc.type, desc.generator_node, &rng, false);
             }
-            //cache_.insert(std::pair(name, pmesh));
-            //pmesh->set_cached(true);
+            if(pmesh != nullptr)
+            {
+                cache_.insert(std::pair(name, pmesh));
+                return pmesh;
+            }
         }
-    //}
+    }
     return nullptr;
 }
 
