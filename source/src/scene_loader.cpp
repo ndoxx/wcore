@@ -4,6 +4,7 @@
 #include <sstream>
 #include <memory>
 #include <vector>
+#include <set>
 
 #include "scene_loader.h"
 #include "logger.h"
@@ -143,10 +144,81 @@ void SceneLoader::load_global(DaylightSystem& daylight)
     parse_directional_light(xml_parser_.get_root()->first_node("Light"));
     // Parse ambient parameters
     parse_ambient(daylight, xml_parser_.get_root()->first_node("Ambient"));
+    // Preload mesh instances used in this level
+    preload_instances();
 }
+
+void SceneLoader::preload_instances()
+{
+    // * In level file, detect Model and Mesh nodes with name attribute
+
+    // To keep track of already loaded meshes
+    std::set<hash_t> loaded_mesh_instances;
+    std::set<hash_t> loaded_mesh_model_instances;
+
+    // For each chunk
+    for (xml_node<>* ck_node=xml_parser_.get_root()->first_node("Chunk");
+         ck_node;
+         ck_node=ck_node->next_sibling("Chunk"))
+    {
+        xml_node<>* mdls_node = ck_node->first_node("Models");
+        if(mdls_node == nullptr) continue;
+
+        // For each model
+        for (xml_node<>* mdl_node=mdls_node->first_node("Model");
+             mdl_node;
+             mdl_node=mdl_node->next_sibling("Model"))
+        {
+            std::shared_ptr<SurfaceMesh> pmesh = nullptr;
+            // Look for Model node name attribute
+            std::string model_name;
+            if(xml::parse_attribute(mdl_node, "name", model_name))
+            {
+                hash_t hname = H_(model_name.c_str());
+                if(loaded_mesh_model_instances.find(hname) == loaded_mesh_model_instances.end())
+                {
+                    DLOGN("Preloading mesh instance:", "model", Severity::LOW);
+                    DLOGI("Model name: " + model_name, "model", Severity::LOW);
+                    pmesh = game_object_factory_->preload_mesh_model_instance(hname);
+                    loaded_mesh_model_instances.insert(hname);
+                }
+            }
+            // Look for child Mesh node with name attribute
+            else
+            {
+                xml_node<>* mesh_node = mdl_node->first_node("Mesh");
+                if(mesh_node)
+                {
+                    std::string mesh_name;
+                    if(xml::parse_attribute(mesh_node, "name", mesh_name))
+                    {
+                        hash_t hname = H_(mesh_name.c_str());
+                        if(loaded_mesh_instances.find(hname) == loaded_mesh_instances.end())
+                        {
+                            DLOGN("Preloading mesh instance:", "model", Severity::LOW);
+                            DLOGI("Mesh name: " + mesh_name, "model", Severity::LOW);
+                            pmesh = game_object_factory_->preload_mesh_instance(hname);
+                            loaded_mesh_instances.insert(hname);
+                        }
+                    }
+                }
+            }
+            // Load mesh in scene
+            if(pmesh != nullptr)
+            {
+
+            }
+        }
+    }
+    // Upload scene meshes
+
+}
+
 
 void SceneLoader::parse_audio(rapidxml::xml_node<>* node)
 {
+    if(node == nullptr) return;
+
     // Locate sound system
     auto psound_ = locate<SoundSystem>(H_("SoundSystem"));
 

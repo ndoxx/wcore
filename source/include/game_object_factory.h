@@ -40,6 +40,9 @@ public:
         return entity_factory_->make_entity_blueprint(name);
     }
 
+    inline std::shared_ptr<SurfaceMesh> preload_mesh_instance(hash_t name)       { return model_factory_->preload_mesh_instance(name); }
+    inline std::shared_ptr<SurfaceMesh> preload_mesh_model_instance(hash_t name) { return model_factory_->preload_mesh_model_instance(name); }
+
 private:
     ModelFactory*  model_factory_;
     EntityFactory* entity_factory_;

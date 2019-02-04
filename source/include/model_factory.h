@@ -22,6 +22,11 @@ class TerrainChunk;
 class SurfaceMeshFactory;
 class MaterialFactory;
 class TerrainFactory;
+
+struct Vertex3P3N3T2U;
+template <typename VertexT> class Mesh;
+using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
+
 class ModelFactory
 {
 public:
@@ -40,6 +45,12 @@ public:
                                                      OptRngT opt_rng=nullptr);
 
     void retrieve_asset_descriptions(rapidxml::xml_node<>* models_node);
+
+    // Preload mesh instance by model instance name
+    std::shared_ptr<SurfaceMesh> preload_mesh_model_instance(hash_t name);
+    // Preload mesh instance by name
+    std::shared_ptr<SurfaceMesh> preload_mesh_instance(hash_t name);
+
 private:
     XMLParser xml_parser_;
 

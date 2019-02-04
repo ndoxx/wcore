@@ -443,14 +443,7 @@
     <Chunk coords="(0,4)"/>
     <Chunk coords="(1,0)">
         <Models>
-            <Model ypos="relative">
-                <Mesh name=".tree03"/>
-                <Material>
-                    <Uniform>
-                        <Albedo>(0.1,0.08,0)</Albedo>
-                        <Roughness>0.7</Roughness>
-                    </Uniform>
-                </Material>
+            <Model name="tree03" ypos="relative">
                 <Transform>
                     <Position>(5,-1.5,22)</Position>
                     <Scale>15.0</Scale>

@@ -38,6 +38,28 @@ ModelFactory::~ModelFactory()
     delete mesh_factory_;
 }
 
+std::shared_ptr<SurfaceMesh> ModelFactory::preload_mesh_instance(hash_t name)
+{
+    return mesh_factory_->make_instance(name);
+}
+
+std::shared_ptr<SurfaceMesh> ModelFactory::preload_mesh_model_instance(hash_t name)
+{
+    auto it = instance_descriptors_.find(name);
+    if(it!=instance_descriptors_.end())
+    {
+        const ModelInstanceDescriptor& desc = it->second;
+        return mesh_factory_->make_instance(desc.mesh_name);
+    }
+    else
+    {
+        DLOGW("[ModelFactory] No model instance named: ", "model", Severity::WARN);
+        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "model", Severity::WARN);
+        DLOGI("Skipping.", "model", Severity::WARN);
+    }
+    return nullptr;
+}
+
 void ModelFactory::parse_asset_file(const char* xmlfile)
 {
     fs::path file_path(io::get_file(H_("root.folders.level"), xmlfile));

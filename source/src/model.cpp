@@ -23,7 +23,7 @@ visible_(false),
 shadow_cull_face_(0)
 {
     #ifdef __DEBUG__
-        DLOGN("[Model] New static model.", "model", Severity::LOW);
+        DLOGN("[Model] New static model.", "model", Severity::DET);
         std::stringstream ss;
         ss << "Mesh: n_indices=" << pmesh->get_ni() << " n_vertices="
            << pmesh->get_nv();
