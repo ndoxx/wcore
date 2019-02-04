@@ -178,7 +178,7 @@ void SceneLoader::preload_instances()
                 if(loaded_mesh_model_instances.find(hname) == loaded_mesh_model_instances.end())
                 {
                     DLOGN("Preloading mesh instance:", "model", Severity::LOW);
-                    DLOGI("Model name: " + model_name, "model", Severity::LOW);
+                    DLOGI("Model name: <n>" + model_name + "</n>", "model", Severity::LOW);
                     pmesh = game_object_factory_->preload_mesh_model_instance(hname);
                     loaded_mesh_model_instances.insert(hname);
                 }
@@ -196,7 +196,7 @@ void SceneLoader::preload_instances()
                         if(loaded_mesh_instances.find(hname) == loaded_mesh_instances.end())
                         {
                             DLOGN("Preloading mesh instance:", "model", Severity::LOW);
-                            DLOGI("Mesh name: " + mesh_name, "model", Severity::LOW);
+                            DLOGI("Mesh name: <n>" + mesh_name + "</n>", "model", Severity::LOW);
                             pmesh = game_object_factory_->preload_mesh_instance(hname);
                             loaded_mesh_instances.insert(hname);
                         }
@@ -605,7 +605,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         // Do we position the models relative to a heightmap?
         bool relative_positioning = is_pos_relative(model);
         // Is model an instance?
-        bool is_instance = false;
+        bool mesh_is_instance = false;
 
         pModel pmdl;
         if(!mat_node || !mesh_node)
@@ -616,13 +616,13 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
             {
                 hash_t hname = H_(name.c_str());
                 pmdl = game_object_factory_->make_model_instance(hname);
-                is_instance = true;
+                mesh_is_instance = true;
             }
             else continue;
         }
         else
         {
-            pmdl = game_object_factory_->make_model(mesh_node, mat_node, &rng);
+            pmdl = game_object_factory_->make_model(mesh_node, mat_node, mesh_is_instance, &rng);
         }
 
         // Spacial transformation
@@ -661,7 +661,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         }
 
         pmdl->update_bounding_boxes();
-        if(!is_instance)
+        if(!mesh_is_instance)
             pscene_->add_model(pmdl, chunk_index);
         else
             pscene_->add_model_instance(pmdl, chunk_index);
@@ -766,7 +766,8 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
 
         for(uint32_t ii=0; ii<instances; ++ii)
         {
-            pModel pmdl = game_object_factory_->make_model(mesh_node, mat_node, &rng);
+            bool mesh_is_instance = false;
+            pModel pmdl = game_object_factory_->make_model(mesh_node, mat_node, mesh_is_instance, &rng);
 
             // Transform
             pmdl->set_transformation(transforms[ii]);
@@ -791,7 +792,11 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
             }
 
             pmdl->update_bounding_boxes();
-            pscene_->add_model(pmdl, chunk_index);
+
+            if(!mesh_is_instance)
+                pscene_->add_model(pmdl, chunk_index);
+            else
+                pscene_->add_model_instance(pmdl, chunk_index);
         }
     }
 }

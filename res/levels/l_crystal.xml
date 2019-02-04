@@ -45,9 +45,7 @@
             <Transform>
                 <Position>(0,0,0)</Position>
             </Transform>
-            <Material>
-                <Asset>beachSand</Asset>
-            </Material>
+            <Material name="beachSand"/>
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>
@@ -68,9 +66,7 @@
             <Transform>
                 <Position>(0,0,0)</Position>
             </Transform>
-            <Material>
-                <Asset>pavedFloor</Asset>
-            </Material>
+            <Material name="pavedFloor"/>
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>
@@ -82,9 +78,7 @@
             <!-- Big moving Erwin-textured cube -->
             <Model>
                 <Mesh type="cube"></Mesh>
-                <Material>
-                    <Asset>cube</Asset>
-                </Material>
+                <Material name="cube"/>
                 <Transform>
                     <Position>(16.0,0.0,14.0)</Position>
                     <Scale>1.0</Scale>
@@ -112,9 +106,7 @@
             <!-- Small moving Erwin-textured cube -->
             <Model>
                 <Mesh type="cube"></Mesh>
-                <Material>
-                    <Asset>cube</Asset>
-                </Material>
+                <Material name="cube"/>
                 <Transform>
                     <Position>(16.0,0.0,18.0)</Position>
                     <Scale>0.5</Scale>
@@ -142,9 +134,7 @@
             <!-- Rotating brick cube at origin -->
             <Model>
                 <Mesh type="cube"></Mesh>
-                <Material>
-                    <Asset>brickWall</Asset>
-                </Material>
+                <Material name="brickWall"/>
                 <Transform>
                     <Position>(0,0,0)</Position>
                     <Scale>0.6</Scale>

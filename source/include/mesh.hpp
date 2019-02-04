@@ -39,16 +39,12 @@ protected:
     std::vector<VertexT>  vertices_;
     std::vector<uint32_t> indices_;
     std::array<float, 6>  dimensions_;
-    //uint32_t              buffer_offset_;
-    //uint32_t              n_elements_;
     BufferToken           buffer_token_;
     bool                  centered_;
     bool                  cached_;
 
 public:
     Mesh():
-    //buffer_offset_(0),
-    //n_elements_(0),
     centered_(false),
     cached_(false){}
 
@@ -57,8 +53,6 @@ public:
     , indices_(std::move(other.indices_))
     , dimensions_(other.dimensions_)
     , buffer_token_(other.buffer_token_)
-    //, buffer_offset_(other.buffer_offset_)
-    //, n_elements_(other.n_elements_)
     , centered_(false)
     , cached_(other.cached_){}
 
@@ -67,8 +61,6 @@ public:
     , indices_(other.indices_)
     , dimensions_(other.dimensions_)
     , buffer_token_(other.buffer_token_)
-    //, buffer_offset_(other.buffer_offset_)
-    //, n_elements_(other.n_elements_)
     , centered_(false)
     , cached_(other.cached){}
 
@@ -79,8 +71,6 @@ public:
         vertices_ = other.vertices_;
         indices_ = other.indices_;
         buffer_token_ = other.buffer_token_;
-        //buffer_offset_ = other.buffer_offset_;
-        //n_elements_ = other.n_elements_;
         dimensions_ = other.dimensions_;
         centered_ = other.centered_;
         cached_ = other.cached_;
@@ -92,7 +82,7 @@ public:
     inline uint32_t get_n_elements() const    { return buffer_token_.n_elements; }
     inline uint32_t get_buffer_offset() const { return buffer_token_.buffer_offset; }
     inline const BufferToken& get_buffer_token() const { return buffer_token_; }
-    // TMP
+
     inline void set_buffer_batch(BufferToken::Batch value) { buffer_token_.batch = value; }
 
     inline bool is_centered() const           { return centered_; }

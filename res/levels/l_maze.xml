@@ -11,9 +11,7 @@
             <Transform>
                 <Position>(0,0,0)</Position>
             </Transform>
-            <Material>
-                <Asset>pavedFloor</Asset>
-            </Material>
+            <Material name="pavedFloor"/>
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>

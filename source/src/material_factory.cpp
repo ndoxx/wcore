@@ -138,7 +138,7 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
 Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node, OptRngT opt_rng)
 {
     std::string asset;
-    bool use_asset = xml::parse_node(material_node, "Asset", asset);
+    bool use_asset = xml::parse_attribute(material_node, "name", asset);
 
     if(use_asset)
         return make_material(H_(asset.c_str()));
@@ -147,7 +147,6 @@ Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node, Op
     parse_material_descriptor(material_node, desc, opt_rng);
     return make_material(desc);
 }
-
 
 void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
                                                 MaterialDescriptor& descriptor,

@@ -51,7 +51,7 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile, bool pro
 {
 #ifdef __DEBUG__
     DLOGN("[ObjLoader] Loading obj file: ", "model", Severity::LOW);
-    DLOGI(objfile, "model", Severity::LOW);
+    DLOGI("<p>" + std::string(objfile) + "</p>", "model", Severity::LOW);
 #endif
 
     // Open file, sanity check

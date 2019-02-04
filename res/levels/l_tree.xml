@@ -269,18 +269,7 @@
             </Model>
 
             <!-- Wavefront obj file -->
-            <Model ypos="relative">
-                <Mesh type="obj">
-                    <Location>teapot.obj</Location>
-                    <ProcessUV>false</ProcessUV>
-                    <Centered>true</Centered>
-                </Mesh>
-                <Material>
-                    <Uniform>
-                        <Albedo>(0.05,0.5,1.0)</Albedo>
-                        <Roughness>0.2</Roughness>
-                    </Uniform>
-                </Material>
+            <Model name="teapot01" ypos="relative">
                 <Transform>
                     <Position>(37,2,10)</Position>
                     <Scale>0.25</Scale>
@@ -294,9 +283,7 @@
                     <ProcessUV>true</ProcessUV>
                     <Centered>true</Centered>
                 </Mesh>
-                <Material>
-                    <Asset>ball01</Asset>
-                </Material>
+                <Material name="ball01"/>
                 <Transform>
                     <Position>(43,4,10)</Position>
                     <Scale>3.0</Scale>
@@ -309,9 +296,7 @@
                     <Location>dome.obj</Location>
                     <ProcessUV>true</ProcessUV>
                 </Mesh>
-                <Material>
-                    <Asset>dome01</Asset>
-                </Material>
+                <Material name="dome01"/>
                 <Transform>
                     <Position>(43,2,17)</Position>
                     <Scale>3.0</Scale>

@@ -15,16 +15,20 @@ namespace wcore
 class EntityFactory
 {
 public:
+    // Factory method type for component creation inside an entity
     typedef std::function<bool(WEntity& target, rapidxml::xml_node<>* cmp_node)> ComponentCreatorFunc;
 
     EntityFactory(const char* entityfile);
 
+    // Associate a component name to a component factory method
     void register_component_factory(hash_t name, ComponentCreatorFunc func);
-
+    // Create an entity from blueprint name
     std::shared_ptr<WEntity> make_entity_blueprint(hash_t name);
 
 private:
+    // Parse XML file for entity blueprints
     void parse_entity_file(const char* xmlfile);
+    // Parse entity blueprint at given node
     void parse_blueprints(rapidxml::xml_node<>* blueprints_node);
 
 private:

@@ -107,7 +107,6 @@ void Chunk::sort_models(pCamera camera)
         float dist_b = norm2(model_instances_[b]->get_position()-cam_pos);
         return (dist_a < dist_b); // sort front to back
     });
-
     // Sort order list according to models distance
     std::sort(models_order_.begin(), models_order_.end(),
     [&](uint32_t a, uint32_t b)
@@ -335,6 +334,8 @@ void Chunk::draw(const BufferToken& buffer_token) const
     // OPTIMIZE
     switch(buffer_token.batch)
     {
+        case BufferToken::Batch::INSTANCE:
+            return;
         case BufferToken::Batch::OPAQUE:
             vertex_array_.bind();
             buffer_unit_.draw(buffer_token);

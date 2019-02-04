@@ -127,9 +127,10 @@ std::shared_ptr<Model> ModelFactory::make_model_instance(hash_t name)
 
 std::shared_ptr<Model> ModelFactory::make_model(rapidxml::xml_node<>* mesh_node,
                                                 rapidxml::xml_node<>* mat_node,
+                                                bool& mesh_is_instance,
                                                 OptRngT opt_rng)
 {
-    std::shared_ptr<SurfaceMesh> pmesh = mesh_factory_->make_surface_mesh(mesh_node, opt_rng);
+    std::shared_ptr<SurfaceMesh> pmesh = mesh_factory_->make_surface_mesh(mesh_node, mesh_is_instance, opt_rng);
     if(!pmesh)
     {
         DLOGW("[ModelFactory] Incomplete mesh declaration.", "parsing", Severity::WARN);

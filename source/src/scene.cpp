@@ -245,13 +245,14 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
             {
                 prepare(pmdl);
                 const BufferToken& token = pmdl->get_mesh().get_buffer_token();
-                if(token.batch != BufferToken::Batch::INSTANCE)
-                    chunk->draw(token);
-                else
+                if(token.batch == BufferToken::Batch::INSTANCE)
                 {
+                    // Instance buffers are owned by scene
                     instance_vertex_array_.bind();
                     instance_buffer_unit_.draw(token);
                 }
+                else
+                    chunk->draw(token);
             }, evaluate, order, model_cat);
         }
         // TERRAINS

@@ -35,21 +35,27 @@ public:
     ModelFactory(const char* assetfile);
     ~ModelFactory();
 
+    // Parse XML file for model descriptions
     void parse_asset_file(const char* xmlfile);
-
+    // Create model from XML nodes and an optional random engine
     std::shared_ptr<Model> make_model(rapidxml::xml_node<>* mesh_node,
                                       rapidxml::xml_node<>* mat_node,
+                                      bool& mesh_is_instance,
                                       OptRngT opt_rng);
+    // Create model from instance name
     std::shared_ptr<Model> make_model_instance(hash_t name);
+    // Create terrain patch from descriptor and an optional random engine
     std::shared_ptr<TerrainChunk> make_terrain_patch(const TerrainPatchDescriptor& desc,
                                                      OptRngT opt_rng=nullptr);
-
-    void retrieve_asset_descriptions(rapidxml::xml_node<>* models_node);
 
     // Preload mesh instance by model instance name
     std::shared_ptr<SurfaceMesh> preload_mesh_model_instance(hash_t name);
     // Preload mesh instance by name
     std::shared_ptr<SurfaceMesh> preload_mesh_instance(hash_t name);
+
+private:
+    // Parse XML Models node for model descriptions
+    void retrieve_asset_descriptions(rapidxml::xml_node<>* models_node);
 
 private:
     XMLParser xml_parser_;

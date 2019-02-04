@@ -14,33 +14,39 @@ class GameObjectFactory: public GameSystem
 {
 public:
     GameObjectFactory();
-    ~GameObjectFactory();
+    virtual ~GameObjectFactory();
 
     // Initialize event listener
     //virtual void init_events(InputHandler& handler) override;
     //virtual void update(const GameClock& clock) override;
 
+    // Create a model from instance name
     inline std::shared_ptr<Model> make_model_instance(hash_t name)
     {
         return model_factory_->make_model_instance(name);
     }
+    // Create a terrain patch from descriptor
     inline std::shared_ptr<TerrainChunk> make_terrain_patch(const TerrainPatchDescriptor& desc)
     {
         return model_factory_->make_terrain_patch(desc);
     }
+    // Create a model from XML nodes and an optional random engine
+    // If underlying mesh is cached, mesh_is_instance will be set to true
     inline std::shared_ptr<Model> make_model(rapidxml::xml_node<>* mesh_node,
                                              rapidxml::xml_node<>* mat_node,
+                                             bool& mesh_is_instance,
                                              ModelFactory::OptRngT opt_rng)
     {
-        return model_factory_->make_model(mesh_node, mat_node, opt_rng);
+        return model_factory_->make_model(mesh_node, mat_node, mesh_is_instance, opt_rng);
     }
-
+    // Create an entity from blueprint name
     inline std::shared_ptr<WEntity> make_entity_blueprint(hash_t name)
     {
         return entity_factory_->make_entity_blueprint(name);
     }
-
+    // Create and cache a mesh from mesh instance name
     inline std::shared_ptr<SurfaceMesh> preload_mesh_instance(hash_t name)       { return model_factory_->preload_mesh_instance(name); }
+    // Create and cache a mesh from model instance name
     inline std::shared_ptr<SurfaceMesh> preload_mesh_model_instance(hash_t name) { return model_factory_->preload_mesh_model_instance(name); }
 
 private:
