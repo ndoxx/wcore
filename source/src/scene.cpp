@@ -71,16 +71,10 @@ void Scene::set_chunk_size_meters(uint32_t chunk_size_m)
     chunk_size_m_ = chunk_size_m;
 }
 
-void Scene::add_model_instance(pModel model, uint32_t chunk_index)
-{
-    model_instances_.push_back(model);
-    model_instances_order_.push_back(model_instances_.size()-1);
-}
-
 void Scene::submit_mesh_instance(std::shared_ptr<SurfaceMesh> mesh)
 {
     instance_buffer_unit_.submit(*mesh);
-    mesh->set_buffer_batch(0);
+    mesh->set_buffer_batch(BufferToken::Batch::INSTANCE);
 }
 
 void Scene::load_instance_geometry()
@@ -154,21 +148,6 @@ void Scene::sort_chunks()
 // Sort models front to back with respect to camera position in all chunks
 void Scene::sort_models()
 {
-    // * Sort instances
-    // Get camera position
-    vec3 cam_pos(camera_->get_position());
-    if(camera_->is_orthographic())
-        cam_pos *= 1000.0f;
-
-    // Sort order list according to models distance
-    std::sort(model_instances_order_.begin(), model_instances_order_.end(),
-    [&](uint32_t a, uint32_t b)
-    {
-        float dist_a = norm2(model_instances_[a]->get_position()-cam_pos);
-        float dist_b = norm2(model_instances_[b]->get_position()-cam_pos);
-        return (dist_a < dist_b); // sort front to back
-    });
-
     // * Sort models in chunks
     for(auto&& [key, chunk]: chunks_)
         chunk->sort_models(camera_);
@@ -243,16 +222,6 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
     //Traverse chunks front to back for opaque geometry
     if(model_cat==wcore::MODEL_CATEGORY::OPAQUE)
     {
-        // INSTANCES
-        for(uint32_t ii=0; ii<model_instances_order_.size(); ++ii)
-        {
-            pModel pmdl = model_instances_.at(model_instances_order_[ii]);
-            if(!evaluate(pmdl)) continue;
-            prepare(pmdl);
-            instance_vertex_array_.bind();
-            instance_buffer_unit_.draw(pmdl->get_mesh().get_buffer_token());
-        }
-
         // STATIC MODELS
         for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
         {
@@ -275,7 +244,14 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
             chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
             {
                 prepare(pmdl);
-                chunk->draw(pmdl->get_mesh().get_buffer_token());
+                const BufferToken& token = pmdl->get_mesh().get_buffer_token();
+                if(token.batch != BufferToken::Batch::INSTANCE)
+                    chunk->draw(token);
+                else
+                {
+                    instance_vertex_array_.bind();
+                    instance_buffer_unit_.draw(token);
+                }
             }, evaluate, order, model_cat);
         }
         // TERRAINS
@@ -377,7 +353,7 @@ void Scene::add_terrain(pTerrain terrain, uint32_t chunk_index)
 void Scene::visibility_pass()
 {
     // Model instances
-    for(auto&& pmodel: model_instances_)
+    /*for(auto&& pmodel: model_instances_)
     {
         // Non cullable models are passed
         if(!pmodel->can_frustum_cull())
@@ -389,7 +365,7 @@ void Scene::visibility_pass()
         OBB& obb = pmodel->get_OBB();
         // Frustum culling
         pmodel->set_visibility(camera_->frustum_collides(obb));
-    }
+    }*/
 
     // Models in chunks
     traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_id)

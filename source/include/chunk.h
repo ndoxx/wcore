@@ -79,10 +79,12 @@ private:
 
     std::vector<pModel> models_;
     std::vector<pModel> models_blend_;
+    std::vector<pModel> model_instances_;
     std::vector<pLineModel> line_models_;
     std::vector<pLight> lights_;
     std::vector<uint32_t> models_order_;
     std::vector<uint32_t> blend_models_order_;
+    std::vector<uint32_t> model_instances_order_;
     std::vector<PositionUpdater*> position_updaters_;
     std::vector<ConstantRotator*> constant_rotators_;
 
@@ -93,7 +95,7 @@ public:
     inline uint32_t get_index() const { return index_; }
     inline const math::i32vec2& get_coordinates() const { return coords_; }
 
-    void add_model(pModel model);
+    void add_model(pModel model, bool is_instance=false);
     void add_model(pLineModel model);
     void add_position_updater(PositionUpdater* updater);
     void add_rotator(ConstantRotator* rotator);

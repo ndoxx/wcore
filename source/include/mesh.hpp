@@ -20,7 +20,12 @@ class BufferUnit;
 
 struct BufferToken
 {
-    uint32_t batch         = 0;
+    enum class Batch
+    {
+        INSTANCE, OPAQUE, TERRAIN, BLEND, LINE
+    };
+
+    Batch batch            = Batch::OPAQUE;
     uint32_t buffer_offset = 0;
     uint32_t n_elements    = 0;
 };
@@ -88,7 +93,7 @@ public:
     inline uint32_t get_buffer_offset() const { return buffer_token_.buffer_offset; }
     inline const BufferToken& get_buffer_token() const { return buffer_token_; }
     // TMP
-    inline void set_buffer_batch(uint32_t value) { buffer_token_.batch = value; }
+    inline void set_buffer_batch(BufferToken::Batch value) { buffer_token_.batch = value; }
 
     inline bool is_centered() const           { return centered_; }
     inline bool is_cached() const             { return cached_; }

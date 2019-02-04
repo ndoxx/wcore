@@ -61,8 +61,15 @@ Chunk::~Chunk()
 #endif
 }
 
-void Chunk::add_model(pModel model)
+void Chunk::add_model(pModel model, bool is_instance)
 {
+    if(is_instance)
+    {
+        model_instances_.push_back(model);
+        model_instances_order_.push_back(model_instances_.size()-1);
+        return;
+    }
+
     if(model->get_material().has_blend())
     {
         models_blend_.push_back(model);
@@ -91,6 +98,15 @@ void Chunk::sort_models(pCamera camera)
     vec3 cam_pos(camera->get_position());
     if(camera->is_orthographic())
         cam_pos *= 1000.0f;
+
+    // Sort instances order list according to models distance
+    std::sort(model_instances_order_.begin(), model_instances_order_.end(),
+    [&](uint32_t a, uint32_t b)
+    {
+        float dist_a = norm2(model_instances_[a]->get_position()-cam_pos);
+        float dist_b = norm2(model_instances_[b]->get_position()-cam_pos);
+        return (dist_a < dist_b); // sort front to back
+    });
 
     // Sort order list according to models distance
     std::sort(models_order_.begin(), models_order_.end(),
@@ -128,6 +144,10 @@ void Chunk::traverse_models(ModelVisitor func,
     {
         if(order == wcore::ORDER::IRRELEVANT)
         {
+            // Static instances
+            for(pModel pmodel : model_instances_)
+                if(ifFunc(pmodel))
+                    func(pmodel, index_);
             // Static models
             for(pModel pmodel : models_)
                 if(ifFunc(pmodel))
@@ -135,6 +155,13 @@ void Chunk::traverse_models(ModelVisitor func,
         }
         else if(order == wcore::ORDER::FRONT_TO_BACK)
         {
+            // Sorted static instances
+            for(uint32_t ii=0; ii<model_instances_order_.size(); ++ii)
+            {
+                pModel pmodel = model_instances_[model_instances_order_[ii]];
+                if(ifFunc(pmodel))
+                    func(pmodel, index_);
+            }
             // Sorted static models
             for(uint32_t ii=0; ii<models_order_.size(); ++ii)
             {
@@ -145,6 +172,13 @@ void Chunk::traverse_models(ModelVisitor func,
         }
         else if(order == wcore::ORDER::BACK_TO_FRONT)
         {
+            // Sorted static instances
+            for(auto rit=model_instances_order_.rbegin(); rit != model_instances_order_.rend(); ++rit)
+            {
+                pModel pmodel = model_instances_[*rit];
+                if(ifFunc(pmodel))
+                    func(pmodel, index_);
+            }
             // Sorted static models
             for(auto rit=models_order_.rbegin(); rit != models_order_.rend(); ++rit)
             {
@@ -260,20 +294,20 @@ void Chunk::load_geometry()
         DLOG(ss.str(), "model", Severity::DET);
 #endif //__DEBUG__
         buffer_unit_.submit(pmodel->get_mesh());
-        pmodel->get_mesh().set_buffer_batch(1); // TMP
+        pmodel->get_mesh().set_buffer_batch(BufferToken::Batch::OPAQUE);
     }
     buffer_unit_.upload();
 
     // Terrain
     terrain_buffer_unit_.submit(terrain_->get_mesh());
-    terrain_->get_mesh().set_buffer_batch(2); // TMP
+    terrain_->get_mesh().set_buffer_batch(BufferToken::Batch::TERRAIN);
     terrain_buffer_unit_.upload();
 
     // Geometry with alpha blending
     for(pModel pmodel: models_blend_)
     {
         blend_buffer_unit_.submit(pmodel->get_mesh());
-        pmodel->get_mesh().set_buffer_batch(3); // TMP
+        pmodel->get_mesh().set_buffer_batch(BufferToken::Batch::BLEND);
     }
     blend_buffer_unit_.upload();
 
@@ -281,7 +315,7 @@ void Chunk::load_geometry()
     for(pLineModel pmodel: line_models_)
     {
         line_buffer_unit_.submit(pmodel->get_mesh());
-        pmodel->get_mesh().set_buffer_batch(4); // TMP
+        pmodel->get_mesh().set_buffer_batch(BufferToken::Batch::LINE);
     }
     line_buffer_unit_.upload();
 }
@@ -301,19 +335,19 @@ void Chunk::draw(const BufferToken& buffer_token) const
     // OPTIMIZE
     switch(buffer_token.batch)
     {
-        case 1:
+        case BufferToken::Batch::OPAQUE:
             vertex_array_.bind();
             buffer_unit_.draw(buffer_token);
             break;
-        case 2:
+        case BufferToken::Batch::TERRAIN:
             terrain_vertex_array_.bind();
             terrain_buffer_unit_.draw(buffer_token);
             break;
-        case 3:
+        case BufferToken::Batch::BLEND:
             blend_vertex_array_.bind();
             blend_buffer_unit_.draw(buffer_token);
             break;
-        case 4:
+        case BufferToken::Batch::LINE:
             line_vertex_array_.bind();
             line_buffer_unit_.draw(buffer_token);
             break;

@@ -45,8 +45,6 @@ private:
 
     BufferUnit<Vertex3P3N3T2U>  instance_buffer_unit_;
     VertexArray<Vertex3P3N3T2U> instance_vertex_array_;
-    std::vector<pModel> model_instances_;
-    std::vector<uint32_t> model_instances_order_;
 
     std::map<uint32_t, Chunk*> chunks_;
     std::map<uint64_t, std::shared_ptr<WEntity>> entities_;
@@ -112,13 +110,13 @@ public:
     inline void remove_chunk(uint32_t chunk_index);
     inline void clear_chunks();
 
-    void add_model_instance(pModel model, uint32_t chunk_index);
     void submit_mesh_instance(std::shared_ptr<SurfaceMesh> mesh);
     void load_instance_geometry();
 
-    inline void add_model(pModel model, uint32_t chunk_index)       { chunks_.at(chunk_index)->add_model(model); }
-    inline void add_model(pLineModel model, uint32_t chunk_index)   { chunks_.at(chunk_index)->add_model(model); }
-    inline void add_light(pLight light, uint32_t chunk_index)       { chunks_.at(chunk_index)->lights_.push_back(light); }
+    inline void add_model_instance(pModel model, uint32_t chunk_index) { chunks_.at(chunk_index)->add_model(model,true); }
+    inline void add_model(pModel model, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_model(model); }
+    inline void add_model(pLineModel model, uint32_t chunk_index)      { chunks_.at(chunk_index)->add_model(model); }
+    inline void add_light(pLight light, uint32_t chunk_index)          { chunks_.at(chunk_index)->lights_.push_back(light); }
     void add_terrain(pTerrain terrain, uint32_t chunk_index);
     inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index) { chunks_.at(chunk_index)->add_position_updater(updater); }
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_rotator(rotator); }

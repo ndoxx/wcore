@@ -664,9 +664,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         if(!is_instance)
             pscene_->add_model(pmdl, chunk_index);
         else
-        {
             pscene_->add_model_instance(pmdl, chunk_index);
-        }
     }
 }
 /*
