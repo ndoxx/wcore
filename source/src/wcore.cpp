@@ -22,6 +22,7 @@
 #include "ray_caster.h"
 #ifndef __DISABLE_EDITOR__
 #include "editor.h"
+#include "editor_tweaks.h"
 #endif
 #include "globals.h"
 #include "logger.h"
@@ -63,6 +64,7 @@ struct Engine::EngineImpl
 {
     EngineImpl():
     game_loop(nullptr),
+    ed_tweaks(nullptr),
     scene(nullptr),
     camera_controller(nullptr),
     game_object_factory(nullptr),
@@ -84,6 +86,7 @@ struct Engine::EngineImpl
     ~EngineImpl()
     {
 #ifndef __DISABLE_EDITOR__
+        delete ed_tweaks;
         delete editor;
 #endif
         delete sound_system;
@@ -103,6 +106,11 @@ struct Engine::EngineImpl
     void init()
     {
         game_loop           = new GameLoop();
+
+#ifndef __DISABLE_EDITOR__
+        ed_tweaks           = new EditorTweaksInitializer();
+#endif
+
         scene               = new Scene();
         camera_controller   = new CameraController();
         game_object_factory = new GameObjectFactory();
@@ -118,7 +126,14 @@ struct Engine::EngineImpl
 
     }
 
-    GameLoop*          game_loop;
+    GameLoop* game_loop;
+
+    // InitializerSystems
+#ifndef __DISABLE_EDITOR__
+    EditorTweaksInitializer* ed_tweaks;
+#endif
+
+    // GameSystems
     Scene*             scene;
     CameraController*  camera_controller;
     GameObjectFactory* game_object_factory;
@@ -195,7 +210,7 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->set_render_func([&]()     { eimpl_->pipeline->render(); });
     eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
     // Initializer systems
-//  eimpl_->game_loop->register_initializer_system(/* ... */);
+    eimpl_->game_loop->register_initializer_system("EditorTweaks"_h, static_cast<InitializerSystem*>(eimpl_->ed_tweaks));
     // Initialization step
     try
     {
