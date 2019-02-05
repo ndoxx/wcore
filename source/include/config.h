@@ -149,7 +149,7 @@ template <> inline bool Config::get(hash_t name, std::string& destination)
 
 template <> inline void Config::set_ref(hash_t name, const fs::path& value)
 {
-    paths_[name] = std::move(value);
+    paths_[name] = value;
 }
 
 template <> inline void Config::set_move(hash_t name, fs::path&& value)

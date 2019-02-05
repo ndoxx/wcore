@@ -1,4 +1,5 @@
 #include <map>
+#include <fstream>
 
 #include "wcore.h"
 
@@ -153,13 +154,29 @@ Engine::~Engine()
 void Engine::Init(int argc, char const *argv[],
                   void(*parse_arguments)(int, char const **))
 {
-    // Parse config file
-    CONFIG.init();
+    // Parse main config file
+    try
+    {
+        CONFIG.init();
+    }
+    catch (const std::ifstream::failure& e)
+    {
+        DLOGE("[Engine] Stream exception while initializing CONFIG singleton.", "core", Severity::CRIT);
+        DLOGI(e.what(), "core", Severity::CRIT);
+    }
 
     // Parse intern string hash table file
-    #ifdef __DEBUG__
+#ifdef __DEBUG__
+    try
+    {
         HRESOLVE.init();
-    #endif
+    }
+    catch (const std::ifstream::failure& e)
+    {
+        DLOGE("[Engine] Stream exception while initializing intern string solver HRESOLVE.", "core", Severity::CRIT);
+        DLOGI(e.what(), "core", Severity::CRIT);
+    }
+#endif
 
     // First, try to initialize default values using config
     wcore::CONFIG.get(wcore::H_("root.display.width"),  wcore::GLB.SCR_W);
@@ -173,11 +190,25 @@ void Engine::Init(int argc, char const *argv[],
     // Create game systems
     eimpl_->init();
 
-    // Initialize game_loop
+    // * Initialize game_loop
+    // Render callbacks
     eimpl_->game_loop->set_render_func([&]()     { eimpl_->pipeline->render(); });
     eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
+    // Initializer systems
+//  eimpl_->game_loop->register_initializer_system(/* ... */);
+    // Initialization step
+    try
+    {
+        eimpl_->game_loop->init_system_parameters();
+    }
+    catch (const std::ifstream::failure& e)
+    {
+        DLOGE("[Engine] Stream exception while initializing system parameters.", "core", Severity::CRIT);
+        DLOGI(e.what(), "core", Severity::CRIT);
+        DLOGI("Initializer systems may use default state.", "core", Severity::CRIT);
+    }
 
-    // Register game systems (init events, register editor widgets, add to update list)
+    // * Register game systems (init events, register editor widgets, add to update list)
 #ifndef __DISABLE_EDITOR__
     eimpl_->game_loop->register_game_system(H_("Editor"),            static_cast<GameSystem*>(eimpl_->editor));
 #endif
@@ -307,7 +338,18 @@ void Engine::SetLightBrightness(uint32_t light_index, float value)
 int Engine::Run()
 {
     int ret = eimpl_->game_loop->run();
+#ifdef __DEBUG__
     eimpl_->pipeline->dbg_show_statistics();
+#endif
+    try
+    {
+        eimpl_->game_loop->serialize_system_parameters();
+    }
+    catch (const std::ofstream::failure& e)
+    {
+        DLOGF("[Engine] Stream exception while serializing system parameters.", "core", Severity::CRIT);
+        DLOGI(e.what(), "core", Severity::CRIT);
+    }
     return ret;
 }
 

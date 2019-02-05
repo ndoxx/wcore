@@ -21,8 +21,8 @@ public:
     Quaternion(const vec3& axis, float angle);
     Quaternion(const vec4& components);
     Quaternion(const vec3& components);
-    Quaternion(const Quaternion& other);
-    Quaternion(Quaternion&& other) noexcept;
+    //Quaternion(const Quaternion& other);
+    //Quaternion(Quaternion&& other) noexcept;
     ~Quaternion();
 
     void init_tait_bryan(float phi, float theta, float psi);
@@ -46,7 +46,7 @@ public:
 
     inline float& operator[](unsigned index)       {return value_[index];}
     inline float  operator[](unsigned index) const {return value_[index];}
-    Quaternion&   operator= (const Quaternion& rhs);
+    //Quaternion&   operator= (const Quaternion& rhs);
     Quaternion&   operator*=(const Quaternion& rhs);
     Quaternion&   operator+=(const Quaternion& rhs);
     Quaternion    operator-() const;

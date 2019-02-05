@@ -35,11 +35,11 @@ value_(components){}
 Quaternion::Quaternion(const vec3& components):
 value_(components){}
 
-Quaternion::Quaternion(const Quaternion& other):
+/*Quaternion::Quaternion(const Quaternion& other):
 value_(other.value_){}
 
 Quaternion::Quaternion(Quaternion&& other) noexcept:
-value_(std::move(other.value_)){}
+value_(std::move(other.value_)){}*/
 
 Quaternion::~Quaternion(){}
 
@@ -163,11 +163,11 @@ mat4 Quaternion::get_rotation_matrix() const
                 0.0, 0.0, 0.0, 1.0);
 }
 
-Quaternion& Quaternion::operator=(const Quaternion& rhs)
+/*Quaternion& Quaternion::operator=(const Quaternion& rhs)
 {
     value_ = rhs.value_;
     return *this;
-}
+}*/
 
 Quaternion& Quaternion::operator*=(const Quaternion& rhs)
 {

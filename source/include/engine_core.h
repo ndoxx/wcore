@@ -40,7 +40,10 @@ public:
     inline void set_render_func(std::function<void(void)> render_func) { render_func_ = render_func;}
     inline void set_render_gui_func(std::function<void(void)> render_func) { render_gui_func_ = render_func;}
 
-    inline void register_game_system(hash_t name, GameSystem* system) { game_systems_.register_game_system(name, system, handler_); }
+    inline void register_initializer_system(hash_t name, InitializerSystem* system) { game_systems_.register_initializer_system(name, system); }
+    inline void register_game_system(hash_t name, GameSystem* system)               { game_systems_.register_game_system(name, system, handler_); }
+    inline void init_system_parameters()      { game_systems_.init(); }
+    inline void serialize_system_parameters() { game_systems_.serialize(); }
 
 #ifndef __DISABLE_EDITOR__
     inline void toggle_editor_GUI_rendering() { render_editor_GUI_ = !render_editor_GUI_; }

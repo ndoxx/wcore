@@ -79,14 +79,14 @@ public:
         value_[0] = first;
         push(1,args...);
     }
-    vec(const vec& right)
+    /*vec(const vec& right)
     {
         std::copy(right.value_,right.value_+N,value_);
     }
     vec(vec&& right)
     {
         std::swap(value_, right.value_);
-    }
+    }*/
     explicit vec(const vec<N-1,T>& right)
     {
         for(unsigned ii=0; ii<N-1; ++ii)
@@ -198,17 +198,17 @@ public:
     }
 
     // Assignment
-    inline vec& operator=(const vec& right)
+    /*inline vec& operator=(const vec& right)
     {
         std::copy(right.value_,right.value_+N,value_);
         return *this;
-    }
+    }*/
 
-    inline vec& operator=(vec&& right)
+    /*inline vec& operator=(vec&& right)
     {
         std::swap(right.value_,value_);
         return *this;
-    }
+    }*/
 
     template <unsigned M>
     inline const vec& operator=(const vec<M>& right)
@@ -604,10 +604,10 @@ public:
      *
      * @param right Other matrix.
      */
-    mat(mat&& right)
+    /*mat(mat&& right)
     {
         std::swap(value_, right.value_);
-    }
+    }*/
 
     /**
      * @brief Copy constructor.
@@ -615,10 +615,10 @@ public:
      *
      * @param right Other matrix.
      */
-    mat(const mat& right)
+    /*mat(const mat& right)
     {
         std::copy(right.value_,right.value_+Size,value_);
-    }
+    }*/
 
     /**
      * @brief Parentheses accessor.
@@ -691,22 +691,22 @@ public:
      *
      * @param right matrix on the right of equal sign.
      */
-    inline mat& operator=(const mat& right)
+    /*inline mat& operator=(const mat& right)
     {
         std::copy(right.value_, right.value_+Size, value_);
         return *this;
-    }
+    }*/
 
     /**
      * @brief Move right matrix to self.
      *
      * @param right matrix on the right of equal sign.
      */
-    inline mat& operator=(mat&& right)
+    /*inline mat& operator=(mat&& right)
     {
         std::swap(value_, right.value_);
         return *this;
-    }
+    }*/
 
     /**
      * @brief Fill matrix with a single value.

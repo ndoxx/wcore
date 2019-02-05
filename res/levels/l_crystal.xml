@@ -90,11 +90,11 @@
                         <Prop name="tMax">1.0</Prop>
                         <Prop name="tMin">0.0</Prop>
                         <BezierInterpolator>
-                            <Control>(15,0.5,13.8)</Control>
-                            <Control>(9,2,13.8)</Control>
-                            <Control>(12,-1,14)</Control>
-                            <Control>(10,1,11)</Control>
-                            <Control>(8,3,8)</Control>
+                            <Control>(15,2.5,13.8)</Control>
+                            <Control>(9,4,13.8)</Control>
+                            <Control>(12,1,14)</Control>
+                            <Control>(10,3,11)</Control>
+                            <Control>(8,5,8)</Control>
                         </BezierInterpolator>
                     </PositionUpdater>
                     <ConstantRotator>
@@ -118,11 +118,11 @@
                         <Prop name="tMax">1.0</Prop>
                         <Prop name="tMin">0.0</Prop>
                         <BezierInterpolator>
-                            <Control>(9,0,13.8)</Control>
-                            <Control>(9,1,13.8)</Control>
-                            <Control>(8,1,14)</Control>
-                            <Control>(10,1,11)</Control>
-                            <Control>(6,3,8)</Control>
+                            <Control>(9,2,13.8)</Control>
+                            <Control>(9,3,13.8)</Control>
+                            <Control>(8,3,14)</Control>
+                            <Control>(10,3,11)</Control>
+                            <Control>(6,5,8)</Control>
                         </BezierInterpolator>
                     </PositionUpdater>
                     <ConstantRotator>
