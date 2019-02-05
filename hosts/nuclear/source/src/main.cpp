@@ -359,8 +359,43 @@ int main()
 }
 */
 
+#include <memory>
+
+class AA
+{
+public:
+    virtual ~AA() { std::cout << "AA dtor" << std::endl; }
+    virtual void print() = 0;
+};
+
+class BB: public AA
+{
+public:
+    virtual ~BB() { std::cout << "BB dtor" << std::endl; }
+    virtual void print() { std::cout << "BB" << std::endl; }
+};
+
+class CC: public AA
+{
+public:
+    virtual ~CC() { std::cout << "CC dtor" << std::endl; }
+    virtual void print() { std::cout << "CC" << std::endl; }
+};
+
 int main()
 {
+    /*std::shared_ptr<AA> bb1(new BB());
+    bb1->print();
+
+    std::shared_ptr<AA> cc1(new CC());
+    cc1->print();*/
+
+    std::shared_ptr<AA> bb2_as_aa;
+    {
+        std::shared_ptr<BB> bb2(new BB());
+        bb2_as_aa = static_cast<std::shared_ptr<AA>>(bb2);
+    }
+    bb2_as_aa->print();
 
     return 0;
 }

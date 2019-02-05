@@ -49,6 +49,7 @@ void stitch_terrain_edges(Scene* pscene,
                 {
                     terrain->south(ii).normal_ = nei_terrain->north(ii).normal_;
                     terrain->south(ii).tangent_ = nei_terrain->north(ii).tangent_;
+                    terrain->south(ii).position_[1] = nei_terrain->north(ii).position_[1];
                 }
                 break;
             }
@@ -58,6 +59,7 @@ void stitch_terrain_edges(Scene* pscene,
                 {
                     terrain->north(ii).normal_ = nei_terrain->south(ii).normal_;
                     terrain->north(ii).tangent_ = nei_terrain->south(ii).tangent_;
+                    terrain->north(ii).position_[1] = nei_terrain->south(ii).position_[1];
                 }
                 break;
             }
@@ -67,6 +69,7 @@ void stitch_terrain_edges(Scene* pscene,
                 {
                     terrain->east(ii).normal_ = nei_terrain->west(ii).normal_;
                     terrain->east(ii).tangent_ = nei_terrain->west(ii).tangent_;
+                    terrain->east(ii).position_[1] = nei_terrain->west(ii).position_[1];
                 }
                 break;
             }
@@ -76,6 +79,7 @@ void stitch_terrain_edges(Scene* pscene,
                 {
                     terrain->west(ii).normal_ = nei_terrain->east(ii).normal_;
                     terrain->west(ii).tangent_ = nei_terrain->east(ii).tangent_;
+                    terrain->west(ii).position_[1] = nei_terrain->east(ii).position_[1];
                 }
                 break;
             }

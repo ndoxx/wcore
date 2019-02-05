@@ -115,7 +115,10 @@ void HeightmapGenerator::erode(HeightMap& hm, const PlateauErosionProps& props)
     }
 }
 
-
+inline float edge_factor(float x, float xmax, float dx)
+{
+    return std::max(0.f, std::min(1.f, x/dx) * std::min(1.f, (xmax-x)/dx));
+}
 
 void HeightmapGenerator::erode_droplets(HeightMap& hmap,
                     const DropletErosionProps& params)
@@ -280,13 +283,22 @@ void HeightmapGenerator::erode_droplets(HeightMap& hmap,
                     float zo  = z-zp;
                     float zo2 = zo*zo;
 
+                    // close to 0 when z close to bounds
+                    float zedge = edge_factor(z,HMAP_LENGTH-1,2.f);
+
                     uint32_t x = fmax(xi-1,0);
                     for (; x<=xi+2; ++x)
                     {
                         float xo = x-xp;
                         float w  = 1-(xo*xo+zo2)*0.25f;
+
                         if (w<=0) continue;
-                        w *= 0.1591549430918953f;
+
+                        // limit erosion on edges for better stitching
+                        float xedge = edge_factor(x,HMAP_WIDTH-1,2.f);
+                        float edge = zedge*xedge;
+
+                        w *= 0.1591549430918953f * edge;
 
                         ERODE(x, z, w)
                     }

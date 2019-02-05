@@ -21,9 +21,9 @@
                     <Fraction>0.5</Fraction>
                 </Erosion>
                 -->
-                <!--
+
                 <Erosion type="droplets">
-                    <Iterations>500</Iterations>
+                    <Iterations>200</Iterations>
                     <Kq>10.0</Kq>
                     <Kw>0.001</Kw>
                     <Kr>0.9</Kr>
@@ -34,7 +34,7 @@
                     <Epsilon>1e-3</Epsilon>
                     <Seed>1</Seed>
                 </Erosion>
-                -->
+
 
                 <!--
                 <Randomizer seed="1" xmin="0" xmax="32" ymin="0" ymax="16" variance="0.07"></Randomizer>
