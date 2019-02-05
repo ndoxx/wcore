@@ -26,11 +26,11 @@ view_radius_(2)
 {
     // Get configuration
     uint32_t vr=2;
-    if(CONFIG.get(H_("root.render.chunk.load_distance"), vr))
+    if(CONFIG.get("root.render.chunk.load_distance"_h, vr))
         view_radius_ = uint8_t(fmin(5,vr));
 
     // Register debug info fields
-    DINFO.register_text_slot(H_("sdiNGeom"), vec3(0.5,0.0,1.0));
+    DINFO.register_text_slot("sdiNGeom"_h, vec3(0.5,0.0,1.0));
 }
 
 ChunkManager::~ChunkManager()
@@ -40,14 +40,14 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::init_events(InputHandler& handler)
 {
-    subscribe(H_("input.keyboard"), handler, &ChunkManager::onKeyboardEvent);
+    subscribe("input.keyboard"_h, handler, &ChunkManager::onKeyboardEvent);
 }
 
 void ChunkManager::load_start()
 {
     // Locate game systems
-    Scene* pscene        = locate<Scene>(H_("Scene"));
-    SceneLoader* ploader = locate<SceneLoader>(H_("SceneLoader"));
+    Scene* pscene        = locate<Scene>("Scene"_h);
+    SceneLoader* ploader = locate<SceneLoader>("SceneLoader"_h);
 
     // * Load start chunk and some neighbors
     // compute current chunk coordinates
@@ -81,7 +81,7 @@ bool ChunkManager::onKeyboardEvent(const WData& data)
 
     switch(kbd.key_binding)
     {
-        case H_("k_tg_chunk_mgr"):
+        case "k_tg_chunk_mgr"_h:
     		toggle();
     		break;
     }
@@ -95,8 +95,8 @@ void ChunkManager::update(const GameClock& clock)
     if(!active_) return;
 
     // Locate game systems
-    Scene* pscene        = locate<Scene>(H_("Scene"));
-    SceneLoader* ploader = locate<SceneLoader>(H_("SceneLoader"));
+    Scene* pscene        = locate<Scene>("Scene"_h);
+    SceneLoader* ploader = locate<SceneLoader>("SceneLoader"_h);
 
     //float dt = clock.get_scaled_frame_duration();
 
@@ -173,8 +173,8 @@ void ChunkManager::update(const GameClock& clock)
     if(!active_) return;
 
     // Locate game systems
-    Scene* pscene        = locate<Scene>(H_("Scene"));
-    SceneLoader* ploader = locate<SceneLoader>(H_("SceneLoader"));
+    Scene* pscene        = locate<Scene>("Scene"_h);
+    SceneLoader* ploader = locate<SceneLoader>("SceneLoader"_h);
 
     //float dt = clock.get_scaled_frame_duration();
 
@@ -227,7 +227,7 @@ void ChunkManager::update(const GameClock& clock)
         std::stringstream ss;
         ss << "Vertex count: " << pscene->get_vertex_count()
            << " Triangles count: " << pscene->get_triangles_count();
-        DINFO.display(H_("sdiNGeom"), ss.str());
+        DINFO.display("sdiNGeom"_h, ss.str());
     }
 #endif
 }

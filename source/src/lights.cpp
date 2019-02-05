@@ -49,9 +49,9 @@ DirectionalLight::~DirectionalLight(){}
 
 void DirectionalLight::update_uniforms(const Shader& shader) const
 {
-    //shader.send_uniform(H_("lt.v3_lightPosition"), position_);
-    shader.send_uniform(H_("lt.v3_lightColor"), color_*brightness_);
-    shader.send_uniform(H_("lt.f_ambientStrength"), ambient_strength_);
+    //shader.send_uniform("lt.v3_lightPosition"_h, position_);
+    shader.send_uniform("lt.v3_lightColor"_h, color_*brightness_);
+    shader.send_uniform("lt.f_ambientStrength"_h, ambient_strength_);
 }
 
 math::mat4 DirectionalLight::get_model_matrix(bool scaled) const
@@ -110,10 +110,10 @@ PointLight::~PointLight()
 #include <string>
 void PointLight::update_uniforms(const Shader& shader) const
 {
-    //shader.send_uniform(H_("lt.v3_lightPosition"), position_);
-    shader.send_uniform(H_("lt.v3_lightColor"), color_*brightness_);
-    shader.send_uniform(H_("lt.f_light_radius"), radius_);
-    shader.send_uniform(H_("lt.f_ambientStrength"), ambient_strength_);
+    //shader.send_uniform("lt.v3_lightPosition"_h, position_);
+    shader.send_uniform("lt.v3_lightColor"_h, color_*brightness_);
+    shader.send_uniform("lt.f_light_radius"_h, radius_);
+    shader.send_uniform("lt.f_ambientStrength"_h, ambient_strength_);
 }
 
 math::mat4 PointLight::get_model_matrix(bool scaled) const

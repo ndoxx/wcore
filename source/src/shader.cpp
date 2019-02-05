@@ -171,11 +171,7 @@ void Shader::program_active_report()
 
             glGetActiveUniformName(ProgramID_, ii, 32, &length, name);
             GLint loc = glGetUniformLocation(ProgramID_, name);
-            #ifdef __PRESERVE_STRS__
-                DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(loc) + "] ", "shader", Severity::DET);
-            #else
-                DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(loc) + "] ", "shader", Severity::DET);
-            #endif
+            DLOGI("<u>" + std::string(name) + "</u> [" + std::to_string(loc) + "] ", "shader", Severity::DET);
         }
     #endif // __DEBUG__
 }
@@ -206,7 +202,7 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
     uint32_t offset = sizeof(incStr) + 2;
 
     std::string file_name(incline.substr(offset, incline.length()-(offset+1)));
-    std::string include_source(io::get_file_as_string(H_("root.folders.shaderinc"), file_name));
+    std::string include_source(io::get_file_as_string("root.folders.shaderinc"_h, file_name));
 #ifdef __DEBUG__
     DLOGI("Dependency: <p>" + file_name + "</p>", "shader", Severity::DET);
 #endif
@@ -255,10 +251,10 @@ GLuint Shader::compile_shader(const fs::path& shader_file,
                               GLenum ShaderType,
                               const std::vector<std::string>& flags)
 {
-    //fs::path shader_path = io::get_file(H_("root.folders.shader"), shader_file);
+    //fs::path shader_path = io::get_file("root.folders.shader"_h, shader_file);
 
     std::string shader_file_name(shader_file.string());
-    std::string shader_source_raw(io::get_file_as_string(H_("root.folders.shader"), shader_file));
+    std::string shader_source_raw(io::get_file_as_string("root.folders.shader"_h, shader_file));
     std::string shader_source;
     {
         std::stringstream ss(shader_source_raw);
@@ -580,16 +576,16 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     }
     else
     {
-        send_uniform(H_("mt.v3_albedo"), material.get_albedo());
+        send_uniform("mt.v3_albedo"_h, material.get_albedo());
     }
-    send_uniform(H_("mt.b_has_albedo"), has_map);
+    send_uniform("mt.b_has_albedo"_h, has_map);
 
     if((has_map = material.has_texture(TextureUnit::AO)))
     {
         send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::AO),
                           material.get_texture().get_unit_index(TextureUnit::AO));
     }
-    send_uniform(H_("mt.b_has_ao"), has_map);
+    send_uniform("mt.b_has_ao"_h, has_map);
 
     if((has_map = material.has_texture(TextureUnit::METALLIC)))
     {
@@ -598,9 +594,9 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     }
     else
     {
-        send_uniform(H_("mt.f_metallic"), material.get_metallic());
+        send_uniform("mt.f_metallic"_h, material.get_metallic());
     }
-    send_uniform(H_("mt.b_has_metallic"), has_map);
+    send_uniform("mt.b_has_metallic"_h, has_map);
 
     if((has_map = material.has_texture(TextureUnit::ROUGHNESS)))
     {
@@ -609,24 +605,24 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     }
     else
     {
-        send_uniform(H_("mt.f_roughness"), material.get_roughness());
+        send_uniform("mt.f_roughness"_h, material.get_roughness());
     }
-    send_uniform(H_("mt.b_has_roughness"), has_map);
+    send_uniform("mt.b_has_roughness"_h, has_map);
 
     if(material.has_normal_map())
     {
         send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::NORMAL),
                           material.get_texture().get_unit_index(TextureUnit::NORMAL));
     }
-    send_uniform(H_("mt.b_use_normal_map"), material.has_normal_map());
+    send_uniform("mt.b_use_normal_map"_h, material.has_normal_map());
 
     if(material.has_parallax_map())
     {
         send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::DEPTH),
                           material.get_texture().get_unit_index(TextureUnit::DEPTH));
-        send_uniform(H_("mt.f_parallax_height_scale"), material.get_parallax_height_scale());
+        send_uniform("mt.f_parallax_height_scale"_h, material.get_parallax_height_scale());
     }
-    send_uniform(H_("mt.b_use_parallax_map"), material.has_parallax_map());
+    send_uniform("mt.b_use_parallax_map"_h, material.has_parallax_map());
 
     return true;
 }

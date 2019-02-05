@@ -29,7 +29,7 @@ Renderer<Vertex3P>(),
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
 ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VARIANT_R_ONLY"),
            std::make_unique<Texture>(
-                       std::vector<hash_t>{H_("SSAOtmpTex")},
+                       std::vector<hash_t>{"SSAOtmpTex"_h},
                        SSAOBuffer::Instance().get_width()/2,
                        SSAOBuffer::Instance().get_height()/2,
                        GL_TEXTURE_2D,
@@ -69,14 +69,14 @@ void SSAORenderer::render(Scene* pscene)
     // For position reconstruction
     const math::mat4& P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
     math::vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
-    auto pgbuffer = Texture::get_named_texture(H_("gbuffer")).lock();
+    auto pgbuffer = Texture::get_named_texture("gbuffer"_h).lock();
 
     GBuffer& gbuffer = GBuffer::Instance();
     //LBuffer& lbuffer = LBuffer::Instance();
     SSAOBuffer& ssaobuffer = SSAOBuffer::Instance();
 
     SSAO_shader_.use();
-    SSAO_shader_.send_uniform(H_("rd.v2_texelSize"), vec2(1.0f/out_size_.x(),1.0f/out_size_.y()));
+    SSAO_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/out_size_.x(),1.0f/out_size_.y()));
     // Render textured quad to screen
     glViewport(0,0,out_size_.x(),out_size_.y());
 
@@ -88,10 +88,10 @@ void SSAORenderer::render(Scene* pscene)
     //gbuffer.bind_as_source(3,1);  // albedo
     //lbuffer.bind_as_source(3,0); // last frame color
 
-    SSAO_shader_.send_uniform<int>(H_("normalTex"), 0);
-    SSAO_shader_.send_uniform<int>(H_("noiseTex"), 1);
-    SSAO_shader_.send_uniform<int>(H_("depthTex"), 2);
-    //SSAO_shader_.send_uniform<int>(H_("albedoTex"), 3);
+    SSAO_shader_.send_uniform<int>("normalTex"_h, 0);
+    SSAO_shader_.send_uniform<int>("noiseTex"_h, 1);
+    SSAO_shader_.send_uniform<int>("depthTex"_h, 2);
+    //SSAO_shader_.send_uniform<int>("albedoTex"_h, 3);
 
     // Render SSAO texture
     ssaobuffer.bind_as_target();
@@ -105,17 +105,17 @@ void SSAORenderer::render(Scene* pscene)
 
     // Send uniforms
     const math::mat4& V = pscene->get_camera()->get_view_matrix();
-    SSAO_shader_.send_uniform(H_("rd.v2_noiseScale"), noise_scale_);
+    SSAO_shader_.send_uniform("rd.v2_noiseScale"_h, noise_scale_);
     //if(auto dir_light = pscene->get_directional_light().lock())
-        //SSAO_shader_.send_uniform(H_("rd.v3_lightDir"), V.submatrix(3,3)*dir_light->get_position());
-    SSAO_shader_.send_uniform(H_("rd.f_radius"), SSAO_radius_);
-    SSAO_shader_.send_uniform(H_("rd.f_bias"), SSAO_bias_);
-    SSAO_shader_.send_uniform(H_("rd.f_vbias"), SSAO_vbias_);
-    SSAO_shader_.send_uniform(H_("rd.f_intensity"), SSAO_intensity_);
-    SSAO_shader_.send_uniform(H_("rd.f_scale"), SSAO_scale_);
-    //SSAO_shader_.send_uniform(H_("rd.b_invert_normals"), false);
+        //SSAO_shader_.send_uniform("rd.v3_lightDir"_h, V.submatrix(3,3)*dir_light->get_position());
+    SSAO_shader_.send_uniform("rd.f_radius"_h, SSAO_radius_);
+    SSAO_shader_.send_uniform("rd.f_bias"_h, SSAO_bias_);
+    SSAO_shader_.send_uniform("rd.f_vbias"_h, SSAO_vbias_);
+    SSAO_shader_.send_uniform("rd.f_intensity"_h, SSAO_intensity_);
+    SSAO_shader_.send_uniform("rd.f_scale"_h, SSAO_scale_);
+    //SSAO_shader_.send_uniform("rd.b_invert_normals"_h, false);
     // For position reconstruction
-    SSAO_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
+    SSAO_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
 
     vertex_array_.bind();
     buffer_unit_.draw(2, 0);

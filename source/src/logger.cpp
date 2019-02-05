@@ -180,7 +180,7 @@ void Logger::register_channel(const char* name, uint32_t verbosity)
     if(it != channels_.end())
     {
         operator ()("[Logger] Ignoring duplicate channel or collision detected: " + it->second.name,
-                    MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, H_("core"));
+                    MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, "core"_h);
         return;
     }
 

@@ -58,7 +58,7 @@ void TextRenderer::load_face(const char* fontname,
 {
     std::string font_file(fontname);
     font_file += ".ttf";
-    fs::path file_path(io::get_file(H_("root.folders.font"), font_file));
+    fs::path file_path(io::get_file("root.folders.font"_h, font_file));
 
     std::string full_path_str(file_path.string());
 
@@ -140,7 +140,7 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
     GFX::bind_default_frame_buffer();
     GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
     text_shader_.use();
-    text_shader_.send_uniform(H_("v3_textColor"), color);
+    text_shader_.send_uniform("v3_textColor"_h, color);
 
     GFX::enable_blending();
     GFX::set_std_blending();
@@ -161,7 +161,7 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
                         0, h, 0, ypos,
                         0, 0, 1, 0,
                         0, 0, 0, 1);
-        text_shader_.send_uniform(H_("m4_projection"), projection);
+        text_shader_.send_uniform("m4_projection"_h, projection);
 
 
         GFX::bind_texture2D(0, ch.tex_ID);

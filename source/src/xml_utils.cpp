@@ -1,4 +1,5 @@
 #include "xml_utils.hpp"
+#include "wtypes.h"
 #include "math3d.h"
 #include "transformation.h"
 #include "logger.h"
@@ -61,6 +62,15 @@ bool parse_attribute(xml_node<>* node, const char* name, std::string& destinatio
 
     destination = pAttr->value();
     return true;
+}
+
+hash_t parse_attribute_h(rapidxml::xml_node<>* node, const char* name)
+{
+    rapidxml::xml_attribute<>* pAttr = node->first_attribute(name);
+    if(!pAttr)
+        return 0;
+
+    return H_(node->first_attribute(name)->value());
 }
 
 bool parse_node(xml_node<>* parent, const char* leaf_name, std::string& destination)

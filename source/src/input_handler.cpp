@@ -23,7 +23,7 @@ void InputHandler::import_key_bindings()
 {
     DLOGS("[InputHandler] Parsing key bindings.", "input", Severity::LOW);
 
-    fs::path file_path(io::get_file(H_("root.folders.config"), "keybindings.xml"));
+    fs::path file_path(io::get_file("root.folders.config"_h, "keybindings.xml"));
     xml_parser_.load_file_xml(file_path);
 
     for (xml_node<>* cat=xml_parser_.get_root()->first_node("Category");
@@ -122,7 +122,7 @@ bool InputHandler::stroke_debounce(Context& context,
     {
         if(ready(binding_name))
         {
-            post(H_("input.keyboard"), KbdData(binding_name));
+            post("input.keyboard"_h, KbdData(binding_name));
             hot(binding_name);
             return true;
         }
@@ -149,7 +149,7 @@ bool InputHandler::stroke_debounce(Context& context,
     {
         if(ready(binding_name))
         {
-            post(H_("input.keyboard"), KbdData(binding_name));
+            post("input.keyboard"_h, KbdData(binding_name));
             Action();
             hot(binding_name);
             return true;
@@ -237,7 +237,7 @@ void InputHandler::handle_mouse(Context& context)
             float dx = float(dxi)/win_width;
             float dy = float(dyi)/win_height;
 
-            post(H_("input.mouse.locked"), MouseData(dx, dy, buttons));
+            post("input.mouse.locked"_h, MouseData(dx, dy, buttons));
         }
     }
     // Cursor is unlocked -> edit mode
@@ -249,18 +249,18 @@ void InputHandler::handle_mouse(Context& context)
             // Cursor has moved out of the window
             if(mouse_out && !last_mouse_out)
             {
-                post(H_("input.mouse.focus"), MouseFocusData(true));
+                post("input.mouse.focus"_h, MouseFocusData(true));
             }
             // Cursor has moved into the window
             else if(!mouse_out && last_mouse_out)
             {
-                post(H_("input.mouse.focus"), MouseFocusData(false));
+                post("input.mouse.focus"_h, MouseFocusData(false));
             }
         }
         if((!mouse_out && (xpos != last_x || ypos != last_y)) || last_mouse_locked)
-            post(H_("input.mouse.unlocked"), MouseData(float(xpos/GLB.WIN_W), 1.0f-float(ypos/GLB.WIN_H), buttons));
+            post("input.mouse.unlocked"_h, MouseData(float(xpos/GLB.WIN_W), 1.0f-float(ypos/GLB.WIN_H), buttons));
         if(buttons && (buttons!=last_mouse_button_state))
-            post(H_("input.mouse.click"), MouseData(float(xpos/GLB.WIN_W), 1.0f-float(ypos/GLB.WIN_H), buttons));
+            post("input.mouse.click"_h, MouseData(float(xpos/GLB.WIN_W), 1.0f-float(ypos/GLB.WIN_H), buttons));
 
     }
 

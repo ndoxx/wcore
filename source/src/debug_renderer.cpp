@@ -106,9 +106,9 @@ void DebugRenderer::render(Scene* pscene)
             AABB& aabb = pmodel->get_AABB();
             if(!pscene->get_camera()->frustum_collides(aabb)) return;
             mat4 M = aabb.get_model_matrix();
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,1,0,0));
+            line_shader_.send_uniform("v4_line_color"_h, vec4(0,1,0,0));
             mat4 MVP = PV*M;
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
         }
         if(bb_display_mode_ == 2 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::OBB))
@@ -116,9 +116,9 @@ void DebugRenderer::render(Scene* pscene)
             OBB& obb = pmodel->get_OBB();
             if(!pscene->get_camera()->frustum_collides(obb)) return;
             mat4 M = obb.get_model_matrix();
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,0,1,0));
+            line_shader_.send_uniform("v4_line_color"_h, vec4(0,0,1,0));
             mat4 MVP = PV*M;
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
         }
         if(bb_display_mode_ == 3 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
@@ -127,12 +127,12 @@ void DebugRenderer::render(Scene* pscene)
             if(!pscene->get_camera()->frustum_collides(obb)) return;
             mat4 M = pmodel->get_transformation().get_rotation_translation_matrix();
             mat4 MVP = PV*M;
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(1,0,0,0));
+            line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
+            line_shader_.send_uniform("v4_line_color"_h, vec4(1,0,0,0));
             buffer_unit_.draw(SEG_X_NE, SEG_X_OFFSET);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,1,0,0));
+            line_shader_.send_uniform("v4_line_color"_h, vec4(0,1,0,0));
             buffer_unit_.draw(SEG_Y_NE, SEG_Y_OFFSET);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(0,0,1,0));
+            line_shader_.send_uniform("v4_line_color"_h, vec4(0,0,1,0));
             buffer_unit_.draw(SEG_Z_NE, SEG_Z_OFFSET);
         }
     },
@@ -146,9 +146,9 @@ void DebugRenderer::render(Scene* pscene)
     {
         OBB& obb = psel->get_OBB();
         mat4 M = obb.get_model_matrix();
-        line_shader_.send_uniform(H_("v4_line_color"), vec4(1,0.8,0,0));
+        line_shader_.send_uniform("v4_line_color"_h, vec4(1,0.8,0,0));
         mat4 MVP = PV*M;
-        line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+        line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
         buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
     }
 #endif
@@ -162,8 +162,8 @@ void DebugRenderer::render(Scene* pscene)
             // Scale model in display mode 2 only
             mat4 MVP(PV*plight->get_model_matrix(light_display_mode_==2));
 
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(plight->get_color().normalized()));
+            line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
+            line_shader_.send_uniform("v4_line_color"_h, vec4(plight->get_color().normalized()));
             buffer_unit_.draw(SPHERE_NE, SPHERE_OFFSET);
         },
         [&](std::shared_ptr<Light> plight)
@@ -189,8 +189,8 @@ void DebugRenderer::render(Scene* pscene)
             translate_matrix(M, bound.mid_point);
             mat4 MVP = PV*M;
             float alpha = 1.0f-std::min((bound.mid_point-pscene->get_camera()->get_position()).norm()/far,1.0f);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(1,0,0,alpha));
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            line_shader_.send_uniform("v4_line_color"_h, vec4(1,0,0,alpha));
+            line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
         });
         GFX::disable_blending();
@@ -212,8 +212,8 @@ void DebugRenderer::render(Scene* pscene)
             // Get model matrix and compute products
             mat4 MVP(PV*(*it).model_matrix);
 
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4((*it).color));
+            line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
+            line_shader_.send_uniform("v4_line_color"_h, vec4((*it).color));
 
             if((*it).type == DebugDrawRequest::SEGMENT)
             {
@@ -247,8 +247,8 @@ void DebugRenderer::render(Scene* pscene)
             mat4 M(pmodel->get_model_matrix());
             mat4 MVP = PV*M;
 
-            line_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
-            line_shader_.send_uniform(H_("v4_line_color"), vec4(pmodel->get_material().get_albedo()));
+            line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
+            line_shader_.send_uniform("v4_line_color"_h, vec4(pmodel->get_material().get_albedo()));
         });
     }
     line_shader_.unuse();

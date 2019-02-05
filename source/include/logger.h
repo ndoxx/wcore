@@ -74,7 +74,7 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hash_t channel=H_("core"))
+               hash_t channel="core"_h)
     : message_(message)
     , mode_(mode)
     , type_(type)
@@ -89,7 +89,7 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hash_t channel=H_("core"))
+               hash_t channel="core"_h)
     : message_(std::move(message))
     , mode_(mode)
     , type_(type)
@@ -190,19 +190,19 @@ public:
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hash_t channel=H_("core"));
+                     hash_t channel="core"_h);
     void operator ()(std::string&& message,
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hash_t channel=H_("core"));
+                     hash_t channel="core"_h);
     void operator ()(const LogMessage& log_message);
 
     template <typename ...Args>
     void printfold(Args&&... args);
 
     // End last section
-    void end_section(hash_t channel=H_("core"),
+    void end_section(hash_t channel="core"_h,
                      uint32_t severity=0u);
 
     // Logs any event the logger has subscribed to

@@ -17,7 +17,7 @@ EntityFactory::EntityFactory(const char* entityfile)
 
 void EntityFactory::parse_entity_file(const char* xmlfile)
 {
-    fs::path file_path(io::get_file(H_("root.folders.level"), xmlfile));
+    fs::path file_path(io::get_file("root.folders.level"_h, xmlfile));
     xml_parser_.load_file_xml(file_path);
 }
 

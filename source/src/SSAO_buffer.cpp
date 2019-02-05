@@ -8,7 +8,7 @@ SSAOBuffer::SSAOBuffer(unsigned int width,
                        unsigned int height):
 BufferModule("SSAObuffer",
 std::make_shared<Texture>(
-    std::vector<hash_t>{H_("SSAOTex")},
+    std::vector<hash_t>{"SSAOTex"_h},
     std::vector<GLenum>{GL_LINEAR},
     std::vector<GLenum>{GL_R8},
     std::vector<GLenum>{GL_RED},

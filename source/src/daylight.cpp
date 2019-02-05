@@ -37,8 +37,8 @@ pp_fog_density_interpolator_(nullptr),
 ambient_strength_interpolator_(nullptr)
 {
     // Register debug info fields
-    DINFO.register_text_slot(H_("sdiTime"), vec3(0.6,1.0,0.0));
-    DINFO.register_text_slot(H_("sdiSun"), vec3(1.0,0.5,0.0));
+    DINFO.register_text_slot("sdiTime"_h, vec3(0.6,1.0,0.0));
+    DINFO.register_text_slot("sdiSun"_h, vec3(1.0,0.5,0.0));
 }
 
 DaylightSystem::~DaylightSystem()
@@ -53,13 +53,13 @@ DaylightSystem::~DaylightSystem()
 
 void DaylightSystem::init_events(InputHandler& handler)
 {
-    subscribe(H_("input.keyboard"), handler, &DaylightSystem::onKeyboardEvent);
+    subscribe("input.keyboard"_h, handler, &DaylightSystem::onKeyboardEvent);
 }
 
 #ifndef __DISABLE_EDITOR__
 void DaylightSystem::generate_widget()
 {
-    Scene* pscene = locate<Scene>(H_("Scene"));
+    Scene* pscene = locate<Scene>("Scene"_h);
     //ImGui::Begin("Ambient parameters");
 
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
@@ -115,7 +115,7 @@ bool DaylightSystem::onKeyboardEvent(const WData& data)
 
     switch(kbd.key_binding)
     {
-        case H_("k_tg_daysys"):
+        case "k_tg_daysys"_h:
     		toggle();
     		break;
     }
@@ -125,8 +125,8 @@ bool DaylightSystem::onKeyboardEvent(const WData& data)
 
 void DaylightSystem::update(const GameClock& clock)
 {
-    Scene* pscene            = locate<Scene>(H_("Scene"));
-    RenderPipeline* pipeline = locate<RenderPipeline>(H_("Pipeline"));
+    Scene* pscene            = locate<Scene>("Scene"_h);
+    RenderPipeline* pipeline = locate<RenderPipeline>("Pipeline"_h);
 
     if(auto dir_light = pscene->get_directional_light_nc().lock())
     {
@@ -136,11 +136,11 @@ void DaylightSystem::update(const GameClock& clock)
             std::stringstream ss;
             ss << "Time: " << floor(daytime_) << "h:"
                << floor(minutes_) << ":" << floor(seconds_);
-            DINFO.display(H_("sdiTime"), ss.str());
+            DINFO.display("sdiTime"_h, ss.str());
 
             ss.str("");
             ss << "Sun: direction= " << sun_pos_;
-            DINFO.display(H_("sdiSun"), ss.str());
+            DINFO.display("sdiSun"_h, ss.str());
         }
 
         if(!active_) return;

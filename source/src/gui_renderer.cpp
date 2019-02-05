@@ -23,7 +23,7 @@ GuiRenderer::GuiRenderer():
 Renderer<Vertex2P2U>(),
 cursor_shader_(ShaderResource("cursor.vert;cursor.frag")),
 material_factory_(new MaterialFactory("gui_assets.xml")),
-cursor_props_(false, material_factory_->make_material(H_("cursor")))
+cursor_props_(false, material_factory_->make_material("cursor"_h))
 {
     load_geometry();
 }
@@ -66,7 +66,7 @@ void GuiRenderer::render(Scene* pscene)
     vertex_array_.bind();
 
     // Render cursor if needed
-    if(cursor_props_.active && CONFIG.is(H_("root.gui.cursor.custom")))
+    if(cursor_props_.active && CONFIG.is("root.gui.cursor.custom"_h))
     {
         // Screen-space scale and translate
         float cursor_size = 64.0f * cursor_props_.scale / GLB.WIN_H;
@@ -82,10 +82,10 @@ void GuiRenderer::render(Scene* pscene)
         cursor_props_.material->bind_texture();
 
         cursor_shader_.use();
-        cursor_shader_.send_uniform(H_("v3_color"), cursor_props_.color);
-        cursor_shader_.send_uniform(H_("m4_transform"), transform);
-        cursor_shader_.send_uniform(H_("m4_transform"), transform);
-        cursor_shader_.send_uniform<int>(H_("inputTex"), 0);
+        cursor_shader_.send_uniform("v3_color"_h, cursor_props_.color);
+        cursor_shader_.send_uniform("m4_transform"_h, transform);
+        cursor_shader_.send_uniform("m4_transform"_h, transform);
+        cursor_shader_.send_uniform<int>("inputTex"_h, 0);
         buffer_unit_.draw(2, 0);
 
         cursor_shader_.unuse();

@@ -79,8 +79,8 @@ RenderPipeline::~RenderPipeline()
 
 void RenderPipeline::init_events(InputHandler& handler)
 {
-    subscribe(H_("input.mouse.unlocked"), handler, &RenderPipeline::onMouseEvent);
-    subscribe(H_("input.keyboard"), handler, &RenderPipeline::onKeyboardEvent);
+    subscribe("input.mouse.unlocked"_h, handler, &RenderPipeline::onMouseEvent);
+    subscribe("input.keyboard"_h, handler, &RenderPipeline::onKeyboardEvent);
 }
 
 void RenderPipeline::perform_test()
@@ -102,38 +102,38 @@ bool RenderPipeline::onKeyboardEvent(const WData& data)
 
     switch(kbd.key_binding)
     {
-        case H_("k_tg_editor"):
+        case "k_tg_editor"_h:
             gui_renderer_->toggle_cursor();
             break;
-        case H_("k_tg_fog"):
+        case "k_tg_fog"_h:
     		post_processing_renderer_->toggle_fog();
     		break;
-        case H_("k_bb_next_mode"):
+        case "k_bb_next_mode"_h:
     		debug_renderer_->next_bb_display_mode();
     		break;
-        case H_("k_tg_line_models"):
+        case "k_tg_line_models"_h:
     		debug_renderer_->toggle_line_models();
     		break;
-        case H_("k_light_volumes_next_mode"):
+        case "k_light_volumes_next_mode"_h:
     		debug_renderer_->next_light_display_mode();
     		break;
-        case H_("k_tg_debug_overlay"):
+        case "k_tg_debug_overlay"_h:
     		debug_overlay_renderer_->toggle();
     		break;
-        case H_("k_debug_overlay_next_mode"):
+        case "k_debug_overlay_next_mode"_h:
     		debug_overlay_renderer_->next_mode();
     		break;
-        case H_("k_tg_debug_info"):
+        case "k_tg_debug_info"_h:
     		DINFO.toggle();
     		break;
-        case H_("k_tg_wireframe"):
+        case "k_tg_wireframe"_h:
     		geometry_renderer_->toggle_wireframe();
     		break;
-        case H_("k_test_key"):
+        case "k_test_key"_h:
             perform_test();
             break;
-        case H_("k_show_neighbors"):
-            debug_renderer_->show_selection_neighbors(locate<Scene>(H_("Scene")), neighbors_search_eadius);
+        case "k_show_neighbors"_h:
+            debug_renderer_->show_selection_neighbors(locate<Scene>("Scene"_h), neighbors_search_eadius);
             break;
     }
 
@@ -176,7 +176,7 @@ static bool framebuffer_peek = false;
 
 void RenderPipeline::generate_widget()
 {
-    Scene* pscene = locate<Scene>(H_("Scene"));
+    Scene* pscene = locate<Scene>("Scene"_h);
 
     // DEBUG DRAWING
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
@@ -443,7 +443,7 @@ void RenderPipeline::generate_widget()
 
 void RenderPipeline::render()
 {
-    Scene* pscene = locate<Scene>(H_("Scene"));
+    Scene* pscene = locate<Scene>("Scene"_h);
 
     #ifdef __PROFILE__
     float dt = 0.0f;
@@ -595,7 +595,7 @@ void RenderPipeline::render()
 
 void RenderPipeline::render_gui()
 {
-    Scene* pscene = locate<Scene>(H_("Scene"));
+    Scene* pscene = locate<Scene>("Scene"_h);
     gui_renderer_->render(pscene);    // Cursor...
 }
 

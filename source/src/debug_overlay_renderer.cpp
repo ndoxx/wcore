@@ -32,11 +32,11 @@ text_renderer_(text_renderer)
 {
     load_geometry();
 
-    auto pgbuffer = Texture::get_named_texture(H_("gbuffer")).lock();
-    auto plbuffer = Texture::get_named_texture(H_("lbuffer")).lock();
-    auto psbuffer = Texture::get_named_texture(H_("shadowmap")).lock();
-    auto pbloom   = Texture::get_named_texture(H_("bloom")).lock();
-    auto pssao    = Texture::get_named_texture(H_("SSAObuffer")).lock();
+    auto pgbuffer = Texture::get_named_texture("gbuffer"_h).lock();
+    auto plbuffer = Texture::get_named_texture("lbuffer"_h).lock();
+    auto psbuffer = Texture::get_named_texture("shadowmap"_h).lock();
+    auto pbloom   = Texture::get_named_texture("bloom"_h).lock();
+    auto pssao    = Texture::get_named_texture("SSAObuffer"_h).lock();
 
     register_debug_pane(GBuffer::Instance());
 
@@ -86,15 +86,10 @@ void DebugOverlayRenderer::register_debug_pane(BufferModule& buffer_module)
     dbg::DebugPane dbg_pane;
     for(uint32_t ii=0; ii< n_tex; ++ii)
     {
-#ifndef __PRESERVE_STRS__
+
         dbg_pane.push_back(dbg::DebugTextureProperties(buffer_module[ii],
                            std::to_string(buffer_module.get_texture()->get_sampler_name(ii)),
                            buffer_module.get_texture()->is_depth(ii)));
-#else
-        dbg_pane.push_back(dbg::DebugTextureProperties(buffer_module[ii],
-                           buffer_module.get_texture()->get_sampler_name(ii),
-                           buffer_module.get_texture()->is_depth(ii)));
-#endif
     }
     debug_panes_.push_back(dbg_pane);
 }
@@ -116,14 +111,14 @@ void DebugOverlayRenderer::render_pane(uint32_t index)
         dbg::DebugTextureProperties& props = debug_panes_[index][ii];
         bool is_depth = props.is_depth;
 
-        passthrough_shader_.send_uniform(H_("b_isDepth"), is_depth);
+        passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
 
         GFX::bind_texture2D(0, props.texture_index);
         GFX::viewport((ii+1)*gap + ii*vpw, gap, vpw, vph);
         buffer_unit_.draw(2, 0);
 
         text_renderer_.schedule_for_drawing(props.sampler_name,
-                                            H_("arial"),
+                                            "arial"_h,
                                             (ii+1)*gap + ii*vpw,
                                             vph,
                                             1.0f,

@@ -11,18 +11,18 @@ void BlurPassPolicy::update(Shader& shader, bool pass_direction)
     if(pass_direction)
         coeff = 2.0f;
 
-    shader.send_uniform(H_("v2_texelSize"), vec2(coeff/target_width_,
+    shader.send_uniform("v2_texelSize"_h, vec2(coeff/target_width_,
                                                  coeff/target_height_));
-    shader.send_uniform(H_("horizontal"), pass_direction);
-    if(!shader.is_variant(H_("VARIANT_R_ONLY")))
-        shader.send_uniform(H_("f_alpha"), 1.0f);
+    shader.send_uniform("horizontal"_h, pass_direction);
+    if(!shader.is_variant("VARIANT_R_ONLY"_h))
+        shader.send_uniform("f_alpha"_h, 1.0f);
 
     // send Gaussian kernel
-    shader.send_uniform<int>(H_("kernel.i_half_size"), kernel_.get_half_size());
-    shader.send_uniform_array(H_("kernel.f_weight[0]"), kernel_.data(), kernel_.get_half_size());
+    shader.send_uniform<int>("kernel.i_half_size"_h, kernel_.get_half_size());
+    shader.send_uniform_array("kernel.f_weight[0]"_h, kernel_.data(), kernel_.get_half_size());
 
-    if(shader.is_variant(H_("VARIANT_COMPRESS_R")))
-        shader.send_uniform(H_("inv_gamma_r"), 1.0f/gamma_r_);
+    if(shader.is_variant("VARIANT_COMPRESS_R"_h))
+        shader.send_uniform("inv_gamma_r"_h, 1.0f/gamma_r_);
 }
 
 PingPongBuffer::PingPongBuffer(const ShaderResource& shader_res,

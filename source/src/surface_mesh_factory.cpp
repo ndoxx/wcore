@@ -45,7 +45,7 @@ void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshe
         desc.type = H_(mesh_type.c_str());
 
         // Additional info for obj files
-        if(desc.type == H_("obj"))
+        if(desc.type == "obj"_h)
         {
             std::string file_name;
             xml::parse_node(mesh_node, "Location", file_name);
@@ -133,7 +133,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
         {
             std::shared_ptr<SurfaceMesh> pmesh = nullptr;
             const MeshInstanceDescriptor& desc = it_d->second;
-            if(desc.type==H_("obj"))
+            if(desc.type=="obj"_h)
             {
                 DLOGI("From obj file.", "model", Severity::LOW);
                 pmesh = make_obj(desc.file_path.string().c_str(), desc.process_uv, desc.centered);
@@ -160,7 +160,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_typ
                                                  bool owns)
 {
     // Procedural meshes that depend on extra data -> not cached ftm
-    if(mesh_type == H_("icosphere"))
+    if(mesh_type == "icosphere"_h)
     {
         IcosphereProps props;
         if(generator_node)
@@ -170,7 +170,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_typ
 
         return (std::shared_ptr<SurfaceMesh>)factory::make_ico_sphere(props.density);
     }
-    else if(mesh_type == H_("box"))
+    else if(mesh_type == "box"_h)
     {
         BoxProps props;
         if(generator_node)
@@ -183,7 +183,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_typ
 
         return (std::shared_ptr<SurfaceMesh>)factory::make_box(props.extent, props.texture_scale);
     }
-    else if(mesh_type == H_("crystal") && opt_rng)
+    else if(mesh_type == "crystal"_h && opt_rng)
     {
         //std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
         std::uniform_int_distribution<uint32_t> mesh_seed(0,10); // only N different meshes possible
@@ -191,7 +191,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_typ
 
         return (std::shared_ptr<SurfaceMesh>)factory::make_crystal(seed);
     }
-    else if(mesh_type == H_("tree"))
+    else if(mesh_type == "tree"_h)
     {
         // Procedural tree mesh
         if(!generator_node) return nullptr;
@@ -201,7 +201,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_typ
 
         return TreeGenerator::generate_tree(props);
     }
-    else if(mesh_type == H_("rock") && opt_rng)
+    else if(mesh_type == "rock"_h && opt_rng)
     {
         // Procedural rock mesh, look for RockGenerator node
         if(!generator_node) return nullptr;
@@ -218,11 +218,11 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_typ
     // Hard-coded procedural meshes
     std::shared_ptr<SurfaceMesh> pmesh = nullptr;
 
-    if(mesh_type == H_("cube"))
+    if(mesh_type == "cube"_h)
         pmesh = static_cast<std::shared_ptr<SurfaceMesh>>(factory::make_cube());
-    else if(mesh_type == H_("icosahedron"))
+    else if(mesh_type == "icosahedron"_h)
         pmesh = static_cast<std::shared_ptr<SurfaceMesh>>(factory::make_icosahedron());
-    else if(mesh_type == H_("tentacle")) // TMP
+    else if(mesh_type == "tentacle"_h) // TMP
     {
         CSplineCatmullV3 spline({0.0f, 0.33f, 0.66f, 1.0f},
                                 {vec3(0,0,0),

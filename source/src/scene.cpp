@@ -45,13 +45,13 @@ unique_id_(0)
     light_camera_->disable_frustum_update();
 
     // Get shadow map size
-    CONFIG.get(H_("root.render.shadowmap.width"), SHADOW_WIDTH);
-    CONFIG.get(H_("root.render.shadowmap.height"), SHADOW_HEIGHT);
+    CONFIG.get("root.render.shadowmap.width"_h, SHADOW_WIDTH);
+    CONFIG.get("root.render.shadowmap.height"_h, SHADOW_HEIGHT);
 
     // Register debug info fields
-    DINFO.register_text_slot(H_("sdiPosition"), vec3(0.2,0.9,1.0));
-    DINFO.register_text_slot(H_("sdiAngles"), vec3(0.2,0.9,1.0));
-    DINFO.register_text_slot(H_("sdiChunk"), vec3(0.2,0.9,1.0));
+    DINFO.register_text_slot("sdiPosition"_h, vec3(0.2,0.9,1.0));
+    DINFO.register_text_slot("sdiAngles"_h, vec3(0.2,0.9,1.0));
+    DINFO.register_text_slot("sdiChunk"_h, vec3(0.2,0.9,1.0));
 }
 
 Scene::~Scene()
@@ -416,17 +416,17 @@ void Scene::update(const GameClock& clock)
     {
         std::stringstream ss;
         ss << "Position: " << camera_->get_position();
-        DINFO.display(H_("sdiPosition"), ss.str());
+        DINFO.display("sdiPosition"_h, ss.str());
 
         ss.str("");
         ss << "Yaw: " << camera_->get_yaw()
            << " Pitch: " << camera_->get_pitch();
-        DINFO.display(H_("sdiAngles"), ss.str());
+        DINFO.display("sdiAngles"_h, ss.str());
 
         // Display number of loaded chunks
         ss.str("");
         ss << "Loaded chunks: " << get_num_loaded_chunks();
-        DINFO.display(H_("sdiChunk"), ss.str());
+        DINFO.display("sdiChunk"_h, ss.str());
     }
 }
 

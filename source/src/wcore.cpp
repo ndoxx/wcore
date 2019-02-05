@@ -44,16 +44,16 @@ void GlobalsSet(hash_t name, const void* data)
         default:
             warn_global_not_found(name);
             break;
-        case H_("SCR_W"):
+        case "SCR_W"_h:
             GLB.SCR_W = *reinterpret_cast<const uint32_t*>(data);
             break;
-        case H_("SCR_H"):
+        case "SCR_H"_h:
             GLB.SCR_H = *reinterpret_cast<const uint32_t*>(data);
             break;
-        case H_("SCR_FULL"):
+        case "SCR_FULL"_h:
             GLB.SCR_FULL = *reinterpret_cast<const bool*>(data);
             break;
-        case H_("START_LEVEL"):
+        case "START_LEVEL"_h:
             char* value = const_cast<char*>(reinterpret_cast<const char*>(data));
             GLB.START_LEVEL = value;
             break;
@@ -194,9 +194,9 @@ void Engine::Init(int argc, char const *argv[],
 #endif
 
     // First, try to initialize default values using config
-    wcore::CONFIG.get(wcore::H_("root.display.width"),  wcore::GLB.SCR_W);
-    wcore::CONFIG.get(wcore::H_("root.display.height"), wcore::GLB.SCR_H);
-    wcore::CONFIG.get(wcore::H_("root.display.full"),   wcore::GLB.SCR_FULL);
+    CONFIG.get("root.display.width"_h,  GLB.SCR_W);
+    CONFIG.get("root.display.height"_h, GLB.SCR_H);
+    CONFIG.get("root.display.full"_h,   GLB.SCR_FULL);
 
     // Parse command line arguments
     if(parse_arguments)
@@ -225,25 +225,25 @@ void Engine::Init(int argc, char const *argv[],
 
     // * Register game systems (init events, register editor widgets, add to update list)
 #ifndef __DISABLE_EDITOR__
-    eimpl_->game_loop->register_game_system(H_("Editor"),            static_cast<GameSystem*>(eimpl_->editor));
+    eimpl_->game_loop->register_game_system("Editor"_h,            static_cast<GameSystem*>(eimpl_->editor));
 #endif
-    eimpl_->game_loop->register_game_system(H_("CameraController"),  static_cast<GameSystem*>(eimpl_->camera_controller));
-    eimpl_->game_loop->register_game_system(H_("Scene"),             static_cast<GameSystem*>(eimpl_->scene));
-    eimpl_->game_loop->register_game_system(H_("Pipeline"),          static_cast<GameSystem*>(eimpl_->pipeline));
-    eimpl_->game_loop->register_game_system(H_("Daylight"),          static_cast<GameSystem*>(eimpl_->daylight));
-    eimpl_->game_loop->register_game_system(H_("RayCaster"),         static_cast<GameSystem*>(eimpl_->ray_caster));
-    eimpl_->game_loop->register_game_system(H_("GameObjectFactory"), static_cast<GameSystem*>(eimpl_->game_object_factory));
-    eimpl_->game_loop->register_game_system(H_("SceneLoader"),       static_cast<GameSystem*>(eimpl_->scene_loader));
-    eimpl_->game_loop->register_game_system(H_("ChunkManager"),      static_cast<GameSystem*>(eimpl_->chunk_manager));
-    eimpl_->game_loop->register_game_system(H_("SoundSystem"),       static_cast<GameSystem*>(eimpl_->sound_system));
+    eimpl_->game_loop->register_game_system("CameraController"_h,  static_cast<GameSystem*>(eimpl_->camera_controller));
+    eimpl_->game_loop->register_game_system("Scene"_h,             static_cast<GameSystem*>(eimpl_->scene));
+    eimpl_->game_loop->register_game_system("Pipeline"_h,          static_cast<GameSystem*>(eimpl_->pipeline));
+    eimpl_->game_loop->register_game_system("Daylight"_h,          static_cast<GameSystem*>(eimpl_->daylight));
+    eimpl_->game_loop->register_game_system("RayCaster"_h,         static_cast<GameSystem*>(eimpl_->ray_caster));
+    eimpl_->game_loop->register_game_system("GameObjectFactory"_h, static_cast<GameSystem*>(eimpl_->game_object_factory));
+    eimpl_->game_loop->register_game_system("SceneLoader"_h,       static_cast<GameSystem*>(eimpl_->scene_loader));
+    eimpl_->game_loop->register_game_system("ChunkManager"_h,      static_cast<GameSystem*>(eimpl_->chunk_manager));
+    eimpl_->game_loop->register_game_system("SoundSystem"_h,       static_cast<GameSystem*>(eimpl_->sound_system));
 
     // TMP
     eimpl_->camera_controller->register_camera(eimpl_->scene->get_camera());
 
     //auto&& input_handler = eimpl_->game_loop->get_input_handler();
-    //dbg::LOG.track(H_("input.mouse.locked"), input_handler);
-    //dbg::LOG.track(H_("input.mouse.unlocked"), input_handler);
-    //dbg::LOG.track(H_("input.mouse.focus"), input_handler);
+    //dbg::LOG.track("input.mouse.locked"_h, input_handler);
+    //dbg::LOG.track("input.mouse.unlocked"_h, input_handler);
+    //dbg::LOG.track("input.mouse.focus"_h, input_handler);
 
 #ifdef __DEBUG__
     show_driver_error("post Init() glGetError(): ");

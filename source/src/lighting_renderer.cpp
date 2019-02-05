@@ -31,7 +31,7 @@ bright_knee_(0.1f),
 shadow_slope_bias_(0.1f),
 normal_offset_(-0.013f)
 {
-    CONFIG.get(H_("root.render.override.allow_shadow_mapping"), shadow_enabled_);
+    CONFIG.get("root.render.override.allow_shadow_mapping"_h, shadow_enabled_);
     load_geometry();
 }
 
@@ -83,8 +83,8 @@ void LightingRenderer::render(Scene* pscene)
 
     math::vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
 
-    auto pgbuffer = Texture::get_named_texture(H_("gbuffer")).lock();
-    auto pshadow  = Texture::get_named_texture(H_("shadowmap")).lock();
+    auto pgbuffer = Texture::get_named_texture("gbuffer"_h).lock();
+    auto pshadow  = Texture::get_named_texture("shadowmap"_h).lock();
 
     if(lighting_enabled_)
     {
@@ -118,7 +118,7 @@ void LightingRenderer::render(Scene* pscene)
             // Use null technique (void fragment shader)
             // Only stencil operation is important
             null_shader_.use();
-            null_shader_.send_uniform(H_("m4_ModelViewProjection"), PV*M);
+            null_shader_.send_uniform("m4_ModelViewProjection"_h, PV*M);
             buffer_unit_.draw(SPHERE_NE(), SPHERE_OFFSET());
             null_shader_.unuse();
 
@@ -133,33 +133,33 @@ void LightingRenderer::render(Scene* pscene)
             GFX::cull_front();
 
             lpass_point_shader_.use();
-            //lpass_point_shader_.send_uniform(H_("rd.b_lighting_enabled"), lighting_enabled_);
+            //lpass_point_shader_.send_uniform("rd.b_lighting_enabled"_h, lighting_enabled_);
             // view position uniform
-            //lpass_point_shader_.send_uniform(H_("rd.v3_viewPos"), pscene->get_camera()->get_position());
+            //lpass_point_shader_.send_uniform("rd.v3_viewPos"_h, pscene->get_camera()->get_position());
             // G-Buffer texture samplers
             lpass_point_shader_.send_uniforms(*pgbuffer);
             // Bright pass threshold
-            lpass_point_shader_.send_uniform(H_("rd.f_bright_threshold"), std::max(bright_threshold_, bright_knee_));
-            lpass_point_shader_.send_uniform(H_("rd.f_bright_knee"), bright_knee_);
+            lpass_point_shader_.send_uniform("rd.f_bright_threshold"_h, std::max(bright_threshold_, bright_knee_));
+            lpass_point_shader_.send_uniform("rd.f_bright_knee"_h, bright_knee_);
             // Screen size
-            lpass_point_shader_.send_uniform(H_("rd.v2_screenSize"),
+            lpass_point_shader_.send_uniform("rd.v2_screenSize"_h,
                                              math::vec2(gbuffer.get_width(),gbuffer.get_height()));
             // Light uniforms
-            lpass_point_shader_.send_uniform(H_("lt.v3_lightPosition"), V*plight->get_position());
+            lpass_point_shader_.send_uniform("lt.v3_lightPosition"_h, V*plight->get_position());
             lpass_point_shader_.send_uniforms(plight);
-            lpass_point_shader_.send_uniform(H_("m4_ModelViewProjection"), PV*M);
-            //lpass_point_shader_.send_uniform(H_("m4_ModelView"), V*M);
+            lpass_point_shader_.send_uniform("m4_ModelViewProjection"_h, PV*M);
+            //lpass_point_shader_.send_uniform("m4_ModelView"_h, V*M);
             // For position reconstruction
-            lpass_point_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
+            lpass_point_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
 
             // SSAO
             if(SSAO_enabled_)
             {
-                auto pssao = Texture::get_named_texture(H_("SSAObuffer")).lock();
+                auto pssao = Texture::get_named_texture("SSAObuffer"_h).lock();
                 pssao->bind(SSAO_TEX,0); // Bind ssao[0] to texture unit SSAO_TEX
-                lpass_point_shader_.send_uniform<int>(H_("SSAOTex"), SSAO_TEX);
+                lpass_point_shader_.send_uniform<int>("SSAOTex"_h, SSAO_TEX);
             }
-            lpass_point_shader_.send_uniform(H_("rd.b_enableSSAO"), SSAO_enabled_);
+            lpass_point_shader_.send_uniform("rd.b_enableSSAO"_h, SSAO_enabled_);
 
             buffer_unit_.draw(SPHERE_NE(), SPHERE_OFFSET());
             lpass_point_shader_.unuse();
@@ -201,46 +201,46 @@ void LightingRenderer::render(Scene* pscene)
         math::mat4 Id;
         Id.init_identity();
         lpass_dir_shader_.use();
-        lpass_dir_shader_.send_uniform(H_("rd.b_lighting_enabled"), lighting_enabled_);
+        lpass_dir_shader_.send_uniform("rd.b_lighting_enabled"_h, lighting_enabled_);
         // view position uniform
-        //lpass_dir_shader_.send_uniform(H_("rd.v3_viewPos"), pscene->get_camera()->get_position());
+        //lpass_dir_shader_.send_uniform("rd.v3_viewPos"_h, pscene->get_camera()->get_position());
         // G-Buffer texture samplers
         lpass_dir_shader_.send_uniforms(*pgbuffer);
         // For position reconstruction
-        lpass_dir_shader_.send_uniform(H_("rd.v4_proj_params"), proj_params);
+        lpass_dir_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
         // Bright pass threshold
-        lpass_dir_shader_.send_uniform(H_("rd.f_bright_threshold"), 1.0f);
+        lpass_dir_shader_.send_uniform("rd.f_bright_threshold"_h, 1.0f);
         // Screen size
-        lpass_dir_shader_.send_uniform(H_("rd.v2_screenSize"),
+        lpass_dir_shader_.send_uniform("rd.v2_screenSize"_h,
                                            math::vec2(gbuffer.get_width(),gbuffer.get_height()));
         // Light uniforms
-        lpass_dir_shader_.send_uniform(H_("lt.v3_lightPosition"), V.submatrix(3,3)*dir_light->get_position());
+        lpass_dir_shader_.send_uniform("lt.v3_lightPosition"_h, V.submatrix(3,3)*dir_light->get_position());
         lpass_dir_shader_.send_uniforms(dir_light);
-        lpass_dir_shader_.send_uniform(H_("m4_ModelViewProjection"), Id);
+        lpass_dir_shader_.send_uniform("m4_ModelViewProjection"_h, Id);
 
         // Shadow map
-        lpass_dir_shader_.send_uniform(H_("rd.b_shadow_enabled"), shadow_enabled_);
+        lpass_dir_shader_.send_uniform("rd.b_shadow_enabled"_h, shadow_enabled_);
         if(shadow_enabled_)
         {
             pshadow->bind(SHADOW_TEX,0); // Bind shadow[0] to texture unit SHADOW_TEX
-            lpass_dir_shader_.send_uniform<int>(H_("shadowTex"), SHADOW_TEX);
-            lpass_dir_shader_.send_uniform(H_("m4_LightSpace"), lightMatrix);
+            lpass_dir_shader_.send_uniform<int>("shadowTex"_h, SHADOW_TEX);
+            lpass_dir_shader_.send_uniform("m4_LightSpace"_h, lightMatrix);
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
             pshadow->generate_mipmaps(0);
 #else
-            lpass_dir_shader_.send_uniform(H_("rd.v2_shadowTexelSize"), ShadowMapRenderer::SHADOW_TEXEL_SIZE);
-            lpass_dir_shader_.send_uniform(H_("rd.f_shadowBias"), pscene->shadow_bias_ * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
+            lpass_dir_shader_.send_uniform("rd.v2_shadowTexelSize"_h, ShadowMapRenderer::SHADOW_TEXEL_SIZE);
+            lpass_dir_shader_.send_uniform("rd.f_shadowBias"_h, pscene->shadow_bias_ * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
 #endif
         }
 
         // SSAO
         if(SSAO_enabled_)
         {
-            auto pssao = Texture::get_named_texture(H_("SSAObuffer")).lock();
+            auto pssao = Texture::get_named_texture("SSAObuffer"_h).lock();
             pssao->bind(SSAO_TEX,0); // Bind ssao[0] to texture unit SSAO_TEX
-            lpass_dir_shader_.send_uniform<int>(H_("SSAOTex"), SSAO_TEX);
+            lpass_dir_shader_.send_uniform<int>("SSAOTex"_h, SSAO_TEX);
         }
-        lpass_dir_shader_.send_uniform(H_("rd.b_enableSSAO"), SSAO_enabled_);
+        lpass_dir_shader_.send_uniform("rd.b_enableSSAO"_h, SSAO_enabled_);
 
         buffer_unit_.draw(QUAD_NE(), QUAD_OFFSET());
         lpass_dir_shader_.unuse();

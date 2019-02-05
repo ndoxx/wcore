@@ -24,8 +24,8 @@ static int ray_persistence = 0;
 RayCaster::RayCaster()
 {
 #ifdef __DEBUG__
-    CONFIG.get(H_("root.debug.raycast.geometry.show_on_click"), show_ray);
-    CONFIG.get(H_("root.debug.raycast.geometry.persistence"), ray_persistence);
+    CONFIG.get("root.debug.raycast.geometry.show_on_click"_h, show_ray);
+    CONFIG.get("root.debug.raycast.geometry.persistence"_h, ray_persistence);
 #endif
 }
 
@@ -33,7 +33,7 @@ void RayCaster::update(const GameClock& clock)
 {
 
     // * Get camera view-projection matrix for this frame and invert it
-    pCamera cam = locate<Scene>(H_("Scene"))->get_camera();
+    pCamera cam = locate<Scene>("Scene"_h)->get_camera();
     const math::mat4& view = cam->get_view_matrix();
     const math::mat4& projection = cam->get_projection_matrix();
     eye_pos_world_ = cam->get_position(); // Also save camera position
@@ -93,7 +93,7 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
 
     if(show_ray)
     {
-        locate<RenderPipeline>(H_("Pipeline"))->debug_draw_segment(ray.origin_w,
+        locate<RenderPipeline>("Pipeline"_h)->debug_draw_segment(ray.origin_w,
                                                 ray.end_w,
                                                 ray_persistence,
                                                 math::vec3(1,0.2,0));
@@ -105,8 +105,8 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
 
 SceneQueryResult RayCaster::ray_scene_query(const Ray& ray)
 {
-    Scene* pscene             = locate<Scene>(H_("Scene"));
-    RenderPipeline* ppipeline = locate<RenderPipeline>(H_("Pipeline"));
+    Scene* pscene             = locate<Scene>("Scene"_h);
+    RenderPipeline* ppipeline = locate<RenderPipeline>("Pipeline"_h);
 
     // * Perform ray/AABB intersection test with objects in view frustum
     //   and return the closest object or nothing
@@ -147,8 +147,8 @@ SceneQueryResult RayCaster::ray_scene_query(const Ray& ray)
 
 SceneQueryResult RayCaster::ray_scene_query_first(const Ray& ray)
 {
-    Scene* pscene             = locate<Scene>(H_("Scene"));
-    RenderPipeline* ppipeline = locate<RenderPipeline>(H_("Pipeline"));
+    Scene* pscene             = locate<Scene>("Scene"_h);
+    RenderPipeline* ppipeline = locate<RenderPipeline>("Pipeline"_h);
 
     // * Perform ray/AABB intersection test with objects in view frustum
     //   and return the closest object or nothing

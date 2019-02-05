@@ -62,7 +62,7 @@ std::shared_ptr<SurfaceMesh> ModelFactory::preload_mesh_model_instance(hash_t na
 
 void ModelFactory::parse_asset_file(const char* xmlfile)
 {
-    fs::path file_path(io::get_file(H_("root.folders.level"), xmlfile));
+    fs::path file_path(io::get_file("root.folders.level"_h, xmlfile));
     xml_parser_.load_file_xml(file_path);
 }
 

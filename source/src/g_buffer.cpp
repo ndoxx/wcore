@@ -22,7 +22,7 @@ GBuffer::GBuffer(unsigned int width,
                  unsigned int height):
 BufferModule("gbuffer",
 std::make_shared<Texture>(
-    std::vector<hash_t>{H_("normalTex"), H_("albedoTex"), H_("depthTex")},
+    std::vector<hash_t>{"normalTex"_h, "albedoTex"_h, "depthTex"_h},
     std::vector<GLenum>{GL_NEAREST,      GL_NEAREST,      GL_NONE},
     std::vector<GLenum>{GL_RGBA16_SNORM, GL_RGBA,       GL_DEPTH_COMPONENT24},
     std::vector<GLenum>{GL_RGBA,         GL_RGBA,         GL_DEPTH_COMPONENT},

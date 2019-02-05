@@ -85,9 +85,9 @@ render_editor_GUI_(false)
     // GUI initialization
 #ifndef __DISABLE_EDITOR__
     init_imgui();
-    subscribe(H_("input.keyboard"), handler_, &GameLoop::onKeyboardEvent);
+    subscribe("input.keyboard"_h, handler_, &GameLoop::onKeyboardEvent);
 #endif
-    subscribe(H_("input.mouse.focus"), handler_, &GameLoop::onMouseFocus);
+    subscribe("input.mouse.focus"_h, handler_, &GameLoop::onMouseFocus);
 }
 
 GameLoop::~GameLoop()
@@ -163,26 +163,26 @@ bool GameLoop::onKeyboardEvent(const WData& data)
     switch(kbd.key_binding)
     {
 #ifndef __DISABLE_EDITOR__
-        case H_("k_tg_editor"):
+        case "k_tg_editor"_h:
             handler_.toggle_mouse_lock();
             toggle_editor_GUI_rendering();
             context_.center_cursor();
-            if(!CONFIG.is(H_("root.gui.cursor.custom")))
+            if(!CONFIG.is("root.gui.cursor.custom"_h))
             {
                 context_.toggle_hard_cursor();
             }
         break;
 #endif
-        case H_("k_tg_pause"):
+        case "k_tg_pause"_h:
     		game_clock_.toggle_pause();
     		break;
-        case H_("k_frame_speed_up"):
+        case "k_frame_speed_up"_h:
     		game_clock_.frame_speed_up();
     		break;
-        case H_("k_frame_slow_down"):
+        case "k_frame_slow_down"_h:
     		game_clock_.frame_slow_down();
     		break;
-        case H_("k_next_frame"):
+        case "k_next_frame"_h:
     		game_clock_.require_next_frame();
     		break;
     }
@@ -192,7 +192,7 @@ bool GameLoop::onKeyboardEvent(const WData& data)
 
 bool GameLoop::onMouseFocus(const WData& data)
 {
-    if(CONFIG.is(H_("root.gui.cursor.custom")))
+    if(CONFIG.is("root.gui.cursor.custom"_h))
     {
         const MouseFocusData& mfd = static_cast<const MouseFocusData&>(data);
         if(mfd.leaving_window)
@@ -221,7 +221,7 @@ void GameLoop::handle_events()
 int GameLoop::run()
 {
     uint32_t target_fps_ = 60;
-    CONFIG.get(H_("root.display.target_fps"), target_fps_);
+    CONFIG.get("root.display.target_fps"_h, target_fps_);
 
     const std::chrono::nanoseconds frame_duration_ns_(uint32_t(1e9*1.0f/target_fps_));
 
@@ -236,8 +236,8 @@ int GameLoop::run()
     float dt_profile_events;
     float dt_profile_bufswp;
     // Register debug info fields
-    DINFO.register_text_slot(H_("sdiFPS"), math::vec3(1.0,1.0,1.0));
-    DINFO.register_text_slot(H_("sdiRender"), math::vec3(1.0,1.0,1.0));
+    DINFO.register_text_slot("sdiFPS"_h, math::vec3(1.0,1.0,1.0));
+    DINFO.register_text_slot("sdiRender"_h, math::vec3(1.0,1.0,1.0));
 #endif //__PROFILING_GAMELOOP__
 #ifdef __PROFILING_STOP_AFTER_X_SAMPLES__
     uint32_t n_frames = 0;
@@ -334,8 +334,8 @@ int GameLoop::run()
         dt = std::chrono::duration_cast<std::chrono::duration<float>>(frame_d).count();
 
 #ifdef __PROFILING_GAMELOOP__
-        DINFO.display(H_("sdiFPS"), std::string("FPS: ") + std::to_string(1.0f/dt));
-        DINFO.display(H_("sdiRender"), std::string("Render: ") + std::to_string(1e3*dt_profile_render) + std::string("ms"));
+        DINFO.display("sdiFPS"_h, std::string("FPS: ") + std::to_string(1.0f/dt));
+        DINFO.display("sdiRender"_h, std::string("Render: ") + std::to_string(1e3*dt_profile_render) + std::string("ms"));
 #endif //__PROFILING_GAMELOOP__
 
 #ifdef __PROFILING_STOP_AFTER_X_SAMPLES__
@@ -365,7 +365,7 @@ int GameLoop::run()
 #endif //__PROFILING_GAMELOOP__
 
     fs::path log_path;
-    if(CONFIG.get<fs::path>(H_("root.folders.log"), log_path))
+    if(CONFIG.get<fs::path>("root.folders.log"_h, log_path))
         dbg::LOG.write(log_path / "debug.log");
     else
         dbg::LOG.write(fs::path("debug.log"));

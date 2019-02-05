@@ -24,8 +24,8 @@ wireframe_mix_(0.0f),
 allow_normal_mapping_(true),
 allow_parallax_mapping_(true)
 {
-    CONFIG.get(H_("root.render.override.allow_normal_mapping"), allow_normal_mapping_);
-    CONFIG.get(H_("root.render.override.allow_parallax_mapping"), allow_parallax_mapping_);
+    CONFIG.get("root.render.override.allow_normal_mapping"_h, allow_normal_mapping_);
+    CONFIG.get("root.render.override.allow_parallax_mapping"_h, allow_parallax_mapping_);
 }
 
 void GeometryRenderer::render(Scene* pscene)
@@ -41,9 +41,9 @@ void GeometryRenderer::render(Scene* pscene)
     GFX::cull_back();
     geometry_pass_shader_.use();
     // Wireframe mix
-    geometry_pass_shader_.send_uniform(H_("rd.f_wireframe_mix"), wireframe_mix_);
+    geometry_pass_shader_.send_uniform("rd.f_wireframe_mix"_h, wireframe_mix_);
     // Camera (eye) position
-    //geometry_pass_shader_.send_uniform(H_("rd.v3_viewPos"), pscene->get_camera()->get_position());
+    //geometry_pass_shader_.send_uniform("rd.v3_viewPos"_h, pscene->get_camera()->get_position());
     // Draw to G-Buffer
     GBuffer::Instance().bind_as_target();
 
@@ -57,20 +57,20 @@ void GeometryRenderer::render(Scene* pscene)
         mat4 MVP = PV*M;
 
         // normal matrix for light calculation
-        //geometry_pass_shader_.send_uniform(H_("tr.m3_Normal"), M.submatrix(3,3)); // Transposed inverse of M if non uniform scales
-        geometry_pass_shader_.send_uniform(H_("tr.m3_Normal"), MV.submatrix(3,3)); // Transposed inverse of M if non uniform scales
+        //geometry_pass_shader_.send_uniform("tr.m3_Normal"_h, M.submatrix(3,3)); // Transposed inverse of M if non uniform scales
+        geometry_pass_shader_.send_uniform("tr.m3_Normal"_h, MV.submatrix(3,3)); // Transposed inverse of M if non uniform scales
         // model matrix
-        //geometry_pass_shader_.send_uniform(H_("tr.m4_Model"), M);
-        geometry_pass_shader_.send_uniform(H_("tr.m4_ModelView"), MV);
+        //geometry_pass_shader_.send_uniform("tr.m4_Model"_h, M);
+        geometry_pass_shader_.send_uniform("tr.m4_ModelView"_h, MV);
         // MVP matrix
-        geometry_pass_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+        geometry_pass_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
         // material uniforms
         geometry_pass_shader_.send_uniforms(pmodel->get_material());
         // overrides
         if(!allow_normal_mapping_)
-            geometry_pass_shader_.send_uniform(H_("mt.b_use_normal_map"), false);
+            geometry_pass_shader_.send_uniform("mt.b_use_normal_map"_h, false);
         if(!allow_parallax_mapping_)
-            geometry_pass_shader_.send_uniform(H_("mt.b_use_parallax_map"), false);
+            geometry_pass_shader_.send_uniform("mt.b_use_parallax_map"_h, false);
         if(pmodel->get_material().is_textured())
         {
             // bind current material texture units if any

@@ -9,6 +9,7 @@ namespace wcore
 class EditorTweaksInitializer: public InitializerSystem
 {
 public:
+    // * Override
     virtual ~EditorTweaksInitializer();
     // Parse tweaks file and initialize state
     virtual void init_self() override;

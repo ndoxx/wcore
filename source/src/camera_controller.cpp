@@ -31,8 +31,8 @@ CameraController::~CameraController()
 
 void CameraController::init_events(InputHandler& handler)
 {
-    subscribe(H_("input.mouse.locked"), handler, &CameraController::onMouseEvent);
-    subscribe(H_("input.keyboard"), handler, &CameraController::onKeyboardEvent);
+    subscribe("input.mouse.locked"_h, handler, &CameraController::onMouseEvent);
+    subscribe("input.keyboard"_h, handler, &CameraController::onKeyboardEvent);
 }
 
 void CameraController::update(const GameClock& clock)
@@ -77,7 +77,7 @@ bool CameraController::onKeyboardEvent(const WData& data)
     // * First, handle events that target this system
     // Switch state based on kbd input for now
     const KbdData& kbd = static_cast<const KbdData&>(data);
-    if(kbd.key_binding == H_("k_cam_new_keyframe"))
+    if(kbd.key_binding == "k_cam_new_keyframe"_h)
     {
         CameraStateTrackingShot* ts_state
             = static_cast<CameraStateTrackingShot*>(camera_states_[CameraStateIndex::TRACKING]);
@@ -85,7 +85,7 @@ bool CameraController::onKeyboardEvent(const WData& data)
                                math::quat(0.f,camera_->get_pitch(),camera_->get_yaw()));
         return true;
     }
-    else if(kbd.key_binding == H_("k_cam_tg_record"))
+    else if(kbd.key_binding == "k_cam_tg_record"_h)
     {
         CameraStateTrackingShot* ts_state
             = static_cast<CameraStateTrackingShot*>(camera_states_[CameraStateIndex::TRACKING]);
@@ -98,7 +98,7 @@ bool CameraController::onKeyboardEvent(const WData& data)
         }
         return true;
     }
-    else if(kbd.key_binding == H_("k_cam_gen_track"))
+    else if(kbd.key_binding == "k_cam_gen_track"_h)
     {
         recording_ = false;
         CameraStateTrackingShot* ts_state
@@ -106,7 +106,7 @@ bool CameraController::onKeyboardEvent(const WData& data)
         ts_state->generate_interpolator();
         return true;
     }
-    else if(kbd.key_binding == H_("k_cam_next_state"))
+    else if(kbd.key_binding == "k_cam_next_state"_h)
     {
         // TMP just advance state index
         current_state_ = (current_state_+1)%camera_states_.size();
@@ -137,28 +137,28 @@ bool CameraStateFreefly::onKeyboardEvent(const WData& data, std::shared_ptr<Came
 
     switch(kbd.key_binding)
     {
-        case H_("k_run"):
+        case "k_run"_h:
             camera->set_speed(Camera::SPEED_FAST);
             break;
-        case H_("k_walk"):
+        case "k_walk"_h:
             camera->set_speed(Camera::SPEED_SLOW);
             break;
-        case H_("k_forward"):
+        case "k_forward"_h:
             camera->move_forward();
             break;
-        case H_("k_backward"):
+        case "k_backward"_h:
             camera->move_backward();
             break;
-        case H_("k_strafe_left"):
+        case "k_strafe_left"_h:
             camera->strafe_left();
             break;
-        case H_("k_strafe_right"):
+        case "k_strafe_right"_h:
             camera->strafe_right();
             break;
-        case H_("k_ascend"):
+        case "k_ascend"_h:
             camera->ascend();
             break;
-        case H_("k_descend"):
+        case "k_descend"_h:
             camera->descend();
             break;
     }
@@ -197,10 +197,10 @@ bool CameraStateTrackingShot::onKeyboardEvent(const WData& data, std::shared_ptr
 
     switch(kbd.key_binding)
     {
-        case H_("k_tc_faster"):
+        case "k_tc_faster"_h:
             speed_ = std::min(10.f, speed_+0.5f);
             break;
-        case H_("k_tc_slower"):
+        case "k_tc_slower"_h:
             speed_ = std::max(0.5f, speed_-0.5f);
             break;
     }

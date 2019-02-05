@@ -130,7 +130,7 @@ public:
     virtual void update(const GameClock& clock) override;
 #ifndef __DISABLE_EDITOR__
     virtual void generate_widget() override;
-    inline Editor* locate_editor() { return locate<Editor>(H_("Editor")); }
+    inline Editor* locate_editor() { return locate<Editor>("Editor"_h); }
 #endif
     // Sort models within each chunk according to distance to camera
     void sort_models();

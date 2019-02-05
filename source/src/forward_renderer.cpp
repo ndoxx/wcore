@@ -59,7 +59,7 @@ void ForwardRenderer::render(Scene* pscene)
             mat4 MVP = PV*M;
 
             // Transform
-            forward_stage_shader_.send_uniform(H_("tr.m4_ModelViewProjection"), MVP);
+            forward_stage_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             // Material
             const Material& material = pmodel->get_material();
             if(material.is_textured())
@@ -68,7 +68,7 @@ void ForwardRenderer::render(Scene* pscene)
             }
             else
             {
-                forward_stage_shader_.send_uniform(H_("mt.v4_tint"), vec4(material.get_albedo(),
+                forward_stage_shader_.send_uniform("mt.v4_tint"_h, vec4(material.get_albedo(),
                                                                       material.get_alpha()));
             }
         },

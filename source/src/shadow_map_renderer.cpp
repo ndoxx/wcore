@@ -34,8 +34,8 @@ Renderer<Vertex3P>(),
 #endif
 sbuffer_(nullptr)
 {
-    CONFIG.get(H_("root.render.shadowmap.width"), SHADOW_WIDTH);
-    CONFIG.get(H_("root.render.shadowmap.height"), SHADOW_HEIGHT);
+    CONFIG.get("root.render.shadowmap.width"_h, SHADOW_WIDTH);
+    CONFIG.get("root.render.shadowmap.height"_h, SHADOW_HEIGHT);
     SHADOW_TEXEL_SIZE = vec2(1.0f/SHADOW_WIDTH, 1.0f/SHADOW_HEIGHT);
 
     sbuffer_ = new ShadowBuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
@@ -73,8 +73,8 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map(Scene* pscene, float
     GFX::unlock_depth_buffer();
     GFX::clear_depth();
 #endif
-    //sm_shader_.send_uniform(H_("lt.v3_lightPosition"), pscene->get_directional_light().lock()->get_position());
-    sm_shader_.send_uniform(H_("f_normalOffset"), normal_offset);
+    //sm_shader_.send_uniform("lt.v3_lightPosition"_h, pscene->get_directional_light().lock()->get_position());
+    sm_shader_.send_uniform("f_normalOffset"_h, normal_offset);
     pscene->draw_models([&](std::shared_ptr<Model> pmodel)
     {
         uint32_t cull_face = pmodel->shadow_cull_face();
@@ -95,8 +95,8 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map(Scene* pscene, float
         math::mat4 M = pmodel->get_model_matrix();
         //math::mat4 MV = Vl*M;
         math::mat4 MVP = PVl*M;
-        sm_shader_.send_uniform(H_("m4_ModelViewProjection"), MVP);
-        //sm_shader_.send_uniform(H_("m3_Normal"), MV.submatrix(3,3));
+        sm_shader_.send_uniform("m4_ModelViewProjection"_h, MVP);
+        //sm_shader_.send_uniform("m3_Normal"_h, MV.submatrix(3,3));
     }/*,
     wcore::DEFAULT_MODEL_EVALUATOR,
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__

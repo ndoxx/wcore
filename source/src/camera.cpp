@@ -39,8 +39,8 @@ is_ortho_(false)
     init_frustum(proj_, frustum_);
     compute_rays_perspective();
 
-    CONFIG.get(H_("root.input.mouse.sensitivity"), MOUSE_SENSITIVITY_X);
-    MOUSE_SENSITIVITY_Y = MOUSE_SENSITIVITY_X * ((CONFIG.is(H_("root.input.mouse.y_inverted")))?-1.0f:1.0f);
+    CONFIG.get("root.input.mouse.sensitivity"_h, MOUSE_SENSITIVITY_X);
+    MOUSE_SENSITIVITY_Y = MOUSE_SENSITIVITY_X * ((CONFIG.is("root.input.mouse.y_inverted"_h))?-1.0f:1.0f);
 }
 
 void Camera::set_perspective(float scr_width, float scr_height, float z_far)

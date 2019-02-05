@@ -73,7 +73,7 @@ cursor_hidden_(true)
     }
     glGetError();   // Mask an unavoidable error caused by GLEW
 
-    if(CONFIG.is(H_("root.display.vsync")))
+    if(CONFIG.is("root.display.vsync"_h))
         glfwSwapInterval(1); // Enable vsync
 
     // UNSAFE Sleep a bit so that the window has enough time to open, and the sizes we get

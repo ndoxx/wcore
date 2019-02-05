@@ -19,13 +19,13 @@ Editor::~Editor()
 
 void Editor::init_events(InputHandler& handler)
 {
-    subscribe(H_("input.mouse.click"), handler, &Editor::onMouseEvent);
-    subscribe(H_("input.keyboard"), handler, &Editor::onKeyboardEvent);
+    subscribe("input.mouse.click"_h, handler, &Editor::onMouseEvent);
+    subscribe("input.keyboard"_h, handler, &Editor::onKeyboardEvent);
 }
 
 bool Editor::onMouseEvent(const WData& data)
 {
-    RayCaster* ray_caster = locate<RayCaster>(H_("RayCaster"));
+    RayCaster* ray_caster = locate<RayCaster>("RayCaster"_h);
 
     const MouseData& md = static_cast<const MouseData&>(data);
 
@@ -60,7 +60,7 @@ bool Editor::onKeyboardEvent(const WData& data)
 
     switch(kbd.key_binding)
     {
-        case H_("k_editor_deselect"):
+        case "k_editor_deselect"_h:
             model_selection_ = std::weak_ptr<Model>();
             last_scene_query_.clear();
             break;

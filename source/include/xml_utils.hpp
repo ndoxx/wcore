@@ -12,6 +12,9 @@
 
 namespace wcore
 {
+
+typedef unsigned long long hash_t;
+
 namespace xml
 {
 
@@ -64,6 +67,7 @@ bool parse_node(rapidxml::xml_node<>* parent, const char* leaf_name, T& destinat
     return str_val(leaf_node->value(), destination);
 }
 
+hash_t parse_attribute_h(rapidxml::xml_node<>* node, const char* name);
 bool parse_attribute(rapidxml::xml_node<>* node, const char* name, std::string& destination);
 bool parse_node(rapidxml::xml_node<>* parent, const char* leaf_name, std::string& destination);
 

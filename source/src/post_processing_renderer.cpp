@@ -43,41 +43,41 @@ void PostProcessingRenderer::render(Scene* pscene)
 
     post_processing_shader_.use();
     // Texture samplers uniforms
-    post_processing_shader_.send_uniform<int>(H_("screenTex"), 0);
-    post_processing_shader_.send_uniform<int>(H_("bloomTex"), 1);
-    post_processing_shader_.send_uniform<int>(H_("depthStencilTex"), 2);
+    post_processing_shader_.send_uniform<int>("screenTex"_h, 0);
+    post_processing_shader_.send_uniform<int>("bloomTex"_h, 1);
+    post_processing_shader_.send_uniform<int>("depthStencilTex"_h, 2);
     // Post processing uniforms
-    post_processing_shader_.send_uniform(H_("rd.f_ca_shift"), aberration_shift_);
-    post_processing_shader_.send_uniform(H_("rd.f_ca_strength"), aberration_strength_);
-    post_processing_shader_.send_uniform(H_("rd.v3_gamma"), gamma_);
-    post_processing_shader_.send_uniform(H_("rd.v3_vibrance_bal"), vibrance_bal_);
-    post_processing_shader_.send_uniform(H_("rd.f_vibrance"), vibrance_);
-    post_processing_shader_.send_uniform(H_("rd.f_saturation"), saturation_);
-    post_processing_shader_.send_uniform(H_("rd.f_vignette_falloff"), vignette_falloff_);
-    post_processing_shader_.send_uniform(H_("rd.f_vignette_bal"), vignette_balance_);
-    post_processing_shader_.send_uniform(H_("rd.f_exposure"), exposure_);
-    post_processing_shader_.send_uniform(H_("rd.f_contrast"), contrast_);
-    post_processing_shader_.send_uniform(H_("rd.v2_frameBufSize"), vec2(GLB.WIN_W, GLB.WIN_H));
+    post_processing_shader_.send_uniform("rd.f_ca_shift"_h, aberration_shift_);
+    post_processing_shader_.send_uniform("rd.f_ca_strength"_h, aberration_strength_);
+    post_processing_shader_.send_uniform("rd.v3_gamma"_h, gamma_);
+    post_processing_shader_.send_uniform("rd.v3_vibrance_bal"_h, vibrance_bal_);
+    post_processing_shader_.send_uniform("rd.f_vibrance"_h, vibrance_);
+    post_processing_shader_.send_uniform("rd.f_saturation"_h, saturation_);
+    post_processing_shader_.send_uniform("rd.f_vignette_falloff"_h, vignette_falloff_);
+    post_processing_shader_.send_uniform("rd.f_vignette_bal"_h, vignette_balance_);
+    post_processing_shader_.send_uniform("rd.f_exposure"_h, exposure_);
+    post_processing_shader_.send_uniform("rd.f_contrast"_h, contrast_);
+    post_processing_shader_.send_uniform("rd.v2_frameBufSize"_h, vec2(GLB.WIN_W, GLB.WIN_H));
     // Fog
-    post_processing_shader_.send_uniform(H_("rd.b_enableFog"), fog_enabled_);
-    post_processing_shader_.send_uniform(H_("rd.f_fogDensity"), fog_density_);
-    post_processing_shader_.send_uniform(H_("rd.v3_fogColor"), fog_color_);
+    post_processing_shader_.send_uniform("rd.b_enableFog"_h, fog_enabled_);
+    post_processing_shader_.send_uniform("rd.f_fogDensity"_h, fog_density_);
+    post_processing_shader_.send_uniform("rd.v3_fogColor"_h, fog_color_);
     // Bloom
-    post_processing_shader_.send_uniform(H_("rd.b_enableBloom"), bloom_enabled_);
+    post_processing_shader_.send_uniform("rd.b_enableBloom"_h, bloom_enabled_);
     // FXAA
-    post_processing_shader_.send_uniform(H_("rd.b_FXAA_enabled"), fxaa_enabled_);
+    post_processing_shader_.send_uniform("rd.b_FXAA_enabled"_h, fxaa_enabled_);
     // Dithering
-    post_processing_shader_.send_uniform(H_("rd.b_dither"), dithering_enabled_);
+    post_processing_shader_.send_uniform("rd.b_dither"_h, dithering_enabled_);
     // Accessibility
-    post_processing_shader_.send_uniform(H_("rd.i_daltonize_mode"), acc_daltonize_mode_);
-    post_processing_shader_.send_uniform(H_("rd.i_blindness_type"), acc_blindness_type_);
+    post_processing_shader_.send_uniform("rd.i_daltonize_mode"_h, acc_daltonize_mode_);
+    post_processing_shader_.send_uniform("rd.i_blindness_type"_h, acc_blindness_type_);
 
 
     // Render textured quad to screen
     GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
 
     // Bind relevant textures
-    auto pbloom = Texture::get_named_texture(H_("bloom")).lock();
+    auto pbloom = Texture::get_named_texture("bloom"_h).lock();
     lbuffer.bind_as_source(0,0);
     if(bloom_enabled_)
         pbloom->bind(1,0);

@@ -29,15 +29,9 @@ private:
     typedef std::shared_ptr<Texture> pTexture;
     typedef std::weak_ptr<Texture> wpTexture;
 
-#ifdef __PRESERVE_STRS__
-    typedef std::unordered_map<hash_t, pInternal> RMap;
-    typedef std::unordered_map<hash_t, pTexture> TMap;
-    typedef std::unordered_map<hash_t, std::vector<std::string>> AMap;
-#else
     typedef std::map<hash_t, pInternal> RMap;
     typedef std::map<hash_t, pTexture> TMap;
     typedef std::map<hash_t, std::vector<std::string>> AMap;
-#endif
 
     pInternal internal_;
     hash_t    resourceID_;

@@ -11,7 +11,7 @@ entity_factory_(new EntityFactory("entity.xml"))
 {
     // Register component model factory function here
     // bc it uses model_factory_
-    entity_factory_->register_component_factory(H_("Model"), [&](WEntity& target, rapidxml::xml_node<>* cmp_node)
+    entity_factory_->register_component_factory("Model"_h, [&](WEntity& target, rapidxml::xml_node<>* cmp_node)
     {
         auto cmp_model = target.add_component<component::WCModel>();
         std::string model_name;

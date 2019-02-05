@@ -19,12 +19,12 @@ Texture::TMap Texture::NAMED_TEXTURES_;
 
 std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
 {
-    {TextureUnit::ALBEDO,    H_("mt.albedoTex")},
-    {TextureUnit::AO,        H_("mt.AOTex")},
-    {TextureUnit::DEPTH,     H_("mt.depthTex")},
-    {TextureUnit::METALLIC,  H_("mt.metallicTex")},
-    {TextureUnit::NORMAL,    H_("mt.normalTex")},
-    {TextureUnit::ROUGHNESS, H_("mt.roughnessTex")}
+    {TextureUnit::ALBEDO,    "mt.albedoTex"_h},
+    {TextureUnit::AO,        "mt.AOTex"_h},
+    {TextureUnit::DEPTH,     "mt.depthTex"_h},
+    {TextureUnit::METALLIC,  "mt.metallicTex"_h},
+    {TextureUnit::NORMAL,    "mt.normalTex"_h},
+    {TextureUnit::ROUGHNESS, "mt.roughnessTex"_h}
 };
 
 PngLoader Texture::png_loader_;
@@ -174,7 +174,7 @@ ID_(++Ninst)
             continue;
 
         filters[ii] = descriptor.parameters.filter;
-        if(sampler_name == H_("mt.diffuseTex"))
+        if(sampler_name == "mt.diffuseTex"_h)
         {
             // Load Albedo / Diffuse textures as sRGB to avoid
             // double gamma-correction.
@@ -187,7 +187,7 @@ ID_(++Ninst)
         }
         formats[ii] = descriptor.parameters.format;
 
-        fs::path file_path = io::get_file(H_("root.folders.texture"), descriptor.locations.at(key));
+        fs::path file_path = io::get_file("root.folders.texture"_h, descriptor.locations.at(key));
         px_bufs[ii] = png_loader_.load_png(file_path);
 
         if(px_bufs[ii])
@@ -195,7 +195,7 @@ ID_(++Ninst)
             data[ii] = px_bufs[ii]->get_data_pointer();
             #if __DEBUG__
                 DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
-                if(dbg::LOG.get_channel_verbosity(H_("texture")) == 3u)
+                if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
                     px_bufs[ii]->debug_display();
                     //std::cout << *px_bufs[ii] << std::endl;
             #endif

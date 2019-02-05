@@ -57,7 +57,7 @@ SceneLoader::~SceneLoader()
 
 void SceneLoader::init_events(InputHandler& handler)
 {
-    subscribe(H_("input.keyboard"), handler, &SceneLoader::onKeyboardEvent);
+    subscribe("input.keyboard"_h, handler, &SceneLoader::onKeyboardEvent);
 }
 
 static inline std::string level_file(const char* level_name)
@@ -68,11 +68,11 @@ static inline std::string level_file(const char* level_name)
 void SceneLoader::load_level(const char* level_name)
 {
     // Locate scene game system
-    pscene_ = locate<Scene>(H_("Scene"));
-    game_object_factory_ = locate<GameObjectFactory>(H_("GameObjectFactory"));
+    pscene_ = locate<Scene>("Scene"_h);
+    game_object_factory_ = locate<GameObjectFactory>("GameObjectFactory"_h);
 
     DLOGS("[SceneLoader] Parsing xml scene description.", "scene", Severity::LOW);
-    fs::path file_path(io::get_file(H_("root.folders.level"), level_file(level_name)));
+    fs::path file_path(io::get_file("root.folders.level"_h, level_file(level_name)));
     xml_parser_.load_file_xml(file_path);
     current_map_ = level_name;
 }
@@ -83,10 +83,10 @@ bool SceneLoader::onKeyboardEvent(const WData& data)
 
     switch(kbd.key_binding)
     {
-        case H_("k_reload_chunks"):
+        case "k_reload_chunks"_h:
     		reload_chunks();
     		break;
-        case H_("k_reload_map"):
+        case "k_reload_map"_h:
     		reload_map();
     		break;
     }
@@ -220,7 +220,7 @@ void SceneLoader::parse_audio(rapidxml::xml_node<>* node)
     if(node == nullptr) return;
 
     // Locate sound system
-    auto psound_ = locate<SoundSystem>(H_("SoundSystem"));
+    auto psound_ = locate<SoundSystem>("SoundSystem"_h);
 
     // Parse background music
     std::string bgm_name;
