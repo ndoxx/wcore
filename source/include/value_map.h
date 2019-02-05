@@ -4,6 +4,7 @@
 #include <map>
 
 #include "wtypes.h"
+#include "math3d.h"
 #include "xml_parser.h"
 
 namespace wcore
@@ -14,8 +15,6 @@ class ValueMap
 public:
     // Generic accessors for values in maps
     template <typename T> inline void set(hash_t name, T value);
-    template <typename T> inline void set_ref(hash_t name, const T& value);
-    template <typename T> inline void set_move(hash_t name, T&& value);
     template <typename T> inline bool get(hash_t name, T& destination);
     // Test a boolean flag quickly
     inline bool is(hash_t name);
@@ -41,6 +40,8 @@ protected:
     std::map<hash_t, std::string> strings_;
     std::map<hash_t, bool>        bools_;
     std::map<hash_t, fs::path>    paths_;
+    std::map<hash_t, math::vec2>  vec2s_;
+    std::map<hash_t, math::vec3>  vec3s_;
 
     XMLParser xml_parser_;
     std::map<hash_t, rapidxml::xml_node<>*> dom_locations_;
@@ -104,13 +105,43 @@ template <> inline bool ValueMap::get(hash_t name, float& destination)
     return false;
 }
 
+template <> inline void ValueMap::set(hash_t name, math::vec2 value)
+{
+    vec2s_[name] = value;
+}
+template <> inline bool ValueMap::get(hash_t name, math::vec2& destination)
+{
+    auto it = vec2s_.find(name);
+    if(it != vec2s_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+template <> inline void ValueMap::set(hash_t name, math::vec3 value)
+{
+    vec3s_[name] = value;
+}
+template <> inline bool ValueMap::get(hash_t name, math::vec3& destination)
+{
+    auto it = vec3s_.find(name);
+    if(it != vec3s_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
 template <> inline void ValueMap::set(hash_t name, const char* value)
 {
-    strings_[name] = std::string(value);
+    strings_[name] = value;
 }
 template <> inline void ValueMap::set(hash_t name, char* value)
 {
-    strings_[name] = std::string(value);
+    strings_[name] = value;
 }
 
 template <> inline bool ValueMap::get(hash_t name, std::string& destination)
@@ -124,14 +155,10 @@ template <> inline bool ValueMap::get(hash_t name, std::string& destination)
     return false;
 }
 
-template <> inline void ValueMap::set_ref(hash_t name, const fs::path& value)
+
+template <> inline void ValueMap::set(hash_t name, std::reference_wrapper<const fs::path> value)
 {
     paths_[name] = value;
-}
-
-template <> inline void ValueMap::set_move(hash_t name, fs::path&& value)
-{
-    paths_[name] = std::move(value);
 }
 
 template <> inline bool ValueMap::get(hash_t name, fs::path& destination)

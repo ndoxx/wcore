@@ -82,6 +82,20 @@ hash_t ValueMap::parse_xml_property(rapidxml::xml_node<>* node,
             this->set(full_name_hash, value);
             break;
         }
+        case "vec2"_h:
+        {
+            math::vec2 value(0.0f);
+            if(!xml::parse_attribute(node, "value", value)) return 0;
+            this->set(full_name_hash, value);
+            break;
+        }
+        case "vec3"_h:
+        {
+            math::vec3 value(0.0f);
+            if(!xml::parse_attribute(node, "value", value)) return 0;
+            this->set(full_name_hash, value);
+            break;
+        }
         case "string"_h:
         {
             std::string value;
@@ -95,7 +109,7 @@ hash_t ValueMap::parse_xml_property(rapidxml::xml_node<>* node,
             if(!xml::parse_attribute(node, "value", value)) return 0;
             fs::path dir(root_path_ / fs::path(value.c_str()));
             if(fs::exists(dir))
-                this->set_ref(full_name_hash, dir);
+                this->set(full_name_hash, std::cref(dir));
             else
             {
                 DLOGE("[ValueMap] Directory does not exist: ", "core", Severity::CRIT);
