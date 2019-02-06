@@ -163,6 +163,7 @@ const std::vector<uint32_t> FrustumBox::planePoints = {3, 0, 3, 7, 3, 2};
 
 FrustumBox::FrustumBox()
 {
+    // For shadowmap frustum splits, unused atm.
     float lambda = 0.5f;
     float near = 0.1f;
     float far = 100.0f;

@@ -17,25 +17,24 @@ namespace wcore
 using namespace math;
 
 float Camera::MAX_PITCH = 89.0f;
-float Camera::NEAR = 0.1f;
-float Camera::FAR = 100.0f;
-float Camera::MOUSE_SENSITIVITY_X = 1.0f;
-float Camera::MOUSE_SENSITIVITY_Y = 1.0f;
-const float Camera::SPEED_SLOW = 4.0f;
-const float Camera::SPEED_FAST = 20.0f;
 
 Camera::Camera(float scr_width, float scr_height):
 pitch_(0.0f),
 yaw_(0.0f),
 dt_(0.0f),
-speed_(4.0f),
-rot_speed_(30.0f),
-frustum_({-scr_width/(scr_height)*NEAR, scr_width/(scr_height)*NEAR, -NEAR, NEAR, NEAR, FAR}),
 proj_(),
 position_(0.0f,0.0f,0.0f),
 update_frustum_(true),
 is_ortho_(false)
 {
+    CONFIG.get("root.camera.near"_h, NEAR);
+    CONFIG.get("root.camera.far"_h, FAR);
+    CONFIG.get("root.camera.speed_slow"_h, SPEED_SLOW);
+    CONFIG.get("root.camera.speed_fast"_h, SPEED_FAST);
+    CONFIG.get("root.camera.speed_rot"_h, rot_speed_);
+    speed_ = SPEED_SLOW;
+    frustum_.init(-scr_width/(scr_height)*NEAR, scr_width/(scr_height)*NEAR, -NEAR, NEAR, NEAR, FAR);
+
     init_frustum(proj_, frustum_);
     compute_rays_perspective();
 
@@ -122,7 +121,6 @@ float Camera::get_frustum_diagonal() const
 {
     return (frusBox_.RBN()-frusBox_.LTF()).norm();
 }
-
 
 void Camera::look_at(const math::vec3& posLookAt)
 {

@@ -8,6 +8,8 @@
 #include "logger.h"
 #include "buffer_module.h"
 #include "globals.h"
+#include "scene.h"
+#include "camera.h"
 
 #include "g_buffer.h"
 #include "l_buffer.h"
@@ -94,7 +96,7 @@ void DebugOverlayRenderer::register_debug_pane(BufferModule& buffer_module)
     debug_panes_.push_back(dbg_pane);
 }
 
-void DebugOverlayRenderer::render_pane(uint32_t index)
+void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
 {
     // Clamp index
     index = (index>debug_panes_.size()-1)?debug_panes_.size()-1:index;
@@ -112,6 +114,11 @@ void DebugOverlayRenderer::render_pane(uint32_t index)
         bool is_depth = props.is_depth;
 
         passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
+        if(is_depth)
+        {
+            passthrough_shader_.send_uniform("f_near"_h, pscene->get_camera()->get_near());
+            passthrough_shader_.send_uniform("f_far"_h, pscene->get_camera()->get_far());
+        }
 
         GFX::bind_texture2D(0, props.texture_index);
         GFX::viewport((ii+1)*gap + ii*vpw, gap, vpw, vph);
@@ -132,7 +139,7 @@ void DebugOverlayRenderer::render(Scene* pscene)
 
     vertex_array_.bind();
     passthrough_shader_.use();
-    render_pane(mode_);
+    render_pane(mode_, pscene);
     passthrough_shader_.unuse();
     vertex_array_.unbind();
 }

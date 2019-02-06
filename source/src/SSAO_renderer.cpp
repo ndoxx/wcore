@@ -104,7 +104,8 @@ void SSAORenderer::render(Scene* pscene)
     }*/
 
     // Send uniforms
-    const math::mat4& V = pscene->get_camera()->get_view_matrix();
+    //const math::mat4& V = pscene->get_camera()->get_view_matrix();
+    float cam_far = pscene->get_camera()->get_far();
     SSAO_shader_.send_uniform("rd.v2_noiseScale"_h, noise_scale_);
     //if(auto dir_light = pscene->get_directional_light().lock())
         //SSAO_shader_.send_uniform("rd.v3_lightDir"_h, V.submatrix(3,3)*dir_light->get_position());
@@ -113,6 +114,7 @@ void SSAORenderer::render(Scene* pscene)
     SSAO_shader_.send_uniform("rd.f_vbias"_h, SSAO_vbias_);
     SSAO_shader_.send_uniform("rd.f_intensity"_h, SSAO_intensity_);
     SSAO_shader_.send_uniform("rd.f_scale"_h, SSAO_scale_);
+    SSAO_shader_.send_uniform("rd.f_inv_far"_h, 1.0f/cam_far);
     //SSAO_shader_.send_uniform("rd.b_invert_normals"_h, false);
     // For position reconstruction
     SSAO_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);

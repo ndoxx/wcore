@@ -1086,6 +1086,9 @@ using mat4 = mat<4>;
 struct Frustum
 {
 public:
+    Frustum():
+    l(0), r(0), b(0), t(0), n(0), f(0), w(0), h(0), d(0){}
+
     Frustum(float left, float right, float bottom, float top, float near, float far):
     l(left), r(right), b(bottom), t(top), n(near), f(far),
     w(right-left), h(top-bottom), d(far-near){}

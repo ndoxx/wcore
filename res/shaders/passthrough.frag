@@ -8,15 +8,15 @@ uniform sampler2D screenTex;
 uniform bool b_isDepth;
 
 // Camera constants
-const float NEAR = 0.1;
-const float FAR = 100.0;
+uniform float f_near = 0.1;
+uniform float f_far = 100.0;
 
 void main()
 {
     if(b_isDepth)
     {
         float depthNDC    = 2.0*texture(screenTex, texCoord).r - 1.0;
-        float linearDepth = (2.0 * NEAR /** FAR*/) / (FAR + NEAR - depthNDC * (FAR - NEAR));
+        float linearDepth = (2.0 * f_near /** f_far*/) / (f_far + f_near - depthNDC * (f_far - f_near));
         out_color = vec3(linearDepth,linearDepth,linearDepth);
     }
     else

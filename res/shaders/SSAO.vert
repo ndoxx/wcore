@@ -12,6 +12,8 @@ struct render_data
     float f_bias;
     float f_vbias;
 
+    float f_inv_far;
+
     bool b_invert_normals;
     // Position reconstruction
     vec4 v4_proj_params;

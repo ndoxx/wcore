@@ -16,6 +16,8 @@ struct render_data
     float f_bias;
     float f_vbias;
 
+    float f_inv_far;
+
     bool b_invert_normals;
     // Position reconstruction
     vec4 v4_proj_params;
@@ -37,8 +39,8 @@ uniform sampler2D albedoTex;
 #define PHI 0.707106f
 const vec2 SAMPLES[4] = vec2[](vec2(1,0),vec2(-1,0),
                                vec2(0,1),vec2(0,-1));
-const float FAR = 100.0f;
-const float invFAR = 0.01f;
+/*const float FAR = 100.0f;
+const float invFAR = 0.01f;*/
 const float f_occlusion_threshold = 0.5f;
 
 vec3 get_position(vec2 uv)
@@ -122,7 +124,7 @@ void main()
     //vec4 occlusion = vec4(0);
     float rad = max(rd.v2_texelSize.x, rd.f_radius/max(0.1f,-fragPos.z));
 
-    int iterations = int(mix(4.0,1.0,fragPos.z*invFAR));
+    int iterations = int(mix(4.0,1.0,fragPos.z*rd.f_inv_far));
     for (int jj=0; jj<iterations; ++jj)
     {
         //vec2 coord1 = reflect(random_sample(texCoord.xyy, jj),randomVec)*rad;

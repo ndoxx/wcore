@@ -56,7 +56,7 @@ public:
                              std::vector<std::string>&& sampler_names,
                              std::vector<bool>&& is_depth);
     void register_debug_pane(BufferModule& buffer_module);
-    void render_pane(uint32_t index);
+    void render_pane(uint32_t index, Scene* pscene);
 
 #ifndef __DISABLE_EDITOR__
     void generate_widget();

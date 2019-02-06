@@ -138,10 +138,10 @@ bool CameraStateFreefly::onKeyboardEvent(const WData& data, std::shared_ptr<Came
     switch(kbd.key_binding)
     {
         case "k_run"_h:
-            camera->set_speed(Camera::SPEED_FAST);
+            camera->set_speed_fast();
             break;
         case "k_walk"_h:
-            camera->set_speed(Camera::SPEED_SLOW);
+            camera->set_speed_slow();
             break;
         case "k_forward"_h:
             camera->move_forward();

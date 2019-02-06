@@ -28,6 +28,8 @@ struct Renderer
     //Fog
     vec3 v3_fogColor;
     float f_fogDensity;
+    float f_cam_near;
+    float f_cam_far;
     bool b_enableFog;
     //Bloom
     bool b_enableBloom;
@@ -51,8 +53,8 @@ const float LUMA_COEFF = 0.587f/0.299f;
 const vec3  LUMA = vec3(0.299f, 0.587f, 0.114f);
 
 // Camera constants
-const float NEAR = 0.1f;
-const float FAR = 100.0f;
+/*const float NEAR = 0.1f;
+const float FAR = 100.0f;*/
 
 #define ONE_THIRD 0.33333333f
 #define TWO_THIRD 0.66666666f
@@ -151,7 +153,9 @@ void main()
     if(rd.b_enableFog)
     {
         float depthNDC    = 2.0f*texture(depthStencilTex, texCoord).r - 1.0f;
-        float linearDepth = (2.0f * NEAR * FAR) / ((FAR + NEAR) - depthNDC * (FAR - NEAR));
+        float linearDepth = (2.0f * rd.f_cam_near * rd.f_cam_far)
+                          / ((rd.f_cam_far + rd.f_cam_near)
+                          - depthNDC * (rd.f_cam_far - rd.f_cam_near));
         float fogFactor   = 1.0f/exp(pow((linearDepth * rd.f_fogDensity),3));
         fogFactor         = clamp(fogFactor, 0.0f, 1.0f);
         out_color         = mix(rd.v3_fogColor, out_color, fogFactor);

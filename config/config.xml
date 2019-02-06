@@ -21,7 +21,7 @@
     </display>
     <render>
         <chunk>
-            <uint name="load_distance" value="3"/>
+            <uint name="load_distance" value="5"/>
         </chunk>
         <shadowmap>
             <uint name="width"  value="1920"/>
@@ -33,6 +33,13 @@
             <bool name="allow_shadow_mapping"   value="true"/>
         </override>
     </render>
+    <camera> <!-- TMP -->
+        <float name="near"       value="0.1"/>
+        <float name="far"        value="500.0"/>
+        <float name="speed_slow" value="5.0"/>
+        <float name="speed_fast" value="25.0"/>
+        <float name="speed_rot"  value="30.0"/>
+    </camera>
     <gui>
         <cursor>
             <bool name="custom" value="false"/>
@@ -67,7 +74,7 @@
             <uint name="model"     value="2"/>
             <uint name="shader"    value="0"/>
             <uint name="text"      value="0"/>
-            <uint name="input"     value="0"/>
+            <uint name="input"     value="3"/>
             <uint name="buffer"    value="0"/>
             <uint name="chunk"     value="0"/>
             <uint name="parsing"   value="0"/>

@@ -15,6 +15,9 @@ public:
     virtual void init_self() override;
     // Write to tweaks file to save state
     virtual void serialize() override;
+
+    // * Methods
+    //
 };
 
 } // namespace wcore

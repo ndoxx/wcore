@@ -34,19 +34,19 @@ private:
     bool            update_frustum_;
     bool            is_ortho_;
 
+    float NEAR;
+    float FAR;
+    float MOUSE_SENSITIVITY_X;
+    float MOUSE_SENSITIVITY_Y;
+    float SPEED_SLOW;
+    float SPEED_FAST;
+
     static float MAX_PITCH;
-    static float NEAR;
-    static float FAR;
-    static float MOUSE_SENSITIVITY_X;
-    static float MOUSE_SENSITIVITY_Y;
 
 public:
-    static const float SPEED_SLOW;
-    static const float SPEED_FAST;
 
-
-    static float get_near() { return NEAR; }
-    static float get_far()  { return FAR; }
+    inline float get_near() { return NEAR; }
+    inline float get_far()  { return FAR; }
 
     Camera() = delete;
     Camera(float scr_width, float scr_height);
@@ -83,7 +83,9 @@ public:
     inline const math::vec3& get_forward() const;
 
     inline void set_speed(float value) { speed_ = value; }
-    inline float get_speed() const { return speed_; }
+    inline void set_speed_slow()       { speed_ = SPEED_SLOW; }
+    inline void set_speed_fast()       { speed_ = SPEED_FAST; }
+    inline float get_speed() const     { return speed_; }
 
     inline void move_forward();
     inline void move_backward();
@@ -163,12 +165,12 @@ inline void Camera::move_backward()
 
 inline void Camera::ascend()
 {
-    update_position(math::vec3(0.0, 0.5f*speed_*dt_, 0.0));
+    update_position(math::vec3(0.0, 0.25f*speed_*dt_, 0.0));
 }
 
 inline void Camera::descend()
 {
-    update_position(math::vec3(0.0, 0.5f*speed_*(-dt_), 0.0));
+    update_position(math::vec3(0.0, 0.25f*speed_*(-dt_), 0.0));
 }
 
 inline void Camera::strafe_right()
