@@ -131,4 +131,195 @@ hash_t ValueMap::parse_xml_property(rapidxml::xml_node<>* node,
     return full_name_hash;
 }
 
+void ValueMap::write_xml()
+{
+    xml_parser_.write();
+}
+
+template<typename T>
+inline std::string to_string(const T& x)
+{
+    return std::to_string(x);
+}
+
+template<>
+inline std::string to_string<math::vec2>(const math::vec2& v)
+{
+    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + ")";
+}
+
+template<>
+inline std::string to_string<math::vec3>(const math::vec3& v)
+{
+    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z()) + ")";
+}
+
+// Accessors specializations
+template <> void ValueMap::set(hash_t name, uint32_t value, bool set_dom)
+{
+    if(set_dom)
+    {
+        char* value_str = xml_parser_.allocate_string(std::to_string(value).c_str());
+        dom_locations_.at(name)->first_attribute("value")->value(value_str);
+    }
+    uints_[name] = value;
+}
+template <> bool ValueMap::get(hash_t name, uint32_t& destination)
+{
+    auto it = uints_.find(name);
+    if(it != uints_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+template <> void ValueMap::set(hash_t name, int32_t value, bool set_dom)
+{
+    if(set_dom)
+    {
+        char* value_str = xml_parser_.allocate_string(std::to_string(value).c_str());
+        dom_locations_.at(name)->first_attribute("value")->value(value_str);
+    }
+    ints_[name] = value;
+}
+template <> bool ValueMap::get(hash_t name, int32_t& destination)
+{
+    auto it = ints_.find(name);
+    if(it != ints_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+template <> void ValueMap::set(hash_t name, float value, bool set_dom)
+{
+    if(set_dom)
+    {
+        char* value_str = xml_parser_.allocate_string(std::to_string(value).c_str());
+        dom_locations_.at(name)->first_attribute("value")->value(value_str);
+    }
+    floats_[name] = value;
+}
+template <> bool ValueMap::get(hash_t name, float& destination)
+{
+    auto it = floats_.find(name);
+    if(it != floats_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+template <> void ValueMap::set(hash_t name, math::vec2 value, bool set_dom)
+{
+    if(set_dom)
+    {
+        char* value_str = xml_parser_.allocate_string(wcore::to_string(value).c_str());
+        dom_locations_.at(name)->first_attribute("value")->value(value_str);
+    }
+    vec2s_[name] = value;
+}
+template <> bool ValueMap::get(hash_t name, math::vec2& destination)
+{
+    auto it = vec2s_.find(name);
+    if(it != vec2s_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+template <> void ValueMap::set(hash_t name, math::vec3 value, bool set_dom)
+{
+    if(set_dom)
+    {
+        char* value_str = xml_parser_.allocate_string(wcore::to_string(value).c_str());
+        dom_locations_.at(name)->first_attribute("value")->value(value_str);
+    }
+    vec3s_[name] = value;
+}
+template <> bool ValueMap::get(hash_t name, math::vec3& destination)
+{
+    auto it = vec3s_.find(name);
+    if(it != vec3s_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+template <> void ValueMap::set(hash_t name, const char* value, bool set_dom)
+{
+    if(set_dom)
+    {
+        char* value_str = xml_parser_.allocate_string(value);
+        dom_locations_.at(name)->first_attribute("value")->value(value_str);
+    }
+    strings_[name] = value;
+}
+template <> void ValueMap::set(hash_t name, char* value, bool set_dom)
+{
+    strings_[name] = value;
+}
+
+template <> bool ValueMap::get(hash_t name, std::string& destination)
+{
+    auto it = strings_.find(name);
+    if(it != strings_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+
+template <> void ValueMap::set(hash_t name, std::reference_wrapper<const fs::path> value, bool set_dom)
+{
+    if(set_dom)
+    {
+        char* value_str = xml_parser_.allocate_string(value.get().string().c_str());
+        dom_locations_.at(name)->first_attribute("value")->value(value_str);
+    }
+    paths_[name] = value;
+}
+
+template <> bool ValueMap::get(hash_t name, fs::path& destination)
+{
+    auto it = paths_.find(name);
+    if(it != paths_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
+template <> void ValueMap::set(hash_t name, bool value, bool set_dom)
+{
+    if(set_dom)
+    {
+        char* value_str = xml_parser_.allocate_string(value?"true":"false");
+        dom_locations_.at(name)->first_attribute("value")->value(value_str);
+    }
+    bools_[name] = value;
+}
+template <> bool ValueMap::get(hash_t name, bool& destination)
+{
+    auto it = bools_.find(name);
+    if(it != bools_.end())
+    {
+        destination = it->second;
+        return true;
+    }
+    return false;
+}
+
 } // namespace wcore

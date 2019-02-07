@@ -25,6 +25,7 @@
     #include "imgui/imgui.h"
     #include "gui_utils.h"
     #include "scene.h"
+    #include "editor_tweaks.h"
 #endif
 
 #ifdef __PROFILE__
@@ -81,6 +82,41 @@ void RenderPipeline::init_events(InputHandler& handler)
 {
     subscribe("input.mouse.unlocked"_h, handler, &RenderPipeline::onMouseEvent);
     subscribe("input.keyboard"_h, handler, &RenderPipeline::onKeyboardEvent);
+}
+
+static int SSAO_kernel_half_size = 3;
+static float SSAO_sigma = 1.8f;
+static int bloom_kernel_half_size = 3;
+static float bloom_sigma = 1.8f;
+static bool framebuffer_peek = false;
+
+void RenderPipeline::init_self()
+{
+#ifndef __DISABLE_EDITOR__
+    auto* edtweaks = locate_init<EditorTweaksInitializer>("EditorTweaks"_h);
+
+    // Post-processing tweaks
+    edtweaks->register_variable("root.postproc.aberration.shift"_h,        post_processing_renderer_->aberration_shift_);
+    edtweaks->register_variable("root.postproc.aberration.magnitude"_h,    post_processing_renderer_->aberration_strength_);
+    edtweaks->register_variable("root.postproc.vignette.falloff"_h,        post_processing_renderer_->vignette_falloff_);
+    edtweaks->register_variable("root.postproc.vignette.balance"_h,        post_processing_renderer_->vignette_balance_);
+    edtweaks->register_variable("root.postproc.color.vibrance.strength"_h, post_processing_renderer_->vibrance_);
+    edtweaks->register_variable("root.postproc.color.vibrance.balance"_h,  post_processing_renderer_->vibrance_bal_);
+    edtweaks->register_variable("root.postproc.fxaa.enabled"_h,            post_processing_renderer_->fxaa_enabled_);
+    edtweaks->register_variable("root.postproc.dithering.enabled"_h,       post_processing_renderer_->dithering_enabled_);
+
+    // SSAO tweaks
+    edtweaks->register_variable("root.ssao.radius"_h,    SSAO_renderer_->SSAO_radius_);
+    edtweaks->register_variable("root.ssao.bias"_h,      SSAO_renderer_->SSAO_bias_);
+    edtweaks->register_variable("root.ssao.vbias"_h,     SSAO_renderer_->SSAO_vbias_);
+    edtweaks->register_variable("root.ssao.intensity"_h, SSAO_renderer_->SSAO_intensity_);
+    edtweaks->register_variable("root.ssao.scale"_h,     SSAO_renderer_->SSAO_scale_);
+    edtweaks->register_variable("root.ssao.blur.passes"_h,           SSAO_renderer_->blur_policy_.n_pass_);
+    edtweaks->register_variable("root.ssao.blur.compression"_h,      SSAO_renderer_->blur_policy_.gamma_r_);
+    edtweaks->register_variable("root.ssao.blur.kernel_half_size"_h, SSAO_kernel_half_size);
+    edtweaks->register_variable("root.ssao.blur.kernel_sigma"_h,     SSAO_sigma);
+
+#endif
 }
 
 void RenderPipeline::perform_test()
@@ -167,12 +203,6 @@ const char* bb_mode_items[]       = {"Hidden", "AABB", "OBB", "Origin"};
 const char* light_mode_items[]    = {"Hidden", "Location", "Scaled"};
 const char* acc_dalt_mode_items[] = {"Off", "Simulate", "Apply correction"};
 const char* acc_blindness_items[] = {"Protanopia", "Deuteranopia", "Tritanopia"};
-
-static int SSAO_kernel_half_size = 3;
-static float SSAO_sigma = 1.8f;
-static int bloom_kernel_half_size = 3;
-static float bloom_sigma = 1.8f;
-static bool framebuffer_peek = false;
 
 void RenderPipeline::generate_widget()
 {

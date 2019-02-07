@@ -1,3 +1,6 @@
+#include <fstream>
+#include "vendor/rapidxml/rapidxml_print.hpp"
+
 #include "xml_parser.h"
 #include "logger.h"
 #include "io_utils.h"
@@ -25,6 +28,7 @@ void XMLParser::load_file_xml(const fs::path& filepath)
         DLOGI(filepath.string(), "core", Severity::CRIT);
         return;
     }
+    filepath_ = filepath;
 
 #ifdef __DEBUG__
     DLOGN("[XML] Parsing xml file:", "core", Severity::LOW);
@@ -48,11 +52,30 @@ void XMLParser::load_file_xml(const fs::path& filepath)
     }
 }
 
+void XMLParser::write()
+{
+    std::ofstream file(filepath_);
+    file << dom_;
+    file.close();
+}
 
 void XMLParser::reset()
 {
     dom_.clear();
     buffer_.clear();
 }
+
+char* XMLParser::allocate_string(const char* str)
+{
+    return dom_.allocate_string(str);
+}
+
+
+#ifdef __DEBUG__
+void XMLParser::print_document()
+{
+    std::cout << dom_ << std::endl;
+}
+#endif
 
 }

@@ -14,8 +14,8 @@ class ValueMap
 {
 public:
     // Generic accessors for values in maps
-    template <typename T> inline void set(hash_t name, T value);
-    template <typename T> inline bool get(hash_t name, T& destination);
+    template <typename T> void set(hash_t name, T value, bool set_dom=false);
+    template <typename T> bool get(hash_t name, T& destination);
     // Test a boolean flag quickly
     inline bool is(hash_t name);
     // Set root directory path for path map to work
@@ -23,6 +23,8 @@ public:
 
     // Read an XML file into the different maps
     void parse_xml_file(const fs::path& path);
+    // Write to XML file
+    void write_xml();
 
 protected:
     // Recursive method for XML data hierarchy exploration
@@ -60,132 +62,23 @@ inline bool ValueMap::is(hash_t name)
 }
 
 // Accessors specializations
-template <> inline void ValueMap::set(hash_t name, uint32_t value)
-{
-    uints_[name] = value;
-}
-template <> inline bool ValueMap::get(hash_t name, uint32_t& destination)
-{
-    auto it = uints_.find(name);
-    if(it != uints_.end())
-    {
-        destination = it->second;
-        return true;
-    }
-    return false;
-}
-
-template <> inline void ValueMap::set(hash_t name, int32_t value)
-{
-    ints_[name] = value;
-}
-template <> inline bool ValueMap::get(hash_t name, int32_t& destination)
-{
-    auto it = ints_.find(name);
-    if(it != ints_.end())
-    {
-        destination = it->second;
-        return true;
-    }
-    return false;
-}
-
-template <> inline void ValueMap::set(hash_t name, float value)
-{
-    floats_[name] = value;
-}
-template <> inline bool ValueMap::get(hash_t name, float& destination)
-{
-    auto it = floats_.find(name);
-    if(it != floats_.end())
-    {
-        destination = it->second;
-        return true;
-    }
-    return false;
-}
-
-template <> inline void ValueMap::set(hash_t name, math::vec2 value)
-{
-    vec2s_[name] = value;
-}
-template <> inline bool ValueMap::get(hash_t name, math::vec2& destination)
-{
-    auto it = vec2s_.find(name);
-    if(it != vec2s_.end())
-    {
-        destination = it->second;
-        return true;
-    }
-    return false;
-}
-
-template <> inline void ValueMap::set(hash_t name, math::vec3 value)
-{
-    vec3s_[name] = value;
-}
-template <> inline bool ValueMap::get(hash_t name, math::vec3& destination)
-{
-    auto it = vec3s_.find(name);
-    if(it != vec3s_.end())
-    {
-        destination = it->second;
-        return true;
-    }
-    return false;
-}
-
-template <> inline void ValueMap::set(hash_t name, const char* value)
-{
-    strings_[name] = value;
-}
-template <> inline void ValueMap::set(hash_t name, char* value)
-{
-    strings_[name] = value;
-}
-
-template <> inline bool ValueMap::get(hash_t name, std::string& destination)
-{
-    auto it = strings_.find(name);
-    if(it != strings_.end())
-    {
-        destination = it->second;
-        return true;
-    }
-    return false;
-}
-
-
-template <> inline void ValueMap::set(hash_t name, std::reference_wrapper<const fs::path> value)
-{
-    paths_[name] = value;
-}
-
-template <> inline bool ValueMap::get(hash_t name, fs::path& destination)
-{
-    auto it = paths_.find(name);
-    if(it != paths_.end())
-    {
-        destination = it->second;
-        return true;
-    }
-    return false;
-}
-
-template <> inline void ValueMap::set(hash_t name, bool value)
-{
-    bools_[name] = value;
-}
-template <> inline bool ValueMap::get(hash_t name, bool& destination)
-{
-    auto it = bools_.find(name);
-    if(it != bools_.end())
-    {
-        destination = it->second;
-        return true;
-    }
-    return false;
-}
+template <> void ValueMap::set(hash_t name, uint32_t value, bool set_dom);
+template <> bool ValueMap::get(hash_t name, uint32_t& destination);
+template <> void ValueMap::set(hash_t name, int32_t value, bool set_dom);
+template <> bool ValueMap::get(hash_t name, int32_t& destination);
+template <> void ValueMap::set(hash_t name, float value, bool set_dom);
+template <> bool ValueMap::get(hash_t name, float& destination);
+template <> void ValueMap::set(hash_t name, math::vec2 value, bool set_dom);
+template <> bool ValueMap::get(hash_t name, math::vec2& destination);
+template <> void ValueMap::set(hash_t name, math::vec3 value, bool set_dom);
+template <> bool ValueMap::get(hash_t name, math::vec3& destination);
+template <> void ValueMap::set(hash_t name, const char* value, bool set_dom);
+template <> void ValueMap::set(hash_t name, char* value, bool set_dom);
+template <> bool ValueMap::get(hash_t name, std::string& destination);
+template <> void ValueMap::set(hash_t name, std::reference_wrapper<const fs::path> value, bool set_dom);
+template <> bool ValueMap::get(hash_t name, fs::path& destination);
+template <> void ValueMap::set(hash_t name, bool value, bool set_dom);
+template <> bool ValueMap::get(hash_t name, bool& destination);
 
 } // namespace wcore
 

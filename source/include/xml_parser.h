@@ -17,6 +17,7 @@ private:
     rapidxml::xml_document<> dom_;
     rapidxml::xml_node<>* root_;
     std::vector<char> buffer_; // Rapidxml is an in-situ parser -> we need to save text data
+    fs::path filepath_;
 
 public:
     XMLParser();
@@ -25,8 +26,16 @@ public:
 
     void load_file_xml(const fs::path& filepath);
     void reset();
+    void write();
 
-    inline rapidxml::xml_node<>* get_root() { return root_; }
+    char* allocate_string(const char* str);
+
+    inline rapidxml::xml_node<>* get_root()         { return root_; }
+    inline rapidxml::xml_document<>& get_document() { return dom_; }
+
+#ifdef __DEBUG__
+    void print_document();
+#endif
 };
 
 }

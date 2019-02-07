@@ -6333,3 +6333,43 @@ L'utilitaire internstr a été modifié pour reconnaître le literal.
 
 * sources :
 [1] https://www.youtube.com/watch?v=M8Bd7uHH4Yg
+
+
+
+```cpp
+    if(SSAO_renderer_->is_active())
+    {
+        ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
+        if(ImGui::CollapsingHeader("SSAO control"))
+        {
+            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+            if(ImGui::TreeNode("Tuning"))
+            {
+                ImGui::SliderFloat("Radius",      &SSAO_renderer_->SSAO_radius_, 0.01f, 1.0f);
+                ImGui::SliderFloat("Scalar bias", &SSAO_renderer_->SSAO_bias_, 0.0f, 1.0f);
+                ImGui::SliderFloat("Vector bias", &SSAO_renderer_->SSAO_vbias_, 0.0f, 0.5f);
+                ImGui::SliderFloat("Intensity",   &SSAO_renderer_->SSAO_intensity_, 0.0f, 5.0f);
+                ImGui::SliderFloat("Scale",       &SSAO_renderer_->SSAO_scale_, 0.01f, 1.0f);
+                ImGui::TreePop();
+                ImGui::Separator();
+            }
+
+            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+            if (ImGui::TreeNode("Blur"))
+            {
+                int ker_size = 2*SSAO_kernel_half_size-1;
+                ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
+                bool update_kernel = ImGui::SliderInt("Half-size", &SSAO_kernel_half_size, 3, 8);
+                update_kernel     |= ImGui::SliderFloat("Sigma",   &SSAO_sigma, 0.5f, 2.0f);
+                if(update_kernel)
+                {
+                    SSAO_renderer_->blur_policy_.kernel_.update_kernel(2*SSAO_kernel_half_size-1, SSAO_sigma);
+                }
+
+                ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_policy_.n_pass_, 0, 5);
+                ImGui::SliderFloat("Compression", &SSAO_renderer_->blur_policy_.gamma_r_, 0.5f, 2.0f);
+                ImGui::TreePop();
+            }
+        }
+    }
+```
