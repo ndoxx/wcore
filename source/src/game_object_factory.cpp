@@ -18,6 +18,7 @@ entity_factory_(new EntityFactory("entity.xml"))
         if(xml::parse_attribute(cmp_node, "name", model_name))
         {
             cmp_model->model = model_factory_->make_model_instance(H_(model_name.c_str()));
+            cmp_model->model->get_mesh().set_buffer_batch(BufferToken::Batch::INSTANCE);
             return true;
         }
         return false;
@@ -29,6 +30,20 @@ GameObjectFactory::~GameObjectFactory()
     delete entity_factory_;
     delete model_factory_;
 }
+
+std::shared_ptr<SurfaceMesh> GameObjectFactory::preload_mesh_entity(hash_t blueprint)
+{
+    // From entity blueprint, get model instance name
+    rapidxml::xml_node<>* bp_node = entity_factory_->get_blueprint_node(blueprint);
+    rapidxml::xml_node<>* cmp_model_node = bp_node->first_node("Components")->first_node("Model");
+
+    if(cmp_model_node == nullptr) return nullptr;
+    std::string model_name;
+    if(!xml::parse_attribute(cmp_model_node, "name", model_name)) return nullptr;
+
+    return preload_mesh_model_instance(H_(model_name.c_str()));
+}
+
 
 /*
 void GameObjectFactory::init_events(InputHandler& handler)

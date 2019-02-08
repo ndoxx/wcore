@@ -24,6 +24,7 @@
 #include "input_handler.h"
 #include "io_utils.h"
 #include "sound_system.h"
+#include "basic_components.h"
 
 namespace wcore
 {
@@ -155,6 +156,7 @@ void SceneLoader::preload_instances()
     // To keep track of already loaded meshes
     std::set<hash_t> loaded_mesh_instances;
     std::set<hash_t> loaded_mesh_model_instances;
+    std::set<hash_t> loaded_mesh_entities;
 
     // For each chunk
     for (xml_node<>* ck_node=xml_parser_.get_root()->first_node("Chunk");
@@ -162,51 +164,79 @@ void SceneLoader::preload_instances()
          ck_node=ck_node->next_sibling("Chunk"))
     {
         xml_node<>* mdls_node = ck_node->first_node("Models");
-        if(mdls_node == nullptr) continue;
-
-        // For each model
-        for (xml_node<>* mdl_node=mdls_node->first_node("Model");
-             mdl_node;
-             mdl_node=mdl_node->next_sibling("Model"))
+        if(mdls_node != nullptr)
         {
-            std::shared_ptr<SurfaceMesh> pmesh = nullptr;
-            // Look for Model node name attribute
-            std::string model_name;
-            if(xml::parse_attribute(mdl_node, "name", model_name))
+            // For each model
+            for (xml_node<>* mdl_node=mdls_node->first_node("Model");
+                 mdl_node;
+                 mdl_node=mdl_node->next_sibling("Model"))
             {
-                hash_t hname = H_(model_name.c_str());
-                if(loaded_mesh_model_instances.find(hname) == loaded_mesh_model_instances.end())
+                std::shared_ptr<SurfaceMesh> pmesh = nullptr;
+                // Look for Model node name attribute
+                std::string model_name;
+                if(xml::parse_attribute(mdl_node, "name", model_name))
                 {
-                    DLOGN("Preloading mesh instance:", "model", Severity::LOW);
-                    DLOGI("Model name: <n>" + model_name + "</n>", "model", Severity::LOW);
-                    pmesh = game_object_factory_->preload_mesh_model_instance(hname);
-                    loaded_mesh_model_instances.insert(hname);
-                }
-            }
-            // Look for child Mesh node with name attribute
-            else
-            {
-                xml_node<>* mesh_node = mdl_node->first_node("Mesh");
-                if(mesh_node)
-                {
-                    std::string mesh_name;
-                    if(xml::parse_attribute(mesh_node, "name", mesh_name))
+                    hash_t hname = H_(model_name.c_str());
+                    if(loaded_mesh_model_instances.find(hname) == loaded_mesh_model_instances.end())
                     {
-                        hash_t hname = H_(mesh_name.c_str());
-                        if(loaded_mesh_instances.find(hname) == loaded_mesh_instances.end())
+                        DLOGN("Preloading mesh instance:", "model", Severity::LOW);
+                        DLOGI("Model name: <n>" + model_name + "</n>", "model", Severity::LOW);
+                        pmesh = game_object_factory_->preload_mesh_model_instance(hname);
+                        loaded_mesh_model_instances.insert(hname);
+                    }
+                }
+                // Look for child Mesh node with name attribute
+                else
+                {
+                    xml_node<>* mesh_node = mdl_node->first_node("Mesh");
+                    if(mesh_node)
+                    {
+                        std::string mesh_name;
+                        if(xml::parse_attribute(mesh_node, "name", mesh_name))
                         {
-                            DLOGN("Preloading mesh instance:", "model", Severity::LOW);
-                            DLOGI("Mesh name: <n>" + mesh_name + "</n>", "model", Severity::LOW);
-                            pmesh = game_object_factory_->preload_mesh_instance(hname);
-                            loaded_mesh_instances.insert(hname);
+                            hash_t hname = H_(mesh_name.c_str());
+                            if(loaded_mesh_instances.find(hname) == loaded_mesh_instances.end())
+                            {
+                                DLOGN("Preloading mesh instance:", "model", Severity::LOW);
+                                DLOGI("Mesh name: <n>" + mesh_name + "</n>", "model", Severity::LOW);
+                                pmesh = game_object_factory_->preload_mesh_instance(hname);
+                                loaded_mesh_instances.insert(hname);
+                            }
                         }
                     }
                 }
+                // Load mesh in scene
+                if(pmesh != nullptr)
+                {
+                    pscene_->submit_mesh_instance(pmesh);
+                }
             }
-            // Load mesh in scene
-            if(pmesh != nullptr)
+        }
+
+        xml_node<>* ents_node = ck_node->first_node("Entities");
+        if(ents_node != nullptr)
+        {
+            // For each entity
+            for (xml_node<>* ent_node=ents_node->first_node("Entity");
+                 ent_node;
+                 ent_node=ent_node->next_sibling("Entity"))
             {
-                pscene_->submit_mesh_instance(pmesh);
+                hash_t blueprint = xml::parse_attribute_h(ent_node, "blueprint");
+                if(blueprint == 0) continue;
+
+                std::shared_ptr<SurfaceMesh> pmesh = nullptr;
+                if(loaded_mesh_entities.find(blueprint) == loaded_mesh_entities.end())
+                {
+                    pmesh = game_object_factory_->preload_mesh_entity(blueprint);
+                    loaded_mesh_entities.insert(blueprint);
+                }
+
+                if(pmesh != nullptr)
+                {
+                    DLOGN("Preloading mesh instance:", "model", Severity::LOW);
+                    DLOGI("Entity blueprint: <n>" + std::to_string(blueprint) + "</n>", "model", Severity::LOW);
+                    pscene_->submit_mesh_instance(pmesh);
+                }
             }
         }
     }
@@ -415,6 +445,7 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords, bool finalize)
           dt_models_us,
           dt_batches_us,
           dt_lights_us,
+          dt_entities_us,
           dt_upload_us;
 #endif
 
@@ -450,6 +481,16 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords, bool finalize)
 #ifdef __PROFILING_CHUNKS__
     period = profile_clock_.get_elapsed_time();
     dt_batches_us = 1e6*std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
+#endif
+
+    // LOADING ENTITIES
+#ifdef __PROFILING_CHUNKS__
+    profile_clock_.restart();
+#endif
+    parse_entities(chunk_node, chunk_index);
+#ifdef __PROFILING_CHUNKS__
+    period = profile_clock_.get_elapsed_time();
+    dt_entities_us = 1e6*std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
 #endif
 
     // LOADING LIGHTS
@@ -491,6 +532,10 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords, bool finalize)
 
     ss.str("");
     ss << "Model Batches: <v>" << dt_batches_us << "</v> µs";
+    DLOGI(ss.str(), "chunk", Severity::DET);
+
+    ss.str("");
+    ss << "Entities: <v>" << dt_entities_us << "</v> µs";
     DLOGI(ss.str(), "chunk", Severity::DET);
 
     ss.str("");
@@ -800,6 +845,48 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
         }
     }
 }
+
+void SceneLoader::parse_entities(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index)
+{
+    xml_node<>* ents_node = chunk_node->first_node("Entities");
+    if(!ents_node) return;
+
+    for (xml_node<>* ent=ents_node->first_node("Entity"); ent; ent=ent->next_sibling("Entity"))
+    {
+        // Get blueprint name
+        hash_t blueprint = xml::parse_attribute_h(ent, "blueprint");
+        if(blueprint == 0) continue;
+
+        // Create entity from blueprint
+        auto pEntity = game_object_factory_->make_entity_blueprint(blueprint);
+        if(pEntity == nullptr) continue;
+
+        // Get Transform node
+        xml_node<>* trn_node = ent->first_node("Transform");
+        if(trn_node != nullptr && pEntity->has_component<component::WCModel>())
+        {
+            Transformation trans;
+            parse_transformation(trn_node, trans);
+
+            auto& pmdl = pEntity->get_component<component::WCModel>()->model;
+            pmdl->set_transformation(trans);
+
+            if(is_pos_relative(ent))
+                ground_model(pmdl, chunk_index);
+
+            // Translate according to chunk coordinates
+            auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
+            pmdl->translate((chunk_size_m_-1)*chunk_coords.x(),
+                            0,
+                            (chunk_size_m_-1)*chunk_coords.y());
+
+            pmdl->update_bounding_boxes();
+        }
+
+        pscene_->add_entity(pEntity);
+    }
+}
+
 
 void SceneLoader::parse_lights(xml_node<>* chunk_node, uint32_t chunk_index)
 {

@@ -102,6 +102,7 @@ public:
     void parse_models(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
     void parse_model_batches(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
     void parse_lights(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
+    void parse_entities(rapidxml::xml_node<>* chunk_node, uint32_t chunk_index);
 
     // Global
     void parse_audio(rapidxml::xml_node<>* node);

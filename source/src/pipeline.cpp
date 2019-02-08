@@ -106,15 +106,15 @@ void RenderPipeline::init_self()
     edtweaks->register_variable("root.postproc.dithering.enabled"_h,       post_processing_renderer_->dithering_enabled_);
 
     // SSAO tweaks
-    edtweaks->register_variable("root.ssao.radius"_h,    SSAO_renderer_->SSAO_radius_);
-    edtweaks->register_variable("root.ssao.bias"_h,      SSAO_renderer_->SSAO_bias_);
-    edtweaks->register_variable("root.ssao.vbias"_h,     SSAO_renderer_->SSAO_vbias_);
-    edtweaks->register_variable("root.ssao.intensity"_h, SSAO_renderer_->SSAO_intensity_);
-    edtweaks->register_variable("root.ssao.scale"_h,     SSAO_renderer_->SSAO_scale_);
-    edtweaks->register_variable("root.ssao.blur.passes"_h,           SSAO_renderer_->blur_policy_.n_pass_);
-    edtweaks->register_variable("root.ssao.blur.compression"_h,      SSAO_renderer_->blur_policy_.gamma_r_);
-    edtweaks->register_variable("root.ssao.blur.kernel_half_size"_h, SSAO_kernel_half_size);
-    edtweaks->register_variable("root.ssao.blur.kernel_sigma"_h,     SSAO_sigma);
+    edtweaks->register_variable("root.ssao.radius"_h,                      SSAO_renderer_->SSAO_radius_);
+    edtweaks->register_variable("root.ssao.bias"_h,                        SSAO_renderer_->SSAO_bias_);
+    edtweaks->register_variable("root.ssao.vbias"_h,                       SSAO_renderer_->SSAO_vbias_);
+    edtweaks->register_variable("root.ssao.intensity"_h,                   SSAO_renderer_->SSAO_intensity_);
+    edtweaks->register_variable("root.ssao.scale"_h,                       SSAO_renderer_->SSAO_scale_);
+    edtweaks->register_variable("root.ssao.blur.passes"_h,                 SSAO_renderer_->blur_policy_.n_pass_);
+    edtweaks->register_variable("root.ssao.blur.compression"_h,            SSAO_renderer_->blur_policy_.gamma_r_);
+    edtweaks->register_variable("root.ssao.blur.kernel_half_size"_h,       SSAO_kernel_half_size);
+    edtweaks->register_variable("root.ssao.blur.kernel_sigma"_h,           SSAO_sigma);
 
 #endif
 }

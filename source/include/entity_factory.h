@@ -25,6 +25,8 @@ public:
     // Create an entity from blueprint name
     std::shared_ptr<WEntity> make_entity_blueprint(hash_t name);
 
+    inline rapidxml::xml_node<>* get_blueprint_node(hash_t name) { return blueprints_.at(name); }
+
 private:
     // Parse XML file for entity blueprints
     void parse_entity_file(const char* xmlfile);

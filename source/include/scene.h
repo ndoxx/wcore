@@ -48,6 +48,7 @@ private:
 
     std::map<uint32_t, Chunk*> chunks_;
     std::map<uint64_t, std::shared_ptr<WEntity>> entities_;
+    std::vector<uint64_t> displayable_entities_;
     StaticOctree static_octree;
 
     pLight directional_light_;              // The only directionnal light
@@ -120,6 +121,8 @@ public:
     void add_terrain(pTerrain terrain, uint32_t chunk_index);
     inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index) { chunks_.at(chunk_index)->add_position_updater(updater); }
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_rotator(rotator); }
+
+    uint64_t add_entity(std::shared_ptr<WEntity> entity);
 
     // Methods
     // Upload given chunk geometry to OpenGL

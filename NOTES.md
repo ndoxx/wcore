@@ -6257,7 +6257,7 @@ J'utilise de plus la macro MAKE_HASHABLE de wtypes.h qui permet de générer aut
 Donc quand je dois créer un nouvel objet procédural, je regarde d'abord le hash de sa structure de description, je le combine au hash de son type avec la macro HCOMBINE_, et je cherche le hash combiné dans un cache réservé aux mesh procéduraux. Je ne crée un nouveau mesh que si la recherche à échoué, auquel cas je mets en cache le nouveau mesh.
 
 
-[ ] __BUUUUUUGS__
+[X][fixed] __BUUUUUUGS__
     -> J'ai commenté tout ce qui touche à la mise en cache.
     -> Commencer par refactor _Model_ pour utiliser des shared_ptr pour mesh et material.
     -> __NE PAS OUBLIER__ que la méthode Chunk::load_geometry() va copier le mesh de _CHAQUE_ modèle du chunk, qu'il soit mis en cache ou non. De plus, un mesh mis en cache verra son buffer offset et son nelements modifiés _PLUSIEURS FOIS_.
@@ -6294,16 +6294,20 @@ log-quaternion lerp        Y                Y                 N
 ##[TODO]
 [X] Ecrire _EntityFactory_ qui permet de construire une entité depuis une description (XML).
     [X] Pour chaque type de composant, il faut enregistrer une factory method auprès de _EntityFactory_, et l'associer avec un nom de composant.
-[ ] Mesh caching
-    [ ] Un seul gros VBO pour tous les mesh instances d'un niveau.
-        [ ] Mesh pre-pass (dans SceneLoader::load_global() ?) pour générer à l'avance tous les mesh instances et les mesh importés, et les mettre en cache. Les mesh purement procéduraux restent générés à la volée.
+[X] Mesh caching
+    [X] Un seul gros VBO pour tous les mesh instances d'un niveau.
+        [X] Mesh pre-pass (dans SceneLoader::load_global() ?) pour générer à l'avance tous les mesh instances et les mesh importés, et les mettre en cache. Les mesh purement procéduraux restent générés à la volée.
             -> SceneLoader::preload_instances()
         [X] Les modèles ne possèdent plus nécessairement leurs meshes. Donc utiliser un shared pointer en interne.
-        [ ] Les chunks ne doivent plus charger la géométrie des instances. Les instances chargent leur géométrie lors du level loading, dans un gros VBO (de la _Scene_ ?).
+        [X] Les chunks ne doivent plus charger la géométrie des instances. Les instances chargent leur géométrie lors du level loading, dans un gros VBO (de la _Scene_ ?).
             -> Les entités possédant un composant _WCModel_ ne peuvent qu'utiliser des instances/imports obj, et donc leurs meshes seront déjà chargées dans ce VBO.
 
 
-* On peut maintenant utiliser un string litteral pour hasher une string compile-time :
+#[08-02-19]
+J'étais un peu occupé à coder, il semblerait.
+
+## hash litteral
+On peut maintenant utiliser un string litteral pour hasher une string compile-time :
 
 ```cpp
 typedef unsigned long long hash_t;
@@ -6327,49 +6331,60 @@ constexpr hash_t operator "" _h(const char* internstr, size_t)
 L'utilitaire internstr a été modifié pour reconnaître le literal.
 
 
-* _SoundSystem_
+## _SoundSystem_
+On a du son 3D dans le moteur. La classe _SoundSystem_ propose une interface simple pour jouer des effets (fx) ou une musique d'ambiance (bgm). Ce _GameSystem_ utilise FMOD en sous-main, derrière une implémentation opaque. Deux classes de sons émergent:
+    - les fx sont localisés dans l'espace et leurs caractéristiques sonores dépendent de la localisation d'un auditeur virtuel (listener), recalé avec la caméra à chaque frame. En temps réel, le moteur de son ajuste l'atténuation et le pitch (effet Doppler) des émetteurs de sons en fonction de la position et de la vitesse du listener. Un effet un peu custom consistant en un filtre passe-bas dont le cutoff est contrôlé par la distance de l'émetteur à l'auditeur simule un effet de propagation. A l'origine je voulais un système physics based, j'ai même chié un simulateur matlab ('Desktop/matlab/atmosphereSoundAttenuation/atten.m') pour calculer la réponse acoustique de l'air sur toute une gamme de fréquences en fonction de la température, de l'humidité et de la pression atmosphérique (voir [3] et [4] pour un modèle mathématique). Puis j'ai compris que j'allais trop loin.
+    - les bgm sont des sons 2D, qui bouclent par défaut.
+
+Le volume (toujours donné en dB côté user, avec 0dB le niveau maximal), les distances min et max pour le falloff (fx) et l'option de jouer le son en boucle sont configurables pour chaque son dans sounds.xml. Le moteur va parser ce fichier et extraire une map de descripteurs pour pouvoir instancier les sons in-game depuis un simple hash name.
+
+Chaque son est joué sur un Channel instancié pour lui-seul par le moteur. Les ressources sont mises en cache. Chaque Channel est une machine à état, ceci permet une gestion beaucoup plus aisée à plus haut niveau, chaque Channel "sait ce qu'il doit faire" selon son état (INITIALIZING, LOADING, PREPARING, PLAYING, STOPPING, STOPPED) lors de l'appel de sa fonction update. L'état d'initialisation (INITIALIZING) est pour l'instant vide, mais pourra accueillir les méthodes de randomisation du pitch/volume etc. Il conduit à l'état de chargement (LOADING) où l'on va chercher la ressource en cache ou la charger depuis un fichier si on ne l'y trouve pas. L'état suivant (PREPARING) initialise le Channel et prépare FMOD à jouer le son dès la frame d'après. Si la préparation échoue, l'état suivant est STOPPED, si elle réussit c'est PLAYING. Un Channel dans l'état PLAYING met à jour ses paramètres en temps réel, et persévère dans cet état tant que le son n'est pas terminé (ou joué en boucle), où que le flag should_stop n'a pas été activé, auquel cas l'état suivant est STOPPING. Dans cet état, un fadeout rapide est exécuté si le son n'était pas terminé, le son est donc arrêté proprement et le channel mis dans l'état STOPPED. Un Channel dans cet état sera supprimé automatiquement à la frame d'après.
+Les 3 premiers états sont exécutés dans la même frame. Comme j'utilise un switch sur l'état dans SoundSystem::SoundEngineImpl::Channel::update(), j'utilise le *fallthrough statement* pour signaler au compilo qu'on ne break pas et que tout va bien :
+
+```cpp
+    switch(state)
+    {
+        case State::INITIALIZING:
+            // Any randomization/adjustment of pitch/volume... goes here
+            state = State::LOADING;
+            [[fallthrough]];
+
+        case State::LOADING:
+        {
+            // Load sound if not already loaded
+            auto it = impl.sounds.find(sound_id);
+            if(it == impl.sounds.end())
+                load_sound();
+            state = State::PREPARING;
+            [[fallthrough]];
+        }
+
+        case State::PREPARING:
+        {
+            state = prepare_play() ? State::PLAYING : State::STOPPED;
+            return;
+        }
+
+        // ***
+    }
+```
+
+3 Channel groups sont créés par le moteur, ainsi, on peut régler indépendamment le volume des fx et des bgm, et l'on dispose un plus d'un réglage master dans le GUI de l'éditeur (encore en construction).
+
     -> Channel struct [1] 28'25"
         -> Channels have states (initialize, to_play, playing, stopping, stopped) and an update func which handles state transitioning.
 
+* _InitializerSystem_
+
+* _EditorTweaksInitializer_
+
+* Mesh caching & instances
+
 * sources :
 [1] https://www.youtube.com/watch?v=M8Bd7uHH4Yg
+[2] https://katyscode.wordpress.com/2012/10/05/cutting-your-teeth-on-fmod-part-1-build-environment-initialization-and-playing-sounds/
+[3] http://www.sengpielaudio.com/calculator-air.htm
+[4] http://www.sengpielaudio.com/AirdampingFormula.htm
 
 
 
-```cpp
-    if(SSAO_renderer_->is_active())
-    {
-        ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
-        if(ImGui::CollapsingHeader("SSAO control"))
-        {
-            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
-            if(ImGui::TreeNode("Tuning"))
-            {
-                ImGui::SliderFloat("Radius",      &SSAO_renderer_->SSAO_radius_, 0.01f, 1.0f);
-                ImGui::SliderFloat("Scalar bias", &SSAO_renderer_->SSAO_bias_, 0.0f, 1.0f);
-                ImGui::SliderFloat("Vector bias", &SSAO_renderer_->SSAO_vbias_, 0.0f, 0.5f);
-                ImGui::SliderFloat("Intensity",   &SSAO_renderer_->SSAO_intensity_, 0.0f, 5.0f);
-                ImGui::SliderFloat("Scale",       &SSAO_renderer_->SSAO_scale_, 0.01f, 1.0f);
-                ImGui::TreePop();
-                ImGui::Separator();
-            }
-
-            ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
-            if (ImGui::TreeNode("Blur"))
-            {
-                int ker_size = 2*SSAO_kernel_half_size-1;
-                ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
-                bool update_kernel = ImGui::SliderInt("Half-size", &SSAO_kernel_half_size, 3, 8);
-                update_kernel     |= ImGui::SliderFloat("Sigma",   &SSAO_sigma, 0.5f, 2.0f);
-                if(update_kernel)
-                {
-                    SSAO_renderer_->blur_policy_.kernel_.update_kernel(2*SSAO_kernel_half_size-1, SSAO_sigma);
-                }
-
-                ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_policy_.n_pass_, 0, 5);
-                ImGui::SliderFloat("Compression", &SSAO_renderer_->blur_policy_.gamma_r_, 0.5f, 2.0f);
-                ImGui::TreePop();
-            }
-        }
-    }
-```

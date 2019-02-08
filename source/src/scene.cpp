@@ -18,6 +18,7 @@
 #include "config.h"
 #include "game_clock.h"
 #include "camera_controller.h"
+#include "basic_components.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -59,6 +60,20 @@ Scene::~Scene()
     // Delete chunks
     for(auto&& [key, chunk]: chunks_)
         delete chunk;
+}
+
+uint64_t Scene::add_entity(std::shared_ptr<WEntity> entity)
+{
+    uint64_t id = get_unique_id();
+    entities_.insert(std::pair(id, entity));
+
+    // Check for displayable components
+    if(entity->has_component<component::WCModel>())
+    {
+        displayable_entities_.push_back(id);
+    }
+
+    return id;
 }
 
 void Scene::init_events(InputHandler& handler)
@@ -148,6 +163,16 @@ void Scene::sort_chunks()
 // Sort models front to back with respect to camera position in all chunks
 void Scene::sort_models()
 {
+    // * Sort entities
+    const vec3& cam_pos = camera_->get_position();
+    std::sort(displayable_entities_.begin(), displayable_entities_.end(),
+    [&](const uint64_t& a, const uint64_t& b)
+    {
+        float dist_a = norm2(entities_.at(a)->get_component<component::WCModel>()->model->get_position()-cam_pos);
+        float dist_b = norm2(entities_.at(b)->get_component<component::WCModel>()->model->get_position()-cam_pos);
+        return (dist_a < dist_b); // sort front to back
+    });
+
     // * Sort models in chunks
     for(auto&& [key, chunk]: chunks_)
         chunk->sort_models(camera_);
@@ -255,6 +280,24 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
                     chunk->draw(token);
             }, evaluate, order, model_cat);
         }
+        // ENTITIES WITH MODEL INSTANCES
+        for(uint64_t id: displayable_entities_)
+        {
+            const auto& entity = *entities_.at(id);
+            auto e_model = entity.get_component<component::WCModel>()->model;
+            if(evaluate(e_model))
+            {
+                prepare(e_model);
+                const BufferToken& token = e_model->get_mesh().get_buffer_token();
+                if(token.batch == BufferToken::Batch::INSTANCE)
+                {
+                    // Instance buffers are owned by scene
+                    instance_vertex_array_.bind();
+                    instance_buffer_unit_.draw(token);
+                }
+            }
+        }
+
         // TERRAINS
         // Terrains are heavily occluded by the static geometry on top,
         // so we draw them last so as to maximize depth test fails
@@ -353,20 +396,23 @@ void Scene::add_terrain(pTerrain terrain, uint32_t chunk_index)
 
 void Scene::visibility_pass()
 {
-    // Model instances
-    /*for(auto&& pmodel: model_instances_)
+    // Entities
+    for(uint64_t id: displayable_entities_)
     {
+        const auto& entity = *entities_.at(id);
+        auto e_model = entity.get_component<component::WCModel>()->model;
+
         // Non cullable models are passed
-        if(!pmodel->can_frustum_cull())
+        if(!e_model->can_frustum_cull())
         {
-            pmodel->set_visibility(true);
-            break;
+            e_model->set_visibility(true);
+            return;
         }
         // Get model OBB
-        OBB& obb = pmodel->get_OBB();
+        OBB& obb = e_model->get_OBB();
         // Frustum culling
-        pmodel->set_visibility(camera_->frustum_collides(obb));
-    }*/
+        e_model->set_visibility(camera_->frustum_collides(obb));
+    }
 
     // Models in chunks
     traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_id)

@@ -37,7 +37,7 @@ public:
     }
 
     template <typename T>
-    T* get_component()
+    T* get_component() const
     {
         std::type_index index(typeid(T));
         auto it = components_.find(index);
@@ -48,7 +48,7 @@ public:
     }
 
     template <typename T>
-    bool has_component()
+    bool has_component() const
     {
         std::type_index index(typeid(T));
         return (components_.find(index) != components_.end());
