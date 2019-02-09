@@ -26,9 +26,15 @@ public:
     std::shared_ptr<Model> model;
 };
 
+class WCSoundEmitter: public WComponent
+{
+public:
+};
+
 } // namespace wcore::component
 
 REGISTER_COMPONENT(WCTransform);
 REGISTER_COMPONENT(WCModel);
+REGISTER_COMPONENT(WCSoundEmitter);
 
 #endif // WCOMPONENTS_H

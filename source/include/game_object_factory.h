@@ -7,6 +7,10 @@
 #include "model_factory.h"
 #include "entity_factory.h"
 
+#ifdef __DEBUG__
+#include "logger.h"
+#endif
+
 namespace wcore
 {
 
@@ -39,6 +43,17 @@ public:
     {
         return model_factory_->make_model(mesh_node, mat_node, mesh_is_instance, opt_rng);
     }
+    // Register a component creation function for the entity factory to use
+
+    inline void register_component_factory(hash_t name, EntityFactory::ComponentCreatorFunc func)
+    {
+#ifdef __DEBUG__
+        DLOG("New <g>component factory</g> for: ", "entity", Severity::LOW);
+        DLOGI(std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "entity", Severity::LOW);
+#endif
+        entity_factory_->register_component_factory(name, func);
+    }
+
     // Create an entity from blueprint name
     inline std::shared_ptr<WEntity> make_entity_blueprint(hash_t name)
     {

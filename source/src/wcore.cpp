@@ -16,6 +16,7 @@
 #include "scene_loader.h"
 #include "game_object_factory.h"
 #include "input_handler.h"
+#include "entity_system.h"
 #include "sound_system.h"
 #include "pipeline.h"
 #include "daylight.h"
@@ -68,6 +69,7 @@ struct Engine::EngineImpl
     scene(nullptr),
     camera_controller(nullptr),
     game_object_factory(nullptr),
+    entity_system(nullptr),
     scene_loader(nullptr),
     pipeline(nullptr),
     daylight(nullptr),
@@ -95,6 +97,7 @@ struct Engine::EngineImpl
         delete daylight;
         delete pipeline;
         delete scene_loader;
+        delete entity_system;
         delete game_object_factory;
         delete camera_controller;
         delete scene;
@@ -114,6 +117,7 @@ struct Engine::EngineImpl
         scene               = new Scene();
         camera_controller   = new CameraController();
         game_object_factory = new GameObjectFactory();
+        entity_system       = new EntitySystem();
         scene_loader        = new SceneLoader();
         pipeline            = new RenderPipeline();
         daylight            = new DaylightSystem();
@@ -137,6 +141,7 @@ struct Engine::EngineImpl
     Scene*             scene;
     CameraController*  camera_controller;
     GameObjectFactory* game_object_factory;
+    EntitySystem*      entity_system;
     SceneLoader*       scene_loader;
     RenderPipeline*    pipeline;
     DaylightSystem*    daylight;
@@ -211,6 +216,7 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
     // Initializer systems
     eimpl_->game_loop->register_initializer_system("EditorTweaks"_h, static_cast<InitializerSystem*>(eimpl_->ed_tweaks));
+
     // Initialization step
     try
     {
@@ -233,12 +239,15 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->register_game_system("Daylight"_h,          static_cast<GameSystem*>(eimpl_->daylight));
     eimpl_->game_loop->register_game_system("RayCaster"_h,         static_cast<GameSystem*>(eimpl_->ray_caster));
     eimpl_->game_loop->register_game_system("GameObjectFactory"_h, static_cast<GameSystem*>(eimpl_->game_object_factory));
+    eimpl_->game_loop->register_game_system("EntitySystem"_h,      static_cast<GameSystem*>(eimpl_->entity_system));
     eimpl_->game_loop->register_game_system("SceneLoader"_h,       static_cast<GameSystem*>(eimpl_->scene_loader));
     eimpl_->game_loop->register_game_system("ChunkManager"_h,      static_cast<GameSystem*>(eimpl_->chunk_manager));
     eimpl_->game_loop->register_game_system("SoundSystem"_h,       static_cast<GameSystem*>(eimpl_->sound_system));
 
     // TMP
     eimpl_->camera_controller->register_camera(eimpl_->scene->get_camera());
+
+    eimpl_->game_loop->init_game_systems();
 
     //auto&& input_handler = eimpl_->game_loop->get_input_handler();
     //dbg::LOG.track("input.mouse.locked"_h, input_handler);

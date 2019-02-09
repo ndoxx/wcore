@@ -6387,4 +6387,3 @@ Les 3 premiers états sont exécutés dans la même frame. Comme j'utilise un sw
 [4] http://www.sengpielaudio.com/AirdampingFormula.htm
 
 
-

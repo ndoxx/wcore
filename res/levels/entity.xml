@@ -4,6 +4,9 @@
         <Entity name="entTeapot01">
             <Components>
                 <Model name="teapot01"/>
+                <SoundEmitter>
+
+                </SoundEmitter>
             </Components>
         </Entity>
     </Blueprints>

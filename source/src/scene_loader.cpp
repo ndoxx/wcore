@@ -21,9 +21,9 @@
 #include "motion.hpp"
 #include "bezier.h"
 #include "daylight.h"
+#include "sound_system.h"
 #include "input_handler.h"
 #include "io_utils.h"
-#include "sound_system.h"
 #include "basic_components.h"
 
 namespace wcore
@@ -56,6 +56,13 @@ SceneLoader::~SceneLoader()
 
 }
 
+void SceneLoader::init_self()
+{
+    // Locate scene game system
+    pscene_ = locate<Scene>("Scene"_h);
+    game_object_factory_ = locate<GameObjectFactory>("GameObjectFactory"_h);
+}
+
 void SceneLoader::init_events(InputHandler& handler)
 {
     subscribe("input.keyboard"_h, handler, &SceneLoader::onKeyboardEvent);
@@ -68,10 +75,6 @@ static inline std::string level_file(const char* level_name)
 
 void SceneLoader::load_level(const char* level_name)
 {
-    // Locate scene game system
-    pscene_ = locate<Scene>("Scene"_h);
-    game_object_factory_ = locate<GameObjectFactory>("GameObjectFactory"_h);
-
     DLOGS("[SceneLoader] Parsing xml scene description.", "scene", Severity::LOW);
     fs::path file_path(io::get_file("root.folders.level"_h, level_file(level_name)));
     xml_parser_.load_file_xml(file_path);
@@ -865,6 +868,7 @@ void SceneLoader::parse_entities(rapidxml::xml_node<>* chunk_node, uint32_t chun
         xml_node<>* trn_node = ent->first_node("Transform");
         if(trn_node != nullptr && pEntity->has_component<component::WCModel>())
         {
+            // Apply transformation
             Transformation trans;
             parse_transformation(trn_node, trans);
 

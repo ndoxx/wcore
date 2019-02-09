@@ -193,23 +193,6 @@
                     <Scale>0.3</Scale>
                 </Transform>
             </Model>
-
-            <!-- Transparent purple cube -->
-            <!--
-            <Model ypos="relative">
-                <Mesh type="cube"></Mesh>
-                <Material>
-                    <Uniform>
-                        <Albedo>(0.8,0.1,1.0)</Albedo>
-                        <Transparency>0.8</Transparency>
-                    </Uniform>
-                </Material>
-                <Transform>
-                    <Position>(6,0,8)</Position>
-                    <Scale>1.0</Scale>
-                </Transform>
-            </Model>
-            -->
         </Models>
 
         <ModelBatches>

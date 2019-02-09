@@ -20,11 +20,19 @@ public:
     void register_game_system(hash_t name, GameSystem* system, InputHandler& handler);
     void init();
     void serialize();
+    void init_game_systems();
 #ifndef __DISABLE_EDITOR__
     void generate_widgets();
 #endif
+
+#ifdef __DEBUG__
+    GameSystem*        get_game_system_by_name(hash_t name);
+    InitializerSystem* get_initializer_system_by_name(hash_t name);
+#else
     inline GameSystem*        get_game_system_by_name(hash_t name)        { return game_systems_map_.at(name); }
     inline InitializerSystem* get_initializer_system_by_name(hash_t name) { return initializer_systems_map_.at(name); }
+#endif
+
     inline std::list<GameSystem*>::iterator begin() { return game_systems_.begin(); }
     inline std::list<GameSystem*>::iterator end()   { return game_systems_.end(); }
 

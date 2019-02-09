@@ -42,6 +42,7 @@ set(SRC_CORE
     ${CMAKE_SOURCE_DIR}/source/src/editor.cpp
     ${CMAKE_SOURCE_DIR}/source/src/editor_tweaks.cpp
     ${CMAKE_SOURCE_DIR}/source/src/game_system.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/entity_system.cpp
     ${CMAKE_SOURCE_DIR}/source/src/sound_system.cpp
     ${CMAKE_SOURCE_DIR}/source/src/input_handler.cpp
     ${CMAKE_SOURCE_DIR}/source/src/keymap.cpp

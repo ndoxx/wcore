@@ -73,6 +73,7 @@ public:
 
     // Initialize event listener
     virtual void init_events(InputHandler& handler) override;
+    virtual void init_self() override;
 
     void load_level(const char* level_name);
     inline void load_level(const std::string& level_name)
