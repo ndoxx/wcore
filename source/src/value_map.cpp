@@ -136,24 +136,6 @@ void ValueMap::write_xml()
     xml_parser_.write();
 }
 
-template<typename T>
-inline std::string to_string(const T& x)
-{
-    return std::to_string(x);
-}
-
-template<>
-inline std::string to_string<math::vec2>(const math::vec2& v)
-{
-    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + ")";
-}
-
-template<>
-inline std::string to_string<math::vec3>(const math::vec3& v)
-{
-    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z()) + ")";
-}
-
 // Accessors specializations
 template <> void ValueMap::set(hash_t name, uint32_t value, bool set_dom)
 {

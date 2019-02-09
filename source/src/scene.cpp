@@ -19,6 +19,7 @@
 #include "game_clock.h"
 #include "camera_controller.h"
 #include "basic_components.h"
+#include "entity_system.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -39,8 +40,7 @@ instance_vertex_array_(instance_buffer_unit_),
 camera_(std::make_shared<Camera>(GLB.WIN_W, GLB.WIN_H)),
 light_camera_(std::make_shared<Camera>(1, 1)),
 chunk_size_m_(32),
-current_chunk_index_(0),
-unique_id_(0)
+current_chunk_index_(0)
 {
     // Disable light camera frustum update
     light_camera_->disable_frustum_update();
@@ -60,20 +60,6 @@ Scene::~Scene()
     // Delete chunks
     for(auto&& [key, chunk]: chunks_)
         delete chunk;
-}
-
-uint64_t Scene::add_entity(std::shared_ptr<WEntity> entity)
-{
-    uint64_t id = get_unique_id();
-    entities_.insert(std::pair(id, entity));
-
-    // Check for displayable components
-    if(entity->has_component<component::WCModel>())
-    {
-        displayable_entities_.push_back(id);
-    }
-
-    return id;
 }
 
 void Scene::init_events(InputHandler& handler)
@@ -163,13 +149,16 @@ void Scene::sort_chunks()
 // Sort models front to back with respect to camera position in all chunks
 void Scene::sort_models()
 {
+    // Gen entity system
+    auto* entity_system = locate<EntitySystem>("EntitySystem"_h);
+
     // * Sort entities
     const vec3& cam_pos = camera_->get_position();
     std::sort(displayable_entities_.begin(), displayable_entities_.end(),
     [&](const uint64_t& a, const uint64_t& b)
     {
-        float dist_a = norm2(entities_.at(a)->get_component<component::WCModel>()->model->get_position()-cam_pos);
-        float dist_b = norm2(entities_.at(b)->get_component<component::WCModel>()->model->get_position()-cam_pos);
+        float dist_a = norm2(entity_system->get_entity(a).get_component<component::WCModel>()->model->get_position()-cam_pos);
+        float dist_b = norm2(entity_system->get_entity(b).get_component<component::WCModel>()->model->get_position()-cam_pos);
         return (dist_a < dist_b); // sort front to back
     });
 
@@ -281,9 +270,10 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
             }, evaluate, order, model_cat);
         }
         // ENTITIES WITH MODEL INSTANCES
+        auto* entity_system = locate<EntitySystem>("EntitySystem"_h);
         for(uint64_t id: displayable_entities_)
         {
-            const auto& entity = *entities_.at(id);
+            const auto& entity = entity_system->get_entity(id);
             auto e_model = entity.get_component<component::WCModel>()->model;
             if(evaluate(e_model))
             {
@@ -397,9 +387,10 @@ void Scene::add_terrain(pTerrain terrain, uint32_t chunk_index)
 void Scene::visibility_pass()
 {
     // Entities
+    auto* entity_system = locate<EntitySystem>("EntitySystem"_h);
     for(uint64_t id: displayable_entities_)
     {
-        const auto& entity = *entities_.at(id);
+        const auto& entity = entity_system->get_entity(id);
         auto e_model = entity.get_component<component::WCModel>()->model;
 
         // Non cullable models are passed

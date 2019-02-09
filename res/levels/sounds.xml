@@ -13,6 +13,13 @@
         <MaxDistance>100</MaxDistance>
         <Loop>true</Loop>
     </Sound>
+    <Sound name="teapot" location="teapot.ogg">
+        <Volume>0</Volume>
+        <MinDistance>0.5</MinDistance>
+        <MaxDistance>50</MaxDistance>
+        <Loop>true</Loop>
+        <Stream>true</Stream>
+    </Sound>
     <!-- bgm -->
     <Sound type="bgm" name="desert_bgm" location="ObservingTheStar.ogg">
         <Volume>-10</Volume>

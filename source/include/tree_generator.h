@@ -2,6 +2,7 @@
 #define TREE_GENERATOR_H
 
 #include <cstdint>
+#include <memory>
 #include "mesh_descriptor.h"
 
 namespace wcore

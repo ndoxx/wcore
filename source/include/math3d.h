@@ -2,7 +2,9 @@
 #define MATH_H
 
 #include <array>
+#include <string>
 #include "math_structures.hpp"
+#include "wtypes.h"
 
 namespace wcore
 {
@@ -155,6 +157,10 @@ mat4 scale_translate(const vec3& world_position, float scale);
 void translate_matrix(mat4& matrix, const vec3& translation);
 
 } // namespace math
+
+template<> std::string to_string(const math::vec2& v);
+template<> std::string to_string(const math::vec3& v);
+
 } // namespace wcore
 
 #include "quaternion.h"

@@ -1,16 +1,16 @@
 <Config>
 	<postproc>
 		<aberration>
-			<float name="shift" value="0.000000"/>
-			<float name="magnitude" value="0.000000"/>
+			<float name="shift" value="2.018000"/>
+			<float name="magnitude" value="0.126000"/>
 		</aberration>
 		<vignette>
-			<float name="falloff" value="0.100000"/>
-			<float name="balance" value="0.250000"/>
+			<float name="falloff" value="0.206000"/>
+			<float name="balance" value="0.022000"/>
 		</vignette>
 		<color>
 			<vibrance>
-				<float name="strength" value="0.000000"/>
+				<float name="strength" value="0.892000"/>
 				<vec3 name="balance" value="(1.000000,1.000000,1.000000)"/>
 			</vibrance>
 		</color>
@@ -22,15 +22,15 @@
 		</dithering>
 	</postproc>
 	<ssao>
-		<float name="radius" value="0.200000"/>
-		<float name="bias" value="0.025000"/>
-		<float name="vbias" value="0.086000"/>
-		<float name="intensity" value="1.300000"/>
-		<float name="scale" value="0.375000"/>
+		<float name="radius" value="0.099000"/>
+		<float name="bias" value="0.143000"/>
+		<float name="vbias" value="0.143000"/>
+		<float name="intensity" value="1.570000"/>
+		<float name="scale" value="0.503000"/>
 		<blur>
 			<int name="passes" value="1"/>
 			<int name="kernel_half_size" value="3"/>
-			<float name="kernel_sigma" value="1.800000"/>
+			<float name="kernel_sigma" value="1.200000"/>
 			<float name="compression" value="1.000000"/>
 		</blur>
 	</ssao>

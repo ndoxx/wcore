@@ -39,6 +39,12 @@ public:
 
     inline void mute(bool value) { mute_ = value; }
 
+    // Channel access
+    bool set_channel_position(int channel_id, const math::vec3& position);
+    bool set_channel_velocity(int channel_id, const math::vec3& velocity);
+    bool set_channel_volume(int channel_id, float volume);
+    bool stop_channel(int channel_id);
+
 private:
     struct SoundEngineImpl;
     std::unique_ptr<SoundEngineImpl> pimpl_; // opaque pointer

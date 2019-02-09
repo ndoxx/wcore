@@ -77,7 +77,7 @@ struct SoundSystem::SoundEngineImpl
     channel_group_bgm(nullptr),
     channel_group_fx(nullptr),
     channel_group_master(nullptr),
-    next_channel_id(0),
+    next_channel_id(1),
     channel_fadeout_s(0.1f)
     {
 
@@ -179,9 +179,13 @@ void SoundSystem::SoundEngineImpl::Channel::update(float dt, const math::vec3& c
     switch(state)
     {
         case State::INITIALIZING:
+        {
+            DLOGN("New sound channel.", "sound", Severity::LOW);
+            DLOGI("sound id: " + std::to_string(sound_id) + " -> <n>" + HRESOLVE(sound_id) + "</n>", "sound", Severity::LOW);
             // Any randomization/adjustment of pitch/volume... goes here
             state = State::LOADING;
             [[fallthrough]];
+        }
 
         case State::LOADING:
         {
@@ -301,24 +305,21 @@ bool SoundSystem::SoundEngineImpl::Channel::prepare_play()
     {
         #ifdef __DEBUG__
             std::stringstream ss;
-            ss << "streamed: " << (descriptor.sound_type == SoundDescriptor::SoundType::FX ? "false" : "true");
-            DLOGI(ss.str(), "sound", Severity::LOW);
+            ss << "streamed: " << (descriptor.stream?"true":"false");
+            DLOGI(ss.str(), "sound", Severity::DET);
             ss.str("");
 
             ss << "position: " << position;
-            DLOGI(ss.str(), "sound", Severity::LOW);
+            DLOGI(ss.str(), "sound", Severity::DET);
             ss.str("");
 
             ss << "velocity: " << velocity;
-            DLOGI(ss.str(), "sound", Severity::LOW);
+            DLOGI(ss.str(), "sound", Severity::DET);
             ss.str("");
 
             ss << "volume: " << volume_dB << "dB";
-            DLOGI(ss.str(), "sound", Severity::LOW);
+            DLOGI(ss.str(), "sound", Severity::DET);
             ss.str("");
-
-            /*ss << "channel: " << channel_id;
-            DLOGI(ss.str(), "sound", Severity::LOW);*/
         #endif
 
         update_channel_parameters();
@@ -474,6 +475,7 @@ void SoundSystem::parse_asset_file(const char* xmlfile)
             xml::parse_node(sound_node, "MinDistance", desc.min_distance);
             xml::parse_node(sound_node, "MaxDistance", desc.max_distance);
             xml::parse_node(sound_node, "Loop",        desc.loop);
+            xml::parse_node(sound_node, "Stream",      desc.stream);
 
             register_sound(desc, hname);
 #ifdef __DEBUG__
@@ -656,6 +658,7 @@ int SoundSystem::play_sound(hash_t name,
             volume_dB,
             dist_filter
         );
+        DLOGI("Channel id: <v>" + std::to_string(channel_id) + "</v>", "sound", Severity::DET);
     }
     else
     {
@@ -684,6 +687,7 @@ int SoundSystem::play_bgm(hash_t name, float volume_dB)
             math::vec3(0),
             volume_dB
         );
+        DLOGI("Channel id: <v>" + std::to_string(channel_id) + "</v>", "sound", Severity::DET);
     }
     else
     {
@@ -693,5 +697,44 @@ int SoundSystem::play_bgm(hash_t name, float volume_dB)
     return channel_id;
 }
 
+bool SoundSystem::set_channel_position(int channel_id, const math::vec3& position)
+{
+    auto it = pimpl_->channels.find(channel_id);
+    if(it == pimpl_->channels.end())
+        return false;
+
+    it->second->position = position;
+    return true;
+}
+
+bool SoundSystem::set_channel_velocity(int channel_id, const math::vec3& velocity)
+{
+    auto it = pimpl_->channels.find(channel_id);
+    if(it == pimpl_->channels.end())
+        return false;
+
+    it->second->velocity = velocity;
+    return true;
+}
+
+bool SoundSystem::set_channel_volume(int channel_id, float volume)
+{
+    auto it = pimpl_->channels.find(channel_id);
+    if(it == pimpl_->channels.end())
+        return false;
+
+    it->second->volume_dB = volume;
+    return true;
+}
+
+bool SoundSystem::stop_channel(int channel_id)
+{
+    auto it = pimpl_->channels.find(channel_id);
+    if(it == pimpl_->channels.end())
+        return false;
+
+    it->second->should_stop = true;
+    return true;
+}
 
 } // namespace wcore

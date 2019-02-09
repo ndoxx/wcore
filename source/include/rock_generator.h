@@ -2,6 +2,7 @@
 #define ROCK_GENERATOR_H
 
 #include <cstdint>
+#include <memory>
 
 #include "noise_generator.hpp"
 #include "noise_policy.hpp"

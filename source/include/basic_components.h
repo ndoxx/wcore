@@ -29,6 +29,7 @@ public:
 class WCSoundEmitter: public WComponent
 {
 public:
+    hash_t sound_name;
 };
 
 } // namespace wcore::component

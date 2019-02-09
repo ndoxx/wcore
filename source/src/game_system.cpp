@@ -81,4 +81,11 @@ void GameSystemContainer::generate_widgets()
 }
 #endif
 
+void GameSystemContainer::unload()
+{
+    for(auto&& system: game_systems_)
+        system->on_unload();
+}
+
+
 } // namespace wcore

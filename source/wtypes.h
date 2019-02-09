@@ -74,6 +74,12 @@ void split_string(const std::string& str, Container& cont, char delim = ' ')
     }
 }
 
+template<typename T>
+std::string to_string(const T& x)
+{
+    return std::to_string(x);
+}
+
 }
 
 #ifndef __IS_TOOL__

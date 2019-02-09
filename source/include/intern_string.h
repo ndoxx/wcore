@@ -4,12 +4,14 @@
 #include <string>
 #include <map>
 
-#include "wtypes.h"
-#include "xml_parser.h"
 #include "singleton.hpp"
+#include "vendor/rapidxml/rapidxml.hpp"
 
 namespace wcore
 {
+
+typedef unsigned long long hash_t;
+class XMLParser;
 
 class InternStringLocator : public Singleton<InternStringLocator>
 {
@@ -28,7 +30,7 @@ private:
 
     void retrieve_table(rapidxml::xml_node<>* node);
 
-    XMLParser xml_parser_;
+    XMLParser* xml_parser_;
     std::map<hash_t, std::string> intern_strings_;
 };
 

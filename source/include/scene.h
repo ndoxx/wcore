@@ -47,7 +47,6 @@ private:
     VertexArray<Vertex3P3N3T2U> instance_vertex_array_;
 
     std::map<uint32_t, Chunk*> chunks_;
-    std::map<uint64_t, std::shared_ptr<WEntity>> entities_;
     std::vector<uint64_t> displayable_entities_;
     StaticOctree static_octree;
 
@@ -58,8 +57,6 @@ private:
     uint32_t current_chunk_index_;          // Index of the chunk the camera is in
     math::i32vec2 current_chunk_coords_;    // Coordinates of the chunk the camera is in
     std::vector<uint32_t> chunks_order_;    // Permutation vector for chunk ordering
-
-    uint64_t unique_id_;                    // Current unique id
 
     static uint32_t SHADOW_WIDTH;           // Width of shadow map
     static uint32_t SHADOW_HEIGHT;          // Height of shadow map
@@ -75,7 +72,6 @@ public:
     void populate_static_octree(uint32_t chunk_index);
 
     // Getters
-    inline uint64_t get_unique_id()                 { return unique_id_++; }
     inline pCamera get_camera()                     { return camera_; }
     inline pcCamera get_camera() const              { return camera_; }
     inline pCamera get_light_camera()               { return light_camera_; }
@@ -122,7 +118,8 @@ public:
     inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index) { chunks_.at(chunk_index)->add_position_updater(updater); }
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_rotator(rotator); }
 
-    uint64_t add_entity(std::shared_ptr<WEntity> entity);
+    //uint64_t add_entity(std::shared_ptr<WEntity> entity);
+    inline void register_displayable_entity(uint64_t id) { displayable_entities_.push_back(id); }
 
     // Methods
     // Upload given chunk geometry to OpenGL

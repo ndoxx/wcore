@@ -1,4 +1,5 @@
 #include "mesh_descriptor.h"
+#include "xml_utils.hpp"
 
 namespace wcore
 {

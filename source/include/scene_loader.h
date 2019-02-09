@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <random>
 #include <memory>
 
@@ -55,6 +56,7 @@ private:
 
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_nodes_;
     std::map<uint32_t, rapidxml::xml_node<>*> chunk_patches_;
+    std::set<uint32_t> chunk_loaded_once_;
 
     uint32_t chunk_size_m_;
     uint32_t chunk_size_;
@@ -74,6 +76,7 @@ public:
     // Initialize event listener
     virtual void init_events(InputHandler& handler) override;
     virtual void init_self() override;
+    virtual void on_unload() override;
 
     void load_level(const char* level_name);
     inline void load_level(const std::string& level_name)

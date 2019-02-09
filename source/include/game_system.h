@@ -24,13 +24,14 @@ public:
 #ifndef __DISABLE_EDITOR__
     void generate_widgets();
 #endif
+    void unload();
 
 #ifdef __DEBUG__
     GameSystem*        get_game_system_by_name(hash_t name);
     InitializerSystem* get_initializer_system_by_name(hash_t name);
 #else
-    inline GameSystem*        get_game_system_by_name(hash_t name)        { return game_systems_map_.at(name); }
-    inline InitializerSystem* get_initializer_system_by_name(hash_t name) { return initializer_systems_map_.at(name); }
+    inline GameSystem*        get_game_system_by_name(hash_t name)  const       { return game_systems_map_.at(name); }
+    inline InitializerSystem* get_initializer_system_by_name(hash_t name) const { return initializer_systems_map_.at(name); }
 #endif
 
     inline std::list<GameSystem*>::iterator begin() { return game_systems_.begin(); }
@@ -72,14 +73,15 @@ public:
     // Show system debug section in main debug widget
     virtual void generate_widget() {}
 #endif
+    virtual void on_unload() {}
 
 protected:
     // Access sibling GameSystem within parent GameSystemContainer, by name
     template <typename T>
-    inline T* locate(hash_t system_name)      { return static_cast<T*>(parent_container_->get_game_system_by_name(system_name)); }
+    inline T* locate(hash_t system_name) const      { return static_cast<T*>(parent_container_->get_game_system_by_name(system_name)); }
     // Access sibling InitializerSystem within parent GameSystemContainer, by name
     template <typename T>
-    inline T* locate_init(hash_t system_name) { return static_cast<T*>(parent_container_->get_initializer_system_by_name(system_name)); }
+    inline T* locate_init(hash_t system_name) const { return static_cast<T*>(parent_container_->get_initializer_system_by_name(system_name)); }
 
 private:
     GameSystemContainer* parent_container_;

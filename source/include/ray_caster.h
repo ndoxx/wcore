@@ -1,6 +1,8 @@
 #ifndef RAY_CASTER_H
 #define RAY_CASTER_H
 
+#include <memory>
+
 #include "game_system.h"
 #include "math3d.h"
 #include "ray.h"

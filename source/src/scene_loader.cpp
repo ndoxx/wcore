@@ -22,6 +22,7 @@
 #include "bezier.h"
 #include "daylight.h"
 #include "sound_system.h"
+#include "entity_system.h"
 #include "input_handler.h"
 #include "io_utils.h"
 #include "basic_components.h"
@@ -66,6 +67,35 @@ void SceneLoader::init_self()
 void SceneLoader::init_events(InputHandler& handler)
 {
     subscribe("input.keyboard"_h, handler, &SceneLoader::onKeyboardEvent);
+}
+
+void SceneLoader::on_unload()
+{
+/*
+    // Save camera position/orientation
+    auto pcam = pscene_->get_camera();
+    const vec3& position = pcam->get_position();
+    float yaw = pcam->get_yaw();
+    float pitch = pcam->get_pitch();
+    vec2 orientation(yaw, pitch);
+
+    auto* cam_node = xml_parser_.get_root()->first_node("Camera");
+    // TODO: xml::set_node()
+    auto* pos_node = cam_node->first_node("Position");
+    if(pos_node)
+    {
+        char* value_str = xml_parser_.allocate_string(wcore::to_string(position).c_str());
+        pos_node->value(value_str);
+    }
+    auto* ori_node = cam_node->first_node("Orientation");
+    if(ori_node)
+    {
+        char* value_str = xml_parser_.allocate_string(wcore::to_string(orientation).c_str());
+        ori_node->value(value_str);
+    }
+
+    xml_parser_.write();
+*/
 }
 
 static inline std::string level_file(const char* level_name)
@@ -490,7 +520,9 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords, bool finalize)
 #ifdef __PROFILING_CHUNKS__
     profile_clock_.restart();
 #endif
-    parse_entities(chunk_node, chunk_index);
+    // but just once
+    if(chunk_loaded_once_.find(chunk_index) == chunk_loaded_once_.end())
+        parse_entities(chunk_node, chunk_index);
 #ifdef __PROFILING_CHUNKS__
     period = profile_clock_.get_elapsed_time();
     dt_entities_us = 1e6*std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
@@ -549,6 +581,10 @@ uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords, bool finalize)
     ss << "Geometry upload: <v>" << dt_upload_us << "</v> µs";
     DLOGI(ss.str(), "chunk", Severity::DET);
 #endif
+
+    // Add chunk index to set of chunks that were loaded once
+    chunk_loaded_once_.insert(chunk_index);
+
     return chunk_index;
 }
 
@@ -854,6 +890,7 @@ void SceneLoader::parse_entities(rapidxml::xml_node<>* chunk_node, uint32_t chun
     xml_node<>* ents_node = chunk_node->first_node("Entities");
     if(!ents_node) return;
 
+    auto* entity_system = locate<EntitySystem>("EntitySystem"_h);
     for (xml_node<>* ent=ents_node->first_node("Entity"); ent; ent=ent->next_sibling("Entity"))
     {
         // Get blueprint name
@@ -887,7 +924,7 @@ void SceneLoader::parse_entities(rapidxml::xml_node<>* chunk_node, uint32_t chun
             pmdl->update_bounding_boxes();
         }
 
-        pscene_->add_entity(pEntity);
+        entity_system->add_entity(pEntity);
     }
 }
 

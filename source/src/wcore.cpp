@@ -67,9 +67,9 @@ struct Engine::EngineImpl
     game_loop(nullptr),
     ed_tweaks(nullptr),
     scene(nullptr),
+    entity_system(nullptr),
     camera_controller(nullptr),
     game_object_factory(nullptr),
-    entity_system(nullptr),
     scene_loader(nullptr),
     pipeline(nullptr),
     daylight(nullptr),
@@ -97,9 +97,9 @@ struct Engine::EngineImpl
         delete daylight;
         delete pipeline;
         delete scene_loader;
-        delete entity_system;
         delete game_object_factory;
         delete camera_controller;
+        delete entity_system;
         delete scene;
         delete game_loop;
 
@@ -115,9 +115,9 @@ struct Engine::EngineImpl
 #endif
 
         scene               = new Scene();
+        entity_system       = new EntitySystem();
         camera_controller   = new CameraController();
         game_object_factory = new GameObjectFactory();
-        entity_system       = new EntitySystem();
         scene_loader        = new SceneLoader();
         pipeline            = new RenderPipeline();
         daylight            = new DaylightSystem();
@@ -139,9 +139,9 @@ struct Engine::EngineImpl
 
     // GameSystems
     Scene*             scene;
+    EntitySystem*      entity_system;
     CameraController*  camera_controller;
     GameObjectFactory* game_object_factory;
-    EntitySystem*      entity_system;
     SceneLoader*       scene_loader;
     RenderPipeline*    pipeline;
     DaylightSystem*    daylight;
@@ -234,12 +234,12 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->register_game_system("Editor"_h,            static_cast<GameSystem*>(eimpl_->editor));
 #endif
     eimpl_->game_loop->register_game_system("CameraController"_h,  static_cast<GameSystem*>(eimpl_->camera_controller));
+    eimpl_->game_loop->register_game_system("EntitySystem"_h,      static_cast<GameSystem*>(eimpl_->entity_system));
     eimpl_->game_loop->register_game_system("Scene"_h,             static_cast<GameSystem*>(eimpl_->scene));
     eimpl_->game_loop->register_game_system("Pipeline"_h,          static_cast<GameSystem*>(eimpl_->pipeline));
     eimpl_->game_loop->register_game_system("Daylight"_h,          static_cast<GameSystem*>(eimpl_->daylight));
     eimpl_->game_loop->register_game_system("RayCaster"_h,         static_cast<GameSystem*>(eimpl_->ray_caster));
     eimpl_->game_loop->register_game_system("GameObjectFactory"_h, static_cast<GameSystem*>(eimpl_->game_object_factory));
-    eimpl_->game_loop->register_game_system("EntitySystem"_h,      static_cast<GameSystem*>(eimpl_->entity_system));
     eimpl_->game_loop->register_game_system("SceneLoader"_h,       static_cast<GameSystem*>(eimpl_->scene_loader));
     eimpl_->game_loop->register_game_system("ChunkManager"_h,      static_cast<GameSystem*>(eimpl_->chunk_manager));
     eimpl_->game_loop->register_game_system("SoundSystem"_h,       static_cast<GameSystem*>(eimpl_->sound_system));
@@ -368,6 +368,7 @@ int Engine::Run()
     try
     {
         eimpl_->game_loop->serialize_system_parameters();
+        eimpl_->game_loop->unload_game_systems();
     }
     catch (const std::ofstream::failure& e)
     {

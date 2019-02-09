@@ -5,7 +5,7 @@
             <Components>
                 <Model name="teapot01"/>
                 <SoundEmitter>
-
+                    <Sound>teapot</Sound>
                 </SoundEmitter>
             </Components>
         </Entity>

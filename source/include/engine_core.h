@@ -45,6 +45,7 @@ public:
     inline void init_game_systems()           { game_systems_.init_game_systems(); }
     inline void init_system_parameters()      { game_systems_.init(); }
     inline void serialize_system_parameters() { game_systems_.serialize(); }
+    inline void unload_game_systems()         { game_systems_.unload(); }
 
 #ifndef __DISABLE_EDITOR__
     inline void toggle_editor_GUI_rendering() { render_editor_GUI_ = !render_editor_GUI_; }

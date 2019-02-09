@@ -1,18 +1,21 @@
 #include "intern_string.h"
 #include "config.h"
 #include "logger.h"
+#include "xml_parser.h"
+#include "wtypes.h"
 
 namespace wcore
 {
 
-InternStringLocator::InternStringLocator()
+InternStringLocator::InternStringLocator():
+xml_parser_(new XMLParser())
 {
 
 }
 
 InternStringLocator::~InternStringLocator()
 {
-
+    delete xml_parser_;
 }
 
 void InternStringLocator::init()
@@ -26,8 +29,8 @@ void InternStringLocator::init()
         DLOGI("Run the \"internstr\" utility.", "core", Severity::WARN);
         return;
     }
-    xml_parser_.load_file_xml(xmlpath);
-    retrieve_table(xml_parser_.get_root());
+    xml_parser_->load_file_xml(xmlpath);
+    retrieve_table(xml_parser_->get_root());
     DLOGES("core", Severity::LOW);
 }
 

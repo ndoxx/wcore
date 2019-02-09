@@ -419,4 +419,17 @@ vec3 random_vec3(const extent_t& extent)
 }
 
 } // namespace math
+
+template<>
+std::string to_string<math::vec2>(const math::vec2& v)
+{
+    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + ")";
+}
+
+template<>
+std::string to_string<math::vec3>(const math::vec3& v)
+{
+    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z()) + ")";
+}
+
 } // namespace wcore
