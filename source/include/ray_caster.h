@@ -23,7 +23,7 @@ struct SceneQueryResult
 
     inline void clear() { models.clear(); hit = false; }
 
-    std::vector<std::weak_ptr<Model>> models; // Will be a variant type when scene includes entities
+    std::vector<Model*> models; // Will be a variant type when scene includes entities
     bool hit;
 };
 

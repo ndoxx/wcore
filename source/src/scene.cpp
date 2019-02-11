@@ -112,12 +112,12 @@ void Scene::populate_static_octree(uint32_t chunk_index)
 {
     Chunk* chunk = chunks_.at(chunk_index);
     // Populate static octree with chunk content
-    chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
+    chunk->traverse_models([&](Model& model, uint32_t chunk_index)
     {
         StaticOctreeData data;
-        data.model = pmdl;
+        data.model = &model;
         // Use chunk index as a group id for later removal
-        static_octree.insert(StaticOctree::DataT(pmdl->get_AABB().get_bounding_region(),
+        static_octree.insert(StaticOctree::DataT(model.get_AABB().get_bounding_region(),
                                                  data,
                                                  chunk_index));
     });
@@ -228,7 +228,7 @@ void Scene::draw_line_models(std::function<void(pLineModel)> func)
     }
 }
 
-void Scene::draw_models(std::function<void(pModel)> prepare,
+void Scene::draw_models(std::function<void(const Model&)> prepare,
                         ModelEvaluator evaluate,
                         wcore::ORDER order,
                         wcore::MODEL_CATEGORY model_cat) const
@@ -248,17 +248,17 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
                 // Is chunk visible? ~= Is terrain visible? (when viewed from the top)
 
                 // Get terrain chunk OBB
-                OBB& obb = chunk->get_terrain_nc()->get_OBB();
+                OBB& obb = chunk->get_terrain_nc().get_OBB();
                 // Frustum cull entire chunk
                 if(!camera_->frustum_collides(obb))
                     continue;
             }
 
             // Draw models
-            chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
+            chunk->traverse_models([&](const Model& model, uint32_t chunk_index)
             {
-                prepare(pmdl);
-                const BufferToken& token = pmdl->get_mesh().get_buffer_token();
+                prepare(model);
+                const BufferToken& token = model.get_mesh().get_buffer_token();
                 if(token.batch == BufferToken::Batch::INSTANCE)
                 {
                     // Instance buffers are owned by scene
@@ -274,11 +274,11 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
         for(uint64_t id: displayable_entities_)
         {
             const auto& entity = entity_system->get_entity(id);
-            auto e_model = entity.get_component<component::WCModel>()->model;
+            Model& e_model = *entity.get_component<component::WCModel>()->model;
             if(evaluate(e_model))
             {
                 prepare(e_model);
-                const BufferToken& token = e_model->get_mesh().get_buffer_token();
+                const BufferToken& token = e_model.get_mesh().get_buffer_token();
                 if(token.batch == BufferToken::Batch::INSTANCE)
                 {
                     // Instance buffers are owned by scene
@@ -302,16 +302,16 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
                 // Is chunk visible? ~= Is terrain visible? (when viewed from the top)
 
                 // Get terrain chunk OBB
-                OBB& obb = chunk->get_terrain_nc()->get_OBB();
+                OBB& obb = chunk->get_terrain_nc().get_OBB();
                 // Frustum cull entire chunk
                 if(!camera_->frustum_collides(obb))
                     continue;
             }
 
             // Draw terrains
-            pModel pterrain = chunk->get_terrain_nc();
-            prepare(pterrain);
-            chunk->draw(pterrain->get_mesh().get_buffer_token());
+            TerrainChunk& terrain = chunk->get_terrain_nc();
+            prepare(terrain);
+            chunk->draw(terrain.get_mesh().get_buffer_token());
         }
     }
     //Traverse chunks back to front for transparent geometry
@@ -323,16 +323,16 @@ void Scene::draw_models(std::function<void(pModel)> prepare,
             Chunk* chunk = chunks_.at(chunks_order_[index]);
             // Is chunk visible?
             // Get terrain chunk AABB (APPROX)
-            AABB& aabb = chunk->get_terrain_nc()->get_AABB();
+            AABB& aabb = chunk->get_terrain_nc().get_AABB();
             // Frustum cull entire chunk
             if(!camera_->frustum_collides(aabb))
                 continue;
 
             // Draw models
-            chunk->traverse_models([&](pModel pmdl, uint32_t chunk_index)
+            chunk->traverse_models([&](const Model& model, uint32_t chunk_index)
             {
-                prepare(pmdl);
-                chunk->draw(pmdl->get_mesh().get_buffer_token());
+                prepare(model);
+                chunk->draw(model.get_mesh().get_buffer_token());
             }, evaluate, order, model_cat);
         }
     }
@@ -378,7 +378,7 @@ void Scene::traverse_loaded_neighbor_chunks(uint32_t chunk_index,
     }
 }
 
-void Scene::add_terrain(pTerrain terrain, uint32_t chunk_index)
+void Scene::add_terrain(std::shared_ptr<TerrainChunk> terrain, uint32_t chunk_index)
 {
     // * Add terrain to chunk
     chunks_.at(chunk_index)->terrain_ = terrain;
@@ -406,18 +406,18 @@ void Scene::visibility_pass()
     }
 
     // Models in chunks
-    traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_id)
+    traverse_models([&](Model& model, uint32_t chunk_id)
     {
         // Non cullable models are passed
-        if(!pmodel->can_frustum_cull())
+        if(!model.can_frustum_cull())
         {
-            pmodel->set_visibility(true);
+            model.set_visibility(true);
             return;
         }
         // Get model OBB
-        OBB& obb = pmodel->get_OBB();
+        OBB& obb = model.get_OBB();
         // Frustum culling
-        pmodel->set_visibility(camera_->frustum_collides(obb));
+        model.set_visibility(camera_->frustum_collides(obb));
     });
 }
 
@@ -469,7 +469,7 @@ void Scene::update(const GameClock& clock)
 
 const HeightMap& Scene::get_heightmap(uint32_t chunk_index) const
 {
-    return chunks_.at(chunk_index)->get_terrain()->get_heightmap();
+    return chunks_.at(chunk_index)->get_terrain().get_heightmap();
 }
 
 float Scene::get_height(math::vec3 position) const
@@ -482,7 +482,7 @@ float Scene::get_height(math::vec3 position) const
         vec2 lcp(fmod(position.x(), chunk_size_m_),
                  fmod(position.z(), chunk_size_m_));
         return chunks_.at(chunk_index)->get_terrain()
-                                      ->get_heightmap()
+                                      .get_heightmap()
                                       .get_height(lcp);
     }
     return 0.0f;

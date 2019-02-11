@@ -75,9 +75,9 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map(Scene* pscene, float
 #endif
     //sm_shader_.send_uniform("lt.v3_lightPosition"_h, pscene->get_directional_light().lock()->get_position());
     sm_shader_.send_uniform("f_normalOffset"_h, normal_offset);
-    pscene->draw_models([&](std::shared_ptr<Model> pmodel)
+    pscene->draw_models([&](const Model& model)
     {
-        uint32_t cull_face = pmodel->shadow_cull_face();
+        uint32_t cull_face = model.shadow_cull_face();
         switch(cull_face)
         {
             case 1:
@@ -92,7 +92,7 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map(Scene* pscene, float
                 GFX::disable_face_culling();
         }
         // Get model matrix and compute products
-        math::mat4 M = pmodel->get_model_matrix();
+        math::mat4 M = const_cast<Model&>(model).get_model_matrix();
         //math::mat4 MV = Vl*M;
         math::mat4 MVP = PVl*M;
         sm_shader_.send_uniform("m4_ModelViewProjection"_h, MVP);

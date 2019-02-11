@@ -291,14 +291,14 @@ bool ray_collides_extent(const Ray& ray, const extent_t& extent, RayCollisionDat
     return true;
 }
 
-bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> pmdl, RayCollisionData& data)
+bool ray_collides_OBB(const Ray& ray, const Model& model, RayCollisionData& data)
 {
     // Transform ray to model space
-    bool ret = ray_collides_extent(ray.to_model_space(pmdl->get_model_matrix()), pmdl->get_mesh().get_dimensions(), data);
+    bool ret = ray_collides_extent(ray.to_model_space(const_cast<Model&>(model).get_model_matrix()), model.get_mesh().get_dimensions(), data);
     // Rescale hit data
     if(ret)
     {
-        float scale = pmdl->get_transformation().get_scale();
+        float scale = model.get_transformation().get_scale();
         data.near *= scale;
         data.far *= scale;
     }

@@ -15,6 +15,10 @@ struct Vertex3P3N3T2U;
 struct Vertex3P;
 class Material;
 
+#ifndef __DISABLE_EDITOR__
+class Editor;
+#endif
+
 #ifdef __DEBUG__
 struct DebugDisplayOptions
 {
@@ -38,7 +42,7 @@ struct DebugDisplayOptions
         assert(value < N_OPTIONS && "[DebugDisplayOptions] Index out of bounds.");
         flags_.set(value, 0);
     }
-    inline bool is_enabled(uint8_t value)
+    inline bool is_enabled(uint8_t value) const
     {
         assert(value < N_OPTIONS && "[DebugDisplayOptions] Index out of bounds.");
         return flags_[value];
@@ -64,6 +68,12 @@ protected:
     bool                  visible_;
     uint32_t              shadow_cull_face_;
 
+#ifndef __DISABLE_EDITOR__
+    Editor* editor_;
+    void (Editor::*selection_reset_) (void);
+#endif
+
+
 public:
 #ifdef __DEBUG__
     DebugDisplayOptions debug_display_opts_;
@@ -71,6 +81,19 @@ public:
 
     Model(std::shared_ptr<SurfaceMesh> pmesh, Material* material);
     ~Model();
+
+#ifndef __DISABLE_EDITOR__
+    inline void add_selection_reset_callback(Editor* editor, void (Editor::*selection_reset) (void))
+    {
+        editor_ = editor;
+        selection_reset_ = selection_reset;
+    }
+    inline void remove_selection_reset_callback()
+    {
+        editor_ = nullptr;
+        selection_reset_ = nullptr;
+    }
+#endif
 
     inline const Mesh<Vertex3P3N3T2U>& get_mesh() const         { return *pmesh_; }
     inline Mesh<Vertex3P3N3T2U>& get_mesh()                     { return *pmesh_; }

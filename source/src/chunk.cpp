@@ -24,8 +24,8 @@ static MovingAverage sorting_fifo_(PROFILING_MAX_SAMPLES);
 
 using namespace math;
 
-ModelEvaluator DEFAULT_MODEL_EVALUATOR([](pModel p){return true;});
-cModelEvaluator DEFAULT_CMODEL_EVALUATOR([](pcModel p){return true;});
+ModelEvaluator DEFAULT_MODEL_EVALUATOR([](Model& p){return true;});
+cModelEvaluator DEFAULT_CMODEL_EVALUATOR([](const Model& p){return true;});
 LightEvaluator DEFAULT_LIGHT_EVALUATOR([](pLight p){return true;});
 cLightEvaluator DEFAULT_CLIGHT_EVALUATOR([](pcLight p){return true;});
 
@@ -145,12 +145,12 @@ void Chunk::traverse_models(ModelVisitor func,
         {
             // Static instances
             for(pModel pmodel : model_instances_)
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
             // Static models
             for(pModel pmodel : models_)
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
         }
         else if(order == wcore::ORDER::FRONT_TO_BACK)
         {
@@ -158,15 +158,15 @@ void Chunk::traverse_models(ModelVisitor func,
             for(uint32_t ii=0; ii<model_instances_order_.size(); ++ii)
             {
                 pModel pmodel = model_instances_[model_instances_order_[ii]];
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
             }
             // Sorted static models
             for(uint32_t ii=0; ii<models_order_.size(); ++ii)
             {
                 pModel pmodel = models_[models_order_[ii]];
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
             }
         }
         else if(order == wcore::ORDER::BACK_TO_FRONT)
@@ -175,15 +175,15 @@ void Chunk::traverse_models(ModelVisitor func,
             for(auto rit=model_instances_order_.rbegin(); rit != model_instances_order_.rend(); ++rit)
             {
                 pModel pmodel = model_instances_[*rit];
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
             }
             // Sorted static models
             for(auto rit=models_order_.rbegin(); rit != models_order_.rend(); ++rit)
             {
                 pModel pmodel = models_[*rit];
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
             }
         }
     }
@@ -192,16 +192,16 @@ void Chunk::traverse_models(ModelVisitor func,
         if(order == wcore::ORDER::IRRELEVANT)
         {
             for(pModel pmodel : models_blend_)
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
         }
         else if(order == wcore::ORDER::BACK_TO_FRONT)
         {
             for(uint32_t ii=0; ii<blend_models_order_.size(); ++ii)
             {
                 pModel pmodel = models_blend_[blend_models_order_[ii]];
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
             }
         }
         else if(order == wcore::ORDER::FRONT_TO_BACK)
@@ -209,8 +209,8 @@ void Chunk::traverse_models(ModelVisitor func,
             for(auto rit=blend_models_order_.rbegin(); rit != blend_models_order_.rend(); ++rit)
             {
                 pModel pmodel = models_blend_[*rit];
-                if(ifFunc(pmodel))
-                    func(pmodel, index_);
+                if(ifFunc(*pmodel))
+                    func(*pmodel, index_);
             }
         }
     }
@@ -227,17 +227,17 @@ bool Chunk::visit_model_first(ModelVisitor func, ModelEvaluator ifFunc) const
     for(uint32_t ii=0; ii<models_order_.size(); ++ii)
     {
         pModel pmodel = models_[models_order_[ii]];
-        if(ifFunc(pmodel))
+        if(ifFunc(*pmodel))
         {
-            func(pmodel, index_);
+            func(*pmodel, index_);
             return true;
         }
     }
 
     // Terrain
-    if(ifFunc(terrain_))
+    if(ifFunc(*terrain_))
     {
-        func(terrain_, index_);
+        func(*terrain_, index_);
         return true;
     }
 

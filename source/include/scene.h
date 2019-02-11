@@ -29,7 +29,7 @@ class InputHandler;
 
 struct StaticOctreeData
 {
-    std::weak_ptr<Model> model;
+    Model* model;
     int key;
 
     bool operator==(const StaticOctreeData& other)
@@ -110,11 +110,11 @@ public:
     void submit_mesh_instance(std::shared_ptr<SurfaceMesh> mesh);
     void load_instance_geometry();
 
-    inline void add_model_instance(pModel model, uint32_t chunk_index) { chunks_.at(chunk_index)->add_model(model,true); }
-    inline void add_model(pModel model, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_model(model); }
+    inline void add_model_instance(std::shared_ptr<Model> model, uint32_t chunk_index) { chunks_.at(chunk_index)->add_model(model,true); }
+    inline void add_model(std::shared_ptr<Model> model, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_model(model); }
     inline void add_model(pLineModel model, uint32_t chunk_index)      { chunks_.at(chunk_index)->add_model(model); }
     inline void add_light(pLight light, uint32_t chunk_index)          { chunks_.at(chunk_index)->lights_.push_back(light); }
-    void add_terrain(pTerrain terrain, uint32_t chunk_index);
+    void add_terrain(std::shared_ptr<TerrainChunk> terrain, uint32_t chunk_index);
     inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index) { chunks_.at(chunk_index)->add_position_updater(updater); }
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_rotator(rotator); }
 
@@ -154,7 +154,7 @@ public:
     // Draw models made up of lines
     void draw_line_models(std::function<void(pLineModel)> func);
     // Draw category of 3D models in loaded chunks in a specified order
-    void draw_models(std::function<void(pModel)> prepare,
+    void draw_models(std::function<void(const Model&)> prepare,
                      ModelEvaluator evaluate=wcore::DEFAULT_MODEL_EVALUATOR,
                      wcore::ORDER order=wcore::ORDER::IRRELEVANT,
                      wcore::MODEL_CATEGORY model_cat=wcore::MODEL_CATEGORY::OPAQUE) const;

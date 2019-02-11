@@ -33,8 +33,9 @@ public:
 
     virtual void init_events(InputHandler& handler) override;
 
-    inline void set_model_selection(std::weak_ptr<Model> pmdl) { model_selection_ = pmdl; }
-    inline std::weak_ptr<Model> get_model_selection() const    { return model_selection_; }
+    void set_model_selection(Model* mdl);
+    inline Model* get_model_selection() const   { return model_selection_; }
+    inline void clear_selection() { model_selection_ = nullptr; last_scene_query_.clear(); }
 
     bool onMouseEvent(const WData& data);
     bool onKeyboardEvent(const WData& data);
@@ -44,7 +45,7 @@ public:
 private:
     uint32_t scene_query_index_;
     SceneQueryResult last_scene_query_;
-    std::weak_ptr<Model> model_selection_;
+    Model* model_selection_;
     TRANSFORM_REFERENTIAL current_referential_;
     TRANSFORM_CONSTRAINT current_constraint_;
     bool editing_;

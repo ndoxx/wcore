@@ -40,16 +40,16 @@ void stitch_terrain_edges(Scene* pscene,
 {
     pscene->traverse_loaded_neighbor_chunks(chunk_index, [&](Chunk* chunk, wcore::NEIGHBOR location)
     {
-        std::shared_ptr<TerrainChunk> nei_terrain = chunk->get_terrain_nc();
+        const TerrainChunk& nei_terrain = chunk->get_terrain_nc();
         switch(location)
         {
             case wcore::NEIGHBOR::SOUTH:
             {
                 for(uint32_t ii=0; ii<chunk_size; ++ii)
                 {
-                    terrain->south(ii).normal_ = nei_terrain->north(ii).normal_;
-                    terrain->south(ii).tangent_ = nei_terrain->north(ii).tangent_;
-                    terrain->south(ii).position_[1] = nei_terrain->north(ii).position_[1];
+                    terrain->south(ii).normal_ = nei_terrain.north(ii).normal_;
+                    terrain->south(ii).tangent_ = nei_terrain.north(ii).tangent_;
+                    terrain->south(ii).position_[1] = nei_terrain.north(ii).position_[1];
                 }
                 break;
             }
@@ -57,9 +57,9 @@ void stitch_terrain_edges(Scene* pscene,
             {
                 for(uint32_t ii=0; ii<chunk_size; ++ii)
                 {
-                    terrain->north(ii).normal_ = nei_terrain->south(ii).normal_;
-                    terrain->north(ii).tangent_ = nei_terrain->south(ii).tangent_;
-                    terrain->north(ii).position_[1] = nei_terrain->south(ii).position_[1];
+                    terrain->north(ii).normal_ = nei_terrain.south(ii).normal_;
+                    terrain->north(ii).tangent_ = nei_terrain.south(ii).tangent_;
+                    terrain->north(ii).position_[1] = nei_terrain.south(ii).position_[1];
                 }
                 break;
             }
@@ -67,9 +67,9 @@ void stitch_terrain_edges(Scene* pscene,
             {
                 for(uint32_t ii=0; ii<chunk_size; ++ii)
                 {
-                    terrain->east(ii).normal_ = nei_terrain->west(ii).normal_;
-                    terrain->east(ii).tangent_ = nei_terrain->west(ii).tangent_;
-                    terrain->east(ii).position_[1] = nei_terrain->west(ii).position_[1];
+                    terrain->east(ii).normal_ = nei_terrain.west(ii).normal_;
+                    terrain->east(ii).tangent_ = nei_terrain.west(ii).tangent_;
+                    terrain->east(ii).position_[1] = nei_terrain.west(ii).position_[1];
                 }
                 break;
             }
@@ -77,9 +77,9 @@ void stitch_terrain_edges(Scene* pscene,
             {
                 for(uint32_t ii=0; ii<chunk_size; ++ii)
                 {
-                    terrain->west(ii).normal_ = nei_terrain->east(ii).normal_;
-                    terrain->west(ii).tangent_ = nei_terrain->east(ii).tangent_;
-                    terrain->west(ii).position_[1] = nei_terrain->east(ii).position_[1];
+                    terrain->west(ii).normal_ = nei_terrain.east(ii).normal_;
+                    terrain->west(ii).tangent_ = nei_terrain.east(ii).tangent_;
+                    terrain->west(ii).position_[1] = nei_terrain.east(ii).position_[1];
                 }
                 break;
             }

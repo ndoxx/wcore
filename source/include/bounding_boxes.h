@@ -153,7 +153,7 @@ inline bool ray_collides_AABB(const Ray& ray, const AABB& aabb, RayCollisionData
 {
     return ray_collides_extent(ray, aabb.get_extent(), data);
 }
-bool ray_collides_OBB(const Ray& ray, std::shared_ptr<Model> model, RayCollisionData& data);
+bool ray_collides_OBB(const Ray& ray, const Model& model, RayCollisionData& data);
 
 namespace traits
 {

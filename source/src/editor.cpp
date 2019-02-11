@@ -1,11 +1,13 @@
 #include "editor.h"
 #include "input_handler.h"
+#include "model.h"
 
 namespace wcore
 {
 
 Editor::Editor():
 scene_query_index_(0),
+model_selection_(nullptr),
 editing_(false),
 track_cursor_(false)
 {
@@ -21,6 +23,16 @@ void Editor::init_events(InputHandler& handler)
 {
     subscribe("input.mouse.click"_h, handler, &Editor::onMouseEvent);
     subscribe("input.keyboard"_h, handler, &Editor::onKeyboardEvent);
+}
+
+void Editor::set_model_selection(Model* pmdl)
+{
+    // If previous selection remove selection reset callback
+    if(model_selection_)
+        model_selection_->remove_selection_reset_callback();
+    // Add selection reset callback
+    model_selection_ = pmdl;
+        model_selection_->add_selection_reset_callback(this, &Editor::clear_selection);
 }
 
 bool Editor::onMouseEvent(const WData& data)
@@ -61,8 +73,7 @@ bool Editor::onKeyboardEvent(const WData& data)
     switch(kbd.key_binding)
     {
         case "k_editor_deselect"_h:
-            model_selection_ = std::weak_ptr<Model>();
-            last_scene_query_.clear();
+            clear_selection();
             break;
     }
 

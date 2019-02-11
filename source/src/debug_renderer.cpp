@@ -98,12 +98,12 @@ void DebugRenderer::render(Scene* pscene)
     vertex_array_.bind();
 
     // pscene->OBJECTS AABB/OBB
-    pscene->traverse_models([&](std::shared_ptr<Model> pmodel, uint32_t chunk_index)
+    pscene->traverse_models([&](const Model& model, uint32_t chunk_index)
     {
         // Get model matrix and compute products
-        if(bb_display_mode_ == 1 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::AABB))
+        if(bb_display_mode_ == 1 || model.debug_display_opts_.is_enabled(DebugDisplayOptions::AABB))
         {
-            AABB& aabb = pmodel->get_AABB();
+            AABB& aabb = const_cast<Model&>(model).get_AABB();
             if(!pscene->get_camera()->frustum_collides(aabb)) return;
             mat4 M = aabb.get_model_matrix();
             line_shader_.send_uniform("v4_line_color"_h, vec4(0,1,0,0));
@@ -111,9 +111,9 @@ void DebugRenderer::render(Scene* pscene)
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
         }
-        if(bb_display_mode_ == 2 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::OBB))
+        if(bb_display_mode_ == 2 || model.debug_display_opts_.is_enabled(DebugDisplayOptions::OBB))
         {
-            OBB& obb = pmodel->get_OBB();
+            OBB& obb = const_cast<Model&>(model).get_OBB();
             if(!pscene->get_camera()->frustum_collides(obb)) return;
             mat4 M = obb.get_model_matrix();
             line_shader_.send_uniform("v4_line_color"_h, vec4(0,0,1,0));
@@ -121,11 +121,11 @@ void DebugRenderer::render(Scene* pscene)
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
         }
-        if(bb_display_mode_ == 3 || pmodel->debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
+        if(bb_display_mode_ == 3 || model.debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
         {
-            OBB& obb = pmodel->get_OBB();
+            OBB& obb = const_cast<Model&>(model).get_OBB();
             if(!pscene->get_camera()->frustum_collides(obb)) return;
-            mat4 M = pmodel->get_transformation().get_rotation_translation_matrix();
+            mat4 M = const_cast<Model&>(model).get_transformation().get_rotation_translation_matrix();
             mat4 MVP = PV*M;
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             line_shader_.send_uniform("v4_line_color"_h, vec4(1,0,0,0));
@@ -142,9 +142,9 @@ void DebugRenderer::render(Scene* pscene)
 
 #ifndef __DISABLE_EDITOR__
     // EDITOR SELECTION
-    if(auto&& psel = pscene->locate_editor()->get_model_selection().lock())
+    if(auto* psel = pscene->locate_editor()->get_model_selection())
     {
-        OBB& obb = psel->get_OBB();
+        OBB& obb = const_cast<Model*>(psel)->get_OBB();
         mat4 M = obb.get_model_matrix();
         line_shader_.send_uniform("v4_line_color"_h, vec4(1,0.8,0,0));
         mat4 MVP = PV*M;
@@ -260,7 +260,7 @@ void DebugRenderer::render(Scene* pscene)
 void DebugRenderer::show_selection_neighbors(Scene* pscene, float radius)
 {
 #ifndef __DISABLE_EDITOR__
-    if(auto&& psel = pscene->locate_editor()->get_model_selection().lock())
+    if(auto* psel = pscene->locate_editor()->get_model_selection())
     {
         Sphere bounds(psel->get_position(), radius);
         auto&& static_octree = pscene->get_static_octree();
@@ -268,7 +268,7 @@ void DebugRenderer::show_selection_neighbors(Scene* pscene, float radius)
         [&](auto&& obj)
         {
             // Display bounding cube
-            mat4 M(obj.data.model.lock()->get_OBB().get_model_matrix());
+            mat4 M(obj.data.model->get_OBB().get_model_matrix());
             request_draw_cube(M, 60*5, vec3(1,0,1));
         });
     }

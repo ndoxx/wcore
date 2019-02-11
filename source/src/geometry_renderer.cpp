@@ -49,10 +49,10 @@ void GeometryRenderer::render(Scene* pscene)
 
     GFX::clear_color_depth();
     // Bind VAO, draw, unbind VAO
-    pscene->draw_models([&](std::shared_ptr<Model> pmodel)
+    pscene->draw_models([&](const Model& model)
     {
         // Get model matrix and compute products
-        mat4 M = pmodel->get_model_matrix();
+        mat4 M = const_cast<Model&>(model).get_model_matrix();
         mat4 MV = V*M;
         mat4 MVP = PV*M;
 
@@ -65,21 +65,21 @@ void GeometryRenderer::render(Scene* pscene)
         // MVP matrix
         geometry_pass_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
         // material uniforms
-        geometry_pass_shader_.send_uniforms(pmodel->get_material());
+        geometry_pass_shader_.send_uniforms(model.get_material());
         // overrides
         if(!allow_normal_mapping_)
             geometry_pass_shader_.send_uniform("mt.b_use_normal_map"_h, false);
         if(!allow_parallax_mapping_)
             geometry_pass_shader_.send_uniform("mt.b_use_parallax_map"_h, false);
-        if(pmodel->get_material().is_textured())
+        if(model.get_material().is_textured())
         {
             // bind current material texture units if any
-            pmodel->get_material().bind_texture();
+            model.get_material().bind_texture();
         }
     },
-    [&](std::shared_ptr<Model> pmodel) // evaluator predicate
+    [&](const Model& model) // evaluator predicate
     {
-        return pmodel->is_visible(); // Visibility is evaluated during update by Scene::visibility_pass()
+        return model.is_visible(); // Visibility is evaluated during update by Scene::visibility_pass()
     },
     wcore::ORDER::FRONT_TO_BACK);
 

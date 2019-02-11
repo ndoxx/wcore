@@ -21,6 +21,10 @@ is_dynamic_(false),
 is_terrain_(false),
 visible_(false),
 shadow_cull_face_(0)
+#ifndef __DISABLE_EDITOR__
+,selection_reset_(nullptr)
+,editor_(nullptr)
+#endif
 {
     #ifdef __DEBUG__
         DLOGN("[Model] New static model.", "model", Severity::DET);
@@ -33,10 +37,10 @@ shadow_cull_face_(0)
 
 Model::~Model()
 {
-    //if(!pmesh_->is_cached())
-        //delete pmesh_;
-    //if(!pmaterial_->is_cached())
-        delete pmaterial_;
+    if(selection_reset_)
+        (editor_->*selection_reset_)();
+
+    delete pmaterial_;
 }
 
 LineModel::LineModel(Mesh<Vertex3P>* pmesh, Material* material):

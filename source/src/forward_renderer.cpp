@@ -52,16 +52,16 @@ void ForwardRenderer::render(Scene* pscene)
         GFX::enable_blending();
         GFX::set_std_blending();
 
-        pscene->draw_models([&](std::shared_ptr<Model> pmodel)
+        pscene->draw_models([&](const Model& model)
         {
             // Get model matrix and compute products
-            mat4 M = pmodel->get_model_matrix();
+            mat4 M = const_cast<Model&>(model).get_model_matrix();
             mat4 MVP = PV*M;
 
             // Transform
             forward_stage_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             // Material
-            const Material& material = pmodel->get_material();
+            const Material& material = model.get_material();
             if(material.is_textured())
             {
 

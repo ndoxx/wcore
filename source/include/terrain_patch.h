@@ -38,28 +38,28 @@ public:
     inline const HeightMap& get_heightmap() const { return *heightmap_; }
 
     // Terrain geometry accessors
-    inline Vertex3P3N3T2U& north(uint32_t index);
-    inline Vertex3P3N3T2U& south(uint32_t index);
-    inline Vertex3P3N3T2U& east(uint32_t index);
-    inline Vertex3P3N3T2U& west(uint32_t index);
+    inline Vertex3P3N3T2U& north(uint32_t index) const;
+    inline Vertex3P3N3T2U& south(uint32_t index) const;
+    inline Vertex3P3N3T2U& east(uint32_t index) const;
+    inline Vertex3P3N3T2U& west(uint32_t index) const;
 };
 
-inline Vertex3P3N3T2U& TerrainChunk::east(uint32_t index)
+inline Vertex3P3N3T2U& TerrainChunk::east(uint32_t index) const
 {
     return (*pmesh_)[(chunk_size_-1)*chunk_size_+index];
 }
 
-inline Vertex3P3N3T2U& TerrainChunk::west(uint32_t index)
+inline Vertex3P3N3T2U& TerrainChunk::west(uint32_t index) const
 {
     return (*pmesh_)[index];
 }
 
-inline Vertex3P3N3T2U& TerrainChunk::south(uint32_t index)
+inline Vertex3P3N3T2U& TerrainChunk::south(uint32_t index) const
 {
     return (*pmesh_)[index*chunk_size_];
 }
 
-inline Vertex3P3N3T2U& TerrainChunk::north(uint32_t index)
+inline Vertex3P3N3T2U& TerrainChunk::north(uint32_t index) const
 {
     return (*pmesh_)[index*chunk_size_ + chunk_size_-1];
 }

@@ -112,7 +112,7 @@ SceneQueryResult RayCaster::ray_scene_query(const Ray& ray)
     //   and return the closest object or nothing
     RayCollisionData data;
     SceneQueryResult result;
-    pscene->traverse_models([&](pModel pmdl, uint32_t chunk_id)
+    pscene->traverse_models([&](Model& model, uint32_t chunk_id)
     {
         #ifdef __DEBUG__
         if(show_ray)
@@ -131,15 +131,15 @@ SceneQueryResult RayCaster::ray_scene_query(const Ray& ray)
         #endif
 
         result.hit = true;
-        result.models.push_back(pmdl);
+        result.models.push_back(&model);
     },
-    [&](pModel pmdl) // Evaluator -> breaks from traversal loop when return value is false
+    [&](const Model& model) // Evaluator -> breaks from traversal loop when return value is false
     {
         // Skip terrains for now
-        if(pmdl->is_terrain() || !pmdl->is_visible())
+        if(model.is_terrain() || !model.is_visible())
             return false;
-        //return ray_collides_AABB(ray, pmdl->get_AABB(), data);
-        return ray_collides_OBB(ray, pmdl, data);
+        //return ray_collides_AABB(ray, model.get_AABB(), data);
+        return ray_collides_OBB(ray, model, data);
     },
     ORDER::FRONT_TO_BACK);
     return result;
@@ -154,7 +154,7 @@ SceneQueryResult RayCaster::ray_scene_query_first(const Ray& ray)
     //   and return the closest object or nothing
     RayCollisionData data;
     SceneQueryResult result;
-    pscene->visit_model_first([&](pModel pmdl, uint32_t chunk_id)
+    pscene->visit_model_first([&](Model& model, uint32_t chunk_id)
     {
         #ifdef __DEBUG__
         if(show_ray)
@@ -173,15 +173,15 @@ SceneQueryResult RayCaster::ray_scene_query_first(const Ray& ray)
         #endif
 
         result.hit = true;
-        result.models.push_back(pmdl);
+        result.models.push_back(&model);
     },
-    [&](pModel pmdl) // Evaluator -> breaks from traversal loop when return value is false
+    [&](const Model& model) // Evaluator -> breaks from traversal loop when return value is false
     {
         // Skip terrains for now
-        if(pmdl->is_terrain() || !pmdl->is_visible())
+        if(model.is_terrain() || !model.is_visible())
             return false;
-        //return ray_collides_AABB(ray, pmdl->get_AABB(), data);
-        return ray_collides_OBB(ray, pmdl, data);
+        //return ray_collides_AABB(ray, model.get_AABB(), data);
+        return ray_collides_OBB(ray, model, data);
     });
     return result;
 }
