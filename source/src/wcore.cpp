@@ -244,9 +244,6 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->register_game_system("ChunkManager"_h,      static_cast<GameSystem*>(eimpl_->chunk_manager));
     eimpl_->game_loop->register_game_system("SoundSystem"_h,       static_cast<GameSystem*>(eimpl_->sound_system));
 
-    // TMP
-    eimpl_->camera_controller->register_camera(eimpl_->scene->get_camera());
-
     eimpl_->game_loop->init_game_systems();
 
     //auto&& input_handler = eimpl_->game_loop->get_input_handler();

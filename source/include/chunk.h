@@ -24,22 +24,20 @@ struct Vertex3P;
 
 typedef std::shared_ptr<LineModel>    pLineModel;
 typedef std::shared_ptr<Camera>       pCamera;
-typedef std::shared_ptr<Light>        pLight;
 typedef std::weak_ptr<Light>          wpLight;
 typedef std::shared_ptr<const Camera> pcCamera;
-typedef std::shared_ptr<const Light>  pcLight;
 typedef std::weak_ptr<const Light>    wpcLight;
 
 typedef std::function<void(std::shared_ptr<Model>, uint32_t)> ModelVisitorShared;
-typedef std::function<void(Model&, uint32_t)>   ModelVisitor;
-typedef std::function<void(const Model&, uint32_t)>  cModelVisitor;
+typedef std::function<void(Model&, uint32_t)> ModelVisitor;
+typedef std::function<void(const Model&, uint32_t)> cModelVisitor;
 typedef std::function<bool(Model&)>   ModelEvaluator;
-typedef std::function<bool(const Model&)>  cModelEvaluator;
+typedef std::function<bool(const Model&)> cModelEvaluator;
 
-typedef std::function<void(pLight, uint32_t)>   LightVisitor;
-typedef std::function<void(pcLight, uint32_t)>  cLightVisitor;
-typedef std::function<bool(pLight)>   LightEvaluator;
-typedef std::function<bool(pcLight)>  cLightEvaluator;
+typedef std::function<void(Light&, uint32_t)> LightVisitor;
+typedef std::function<void(const Light&, uint32_t)> cLightVisitor;
+typedef std::function<bool(Light&)> LightEvaluator;
+typedef std::function<bool(const Light&)> cLightEvaluator;
 
 extern ModelEvaluator DEFAULT_MODEL_EVALUATOR;
 extern cModelEvaluator DEFAULT_CMODEL_EVALUATOR;
@@ -59,8 +57,10 @@ private:
     friend class Scene;
 
     typedef std::shared_ptr<Model> pModel;
+    typedef std::shared_ptr<Light> pLight;
     typedef std::shared_ptr<TerrainChunk> pTerrain;
     typedef std::shared_ptr<const Model> pcModel;
+    typedef std::shared_ptr<const Light> pcLight;
     typedef std::shared_ptr<const TerrainChunk> pcTerrain;
 
     math::i32vec2 coords_;

@@ -495,7 +495,7 @@ void SoundSystem::update(const GameClock& clock)
         auto pscene = locate<Scene>("Scene"_h);
         auto cam = pscene->get_camera();
 
-        const math::vec3& campos = cam->get_position();
+        const math::vec3& campos = cam.get_position();
 
 
         auto it = pimpl_->channels.begin();
@@ -516,8 +516,8 @@ void SoundSystem::update(const GameClock& clock)
 
         FMOD_VECTOR listenerpos = to_fmod_vec(campos);
         FMOD_VECTOR listenervel = to_fmod_vec(camvel);
-        FMOD_VECTOR forward     = to_fmod_vec(cam->get_forward());
-        FMOD_VECTOR up          = to_fmod_vec(cam->get_up());
+        FMOD_VECTOR forward     = to_fmod_vec(cam.get_forward());
+        FMOD_VECTOR up          = to_fmod_vec(cam.get_up());
         ERRCHECK(pimpl_->fmodsys->set3DListenerAttributes(0, &listenerpos, &listenervel, &forward, &up));
         ERRCHECK(pimpl_->fmodsys->update());
     }

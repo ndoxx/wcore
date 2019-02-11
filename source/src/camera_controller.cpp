@@ -35,6 +35,12 @@ void CameraController::init_events(InputHandler& handler)
     subscribe("input.keyboard"_h, handler, &CameraController::onKeyboardEvent);
 }
 
+void CameraController::init_self()
+{
+    // Register scene default camera
+    register_camera(locate<Scene>("Scene"_h)->get_camera_shared());
+}
+
 void CameraController::update(const GameClock& clock)
 {
     float dt = clock.get_frame_duration();
@@ -62,7 +68,7 @@ void CameraController::update(const GameClock& clock)
     }
 
     // Update camera
-    current_state()->control(camera_, dt);
+    current_state()->control(*camera_, dt);
     camera_->update(dt);
 }
 
@@ -115,51 +121,51 @@ bool CameraController::onKeyboardEvent(const WData& data)
     }
 
     // * Propagate events down to current camera state object
-    return current_state()->onKeyboardEvent(data, camera_);
+    return current_state()->onKeyboardEvent(data, *camera_);
 }
 
 bool CameraController::onMouseEvent(const WData& data)
 {
-    return current_state()->onMouseEvent(data, camera_);
+    return current_state()->onMouseEvent(data, *camera_);
 }
 
-bool CameraStateFreefly::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
+bool CameraStateFreefly::onMouseEvent(const WData& data, Camera& camera)
 {
     const MouseData& md = static_cast<const MouseData&>(data);
-    camera->update_orientation(md.dx, md.dy);
+    camera.update_orientation(md.dx, md.dy);
 
     return true; // Do NOT consume event
 }
 
-bool CameraStateFreefly::onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera)
+bool CameraStateFreefly::onKeyboardEvent(const WData& data, Camera& camera)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
     switch(kbd.key_binding)
     {
         case "k_run"_h:
-            camera->set_speed_fast();
+            camera.set_speed_fast();
             break;
         case "k_walk"_h:
-            camera->set_speed_slow();
+            camera.set_speed_slow();
             break;
         case "k_forward"_h:
-            camera->move_forward();
+            camera.move_forward();
             break;
         case "k_backward"_h:
-            camera->move_backward();
+            camera.move_backward();
             break;
         case "k_strafe_left"_h:
-            camera->strafe_left();
+            camera.strafe_left();
             break;
         case "k_strafe_right"_h:
-            camera->strafe_right();
+            camera.strafe_right();
             break;
         case "k_ascend"_h:
-            camera->ascend();
+            camera.ascend();
             break;
         case "k_descend"_h:
-            camera->descend();
+            camera.descend();
             break;
     }
 
@@ -184,14 +190,14 @@ CameraStateTrackingShot::~CameraStateTrackingShot()
         delete orientation_interpolator_;
 }
 
-bool CameraStateTrackingShot::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
+bool CameraStateTrackingShot::onMouseEvent(const WData& data, Camera& camera)
 {
     //const MouseData& md = static_cast<const MouseData&>(data);
 
     return true; // Do NOT consume event
 }
 
-bool CameraStateTrackingShot::onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera)
+bool CameraStateTrackingShot::onKeyboardEvent(const WData& data, Camera& camera)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -208,7 +214,7 @@ bool CameraStateTrackingShot::onKeyboardEvent(const WData& data, std::shared_ptr
     return true; // Do NOT consume event
 }
 
-void CameraStateTrackingShot::control(std::shared_ptr<Camera> camera, float dt)
+void CameraStateTrackingShot::control(Camera& camera, float dt)
 {
     if(!position_interpolator_ || !orientation_interpolator_) return;
 
@@ -216,8 +222,8 @@ void CameraStateTrackingShot::control(std::shared_ptr<Camera> camera, float dt)
     math::quat newori(orientation_interpolator_->interpolate(t_));
     math::vec3 euler = newori.get_euler_angles();
 
-    camera->set_position(newpos);
-    camera->set_orientation(euler.x(),euler.y());
+    camera.set_position(newpos);
+    camera.set_orientation(euler.x(),euler.y());
 
     t_ += speed_*dt;
     if(t_ > max_t_)
@@ -276,29 +282,29 @@ t_(0.f)
 
 }
 
-void CameraStateCircleAround::follow(std::weak_ptr<Model> target, std::shared_ptr<Camera> camera)
+void CameraStateCircleAround::follow(std::weak_ptr<Model> target, Camera& camera)
 {
     wtarget_ = target;
     if(auto ptarget = wtarget_.lock())
     {
         lookat_pos_ = traits::center<OBB>::get(ptarget->get_OBB());
-        auto& cam_pos = camera->get_position();
+        auto& cam_pos = camera.get_position();
         radius_ = (lookat_pos_-cam_pos).norm();
     }
 }
 
 
-bool CameraStateCircleAround::onMouseEvent(const WData& data, std::shared_ptr<Camera> camera)
+bool CameraStateCircleAround::onMouseEvent(const WData& data, Camera& camera)
 {
     return true; // Do NOT consume event
 }
 
-bool CameraStateCircleAround::onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera)
+bool CameraStateCircleAround::onKeyboardEvent(const WData& data, Camera& camera)
 {
     return true; // Do NOT consume event
 }
 
-void CameraStateCircleAround::control(std::shared_ptr<Camera> camera, float dt)
+void CameraStateCircleAround::control(Camera& camera, float dt)
 {
 
 }

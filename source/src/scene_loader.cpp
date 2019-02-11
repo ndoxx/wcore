@@ -648,7 +648,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     pTerrain terrain = game_object_factory_->make_terrain_patch(desc);
 
     // Fix new terrain edge normals and tangents
-    terrain::stitch_terrain_edges(pscene_, terrain, chunk_index, chunk_size_);
+    terrain::stitch_terrain_edges(pscene_, *terrain, chunk_index, chunk_size_);
 
     // Spacial transformation
     Transformation trans;
@@ -720,7 +720,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
             if(relative_positioning)
             {
                 // If so, translate model using chunk heightmap
-                ground_model(pmdl, chunk_index);
+                ground_model(*pmdl, chunk_index);
             }
 
             // Translate according to chunk coordinates
@@ -792,7 +792,7 @@ void SceneLoader::parse_line_models(xml_node<>* chunk_node, uint32_t chunk_index
             if(relative_positioning)
             {
                 // If so, translate model using chunk heightmap
-                ground_model(pmdl, chunk_index);
+                ground_model(*pmdl, chunk_index);
             }
 
             // Translate according to chunk coordinates
@@ -860,7 +860,7 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
             if(relative_positioning)
             {
                 // If so, translate model using chunk height map.
-                ground_model(pmdl, chunk_index);
+                ground_model(*pmdl, chunk_index);
             }
             // Translate according to chunk coordinates
             auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
@@ -913,7 +913,7 @@ void SceneLoader::parse_entities(rapidxml::xml_node<>* chunk_node, uint32_t chun
             pmdl->set_transformation(trans);
 
             if(is_pos_relative(ent))
-                ground_model(pmdl, chunk_index);
+                ground_model(*pmdl, chunk_index);
 
             // Translate according to chunk coordinates
             auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
@@ -1000,11 +1000,11 @@ void SceneLoader::parse_camera(xml_node<>* node)
 
     vec3 position;
     if(xml::parse_node(node, "Position", position))
-        pscene_->get_camera()->set_position(position);
+        pscene_->get_camera().set_position(position);
 
     vec2 orientation;
     if(xml::parse_node(node, "Orientation", orientation))
-        pscene_->get_camera()->set_orientation(orientation.x(),orientation.y());
+        pscene_->get_camera().set_orientation(orientation.x(),orientation.y());
 }
 
 void SceneLoader::parse_transformation(xml_node<>* trn_node, Transformation& trans)
@@ -1131,25 +1131,25 @@ Mesh<Vertex3P>* SceneLoader::parse_line_mesh(rapidxml::xml_node<>* mesh_node)
     return pmesh;
 }*/
 
-void SceneLoader::ground_model(std::shared_ptr<Model> pmdl, const HeightMap& hm)
+void SceneLoader::ground_model(Model& model, const HeightMap& hm)
 {
     // Find height at model (x,z) position and apply offset to model
-    float height = hm.get_height(pmdl->get_position().xz());
-    pmdl->translate_y(height);
+    float height = hm.get_height(model.get_position().xz());
+    model.translate_y(height);
 }
 
-void SceneLoader::ground_model(std::shared_ptr<Model> pmdl, uint32_t chunk_index)
+void SceneLoader::ground_model(Model& model, uint32_t chunk_index)
 {
     // Find height at model (x,z) position and apply offset to model
-    float height = pscene_->get_heightmap(chunk_index).get_height(pmdl->get_position().xz());
-    pmdl->translate_y(height);
+    float height = pscene_->get_heightmap(chunk_index).get_height(model.get_position().xz());
+    model.translate_y(height);
 }
 
-void SceneLoader::ground_model(std::shared_ptr<LineModel> pmdl, uint32_t chunk_index)
+void SceneLoader::ground_model(LineModel& model, uint32_t chunk_index)
 {
     // Find height at model (x,z) position and apply offset to model
-    float height = pscene_->get_heightmap(chunk_index).get_height(pmdl->get_position().xz());
-    pmdl->translate_y(height);
+    float height = pscene_->get_heightmap(chunk_index).get_height(model.get_position().xz());
+    model.translate_y(height);
 }
 
 void SceneLoader::parse_bezier_interpolator(rapidxml::xml_node<>* bez_node,

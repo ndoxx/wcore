@@ -64,11 +64,12 @@ protected:
     AABB                  aabb_;
     bool                  frustum_cull_;
     bool                  is_dynamic_;
-    bool                  is_terrain_; // TMP for editor selection purposes
+    bool                  is_terrain_;
     bool                  visible_;
     uint32_t              shadow_cull_face_;
 
 #ifndef __DISABLE_EDITOR__
+    // Editor callback to reset its selection when this model is destroyed
     Editor* editor_;
     void (Editor::*selection_reset_) (void);
 #endif
@@ -81,19 +82,6 @@ public:
 
     Model(std::shared_ptr<SurfaceMesh> pmesh, Material* material);
     ~Model();
-
-#ifndef __DISABLE_EDITOR__
-    inline void add_selection_reset_callback(Editor* editor, void (Editor::*selection_reset) (void))
-    {
-        editor_ = editor;
-        selection_reset_ = selection_reset;
-    }
-    inline void remove_selection_reset_callback()
-    {
-        editor_ = nullptr;
-        selection_reset_ = nullptr;
-    }
-#endif
 
     inline const Mesh<Vertex3P3N3T2U>& get_mesh() const         { return *pmesh_; }
     inline Mesh<Vertex3P3N3T2U>& get_mesh()                     { return *pmesh_; }
@@ -117,10 +105,7 @@ public:
 
     inline void set_visibility(bool value)                      { visible_ = value; }
     inline bool is_visible() const                              { return visible_; }
-
-    // TMP for editor selection purposes --------------------------------------
     inline bool is_terrain() const                              { return is_terrain_; }
-    // TMP --------------------------------------------------------------------
 
     inline void set_frustum_cull(bool value)                    { frustum_cull_ = value; }
     inline bool can_frustum_cull() const                        { return frustum_cull_; }
@@ -138,6 +123,22 @@ public:
     inline void translate_x(float x)                            { trans_.translate_x(x); }
     inline void translate_y(float y)                            { trans_.translate_y(y); }
     inline void translate_z(float z)                            { trans_.translate_z(z); }
+
+
+#ifndef __DISABLE_EDITOR__
+    // Set editor callback to clear selection on destruction
+    inline void add_selection_reset_callback(Editor* editor, void (Editor::*selection_reset) (void))
+    {
+        editor_ = editor;
+        selection_reset_ = selection_reset;
+    }
+    // Reset editor selection callback
+    inline void remove_selection_reset_callback()
+    {
+        editor_ = nullptr;
+        selection_reset_ = nullptr;
+    }
+#endif
 };
 
 class LineModel

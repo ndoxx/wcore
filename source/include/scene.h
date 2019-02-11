@@ -50,16 +50,16 @@ private:
     std::vector<uint64_t> displayable_entities_;
     StaticOctree static_octree;
 
-    pLight directional_light_;              // The only directionnal light
-    pCamera camera_;                        // Freefly camera (editor)
-    pCamera light_camera_;                  // Virtual camera for shadow mapping
-    uint32_t chunk_size_m_;                 // Size of chunks in meters
-    uint32_t current_chunk_index_;          // Index of the chunk the camera is in
-    math::i32vec2 current_chunk_coords_;    // Coordinates of the chunk the camera is in
-    std::vector<uint32_t> chunks_order_;    // Permutation vector for chunk ordering
+    std::shared_ptr<Light> directional_light_; // The only directionnal light
+    pCamera camera_;                           // Freefly camera (editor)
+    pCamera light_camera_;                     // Virtual camera for shadow mapping
+    uint32_t chunk_size_m_;                    // Size of chunks in meters
+    uint32_t current_chunk_index_;             // Index of the chunk the camera is in
+    math::i32vec2 current_chunk_coords_;       // Coordinates of the chunk the camera is in
+    std::vector<uint32_t> chunks_order_;       // Permutation vector for chunk ordering
 
-    static uint32_t SHADOW_WIDTH;           // Width of shadow map
-    static uint32_t SHADOW_HEIGHT;          // Height of shadow map
+    static uint32_t SHADOW_WIDTH;              // Width of shadow map
+    static uint32_t SHADOW_HEIGHT;             // Height of shadow map
 
 public:
     Scene();
@@ -67,19 +67,20 @@ public:
 
     float shadow_bias_;                     // Bias parameter for PCF shadow mapping
 
-    // TMP
+    // Static octree access
     inline StaticOctree& get_static_octree() { return static_octree; }
     void populate_static_octree(uint32_t chunk_index);
 
     // Getters
-    inline pCamera get_camera()                     { return camera_; }
-    inline pcCamera get_camera() const              { return camera_; }
-    inline pCamera get_light_camera()               { return light_camera_; }
-    inline pcCamera get_light_camera() const        { return light_camera_; }
-    inline wpLight get_directional_light_nc()       { return wpLight(directional_light_); }
-    inline wpcLight get_directional_light() const   { return wpcLight(directional_light_); }
+    inline pCamera get_camera_shared()            { return camera_; }
+    inline Camera& get_camera()                   { return *camera_; }
+    inline const Camera& get_camera() const       { return *camera_; }
+    inline Camera& get_light_camera()             { return *light_camera_; }
+    inline const Camera& get_light_camera() const { return *light_camera_; }
+    inline std::weak_ptr<Light> get_directional_light_nc()           { return std::weak_ptr<Light>(directional_light_); }
+    inline std::weak_ptr<const Light> get_directional_light() const  { return std::weak_ptr<const Light>(directional_light_); }
 
-    inline pLight get_light(uint32_t index, uint32_t chunk_index)   { return chunks_.at(chunk_index)->lights_[index]; }
+    inline Light& get_light(uint32_t index, uint32_t chunk_index)   { return *chunks_.at(chunk_index)->lights_[index]; }
     inline uint32_t get_chunk_size_meters() const                   { return chunk_size_m_; }
     inline uint32_t get_current_chunk_index() const                 { return current_chunk_index_; }
     inline uint32_t get_num_loaded_chunks() const                   { return chunks_.size(); }
@@ -99,7 +100,7 @@ public:
     inline uint32_t get_triangles_count() const;
 
     // Setters
-    inline void add_directional_light(pLight light)                 { directional_light_ = light; }
+    inline void add_directional_light(std::shared_ptr<Light> light) { directional_light_ = light; }
 
     void set_chunk_size_meters(uint32_t chunk_size_m);
     void add_chunk(const math::i32vec2& coords);
@@ -112,11 +113,11 @@ public:
 
     inline void add_model_instance(std::shared_ptr<Model> model, uint32_t chunk_index) { chunks_.at(chunk_index)->add_model(model,true); }
     inline void add_model(std::shared_ptr<Model> model, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_model(model); }
-    inline void add_model(pLineModel model, uint32_t chunk_index)      { chunks_.at(chunk_index)->add_model(model); }
-    inline void add_light(pLight light, uint32_t chunk_index)          { chunks_.at(chunk_index)->lights_.push_back(light); }
+    inline void add_model(pLineModel model, uint32_t chunk_index)                      { chunks_.at(chunk_index)->add_model(model); }
+    inline void add_light(std::shared_ptr<Light> light, uint32_t chunk_index)          { chunks_.at(chunk_index)->lights_.push_back(light); }
     void add_terrain(std::shared_ptr<TerrainChunk> terrain, uint32_t chunk_index);
-    inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index) { chunks_.at(chunk_index)->add_position_updater(updater); }
-    inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_rotator(rotator); }
+    inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index)   { chunks_.at(chunk_index)->add_position_updater(updater); }
+    inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)            { chunks_.at(chunk_index)->add_rotator(rotator); }
 
     //uint64_t add_entity(std::shared_ptr<WEntity> entity);
     inline void register_displayable_entity(uint64_t id) { displayable_entities_.push_back(id); }

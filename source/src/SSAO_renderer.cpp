@@ -67,7 +67,7 @@ void SSAORenderer::render(Scene* pscene)
     if(!active_) return;
 
     // For position reconstruction
-    const math::mat4& P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
+    const math::mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     math::vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
     auto pgbuffer = Texture::get_named_texture("gbuffer"_h).lock();
 
@@ -105,7 +105,7 @@ void SSAORenderer::render(Scene* pscene)
 
     // Send uniforms
     //const math::mat4& V = pscene->get_camera()->get_view_matrix();
-    float cam_far = pscene->get_camera()->get_far();
+    float cam_far = pscene->get_camera().get_far();
     SSAO_shader_.send_uniform("rd.v2_noiseScale"_h, noise_scale_);
     //if(auto dir_light = pscene->get_directional_light().lock())
         //SSAO_shader_.send_uniform("rd.v3_lightDir"_h, V.submatrix(3,3)*dir_light->get_position());

@@ -33,10 +33,10 @@ void RayCaster::update(const GameClock& clock)
 {
 
     // * Get camera view-projection matrix for this frame and invert it
-    pCamera cam = locate<Scene>("Scene"_h)->get_camera();
-    const math::mat4& view = cam->get_view_matrix();
-    const math::mat4& projection = cam->get_projection_matrix();
-    eye_pos_world_ = cam->get_position(); // Also save camera position
+    auto& cam = locate<Scene>("Scene"_h)->get_camera();
+    const math::mat4& view = cam.get_view_matrix();
+    const math::mat4& projection = cam.get_projection_matrix();
+    eye_pos_world_ = cam.get_position(); // Also save camera position
     eye_pos_world_[3] = 1.0f;
     math::mat4 VP(projection*view);
     math::inverse(VP, unproj_);

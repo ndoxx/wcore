@@ -59,8 +59,8 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map(Scene* pscene, float
 #endif*/
 
     // Get camera matrices
-    const math::mat4& Vl = plcam->get_view_matrix();       // Camera View matrix
-    const math::mat4& Pl = plcam->get_projection_matrix(); // Camera Projection matrix
+    const math::mat4& Vl = plcam.get_view_matrix();       // Camera View matrix
+    const math::mat4& Pl = plcam.get_projection_matrix(); // Camera Projection matrix
     math::mat4 PVl(Pl*Vl);
 
     GFX::disable_blending();

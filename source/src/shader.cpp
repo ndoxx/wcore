@@ -627,11 +627,11 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     return true;
 }
 
-bool Shader::send_uniforms(std::shared_ptr<const Light> plight) const
+bool Shader::send_uniforms(const Light& light) const
 {
     // Each child Light class has its own layout
     // Let polymorphism take care of this
-    plight->update_uniforms(*this);
+    light.update_uniforms(*this);
     return true;
 }
 

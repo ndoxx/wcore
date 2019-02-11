@@ -51,7 +51,7 @@ void ChunkManager::load_start()
 
     // * Load start chunk and some neighbors
     // compute current chunk coordinates
-    const vec3& cam_pos = pscene->get_camera()->get_position();
+    const vec3& cam_pos = pscene->get_camera().get_position();
     uint32_t ck_size_m = ploader->get_chunk_size_meters();
     i32vec2 chunk_coords((uint32_t)floor(cam_pos.x()/ck_size_m),
                          (uint32_t)floor(cam_pos.z()/ck_size_m));

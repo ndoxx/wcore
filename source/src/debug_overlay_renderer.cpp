@@ -116,8 +116,8 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
         passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
         if(is_depth)
         {
-            passthrough_shader_.send_uniform("f_near"_h, pscene->get_camera()->get_near());
-            passthrough_shader_.send_uniform("f_far"_h, pscene->get_camera()->get_far());
+            passthrough_shader_.send_uniform("f_near"_h, pscene->get_camera().get_near());
+            passthrough_shader_.send_uniform("f_far"_h, pscene->get_camera().get_far());
         }
 
         GFX::bind_texture2D(0, props.texture_index);

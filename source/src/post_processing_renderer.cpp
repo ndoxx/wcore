@@ -63,8 +63,8 @@ void PostProcessingRenderer::render(Scene* pscene)
     post_processing_shader_.send_uniform("rd.b_enableFog"_h, fog_enabled_);
     post_processing_shader_.send_uniform("rd.f_fogDensity"_h, fog_density_);
     post_processing_shader_.send_uniform("rd.v3_fogColor"_h, fog_color_);
-    post_processing_shader_.send_uniform("rd.f_cam_near"_h, pscene->get_camera()->get_near());
-    post_processing_shader_.send_uniform("rd.f_cam_far"_h, pscene->get_camera()->get_far());
+    post_processing_shader_.send_uniform("rd.f_cam_near"_h, pscene->get_camera().get_near());
+    post_processing_shader_.send_uniform("rd.f_cam_far"_h, pscene->get_camera().get_far());
 
     // Bloom
     post_processing_shader_.send_uniform("rd.b_enableBloom"_h, bloom_enabled_);

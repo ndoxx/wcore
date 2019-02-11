@@ -86,8 +86,8 @@ void DebugRenderer::load_geometry()
 void DebugRenderer::render(Scene* pscene)
 {
     // Get camera matrices
-    mat4 V = pscene->get_camera()->get_view_matrix();       // Camera View matrix
-    mat4 P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
+    mat4 V = pscene->get_camera().get_view_matrix();       // Camera View matrix
+    mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
     GBuffer::Instance().blit_depth_to_screen(GLB.WIN_W, GLB.WIN_H);
@@ -104,7 +104,7 @@ void DebugRenderer::render(Scene* pscene)
         if(bb_display_mode_ == 1 || model.debug_display_opts_.is_enabled(DebugDisplayOptions::AABB))
         {
             AABB& aabb = const_cast<Model&>(model).get_AABB();
-            if(!pscene->get_camera()->frustum_collides(aabb)) return;
+            if(!pscene->get_camera().frustum_collides(aabb)) return;
             mat4 M = aabb.get_model_matrix();
             line_shader_.send_uniform("v4_line_color"_h, vec4(0,1,0,0));
             mat4 MVP = PV*M;
@@ -114,7 +114,7 @@ void DebugRenderer::render(Scene* pscene)
         if(bb_display_mode_ == 2 || model.debug_display_opts_.is_enabled(DebugDisplayOptions::OBB))
         {
             OBB& obb = const_cast<Model&>(model).get_OBB();
-            if(!pscene->get_camera()->frustum_collides(obb)) return;
+            if(!pscene->get_camera().frustum_collides(obb)) return;
             mat4 M = obb.get_model_matrix();
             line_shader_.send_uniform("v4_line_color"_h, vec4(0,0,1,0));
             mat4 MVP = PV*M;
@@ -124,7 +124,7 @@ void DebugRenderer::render(Scene* pscene)
         if(bb_display_mode_ == 3 || model.debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
         {
             OBB& obb = const_cast<Model&>(model).get_OBB();
-            if(!pscene->get_camera()->frustum_collides(obb)) return;
+            if(!pscene->get_camera().frustum_collides(obb)) return;
             mat4 M = const_cast<Model&>(model).get_transformation().get_rotation_translation_matrix();
             mat4 MVP = PV*M;
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
@@ -156,31 +156,31 @@ void DebugRenderer::render(Scene* pscene)
     // LIGHT PROXY GEOMETRY
     if(light_display_mode_ > 0)
     {
-        pscene->traverse_lights([&](std::shared_ptr<Light> plight, uint32_t chunk_index)
+        pscene->traverse_lights([&](const Light& light, uint32_t chunk_index)
         {
             // Get model matrix and compute products
             // Scale model in display mode 2 only
-            mat4 MVP(PV*plight->get_model_matrix(light_display_mode_==2));
+            mat4 MVP(PV*light.get_model_matrix(light_display_mode_==2));
 
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
-            line_shader_.send_uniform("v4_line_color"_h, vec4(plight->get_color().normalized()));
+            line_shader_.send_uniform("v4_line_color"_h, vec4(light.get_color().normalized()));
             buffer_unit_.draw(SPHERE_NE, SPHERE_OFFSET);
         },
-        [&](std::shared_ptr<Light> plight)
+        [&](const Light& light)
         {
-            return plight->is_in_frustum(*pscene->get_camera());
+            return light.is_in_frustum(pscene->get_camera());
         });
     }
 
     // OCTREE DISPLAY
     if(show_static_octree_)
     {
-        float far = pscene->get_camera()->get_far();
+        float far = pscene->get_camera().get_far();
         GFX::enable_blending();
         GFX::set_std_blending();
         auto&& static_octree = pscene->get_static_octree();
         // For each bounding region that is visible
-        static_octree.traverse_bounds_range(pscene->get_camera()->get_frustum_box(),
+        static_octree.traverse_bounds_range(pscene->get_camera().get_frustum_box(),
         [&](auto&& bound)
         {
             // Display bounding cube
@@ -188,7 +188,7 @@ void DebugRenderer::render(Scene* pscene)
             M.init_scale(2.f*bound.half);
             translate_matrix(M, bound.mid_point);
             mat4 MVP = PV*M;
-            float alpha = 1.0f-std::min((bound.mid_point-pscene->get_camera()->get_position()).norm()/far,1.0f);
+            float alpha = 1.0f-std::min((bound.mid_point-pscene->get_camera().get_position()).norm()/far,1.0f);
             line_shader_.send_uniform("v4_line_color"_h, vec4(1,0,0,alpha));
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);

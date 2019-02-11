@@ -69,7 +69,7 @@ namespace terrain
 {
 // Access loaded neighbor chunks and fix this terrain chunk's edges normals and tangents
 extern void stitch_terrain_edges(Scene* pscene,
-                                 std::shared_ptr<TerrainChunk> terrain,
+                                 TerrainChunk& terrain,
                                  uint32_t chunk_index,
                                  uint32_t chunk_size);
 }

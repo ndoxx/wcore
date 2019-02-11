@@ -143,9 +143,9 @@ private:
 
 
     // Helper functions
-    void ground_model(std::shared_ptr<Model> pmdl, const HeightMap& hm);
-    void ground_model(std::shared_ptr<Model> pmdl, uint32_t chunk_index);
-    void ground_model(std::shared_ptr<LineModel> pmdl, uint32_t chunk_index);
+    void ground_model(Model& model, const HeightMap& hm);
+    void ground_model(Model& model, uint32_t chunk_index);
+    void ground_model(LineModel& model, uint32_t chunk_index);
     bool is_pos_relative(rapidxml::xml_node<>* parent);
     uint32_t get_num_controls(rapidxml::xml_node<>* cspline_node);
 };

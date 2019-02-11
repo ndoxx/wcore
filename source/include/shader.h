@@ -101,7 +101,7 @@ public:
         warn_uniform_unknown_type();
         return false;
     }
-    bool send_uniforms(std::shared_ptr<const Light> plight) const;
+    bool send_uniforms(const Light& light) const;
 };
 
 inline bool Shader::is_variant(hash_t variant)

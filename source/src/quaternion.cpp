@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <cassert>
 #include "quaternion.h"
 #include "math3d.h"
 
@@ -70,7 +71,7 @@ void Quaternion::init_axis_angle(const vec3& axis, float angle)
 void Quaternion::init_lookat(const vec3& sourcePoint, const vec3& destPoint)
 {
     //vec3 forwardVector = (destPoint - sourcePoint).normalized();
-
+    assert(false && "Quaternion::init_lookat() not implemented.");
     // TODO
 }
 

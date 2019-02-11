@@ -26,8 +26,8 @@ using namespace math;
 
 ModelEvaluator DEFAULT_MODEL_EVALUATOR([](Model& p){return true;});
 cModelEvaluator DEFAULT_CMODEL_EVALUATOR([](const Model& p){return true;});
-LightEvaluator DEFAULT_LIGHT_EVALUATOR([](pLight p){return true;});
-cLightEvaluator DEFAULT_CLIGHT_EVALUATOR([](pcLight p){return true;});
+LightEvaluator DEFAULT_LIGHT_EVALUATOR([](Light& p){return true;});
+cLightEvaluator DEFAULT_CLIGHT_EVALUATOR([](const Light& p){return true;});
 
 
 Chunk::Chunk(i32vec2 coords):
@@ -263,8 +263,8 @@ void Chunk::traverse_lights(LightVisitor func,
 #endif
 
     for(pLight plight : lights_)
-        if(ifFunc(plight))
-            func(plight, index_);
+        if(ifFunc(*plight))
+            func(*plight, index_);
 
 #ifdef __PROFILING_CHUNKS__
         auto period = profile_clock_.get_elapsed_time();
@@ -276,8 +276,8 @@ void Chunk::traverse_lights(cLightVisitor func,
                             cLightEvaluator ifFunc) const
 {
     for(pcLight plight : lights_)
-        if(ifFunc(plight))
-            func(plight, index_);
+        if(ifFunc(*plight))
+            func(*plight, index_);
 }
 
 void Chunk::load_geometry()

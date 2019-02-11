@@ -75,8 +75,8 @@ void LightingRenderer::render(Scene* pscene)
     LBuffer& lbuffer = LBuffer::Instance();
 
     // Get camera matrices
-    const math::mat4& V = pscene->get_camera()->get_view_matrix();       // Camera View matrix
-    const math::mat4& P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
+    const math::mat4& V = pscene->get_camera().get_view_matrix();       // Camera View matrix
+    const math::mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     math::mat4 V_inv;
     math::inverse_affine(V, V_inv);
     math::mat4 PV(P*V);
@@ -100,13 +100,13 @@ void LightingRenderer::render(Scene* pscene)
         GFX::set_light_blending();
         GFX::set_stencil_op_light_volume();
 
-        pscene->traverse_lights([&](std::shared_ptr<const Light> plight, uint32_t chunk_index)
+        pscene->traverse_lights([&](const Light& light, uint32_t chunk_index)
         {
             // Get light properties
-            if(plight->get_geometry() == 0) return;
-            math::mat4 M = plight->get_model_matrix();
+            if(light.get_geometry() == 0) return;
+            math::mat4 M = light.get_model_matrix();
             // Is cam inside light volume?
-            //bool inside = plight->surrounds_camera(*pscene->get_camera());
+            //bool inside = light.surrounds_camera(*pscene->get_camera());
 
     // -------- STENCIL PASS
             GFX::lock_color_buffer(); // Do not write to color buffers
@@ -145,8 +145,8 @@ void LightingRenderer::render(Scene* pscene)
             lpass_point_shader_.send_uniform("rd.v2_screenSize"_h,
                                              math::vec2(gbuffer.get_width(),gbuffer.get_height()));
             // Light uniforms
-            lpass_point_shader_.send_uniform("lt.v3_lightPosition"_h, V*plight->get_position());
-            lpass_point_shader_.send_uniforms(plight);
+            lpass_point_shader_.send_uniform("lt.v3_lightPosition"_h, V*light.get_position());
+            lpass_point_shader_.send_uniforms(light);
             lpass_point_shader_.send_uniform("m4_ModelViewProjection"_h, PV*M);
             //lpass_point_shader_.send_uniform("m4_ModelView"_h, V*M);
             // For position reconstruction
@@ -168,9 +168,9 @@ void LightingRenderer::render(Scene* pscene)
             GFX::disable_face_culling();
             GFX::unlock_stencil();
         },
-        [&](std::shared_ptr<Light> plight)
+        [&](const Light& light)
         {
-            return plight->is_in_frustum(*pscene->get_camera());
+            return light.is_in_frustum(pscene->get_camera());
         });
         GFX::disable_stencil();
 
@@ -215,7 +215,7 @@ void LightingRenderer::render(Scene* pscene)
                                            math::vec2(gbuffer.get_width(),gbuffer.get_height()));
         // Light uniforms
         lpass_dir_shader_.send_uniform("lt.v3_lightPosition"_h, V.submatrix(3,3)*dir_light->get_position());
-        lpass_dir_shader_.send_uniforms(dir_light);
+        lpass_dir_shader_.send_uniforms(*dir_light);
         lpass_dir_shader_.send_uniform("m4_ModelViewProjection"_h, Id);
 
         // Shadow map

@@ -205,7 +205,7 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile, bool pro
 
     fclose(fn);
 
-    // TMP
+    // [May evolve]
     std::shared_ptr<TriangularMesh> pmesh(new TriangularMesh);
     for(uint32_t ii=0; ii<positions.size(); ++ii)
     {

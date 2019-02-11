@@ -31,8 +31,8 @@ allow_parallax_mapping_(true)
 void GeometryRenderer::render(Scene* pscene)
 {
     // Get camera matrices
-    mat4 V = pscene->get_camera()->get_view_matrix();       // Camera View matrix
-    mat4 P = pscene->get_camera()->get_projection_matrix(); // Camera Projection matrix
+    mat4 V = pscene->get_camera().get_view_matrix();       // Camera View matrix
+    mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
     GFX::disable_blending();

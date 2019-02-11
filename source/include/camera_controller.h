@@ -30,6 +30,7 @@ public:
     ~CameraController();
 
     virtual void init_events(InputHandler& handler) override;
+    virtual void init_self() override;
     virtual void update(const GameClock& clock) override;
 
     void register_camera(std::shared_ptr<Camera> camera);
@@ -55,17 +56,17 @@ class CameraController::CameraState
 {
 public:
     virtual ~CameraState() = default;
-    virtual bool onMouseEvent(const WData& data, std::shared_ptr<Camera> camera) = 0;
-    virtual bool onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera) = 0;
-    virtual void control(std::shared_ptr<Camera> camera, float dt) {}
+    virtual bool onMouseEvent(const WData& data, Camera& camera) = 0;
+    virtual bool onKeyboardEvent(const WData& data, Camera& camera) = 0;
+    virtual void control(Camera& camera, float dt) {}
     virtual void on_load() {}
 };
 
 class CameraStateFreefly: public CameraController::CameraState
 {
 public:
-    virtual bool onMouseEvent(const WData& data, std::shared_ptr<Camera> camera) override;
-    virtual bool onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera) override;
+    virtual bool onMouseEvent(const WData& data, Camera& camera) override;
+    virtual bool onKeyboardEvent(const WData& data, Camera& camera) override;
 };
 
 class CameraStateTrackingShot: public CameraController::CameraState
@@ -74,9 +75,9 @@ public:
     CameraStateTrackingShot();
     ~CameraStateTrackingShot();
 
-    virtual bool onMouseEvent(const WData& data, std::shared_ptr<Camera> camera) override;
-    virtual bool onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera) override;
-    virtual void control(std::shared_ptr<Camera> camera, float dt) override;
+    virtual bool onMouseEvent(const WData& data, Camera& camera) override;
+    virtual bool onKeyboardEvent(const WData& data, Camera& camera) override;
+    virtual void control(Camera& camera, float dt) override;
     virtual void on_load() override;
 
     void add_keyframe(const math::vec3& position,
@@ -103,12 +104,12 @@ public:
     CameraStateCircleAround();
     ~CameraStateCircleAround() = default;
 
-    virtual bool onMouseEvent(const WData& data, std::shared_ptr<Camera> camera) override;
-    virtual bool onKeyboardEvent(const WData& data, std::shared_ptr<Camera> camera) override;
-    virtual void control(std::shared_ptr<Camera> camera, float dt) override;
+    virtual bool onMouseEvent(const WData& data, Camera& camera) override;
+    virtual bool onKeyboardEvent(const WData& data, Camera& camera) override;
+    virtual void control(Camera& camera, float dt) override;
     virtual void on_load() override;
 
-    void follow(std::weak_ptr<Model> target, std::shared_ptr<Camera> camera);
+    void follow(std::weak_ptr<Model> target, Camera& camera);
 
 private:
     float radius_;

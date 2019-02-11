@@ -22,8 +22,8 @@ is_terrain_(false),
 visible_(false),
 shadow_cull_face_(0)
 #ifndef __DISABLE_EDITOR__
-,selection_reset_(nullptr)
 ,editor_(nullptr)
+,selection_reset_(nullptr)
 #endif
 {
     #ifdef __DEBUG__
