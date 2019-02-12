@@ -37,6 +37,10 @@ public:
     RayCaster();
 
     virtual void update(const GameClock& clock) override;
+    virtual void init_self() override;
+#ifndef __DISABLE_EDITOR__
+    inline bool& get_show_ray_nc() { return show_ray_; }
+#endif
 
     Ray cast_ray_from_screen(const math::vec2& screen_coords);
     // Returns all scene objects in the path of the ray
@@ -47,6 +51,11 @@ public:
 private:
     math::mat4 unproj_;
     math::vec4 eye_pos_world_;
+
+#ifdef __DEBUG__
+    bool show_ray_;
+    int ray_persistence_;
+#endif
 };
 
 } // namespace wcore

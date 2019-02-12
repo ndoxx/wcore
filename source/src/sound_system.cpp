@@ -22,6 +22,7 @@
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
     #include "gui_utils.h"
+    #include "editor_tweaks.h"
 #endif
 
 namespace fs = std::filesystem;
@@ -390,15 +391,7 @@ last_campos_(0.f)
 
     // Optional stuff
     uint32_t max_channels = 128;
-    CONFIG.get("root.sound.general.mute"_h,              mute_);
-    CONFIG.get("root.sound.general.volume_fx"_h,         vol_fx_);
-    CONFIG.get("root.sound.general.volume_bgm"_h,        vol_bgm_);
-    CONFIG.get("root.sound.general.volume_master"_h,     vol_master_);
-    CONFIG.get("root.sound.general.max_channels"_h,      max_channels);
-    CONFIG.get("root.sound.general.distance_factor"_h,   distance_factor_);
-    CONFIG.get("root.sound.general.doppler_scale"_h,     doppler_scale_);
-    CONFIG.get("root.sound.general.rolloff_scale"_h,     rolloff_scale_);
-    CONFIG.get("root.sound.general.channel_fadeout_s"_h, pimpl_->channel_fadeout_s);
+    CONFIG.get("root.sound.general.max_channels"_h, max_channels);
 
     // Sanity check
     vol_fx_     = math::clamp(vol_fx_, 0.f, 100.f);
@@ -438,6 +431,26 @@ SoundSystem::~SoundSystem()
 
     ERRCHECK(pimpl_->fmodsys->close());
     ERRCHECK(pimpl_->fmodsys->release());
+}
+
+void SoundSystem::init_self()
+{
+#ifndef __DISABLE_EDITOR__
+    auto* edtweaks = locate_init<EditorTweaksInitializer>("EditorTweaks"_h);
+
+    // Volume control tweaks
+    edtweaks->register_variable("root.sound.general.mute"_h, mute_);
+    edtweaks->register_variable("root.sound.general.volume_fx"_h, vol_fx_);
+    edtweaks->register_variable("root.sound.general.volume_bgm"_h, vol_bgm_);
+    edtweaks->register_variable("root.sound.general.volume_master"_h, vol_master_);
+
+    // Propagation tweaks
+    edtweaks->register_variable("root.sound.general.distance_factor"_h, distance_factor_);
+    edtweaks->register_variable("root.sound.general.doppler_scale"_h, doppler_scale_);
+    edtweaks->register_variable("root.sound.general.rolloff_scale"_h, rolloff_scale_);
+    edtweaks->register_variable("root.sound.general.channel_fadeout_s"_h, pimpl_->channel_fadeout_s);
+
+#endif
 }
 
 void SoundSystem::parse_asset_file(const char* xmlfile)
@@ -534,6 +547,7 @@ void SoundSystem::generate_widget()
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Sound System"))
     {
+        ImGui::Text("Volume");
         if(ImGui::Checkbox("Mute", &mute_))
             for(auto&& [key,channel]: pimpl_->channels)
                 channel->mute(mute_);
@@ -547,6 +561,15 @@ void SoundSystem::generate_widget()
         if(ImGui::SliderFloat("BGM volume", &vol_bgm_, 0.0f, 100.0f))
             pimpl_->channel_group_bgm->setVolume(vol_bgm_/100.f);
 
+        ImGui::Separator();
+        ImGui::Text("Physics");
+        ImGui::SliderFloat("Distance factor", &distance_factor_, 0.01f, 10.0f);
+        ImGui::SliderFloat("Doppler scale",   &doppler_scale_, 0.01f, 10.0f);
+        ImGui::SliderFloat("Rolloff scale",   &rolloff_scale_, 0.01f, 10.0f);
+        ImGui::SliderFloat("Fadeout on stop", &pimpl_->channel_fadeout_s, 0.0f, 1.0f);
+
+        // Tests
+        ImGui::Separator();
         if(ImGui::Button("Swish sound"))
             play_sound("swish"_h, math::vec3(0), math::vec3(0));
 

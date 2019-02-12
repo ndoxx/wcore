@@ -18,6 +18,7 @@ private:
 
     // Rendering data
     float wireframe_mix_;
+    float min_parallax_distance_;
 
     // Configuration overrides
     bool allow_normal_mapping_;
@@ -32,6 +33,8 @@ public:
     inline void set_wireframe_mix(float value) { wireframe_mix_ = value; }
     inline float get_wireframe_mix() const     { return wireframe_mix_; }
     inline float& get_wireframe_mix_nc()       { return wireframe_mix_; }
+    inline float get_min_parallax_distance() const { return min_parallax_distance_; }
+    inline float& get_min_parallax_distance_nc()   { return min_parallax_distance_; }
 
     inline void toggle_wireframe();
 };

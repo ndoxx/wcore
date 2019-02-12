@@ -1,4 +1,14 @@
 <Config>
+	<geometry>
+		<parallax>
+			<float name="min_distance" value="49.327000"/>
+		</parallax>
+		<raycast>
+			<debug>
+				<bool name="show_ray_on_click" value="false"/>
+			</debug>
+		</raycast>
+	</geometry>
 	<postproc>
 		<aberration>
 			<float name="shift" value="2.018000"/>
@@ -34,5 +44,17 @@
 			<float name="compression" value="1.000000"/>
 		</blur>
 	</ssao>
+	<sound>
+		<general>
+			<bool name="mute" value="false"/>
+			<float name="volume_fx" value="100.000000"/>
+			<float name="volume_bgm" value="70.403999"/>
+			<float name="volume_master" value="86.546997"/>
+			<float name="distance_factor" value="1.000000"/>
+			<float name="doppler_scale" value="1.000000"/>
+			<float name="rolloff_scale" value="1.000000"/>
+			<float name="channel_fadeout_s" value="0.200000"/>
+		</general>
+	</sound>
 </Config>
 

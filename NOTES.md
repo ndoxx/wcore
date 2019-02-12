@@ -4131,7 +4131,7 @@ le moteur est maintenant stable avec une _Scene_ vide (avant, c'était segfault)
 Pour l'instant ça fait sens, j'espère ne pas avoir à le regretter.
 J'ai commenté son interface, et virer des choses inutiles, comme les (u)nbind_vertex_array() et draw(). D'ailleurs on unbind plus, c'est inutile car il suffit de rebind par dessus...
 
-* J'ai corrigé une fuite mémoire dans _FrameBuffer_. Après avoir passé le tableau draw_buffers_ en membre, j'ai oublié de corrigé la ligne de l'allocation et j'avais :
+* J'ai corrigé une fuite mémoire dans _FrameBuffer_. Après avoir passé le tableau draw_buffers_ en membre, j'ai oublié de corriger la ligne de l'allocation et j'avais :
 ```cpp
     GLenum* draw_buffers_ = new GLenum[n_textures_];
 ```
@@ -5015,6 +5015,7 @@ Clang ne supporte pas le feature "sized deallocation" par défaut. Il faut ajout
     add_definitions(-fsized-deallocation)
 ```
 J'ai posté mon fix dans [1], on verra bien ce que les gens en disent.
+    -> Ils confirment que mon fix est le bon.
 
 ##Script directory
 Par défaut, pybind inclut le "working directory" dans le sys.path, ce qui permet à un script localisé à l'endroit de l'exécution du programme d'intéragir avec celui-ci. Or je souhaite plutôt localiser tous mes scripts dans un dossier spécifique. Il me faut donc inclure le chemin d'accès du dossier scripts dans le sys.path au lancement de l'application.
@@ -5313,7 +5314,7 @@ C'est pour ça que le curseur custom est désactivé par défaut. L'option *root
 Je dois mettre au point le mécanisme de sélection au curseur de l'éditeur. Il me faut pouvoir lancer un rayon (struct _Ray_) depuis des coordonnées écran (grâce à la classe _RayCaster_), tester la collision de ce rayon avec tous les AABB/OBB qui sont dans le frustum de la caméra, et retourner dans un premier temps une liste, dans un second temps un unique handle (à définir) vers un objet de la scène.
     [x] Il faut pouvoir mettre en cache les tests de collision Frustum/AABB/OBB produits par le _GeometryRenderer_. Peut être même qu'une passe externe préalable lors de la phase update est de mise.
         -> Scene::visibility_pass() fait ça et est appelée dans Scene::update(). Un flag visible_ de _Model_ est alors modifié selon qu'il est ou non dans le view frustum. _GeometryRenderer_ surveille pmodel->is_visible() afin de cull.
-    [ ] Dans un premier temps, il convient d'afficher le rayon qui vient d'être tiré. _DebugRenderer_ doit pouvoir afficher ce type de primitives avec un TTL.
+    [x] Dans un premier temps, il convient d'afficher le rayon qui vient d'être tiré. _DebugRenderer_ doit pouvoir afficher ce type de primitives avec un TTL.
     -> Un objet peut être un _Model_ statique, ou plus tard une _Entity_ et le test peut échouer. Je pense automatiquement à un type retour std::optional<std::variant<Model,Entity>> mais c'est un peu lourdingue syntaxiquement, faut bien l'avouer ! Un std::variant<Model,Entity,int> en utilisant int comme tag type pour signifier l'échec ?
         -> Mieux, y a un type std::monostate fait pour pouvoir default initialize un std::variant. Donc std::variant<std::monostate,Model,Entity>. Ex :
 
@@ -5539,22 +5540,6 @@ La fonction Ray::to_model_space() prend une matrice modèle en argument, calcule
 La sélection lance maintenant des tests ray/OBB et stop au premier hit, alors que la scène est parcourue front to back, l'objet sélectionné est donc le plus proche possible de la cam. Tout semble bien fonctionner.
 - La sélection utilise un membre weak_ptr de la scène. Elle est naturellement invalidée quand l'objet est détruit (comme après un déchargement de chunk).
 - On pourrait aussi imaginer retourner toute la liste des objets qui intersectent le rayon, sélectionner le premier, et laisser l'utilisateur avancer ou reculer la sélection, afin d'améliorer l'opération sur un gros cluster de modèles.
-
-
-* TODO:
-    [ ] Pre-multiplied alpha:
-        https://www.essentialmath.com/GDC2015/VanVerth_Jim_DoingMathwRGB.pdf
-    [ ] Check extension support befor using
-        - GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT (texture.cpp)
-        - GL_COMPRESSED_RGBA_S3TC_DXT1_EXT (material_common.cpp)
-        -> Il faut tester la présence de l'extension GL_EXT_texture_compression_s3tc.
-        -> GLEW ne permet pas de détecter l'extension correctement, ne supporte pas vraiment les contextes core profile, et de plus nécessite glewExperimental pour ne pas segfault lamentablement lors d'un glGenVertexArrays(). __Passer sous GLAD__ (penser à linker avec libdl sous nux (-ldl)).
-        https://github.com/Dav1dde/glad
-        https://glad.dav1d.de/
-        https://github.com/LibreVR/Revive/commit/86926af6908f7a99c443559a961b38b3ce33c74d
-    [ ] Perform texture compression offline.
-        - Use glCompressedTexImage2D()
-        https://opengl.developpez.com/tutoriels/opengl-tutorial/5-un-cube-texture/#LVII
 
 ## GLEW rant
 https://www.reddit.com/r/opengl/comments/3m28x1/glew_vs_glad/
@@ -5852,12 +5837,6 @@ J'ai ensuite modifié parse_entry() pour détecter les collisions de hash. Si un
 J'ai réglé TOUS les problèmes que j'avais avec les AABB/OBB, qui sont maintenant parfaitement calés et optimaux. Il y a juste une distinction à faire entre les modèles dont le mesh est centré sur l'origine en model space et ceux qui ont un ymin=0. Si le modèle n'est pas centré, il faut translater son OBB verticalement, puisque j'utilise les vertices d'un cube centré dans la fonction OBB::update(). La fonction AABB::update() utilise maintenant l'OBB du modèle parent pour éliminer les calculs inutiles.
 Tout est beaucoup plus clair et hack-free.
 
-* TODO:
-    [ ] Bien penser à updater les bounding boxes pour les objets qui bougent.
-    [ ] Insp chunk loading:
-
-    What we do is actually pretty simple. Each frame we loop though all active chunks for update. During the update, we check and see if a chunk is missing any neighbors. If it is, we check and see if the neighbor chunk slots are withing the loading range. If they are, we load chunks and hook them up to their neighbors.
-
 #[02-01-19] Du gros Octree qui tache
 Je suis en train de prévoir la broad phase du moteur physique. J'ai dev un début de classe _Octree_ dans octree.hpp.
 Pour l'instant je ne peux classer que des points, la classe devra évoluer pour classer des objets avec des AABBs.
@@ -5885,10 +5864,10 @@ La structure actuelle s'appelle un Point Octree, et reste intéressante à conse
 -> Plus tard on pourra tirer partie de cette structure pour du LoD dynamique sur le terrain, ça serait super sexy.
 
 * TODO:
-    [ ] Gérer les bounding boxes
+    [x] Gérer les bounding boxes
         -> Move object to child list iif child bounds are large enough
         -> Only delete moved objects from the list (use delete list)
-    [ ] Ecrire une fonction d'insertion en lazy init à la [1]
+    [x] Ecrire une fonction d'insertion en lazy init à la [1]
         -> On feed une liste d'objets à rajouter dans l'octree
         -> On insère la liste en une seule fois, plutôt que d'avoir à effectuer une reconstruction partielle/totale de l'octree à chaque insertion.
 
@@ -6333,7 +6312,7 @@ L'utilitaire internstr a été modifié pour reconnaître le literal.
 
 ## _SoundSystem_
 On a du son 3D dans le moteur. La classe _SoundSystem_ propose une interface simple pour jouer des effets (fx) ou une musique d'ambiance (bgm). Ce _GameSystem_ utilise FMOD en sous-main, derrière une implémentation opaque. Deux classes de sons émergent:
-    - les fx sont localisés dans l'espace et leurs caractéristiques sonores dépendent de la localisation d'un auditeur virtuel (listener), recalé avec la caméra à chaque frame. En temps réel, le moteur de son ajuste l'atténuation et le pitch (effet Doppler) des émetteurs de sons en fonction de la position et de la vitesse du listener. Un effet un peu custom consistant en un filtre passe-bas dont le cutoff est contrôlé par la distance de l'émetteur à l'auditeur simule un effet de propagation. A l'origine je voulais un système physics based, j'ai même chié un simulateur matlab ('Desktop/matlab/atmosphereSoundAttenuation/atten.m') pour calculer la réponse acoustique de l'air sur toute une gamme de fréquences en fonction de la température, de l'humidité et de la pression atmosphérique (voir [3] et [4] pour un modèle mathématique). Puis j'ai compris que j'allais trop loin.
+    - les fx sont localisés dans l'espace et leurs caractéristiques sonores dépendent de la position d'un auditeur virtuel (listener), recalé avec la caméra à chaque frame. En temps réel, le moteur de son ajuste l'atténuation et le pitch (effet Doppler) des émetteurs de sons en fonction de la position et de la vitesse du listener. Un effet un peu custom consistant en un filtre passe-bas dont le cutoff est contrôlé par la distance de l'émetteur à l'auditeur simule un effet de propagation. A l'origine je voulais un système physics based, j'ai même chié un simulateur matlab ('Desktop/matlab/atmosphereSoundAttenuation/atten.m') pour calculer la réponse acoustique de l'air sur toute une gamme de fréquences en fonction de la température, de l'humidité et de la pression atmosphérique (voir [3] et [4] pour un modèle mathématique). Puis j'ai compris que j'allais trop loin.
     - les bgm sont des sons 2D, qui bouclent par défaut.
 
 Le volume (toujours donné en dB côté user, avec 0dB le niveau maximal), les distances min et max pour le falloff (fx) et l'option de jouer le son en boucle sont configurables pour chaque son dans sounds.xml. Le moteur va parser ce fichier et extraire une map de descripteurs pour pouvoir instancier les sons in-game depuis un simple hash name.
@@ -6371,14 +6350,42 @@ Les 3 premiers états sont exécutés dans la même frame. Comme j'utilise un sw
 
 3 Channel groups sont créés par le moteur, ainsi, on peut régler indépendamment le volume des fx et des bgm, et l'on dispose un plus d'un réglage master dans le GUI de l'éditeur (encore en construction).
 
-    -> Channel struct [1] 28'25"
-        -> Channels have states (initialize, to_play, playing, stopping, stopped) and an update func which handles state transitioning.
+## InitializerSystem
+Un peu comme les _GameSystem_, les _InitializerSystem_ sont enregistrés dans un _GameSystemCaintainer_. Ce sont les premiers systèmes à produire des données que les _GameSystem_ utilisent lors de la phase d'initialisation. Ils peuvent par exemple désérialiser et sérialiser des données afin de rendre persistants certains réglages.
 
-* _InitializerSystem_
+## EditorTweaksInitializer
+_EditorTweaksInitializer_ est un _InitializerSystem_ qui fonctionne un peu sur le principe du singleton CONFIG. Il possède une _ValueMap_ qui peut lire/écrire des couples clé/valeur dans le fichier edtweaks.xml et propose un accès aux valeurs via des hashs. Ce système assure la persistance de certains réglages dans l'éditeur (SSAO, post-processing...).
 
-* _EditorTweaksInitializer_
+## Game object factory
+Plusieurs classes factories ont été codées pour alléger le code de _SceneLoader_. J'ai décidé qu'il incomberait à un unique _GameSystem_ de type _GameObjectFactory_ de créer les objets du jeu. Cela comprend pour l'instant les _Model_ et les _WEntity_. _GameObjectFactory_ possède deux autres factories pour fabriquer les modèles statiques d'une part, et les entités d'autre part : _ModelFactory_ et _EntityFactory_. _ModelFactory_ regroupe deux autre factories : _MaterialFactory_ et _SurfaceMeshFactory_ décrites précédemment.
 
-* Mesh caching & instances
+_EntityFactory_ peut générer des entités depuis un *blueprint*, qui est une description XML du contenu en composants d'une entité. Le fichier entity.xml est parsé au démarrage pour en extraire les blueprints. Les composants sont créés in-situ au moyen d'une factory method qui doit être enregistrée préalablement via EntityFactory::register_component_factory(). Le premier argument est le hash du nom du noeud décrivant un type de composant donné, et le second est une fonction qui ajoute et initialise un composant du type correct depuis une description XML.
+
+_GameObjectFactory_
+    |__ _ModelFactory_
+    |       |__ _MaterialFactory_
+    |       |__ _SurfaceMeshFactory_
+    |__ _EntityFactory_
+
+## Mesh caching & instances
+Le mesh caching a été rétabli pour tous les meshes non procéduraux.
+
+Basiquement, _SurfaceMeshFactory_ distingue deux types de meshes :
+    - Les mesh procéduraux :
+        Un mesh procédural est toujoujours généré à la volée au chargement d'un chunk. Il est local à un chunk et est enregistré dans le vertex buffer du chunk.
+    - Les instances
+        Une instance est un objet global de la scène (dans le VBO de la scène), connu à l'avance au chargement de la map. Une pré-passe de _SceneLoader_ détermine quels sont les instances qui seront utilisées dans le niveau et charge et met en cache celles-ci. Une instance est déclarée via un descripteur XML dans assets.xml.
+        Ce qui est un peu finaud, c'est que n'importe quel mesh généré procéduralement peut être déclaré en instance tant qu'un descripteur XML existe dans assets.xml. Celà ne concerne pas que les meshes obtenus par chargement d'un fichier.
+
+Le même genre de distinction opère sur les modèles. Un _Model_ n'est autre que l'aggrégation d'un _Material_, d'un _Mesh_ et d'une _Transformation_. Un modèle utilisant un mesh procédural possède réellement celui-ci, puisque le mesh n'est partagé avec aucun système. Un modèle utilisant une instance de mesh partage en revanche l'instance avec _SurfaceMeshFactory_ puisque c'est ce système qui gère le cache. Un modèle déclaré dans assets.xml et pour lequel à la fois le mesh et le material sont décrits dans assets.xml est une "instance de modèle". De tels modèles sont générés par _ModelFactory_ depuis un simple hash.
+    - L'API supporte l'ajout d'instances de modèles à un chunk non finalisé en run-time. C'est grâce à celà que l'application "maze" fonctionne.
+    - Les entités qui embarquent un composant _WCModel_ ne peuvent utiliser que des instances de modèles. C'est _GameObjectFactory_ qui enregistre la factory method pour ces composants, puisqu'elle utilise sa _ModelFactory_ pour générer les instances de modèles pour l'instant simplement aggrégés dans ceux-ci.
+
+## Application maze
+Appli test pour me forcer à dev un peu l'API. Un labyrinthe est généré par un algo recursive backtracker depuis une seed dans une structure basée sur un tableau 2D, et la géométrie du niveau est générée en utilisant l'API. Le niveau n'est pas chargé avec LoadStart() mais avec LoadLevel(). Un chunk est chargé mais sa géométrie n'est pas uploadée. Les murs sont instanciés en fonction de la configuration de chaque cellule du tableau, des lumières et des théières (!) sont disposées aléatoirement dans les culs-de-sac. Un espace central au chunk est aussi laissé vide pour ajouter un arbre au centre du labyrinthe. Alors seulement le chunk est uploadé.
+
+## Erosion
+L'érosion est réparée. L'étape de stitching a été modifiée pour recaler aussi la hauteur des bords. L'érosion par gouttelettes a été modifiée pour éroder le moins possible les bords de chunks, ce qui permet d'éviter de gros artéfacts de raccord. L'érosion est diminuée radialement et linéairement sur toute une bordure intérieure à chaque chunk.
 
 * sources :
 [1] https://www.youtube.com/watch?v=M8Bd7uHH4Yg
@@ -6387,8 +6394,54 @@ Les 3 premiers états sont exécutés dans la même frame. Comme j'utilise un sw
 [4] http://www.sengpielaudio.com/AirdampingFormula.htm
 
 
+#[12-02-19]
+## Distance-enabled parallax mapping
+Un nouveau tweak de la pipeline permet de régler la distance minimale d'un objet à la caméra au dessus de laquelle le parallax mapping est désactivé (default to normal mapping). Bonne optimisation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 * TODO:
-[X] Persistent entities (no reload)
-[ ] Don't pas/return shared_ptr unless sharedness needs to be passed/returned.
-    -> get_camera()...
+    [X] Persistent entities (no reload)
+
+    [X] Don't pass/return shared_ptr unless sharedness needs to be passed/returned.
+        -> get_camera()...
+
+    [X] Reprendre l'idée du LoD based parallax mapping @2874, mais au lieu de brancher dans le shader, modifier _GeometryRenderer_ pour désactiver le parallax mapping quand l'objet est trop loin.
+
+    [ ] Pre-multiplied alpha:
+        https://www.essentialmath.com/GDC2015/VanVerth_Jim_DoingMathwRGB.pdf
+
+    [ ] Check extension support before using
+        - GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT (texture.cpp)
+        - GL_COMPRESSED_RGBA_S3TC_DXT1_EXT (material_common.cpp)
+        -> Il faut tester la présence de l'extension GL_EXT_texture_compression_s3tc.
+        -> GLEW ne permet pas de détecter l'extension correctement, ne supporte pas vraiment les contextes core profile, et de plus nécessite glewExperimental pour ne pas segfault lamentablement lors d'un glGenVertexArrays(). __Passer sous GLAD__ (penser à linker avec libdl sous nux (-ldl)).
+        https://github.com/Dav1dde/glad
+        https://glad.dav1d.de/
+        https://github.com/LibreVR/Revive/commit/86926af6908f7a99c443559a961b38b3ce33c74d
+
+    [ ] Perform texture compression offline.
+        - Use glCompressedTexImage2D()
+        https://opengl.developpez.com/tutoriels/opengl-tutorial/5-un-cube-texture/#LVII
+
+    [ ] Bien penser à updater les bounding boxes pour les objets qui bougent.
+
+    [ ] Insp better chunk loading:
+
+        What we do is actually pretty simple. Each frame we loop though all active chunks for update. During the update, we check and see if a chunk is missing any neighbors. If it is, we check and see if the neighbor chunk slots are withing the loading range. If they are, we load chunks and hook them up to their neighbors.

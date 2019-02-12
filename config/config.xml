@@ -53,15 +53,7 @@
     </input>
     <sound>
         <general>
-            <bool  name="mute"              value="false"/>
-            <uint  name="max_channels"      value="128"/>
-            <float name="volume_fx"         value="100.0"/>
-            <float name="volume_bgm"        value="70.0"/>
-            <float name="volume_master"     value="100.0"/>
-            <float name="distance_factor"   value="1.0"/>
-            <float name="doppler_scale"     value="1.0"/>
-            <float name="rolloff_scale"     value="1.0"/>
-            <float name="channel_fadeout_s" value="0.2"/>
+            <uint  name="max_channels" value="128"/>
         </general>
     </sound>
     <debug>
@@ -88,7 +80,6 @@
         </channel_verbosity>
         <raycast>
             <geometry>
-                <bool name="show_on_click" value="false"/>
                 <int  name="persistence"   value="5000"/>
             </geometry>
         </raycast>

@@ -52,15 +52,15 @@ ShadowMapRenderer::~ShadowMapRenderer()
 
 math::mat4 ShadowMapRenderer::render_directional_shadow_map(Scene* pscene, float normal_offset)
 {
-    auto plcam = pscene->get_light_camera();
+    const Camera& lcam = pscene->get_light_camera();
 /*#ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
     // TODO Find a way to cache scene sorting
     pscene->sort_models_light();
 #endif*/
 
     // Get camera matrices
-    const math::mat4& Vl = plcam.get_view_matrix();       // Camera View matrix
-    const math::mat4& Pl = plcam.get_projection_matrix(); // Camera Projection matrix
+    const math::mat4& Vl = lcam.get_view_matrix();       // Camera View matrix
+    const math::mat4& Pl = lcam.get_projection_matrix(); // Camera Projection matrix
     math::mat4 PVl(Pl*Vl);
 
     GFX::disable_blending();

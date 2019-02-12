@@ -95,6 +95,8 @@ void RenderPipeline::init_self()
 #ifndef __DISABLE_EDITOR__
     auto* edtweaks = locate_init<EditorTweaksInitializer>("EditorTweaks"_h);
 
+    // Pipeline control tweaks
+    edtweaks->register_variable("root.geometry.parallax.min_distance"_h,   geometry_renderer_->get_min_parallax_distance_nc());
     // Post-processing tweaks
     edtweaks->register_variable("root.postproc.aberration.shift"_h,        post_processing_renderer_->aberration_shift_);
     edtweaks->register_variable("root.postproc.aberration.magnitude"_h,    post_processing_renderer_->aberration_strength_);
@@ -228,10 +230,18 @@ void RenderPipeline::generate_widget()
         }
 
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+        if(ImGui::TreeNode("Raycast"))
+        {
+            ImGui::Checkbox("Show rays", &locate<RayCaster>("RayCaster"_h)->get_show_ray_nc());
+            ImGui::TreePop();
+            ImGui::Separator();
+        }
+
+        ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
         if(ImGui::TreeNode("Scene graph"))
         {
             ImGui::Checkbox("Show static octree", &debug_renderer_->show_static_octree_);
-            ImGui::SliderFloat("Sel. half-bnd", &neighbors_search_eadius, 0.5f, 10.0f);
+            ImGui::SliderFloat("Sel. half-bnd",   &neighbors_search_eadius, 0.5f, 10.0f);
             if(ImGui::Button("Show selection neighbors"))
             {
                 debug_renderer_->show_selection_neighbors(pscene, neighbors_search_eadius);
@@ -263,7 +273,7 @@ void RenderPipeline::generate_widget()
     {
         ImGui::BeginChild("##pipelinectl", ImVec2(0, 3*ImGui::GetItemsLineHeightWithSpacing()));
         ImGui::Columns(2, nullptr, false);
-        ImGui::Checkbox("Lighting", &lighting_renderer_->get_lighting_enabled_flag());
+        ImGui::Checkbox("Lighting",       &lighting_renderer_->get_lighting_enabled_flag());
         ImGui::Checkbox("Shadow Mapping", &lighting_renderer_->get_shadow_enabled_flag());
         if(ImGui::Checkbox("SSAO", &SSAO_renderer_->get_active()))
         {
@@ -276,6 +286,10 @@ void RenderPipeline::generate_widget()
         }
         ImGui::Checkbox("Forward pass", &forward_renderer_->active_);
         ImGui::EndChild();
+
+        ImGui::Separator();
+        ImGui::Text("Parallax mapping");
+        ImGui::SliderFloat("min distance", &geometry_renderer_->get_min_parallax_distance_nc(), 0.0f, 100.0f);
     }
 
     // SSAO OPTIONS
@@ -322,7 +336,7 @@ void RenderPipeline::generate_widget()
         if(ImGui::CollapsingHeader("Bloom control"))
         {
             ImGui::SliderFloat("Threshold", &lighting_renderer_->bright_threshold_, 0.5f, 2.0f);
-            ImGui::SliderFloat("Knee", &lighting_renderer_->bright_knee_, 0.01f, 1.0f);
+            ImGui::SliderFloat("Knee",      &lighting_renderer_->bright_knee_, 0.01f, 1.0f);
             int ker_size = 2*bloom_kernel_half_size-1;
             ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
             bool update_kernel = ImGui::SliderInt("Half-size ", &bloom_kernel_half_size, 3, 8);
@@ -340,8 +354,8 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("Shadow control"))
         {
-            ImGui::SliderFloat("Depth bias", &pscene->shadow_bias_, 0.0f, 5.0f);
-            ImGui::SliderFloat("Slope bias", &lighting_renderer_->shadow_slope_bias_, 0.0f, 0.5f);
+            ImGui::SliderFloat("Depth bias",    &pscene->shadow_bias_, 0.0f, 5.0f);
+            ImGui::SliderFloat("Slope bias",    &lighting_renderer_->shadow_slope_bias_, 0.0f, 0.5f);
             ImGui::SliderFloat("Normal offset", &lighting_renderer_->normal_offset_, -1.0f, 1.0f);
         }
     }
@@ -353,7 +367,7 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
         if(ImGui::TreeNode("Chromatic aberration"))
         {
-            ImGui::SliderFloat("Shift", &post_processing_renderer_->aberration_shift_, 0.0f, 10.0f);
+            ImGui::SliderFloat("Shift",     &post_processing_renderer_->aberration_shift_, 0.0f, 10.0f);
             ImGui::SliderFloat("Magnitude", &post_processing_renderer_->aberration_strength_, 0.0f, 1.0f);
             ImGui::TreePop();
             ImGui::Separator();
@@ -374,7 +388,7 @@ void RenderPipeline::generate_widget()
             ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
             if(ImGui::TreeNode("Vibrance"))
             {
-                ImGui::SliderFloat("Strength", &post_processing_renderer_->vibrance_, -1.0f, 1.0f);
+                ImGui::SliderFloat("Strength",         &post_processing_renderer_->vibrance_, -1.0f, 1.0f);
                 ImGui::SliderFloat3("Balance", (float*)&post_processing_renderer_->vibrance_bal_, 0.0f, 1.0f);
                 ImGui::TreePop();
                 ImGui::Separator();
@@ -383,10 +397,10 @@ void RenderPipeline::generate_widget()
             ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
             if(ImGui::TreeNode("Correction"))
             {
-                ImGui::SliderFloat("Saturation", &post_processing_renderer_->saturation_, 0.0f, 2.0f);
+                ImGui::SliderFloat("Saturation",     &post_processing_renderer_->saturation_, 0.0f, 2.0f);
                 ImGui::SliderFloat3("Gamma", (float*)&post_processing_renderer_->gamma_, 1.0f, 2.0f);
-                ImGui::SliderFloat("Exposure", &post_processing_renderer_->exposure_, 0.1f, 5.0f);
-                ImGui::SliderFloat("Contrast", &post_processing_renderer_->contrast_, 0.0f, 2.0f);
+                ImGui::SliderFloat("Exposure",       &post_processing_renderer_->exposure_, 0.1f, 5.0f);
+                ImGui::SliderFloat("Contrast",       &post_processing_renderer_->contrast_, 0.0f, 2.0f);
                 ImGui::TreePop();
                 ImGui::Separator();
             }
@@ -399,7 +413,7 @@ void RenderPipeline::generate_widget()
             ImGui::Checkbox("Enable fog", &post_processing_renderer_->fog_enabled_);
             if(post_processing_renderer_->get_fog_enabled_flag())
             {
-                ImGui::SliderFloat("Density", &post_processing_renderer_->fog_density_, 0.0f, 0.1f);
+                ImGui::SliderFloat("Density",      &post_processing_renderer_->fog_density_, 0.0f, 0.1f);
                 ImGui::ColorEdit3("Color", (float*)&post_processing_renderer_->fog_color_);
             }
             ImGui::TreePop();

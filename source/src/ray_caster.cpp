@@ -9,23 +9,32 @@
 #include "bounding_boxes.h"
 #include "config.h"
 #include "logger.h"
+
 #ifndef __DISABLE_EDITOR__
-#include "editor.h"
+    #include "editor.h"
+    #include "editor_tweaks.h"
 #endif
 
 namespace wcore
 {
 
-#ifdef __DEBUG__
-static bool show_ray = false;
-static int ray_persistence = 0;
-#endif
-
 RayCaster::RayCaster()
 {
 #ifdef __DEBUG__
-    CONFIG.get("root.debug.raycast.geometry.show_on_click"_h, show_ray);
-    CONFIG.get("root.debug.raycast.geometry.persistence"_h, ray_persistence);
+    show_ray_ = false;
+    ray_persistence_ = 0;
+
+    CONFIG.get("root.debug.raycast.geometry.persistence"_h, ray_persistence_);
+#endif
+}
+
+void RayCaster::init_self()
+{
+#ifndef __DISABLE_EDITOR__
+    auto* edtweaks = locate_init<EditorTweaksInitializer>("EditorTweaks"_h);
+
+    // Debug geometry control tweaks
+    edtweaks->register_variable("root.geometry.raycast.debug.show_ray_on_click"_h, show_ray_);
 #endif
 }
 
@@ -91,11 +100,11 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
     DLOGI(ss.str(), "collision", Severity::LOW);
     ss.str("");
 
-    if(show_ray)
+    if(show_ray_)
     {
         locate<RenderPipeline>("Pipeline"_h)->debug_draw_segment(ray.origin_w,
                                                 ray.end_w,
-                                                ray_persistence,
+                                                ray_persistence_,
                                                 math::vec3(1,0.2,0));
     }
 #endif
@@ -115,17 +124,17 @@ SceneQueryResult RayCaster::ray_scene_query(const Ray& ray)
     pscene->traverse_models([&](Model& model, uint32_t chunk_id)
     {
         #ifdef __DEBUG__
-        if(show_ray)
+        if(show_ray_)
         {
             math::vec3 near_intersection(ray.origin_w + (ray.direction*data.near));
             math::vec3 far_intersection(ray.origin_w + (ray.direction*data.far));
             ppipeline->debug_draw_cross3(near_intersection,
                                          0.3f,
-                                         ray_persistence,
+                                         ray_persistence_,
                                          math::vec3(0,0.7f,1));
             ppipeline->debug_draw_cross3(far_intersection,
                                          0.3f,
-                                         ray_persistence,
+                                         ray_persistence_,
                                          math::vec3(1,0.7f,0));
         }
         #endif
@@ -157,17 +166,17 @@ SceneQueryResult RayCaster::ray_scene_query_first(const Ray& ray)
     pscene->visit_model_first([&](Model& model, uint32_t chunk_id)
     {
         #ifdef __DEBUG__
-        if(show_ray)
+        if(show_ray_)
         {
             math::vec3 near_intersection(ray.origin_w + (ray.direction*data.near));
             math::vec3 far_intersection(ray.origin_w + (ray.direction*data.far));
             ppipeline->debug_draw_cross3(near_intersection,
                                          0.3f,
-                                         ray_persistence,
+                                         ray_persistence_,
                                          math::vec3(0,0.7f,1));
             ppipeline->debug_draw_cross3(far_intersection,
                                          0.3f,
-                                         ray_persistence,
+                                         ray_persistence_,
                                          math::vec3(1,0.7f,0));
         }
         #endif

@@ -21,6 +21,7 @@ GeometryRenderer::GeometryRenderer():
 Renderer<Vertex3P3N3T2U>(),
 geometry_pass_shader_(ShaderResource("gpass.vert;gpass.geom;gpass.frag")),
 wireframe_mix_(0.0f),
+min_parallax_distance_(20.f),
 allow_normal_mapping_(true),
 allow_parallax_mapping_(true)
 {
@@ -34,6 +35,7 @@ void GeometryRenderer::render(Scene* pscene)
     mat4 V = pscene->get_camera().get_view_matrix();       // Camera View matrix
     mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
+    vec3 campos = pscene->get_camera().get_position();
 
     GFX::disable_blending();
     GFX::enable_depth_testing();
@@ -71,6 +73,12 @@ void GeometryRenderer::render(Scene* pscene)
             geometry_pass_shader_.send_uniform("mt.b_use_normal_map"_h, false);
         if(!allow_parallax_mapping_)
             geometry_pass_shader_.send_uniform("mt.b_use_parallax_map"_h, false);
+        else
+        {
+            // use parallax mapping only if object is close enough
+            float dist = (model.get_position()-campos).norm();
+            geometry_pass_shader_.send_uniform("mt.b_use_parallax_map"_h, (dist < min_parallax_distance_));
+        }
         if(model.get_material().is_textured())
         {
             // bind current material texture units if any

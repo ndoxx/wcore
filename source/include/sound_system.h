@@ -20,6 +20,7 @@ public:
 
     virtual void update(const GameClock& clock) override;
     virtual void init_events(InputHandler& handler) override;
+    virtual void init_self() override;
 #ifndef __DISABLE_EDITOR__
     virtual void generate_widget() override;
 #endif
