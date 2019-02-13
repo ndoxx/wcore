@@ -53,7 +53,7 @@
     </input>
     <sound>
         <general>
-            <uint  name="max_channels" value="128"/>
+            <uint name="max_channels" value="128"/>
         </general>
     </sound>
     <debug>
@@ -80,7 +80,7 @@
         </channel_verbosity>
         <raycast>
             <geometry>
-                <int  name="persistence"   value="5000"/>
+                <int name="persistence" value="5000"/>
             </geometry>
         </raycast>
     </debug>

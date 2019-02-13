@@ -78,6 +78,19 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile, bool pro
     std::vector<std::string> materials;
     std::vector<std::vector<int>> uvMap;
 
+    // Read first line and detect Blender exports
+    bool is_blender_export = false;
+    if(fgets(line, MAXLINE, fn) != NULL)
+    {
+        if(strncmp(line, "# Blender", 9) == 0)
+        {
+            DLOGI("<h>Blender</h> export detected.", "model", Severity::LOW);
+            // If blender export detected, we need to flip half of the triangles
+            is_blender_export = true;
+        }
+        fseek(fn, 0, SEEK_SET); // Seek back to beginning
+    }
+
     // For each line
     while(fgets(line, MAXLINE, fn) != NULL)
     {

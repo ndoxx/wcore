@@ -82,6 +82,14 @@
         </Entities>
 
         <Models>
+            <Model name="anvil01" ypos="relative">
+                <Transform>
+                    <Position>(11.0,0.0,7.0)</Position>
+                    <Angle>(0,45,0)</Angle>
+                    <Scale>1.0</Scale>
+                </Transform>
+            </Model>
+
             <!-- Big moving Erwin-textured cube -->
             <Model>
                 <Mesh type="cube"></Mesh>
