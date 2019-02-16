@@ -108,7 +108,7 @@ bounding_region_(parent_extent)
 
     // Translate OBB if mesh not centered bc we use the vertices of a centered cube in update()
     if(!centered)
-        offset_ = bounding_region_.mid_point;;
+        offset_ = bounding_region_.mid_point;
 }
 
 OBB::~OBB() = default;

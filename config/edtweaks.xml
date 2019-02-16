@@ -5,7 +5,7 @@
 		</parallax>
 		<raycast>
 			<debug>
-				<bool name="show_ray_on_click" value="false"/>
+				<bool name="show_ray_on_click" value="true"/>
 			</debug>
 		</raycast>
 	</geometry>
@@ -15,8 +15,8 @@
 			<float name="magnitude" value="0.126000"/>
 		</aberration>
 		<vignette>
-			<float name="falloff" value="0.206000"/>
-			<float name="balance" value="0.022000"/>
+			<float name="falloff" value="0.126000"/>
+			<float name="balance" value="0.117000"/>
 		</vignette>
 		<color>
 			<vibrance>
@@ -32,9 +32,9 @@
 		</dithering>
 	</postproc>
 	<ssao>
-		<float name="radius" value="0.112000"/>
-		<float name="bias" value="0.148000"/>
-		<float name="vbias" value="0.063000"/>
+		<float name="radius" value="0.205000"/>
+		<float name="bias" value="0.224000"/>
+		<float name="vbias" value="0.213000"/>
 		<float name="intensity" value="1.704000"/>
 		<float name="scale" value="0.525000"/>
 		<blur>

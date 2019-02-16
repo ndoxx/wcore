@@ -533,8 +533,8 @@
             <Model name="interior01" ypos="relative">
                 <Transform>
                     <Position>(0.0,0.5,0.0)</Position>
-                    <Angle>(0,90,0)</Angle>
-                    <Scale>5.0</Scale>
+                    <Angle>(0,0,0)</Angle>
+                    <Scale>1.0</Scale>
                 </Transform>
             </Model>
         </Models>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Scene>
-    <Terrain chunkSize="4" latticeScale="1.0" textureScale="1.0">
+    <Terrain chunkSize="32" latticeScale="1.0" textureScale="1.0">
         <TerrainPatch origin="(0,0)" size="(1,1)" height="0">
             <Generator type="simplex" seed="7">
                 <!--<Scale>0.5</Scale>-->
@@ -8,7 +8,7 @@
                 <Frequency>0.01</Frequency>
                 <Persistence>0.4</Persistence>
                 <LoBound>0.0</LoBound>
-                <HiBound>30.0</HiBound>
+                <HiBound>0.0</HiBound>
             </Generator>
             <Transform>
                 <Position>(0,0,0)</Position>
@@ -27,20 +27,11 @@
 
     <Chunk coords="(0,0)">
         <Models>
-            <Model ypos="relative">
-                <Mesh type="icosphere">
-                    <Density>0</Density>
-                </Mesh>
-                <Material>
-                    <Uniform>
-                        <Albedo>(1.0,0.4,0.05)</Albedo>
-                        <Roughness>0.2</Roughness>
-                    </Uniform>
-                </Material>
+            <Model name="interior01" ypos="relative">
                 <Transform>
-                    <Position>(0,4,0)</Position>
-                    <Scale>1.0</Scale>
-                    <Angle>(0,0,0)</Angle>
+                    <Position>(8.0,0.01,8.0)</Position>
+                    <Angle>(0,-35,0)</Angle>
+                    <Scale>2.0</Scale>
                 </Transform>
             </Model>
         </Models>

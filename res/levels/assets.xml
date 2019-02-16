@@ -127,6 +127,12 @@
                 <Roughness>0.2</Roughness>
             </Uniform>
         </Material>
+        <Material name="plaster">
+            <Uniform>
+                <Albedo>(0.9,0.9,0.95)</Albedo>
+                <Roughness>0.5</Roughness>
+            </Uniform>
+        </Material>
     </Materials>
 
     <Meshes>
@@ -226,6 +232,7 @@
             <Location>interior01.obj</Location>
             <ProcessUV>false</ProcessUV>
             <ProcessNormals>true</ProcessNormals>
+            <SmoothNormals>none</SmoothNormals>
             <Centered>false</Centered>
         </Mesh>
     </Meshes>
@@ -254,7 +261,7 @@
         </Model>
         <Model name="interior01">
             <Mesh name=".interior01"/>
-            <Material name="teapot"/>
+            <Material name="plaster"/>
         </Model>
     </Models>
 </Assets>
