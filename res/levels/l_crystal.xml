@@ -528,7 +528,17 @@
     <Chunk coords="(5,0)"/>
     <Chunk coords="(6,0)"/>
     <Chunk coords="(5,1)"/>
-    <Chunk coords="(6,1)"/>
+    <Chunk coords="(6,1)">
+        <Models>
+            <Model name="interior01" ypos="relative">
+                <Transform>
+                    <Position>(0.0,0.5,0.0)</Position>
+                    <Angle>(0,90,0)</Angle>
+                    <Scale>5.0</Scale>
+                </Transform>
+            </Model>
+        </Models>
+    </Chunk>
 
     <Ambient>
         <Directional>

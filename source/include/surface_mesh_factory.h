@@ -18,13 +18,17 @@ namespace fs = std::filesystem;
 namespace wcore
 {
 
-struct MeshInstanceDescriptor
+struct SurfaceMeshDescriptor
 {
+    bool parse(rapidxml::xml_node<char>* mesh_node, fs::path models_path);
+
     rapidxml::xml_node<char>* generator_node;
     hash_t type;
     fs::path file_path;
     bool process_uv;
+    bool process_normals;
     bool centered;
+    int smooth_func;
 };
 
 class SurfaceMeshFactory
@@ -41,10 +45,13 @@ public:
     // Create mesh procedurally
     std::shared_ptr<SurfaceMesh> make_procedural(hash_t mesh_type,
                                                  rapidxml::xml_node<char>* generator_node=nullptr,
-                                                 OptRngT opt_rng=nullptr,
-                                                 bool owns=true);
+                                                 OptRngT opt_rng=nullptr);
     // Create mesh from .obj file
-    std::shared_ptr<SurfaceMesh> make_obj(const char* filename, bool process_uv=true, bool centered=true);
+    std::shared_ptr<SurfaceMesh> make_obj(const char* filename,
+                                          bool process_uv=true,
+                                          bool process_normals=false,
+                                          bool centered=true,
+                                          int smooth_func=0);
     // Create mesh from mesh instance name
     std::shared_ptr<SurfaceMesh> make_instance(hash_t name);
     // Create mesh from XML node and an optional random engine
@@ -53,7 +60,7 @@ public:
                                                    OptRngT opt_rng=nullptr);
 
 private:
-    std::map<hash_t, MeshInstanceDescriptor> instance_descriptors_;
+    std::map<hash_t, SurfaceMeshDescriptor> instance_descriptors_;
     std::map<hash_t, std::shared_ptr<SurfaceMesh>> cache_; // Owns loaded meshes
     std::map<hash_t, std::shared_ptr<SurfaceMesh>> proc_cache_; // Owns loaded procedural meshes
     fs::path models_path_;

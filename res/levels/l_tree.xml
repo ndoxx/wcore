@@ -295,6 +295,8 @@
                 <Mesh type="obj">
                     <Location>dome.obj</Location>
                     <ProcessUV>true</ProcessUV>
+                    <ProcessNormals>true</ProcessNormals>
+                    <SmoothNormals>max</SmoothNormals>
                 </Mesh>
                 <Material name="dome01"/>
                 <Transform>

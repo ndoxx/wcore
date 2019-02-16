@@ -23,11 +23,77 @@ SurfaceMeshFactory::SurfaceMeshFactory()
 
 SurfaceMeshFactory::~SurfaceMeshFactory()
 {
-    /*for(auto&& [key,meshptr]: cache_)
-        delete meshptr;
-    for(auto&& [key,meshptr]: proc_cache_)
-        delete meshptr;*/
+
 }
+
+bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node, fs::path models_path)
+{
+    generator_node = mesh_node->first_node("Generator");
+
+    std::string mesh_type;
+    if(!xml::parse_attribute(mesh_node, "type", mesh_type)) return false;
+    type = H_(mesh_type.c_str());
+
+    // Normal smoothing func
+    std::string smooth_func_str;
+    smooth_func = Smooth::NONE;
+    if(xml::parse_node(mesh_node, "SmoothNormals", smooth_func_str))
+    {
+        hash_t smooth_func_h = H_(smooth_func_str.c_str());
+        switch(smooth_func_h)
+        {
+            case "none"_h:
+                smooth_func = Smooth::NONE;
+                break;
+            case "max"_h:
+                smooth_func = Smooth::MAX;
+                break;
+            case "heaviside"_h:
+                smooth_func = Smooth::HEAVISIDE;
+                break;
+            case "linear"_h:
+                smooth_func = Smooth::LINEAR;
+                break;
+            case "compress_linear"_h:
+                smooth_func = Smooth::COMPRESS_LINEAR;
+                break;
+            case "compress_quadratic"_h:
+                smooth_func = Smooth::COMPRESS_QUADRATIC;
+                break;
+            default:
+                DLOGW("[SurfaceMeshFactory] Unknown smooth function: " + smooth_func_str, "model", Severity::WARN);
+                break;
+        }
+    }
+
+    // Additional info for obj files
+    if(type == "obj"_h)
+    {
+        std::string file_name;
+        if(!xml::parse_node(mesh_node, "Location", file_name))
+        {
+            DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.", "parsing", Severity::WARN);
+            DLOGI("Missing <n>Location</n> node.", "parsing", Severity::WARN);
+            return false;
+        }
+
+        file_path = models_path / file_name;
+        if(!fs::exists(file_path))
+        {
+            DLOGW("[SceneLoader] File does not exist:", "parsing", Severity::WARN);
+            DLOGI("<p>" + file_path.string() + "</p>", "parsing", Severity::WARN);
+            return false;
+        }
+        process_uv = false;
+        process_normals = false;
+        centered = false;
+        xml::parse_node(mesh_node, "ProcessUV", process_uv);
+        xml::parse_node(mesh_node, "ProcessNormals", process_normals);
+        xml::parse_node(mesh_node, "Centered", centered);
+    }
+    return true;
+}
+
 
 void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshes_node)
 {
@@ -35,30 +101,17 @@ void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshe
          mesh_node;
          mesh_node=mesh_node->next_sibling("Mesh"))
     {
-        MeshInstanceDescriptor desc;
-        desc.generator_node = mesh_node->first_node("Generator");
-
-        std::string mesh_name, mesh_type;
-        if(!xml::parse_attribute(mesh_node, "type", mesh_type)) continue;
+        std::string mesh_name;
         if(!xml::parse_attribute(mesh_node, "name", mesh_name)) continue;
 
-        desc.type = H_(mesh_type.c_str());
-
-        // Additional info for obj files
-        if(desc.type == "obj"_h)
+        SurfaceMeshDescriptor desc;
+        if(desc.parse(mesh_node, models_path_))
         {
-            std::string file_name;
-            xml::parse_node(mesh_node, "Location", file_name);
-            desc.file_path = models_path_ / file_name;
-            if(!fs::exists(desc.file_path)) continue;
-            xml::parse_node(mesh_node, "ProcessUV", desc.process_uv);
-            xml::parse_node(mesh_node, "Centered", desc.centered);
+            instance_descriptors_.insert(std::pair(H_(mesh_name.c_str()), desc));
+            #ifdef __DEBUG__
+                HRESOLVE.add_intern_string(mesh_name);
+            #endif
         }
-
-        instance_descriptors_.insert(std::pair(H_(mesh_name.c_str()), desc));
-        #ifdef __DEBUG__
-            HRESOLVE.add_intern_string(mesh_name);
-        #endif
     }
 }
 
@@ -86,19 +139,13 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_surface_mesh(rapidxml::xml
 
     if(!mesh.compare("obj"))
     {
-        // Acquire mesh from Wavefront .obj file
-        std::string location;
-        if(!xml::parse_node(mesh_node, "Location", location))
-        {
-            DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.", "parsing", Severity::WARN);
-            DLOGI("Missing <n>Location</n> node.", "parsing", Severity::WARN);
-            return nullptr;
-        }
-        bool process_uv = false;
-        bool centered = false;
-        xml::parse_node(mesh_node, "ProcessUV", process_uv);
-        xml::parse_node(mesh_node, "Centered", centered);
-        pmesh = make_obj(location.c_str(), process_uv, centered);
+        SurfaceMeshDescriptor desc;
+        if(desc.parse(mesh_node, models_path_))
+            pmesh = make_obj(desc.file_path.string().c_str(),
+                             desc.process_uv,
+                             desc.process_normals,
+                             desc.centered,
+                             desc.smooth_func);
     }
     else
     {
@@ -132,17 +179,21 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
         if(it_d != instance_descriptors_.end())
         {
             std::shared_ptr<SurfaceMesh> pmesh = nullptr;
-            const MeshInstanceDescriptor& desc = it_d->second;
+            const SurfaceMeshDescriptor& desc = it_d->second;
             if(desc.type=="obj"_h)
             {
                 DLOGI("From obj file.", "model", Severity::LOW);
-                pmesh = make_obj(desc.file_path.string().c_str(), desc.process_uv, desc.centered);
+                pmesh = make_obj(desc.file_path.string().c_str(),
+                                 desc.process_uv,
+                                 desc.process_normals,
+                                 desc.centered,
+                                 desc.smooth_func);
             }
             else
             {
                 DLOGI("Procedural.", "model", Severity::LOW);
                 std::mt19937 rng(0);
-                pmesh = make_procedural(desc.type, desc.generator_node, &rng, false);
+                pmesh = make_procedural(desc.type, desc.generator_node, &rng);
             }
             if(pmesh != nullptr)
             {
@@ -156,8 +207,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
 
 std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_type,
                                                  rapidxml::xml_node<char>* generator_node,
-                                                 OptRngT opt_rng,
-                                                 bool owns)
+                                                 OptRngT opt_rng)
 {
     // Procedural meshes that depend on extra data -> not cached ftm
     if(mesh_type == "icosphere"_h)
@@ -232,19 +282,17 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_typ
         pmesh = static_cast<std::shared_ptr<SurfaceMesh>>(factory::make_tentacle(spline, 50, 25, 0.1, 0.3));
     }
 
-    if(pmesh && owns)
-    {
-        pmesh->set_cached(true);
-    }
-
     return pmesh;
 }
 
-std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_obj(const char* filename, bool process_uv, bool centered)
+std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_obj(const char* filename,
+                                                          bool process_uv,
+                                                          bool process_normals,
+                                                          bool centered,
+                                                          int smooth_func)
 {
-    std::shared_ptr<SurfaceMesh> pmesh = LOADOBJ(models_path_ / filename, process_uv);
+    std::shared_ptr<SurfaceMesh> pmesh = LOADOBJ(models_path_ / filename, process_uv, process_normals, smooth_func);
     pmesh->set_centered(centered);
-    pmesh->set_cached(true);
 
     return pmesh;
 }

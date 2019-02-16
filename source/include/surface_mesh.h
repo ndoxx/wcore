@@ -2,6 +2,7 @@
 #define SURFACE_MESH_H
 
 #include <functional>
+#include <map>
 
 #include "mesh.hpp"
 #include "vertex_format.h"
@@ -10,12 +11,12 @@
 namespace wcore
 {
 
+enum Smooth
+{
+    NONE, MAX, HEAVISIDE, LINEAR, COMPRESS_LINEAR, COMPRESS_QUADRATIC
+};
+
 typedef std::function<float(float)> SmoothFunc;
-static SmoothFunc SMOOTH_MAX                 = [](float x){ (void)x; return 1.0f; };
-static SmoothFunc SMOOTH_HEAVISIDE           = [](float x){ x=1-fabs(x); return (x<0.1f)?1.0f:0.0f; };
-static SmoothFunc SMOOTH_LINEAR              = [](float x){ x=1-fabs(x); return 1.0f-x; };
-static SmoothFunc SMOOTH_COMPRESS_LINEAR     = [](float x){ x=1-fabs(x); return (x<0.5f)?1.0f:-2.0f*x+2.0f; };
-static SmoothFunc SMOOTH_COMPRESS_QUADRATIC  = [](float x){ x=1-x; float a=0.75f;  return a*x*x-(a+1.0f)*x+1.0f; };
 
 class FaceMesh: public SurfaceMesh
 {
@@ -55,6 +56,11 @@ public:
         return index;
     }
 
+    inline void push_triangle(const math::i32vec3& T)
+    {
+        _push_triangle(T.x(), T.y(), T.z());
+    }
+
     inline void push_triangle(uint32_t T1, uint32_t T2, uint32_t T3)
     {
         _push_triangle(T1, T2, T3);
@@ -68,10 +74,11 @@ public:
     }
 
     virtual void build_normals() override;
+    virtual void build_tangents() override;
     virtual void build_normals_and_tangents() override;
 
-    void smooth_normals(SmoothFunc Func = SMOOTH_MAX);
-    void smooth_normals_and_tangents(SmoothFunc Func = SMOOTH_MAX);
+    void smooth_normals(Smooth Func = Smooth::MAX);
+    void smooth_normals_and_tangents(Smooth Func = Smooth::MAX);
 };
 
 class TriangularMesh: public SurfaceMesh
@@ -148,6 +155,7 @@ public:
     }
 
     virtual void build_normals() override;
+    virtual void build_tangents() override;
     virtual void build_normals_and_tangents() override;
 };
 

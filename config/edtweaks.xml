@@ -32,15 +32,15 @@
 		</dithering>
 	</postproc>
 	<ssao>
-		<float name="radius" value="0.099000"/>
-		<float name="bias" value="0.143000"/>
-		<float name="vbias" value="0.143000"/>
-		<float name="intensity" value="1.570000"/>
-		<float name="scale" value="0.503000"/>
+		<float name="radius" value="0.112000"/>
+		<float name="bias" value="0.148000"/>
+		<float name="vbias" value="0.063000"/>
+		<float name="intensity" value="1.704000"/>
+		<float name="scale" value="0.525000"/>
 		<blur>
 			<int name="passes" value="1"/>
 			<int name="kernel_half_size" value="3"/>
-			<float name="kernel_sigma" value="1.200000"/>
+			<float name="kernel_sigma" value="0.809000"/>
 			<float name="compression" value="1.000000"/>
 		</blur>
 	</ssao>

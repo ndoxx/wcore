@@ -174,6 +174,7 @@ Engine::~Engine()
 void Engine::Init(int argc, char const *argv[],
                   void(*parse_arguments)(int, char const **))
 {
+    DLOG("<s>--- WCore: Loading config ---</s>", "core", Severity::LOW);
     // Parse main config file
     try
     {
@@ -187,6 +188,7 @@ void Engine::Init(int argc, char const *argv[],
 
     // Parse intern string hash table file
 #ifdef __DEBUG__
+    DLOG("<s>--- WCore: Initializing intern strings ---</s>", "core", Severity::LOW);
     try
     {
         HRESOLVE.init();
@@ -198,6 +200,7 @@ void Engine::Init(int argc, char const *argv[],
     }
 #endif
 
+    DLOG("<s>--- WCore: Parsing program arguments ---</s>", "core", Severity::LOW);
     // First, try to initialize default values using config
     CONFIG.get("root.display.width"_h,  GLB.SCR_W);
     CONFIG.get("root.display.height"_h, GLB.SCR_H);
@@ -207,15 +210,19 @@ void Engine::Init(int argc, char const *argv[],
     if(parse_arguments)
         parse_arguments(argc, argv);
 
+    DLOG("<s>--- WCore: Creating game systems ---</s>", "core", Severity::LOW);
     // Create game systems
     eimpl_->init();
 
     // * Initialize game_loop
+    DLOG("<s>--- WCore: Bootstrapping initializer systems ---</s>", "core", Severity::LOW);
     // Render callbacks
     eimpl_->game_loop->set_render_func([&]()     { eimpl_->pipeline->render(); });
     eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
     // Initializer systems
+#ifndef __DISABLE_EDITOR__
     eimpl_->game_loop->register_initializer_system("EditorTweaks"_h, static_cast<InitializerSystem*>(eimpl_->ed_tweaks));
+#endif
 
     // Initialization step
     try
@@ -230,6 +237,7 @@ void Engine::Init(int argc, char const *argv[],
     }
 
     // * Register game systems (init events, register editor widgets, add to update list)
+    DLOG("<s>--- WCore: Registering game systems ---</s>", "core", Severity::LOW);
 #ifndef __DISABLE_EDITOR__
     eimpl_->game_loop->register_game_system("Editor"_h,            static_cast<GameSystem*>(eimpl_->editor));
 #endif
@@ -244,6 +252,7 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->register_game_system("ChunkManager"_h,      static_cast<GameSystem*>(eimpl_->chunk_manager));
     eimpl_->game_loop->register_game_system("SoundSystem"_h,       static_cast<GameSystem*>(eimpl_->sound_system));
 
+    DLOG("<s>--- WCore: Initializing game systems ---</s>", "core", Severity::LOW);
     eimpl_->game_loop->init_game_systems();
 
     //auto&& input_handler = eimpl_->game_loop->get_input_handler();
@@ -251,6 +260,7 @@ void Engine::Init(int argc, char const *argv[],
     //dbg::LOG.track("input.mouse.unlocked"_h, input_handler);
     //dbg::LOG.track("input.mouse.focus"_h, input_handler);
 
+    DLOG("<s>--- WCore: Done ---</s>", "core", Severity::LOW);
 #ifdef __DEBUG__
     show_driver_error("post Init() glGetError(): ");
 #endif

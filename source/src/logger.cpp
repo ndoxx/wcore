@@ -44,6 +44,7 @@ static std::map<char, std::string> TAG_STYLES =
     {'z', "\033[1;38;2;255;255;255m"}, // neutral things in white
     {'x', "\033[1;38;2;0;206;209m"},   // XML nodes in turquoise
     {'h', "\033[1;38;2;255;51;204m"},  // highlight in pink
+    {'s', "\033[1;38;2;0;204;153m"},   // step / phase
 };
 
 static std::map<MsgType, std::string> ICON =

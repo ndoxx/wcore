@@ -222,6 +222,12 @@
             <ProcessUV>false</ProcessUV>
             <Centered>false</Centered>
         </Mesh>
+        <Mesh name=".interior01" type="obj">
+            <Location>interior01.obj</Location>
+            <ProcessUV>false</ProcessUV>
+            <ProcessNormals>true</ProcessNormals>
+            <Centered>false</Centered>
+        </Mesh>
     </Meshes>
 
     <!-- Model Instances -->
@@ -244,6 +250,10 @@
         </Model>
         <Model name="anvil01">
             <Mesh name=".anvil01"/>
+            <Material name="teapot"/>
+        </Model>
+        <Model name="interior01">
+            <Mesh name=".interior01"/>
             <Material name="teapot"/>
         </Model>
     </Models>

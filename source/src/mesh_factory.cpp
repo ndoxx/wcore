@@ -676,7 +676,7 @@ std::shared_ptr<FaceMesh> make_terrain(const HeightMap& hm, float latScale, floa
         }
     }
     pmesh->build_normals_and_tangents();
-    pmesh->smooth_normals_and_tangents(SMOOTH_COMPRESS_QUADRATIC);
+    pmesh->smooth_normals_and_tangents(Smooth::COMPRESS_QUADRATIC);
     pmesh->compute_dimensions();
 
     return pmesh;

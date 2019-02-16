@@ -16,13 +16,14 @@ struct Vertex3P3N3T2U;
 using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
 
 #define TEXCOORD 0x01
+#define NORMAL   0x02
 struct Triangle
 {
 public:
-    Triangle(): uvs(3){}
-
     math::i32vec3 indices;
-    std::vector<math::vec3> uvs;
+    std::array<math::vec3,3> vertices;
+    std::array<math::vec3,3> uvs;
+    std::array<math::vec3,3> normals;
     int material;
     int attributes;
 };
@@ -38,8 +39,14 @@ public:
     friend ObjLoader& Singleton<ObjLoader>::Instance();
     friend void Singleton<ObjLoader>::Kill();
 
-    std::shared_ptr<SurfaceMesh> operator()(const char* objfile, bool process_uv=false);
-    std::shared_ptr<SurfaceMesh> operator()(const fs::path& path, bool process_uv=false);
+    std::shared_ptr<SurfaceMesh> operator()(const char* objfile,
+                                            bool process_uv=false,
+                                            bool process_normals=false,
+                                            int smooth_func=0);
+    std::shared_ptr<SurfaceMesh> operator()(const fs::path& path,
+                                            bool process_uv=false,
+                                            bool process_normals=false,
+                                            int smooth_func=0);
 };
 
 #define LOADOBJ ObjLoader::Instance()
