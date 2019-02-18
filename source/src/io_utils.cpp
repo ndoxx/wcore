@@ -1,8 +1,12 @@
 #include <fstream>
+#include <memory>
+#include <map>
 
 #include "io_utils.h"
 #include "config.h"
 #include "logger.h"
+
+#include "vendor/zipios/zipfile.hpp"
 
 namespace wcore
 {
@@ -35,12 +39,11 @@ std::string get_file_as_string(hash_t folder_node, const fs::path& file_name)
 
     if(!ifs.is_open())
     {
-#ifdef __DEBUG__
         DLOGE("Unable to open file:", "io", Severity::CRIT);
         DLOGI("node= " + std::to_string(folder_node), "io", Severity::CRIT);
         DLOGI("file name= " + file_name.string(), "io", Severity::CRIT);
         DLOGI("void string returned.", "io", Severity::CRIT);
-#endif
+
         return std::string("");
     }
 
@@ -55,11 +58,10 @@ std::vector<char> get_file_as_vector(const fs::path& file_path)
 
     if(!ifs.is_open())
     {
-#ifdef __DEBUG__
         DLOGE("Unable to open file:", "io", Severity::CRIT);
         DLOGI("file name= " + file_path.string(), "io", Severity::CRIT);
         DLOGI("void vector returned.", "io", Severity::CRIT);
-#endif
+
         return std::vector<char>();
     }
 
@@ -77,11 +79,10 @@ std::vector<char> get_binary_file_as_vector(const fs::path& file_path)
 
     if(!ifs.is_open())
     {
-#ifdef __DEBUG__
         DLOGE("Unable to open binary file:", "io", Severity::CRIT);
         DLOGI("file name= " + file_path.string(), "io", Severity::CRIT);
         DLOGI("void vector returned.", "io", Severity::CRIT);
-#endif
+
         return std::vector<char>();
     }
 
@@ -93,6 +94,70 @@ std::vector<char> get_binary_file_as_vector(const fs::path& file_path)
     return result;
 }
 
+// ----------- WIP -----------
+
+static std::map<hash_t, zipios::ZipFile> archives_;
+
+void open_archive(const fs::path& file_path, hash_t key)
+{
+    archives_.insert(std::pair(key, zipios::ZipFile(file_path.string().c_str())));
+}
+
+void close_archive(hash_t key)
+{
+    auto it = archives_.find(key);
+    if(it != archives_.end())
+    {
+        DLOGE("Cannot close unknown archive:", "io", Severity::CRIT);
+        DLOGI(std::to_string(key) + " -> " + HRESOLVE(key), "io", Severity::CRIT);
+    }
+    else
+    {
+        it->second.close();
+        archives_.erase(it);
+    }
+}
+/*
+bool get_file_as_stream(const fs::path& file_path, std::istream& stream)
+{
+    std::ifstream ifs(file_path);
+
+    if(!ifs.is_open())
+    {
+        DLOGE("Unable to open file:", "io", Severity::CRIT);
+        DLOGI("file name= " + file_path.string(), "io", Severity::CRIT);
+
+        return false;
+    }
+
+    stream = ifs;
+    return true;
+}
+
+bool get_file_as_stream(const char* virtual_path, hash_t archive, std::istream& stream)
+{
+    auto it = archives_.find(archive);
+    if(it != archives_.end())
+    {
+        DLOGE("Cannot find unknown archive:", "io", Severity::CRIT);
+        DLOGI(std::to_string(key) + " -> " + HRESOLVE(key), "io", Severity::CRIT);
+        return false;
+    }
+
+    zipios::FileCollection::stream_pointer_t in_stream(it->second.getInputStream(virtual_path));
+
+    if(!in_stream.good())
+    {
+        DLOGE("Unable to form stream:", "io", Severity::CRIT);
+        DLOGI("from archive: " + std::to_string(archive) + " -> " + HRESOLVE(archive), "io", Severity::CRIT);
+        DLOGI("virtual path: " + std::string(virtual_path), "io", Severity::CRIT);
+
+        return false;
+    }
+
+    stream = in_stream;
+    return true;
+}*/
 
 } // namespace io
 } // namespace wcore

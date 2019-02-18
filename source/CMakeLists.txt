@@ -12,7 +12,10 @@ else()
 endif()
 
 add_definitions(-std=c++17)
-add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+
+# Commented bc libzipios depends directly on C++11 ABI
+#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 ")
 
 # include_directories(BEFORE "/usr/include/c++/8/")
@@ -51,6 +54,12 @@ set_target_properties(freetype PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/vendor/freetype"
 )
 
+add_library(zipios STATIC IMPORTED)
+set_target_properties(zipios PROPERTIES
+  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/libzipios.a"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/vendor/zipios"
+)
+
 add_library(fmod SHARED IMPORTED)
 set_target_properties(fmod PROPERTIES
   IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/libfmod.so"
@@ -87,6 +96,7 @@ target_link_libraries(wcore
                       png
                       fmod
                       z
+                      zipios
                       freetype
                       pthread)
 cotire(wcore)

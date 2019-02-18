@@ -150,7 +150,7 @@ int main()
     return 0;
 }
 */
-
+/*
 #include <iostream>
 #include <list>
 #include <bitset>
@@ -177,7 +177,7 @@ std::ostream& operator<<(std::ostream& stream, const UData& data)
 {
     stream << data.value;
     return stream;
-}
+}*/
 /*
 int main()
 {
@@ -277,125 +277,18 @@ int main()
 }
 */
 
-/*
-struct Circle {};
-struct Dick {};
-struct Bollock {};
-
-template<typename T, typename U>
-struct collides_static
-{
-    static bool intersects(const T&, const U&);
-};
-
-template<>
-struct collides_static<Dick,Circle>
-{
-    static bool intersects(const Dick&, const Circle&) { return true; }
-};
-template<>
-struct collides_static<Dick,Bollock>
-{
-    static bool intersects(const Dick&, const Bollock&) { return true; }
-};
-template<>
-struct collides_static<Dick,Dick>
-{
-    static bool intersects(const Dick&, const Dick&) { return false; }
-};
-
-
-template<typename T, typename U>
-struct collides
-{
-    // For CTAD
-    collides(const T& t, const U& u):
-    t_(t),
-    u_(u)
-    {}
-
-    bool intersects();
-
-private:
-    const T& t_;
-    const U& u_;
-};
-
-template<>
-bool collides<Dick,Circle>::intersects()
-{
-    return true;
-}
-template<>
-bool collides<Dick,Bollock>::intersects()
-{
-    return true;
-}
-template<>
-bool collides<Dick,Dick>::intersects()
-{
-    return false;
-}
-
-#include <chrono>
+#include "vendor/zipios/zipfile.hpp"
 
 int main()
 {
+    zipios::ZipFile zipfile("../res/levels.zip");
+    zipios::FileEntry::pointer_t entry(zipfile.getEntry("levels/assets.xml"));
+    zipios::FileCollection::stream_pointer_t in_stream(zipfile.getInputStream("levels/assets.xml"));
 
-    Dick dick1;
-    Dick dick2;
-    Bollock bollock;
-    Circle circle;
+    std::string content{std::istreambuf_iterator<char>(*in_stream),
+                        std::istreambuf_iterator<char>()};
 
-    std::cout << collides_static<Dick,Dick>::intersects(dick1,dick2) << std::endl;
-    std::cout << collides_static<Dick,Bollock>::intersects(dick1,bollock) << std::endl;
-    std::cout << collides_static<Dick,Circle>::intersects(dick1,circle) << std::endl;
-
-    std::cout << collides(dick1,dick2).intersects() << std::endl;
-    std::cout << collides(dick1,bollock).intersects() << std::endl;
-    std::cout << collides(dick2,circle).intersects() << std::endl;
-
-    return 0;
-}
-*/
-
-#include <memory>
-
-class AA
-{
-public:
-    virtual ~AA() { std::cout << "AA dtor" << std::endl; }
-    virtual void print() = 0;
-};
-
-class BB: public AA
-{
-public:
-    virtual ~BB() { std::cout << "BB dtor" << std::endl; }
-    virtual void print() { std::cout << "BB" << std::endl; }
-};
-
-class CC: public AA
-{
-public:
-    virtual ~CC() { std::cout << "CC dtor" << std::endl; }
-    virtual void print() { std::cout << "CC" << std::endl; }
-};
-
-int main()
-{
-    /*std::shared_ptr<AA> bb1(new BB());
-    bb1->print();
-
-    std::shared_ptr<AA> cc1(new CC());
-    cc1->print();*/
-
-    std::shared_ptr<AA> bb2_as_aa;
-    {
-        std::shared_ptr<BB> bb2(new BB());
-        bb2_as_aa = static_cast<std::shared_ptr<AA>>(bb2);
-    }
-    bb2_as_aa->print();
+    std::cout << /*in_stream->rdbuf()*/ content << std::endl;
 
     return 0;
 }

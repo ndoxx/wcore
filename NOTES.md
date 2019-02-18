@@ -6445,3 +6445,40 @@ Un nouveau tweak de la pipeline permet de régler la distance minimale d'un obje
     [ ] Insp better chunk loading:
 
         What we do is actually pretty simple. Each frame we loop though all active chunks for update. During the update, we check and see if a chunk is missing any neighbors. If it is, we check and see if the neighbor chunk slots are withing the loading range. If they are, we load chunks and hook them up to their neighbors.
+
+
+#[17-02-19]
+## zipios linking
+J'ai galéré 3h à essayer de build du foutu code de test pour la lib zipios que je compte utiliser pour gérer les packs de ressources (archives) du jeu :
+
+```cpp
+#include "vendor/zipios/zipfile.hpp"
+
+int main()
+{
+    zipios::ZipFile zipfile("plop.zip");
+    zipios::FileEntry::pointer_t entry(zipfile.getEntry("my/resource/file.xml"));
+    zipios::FileCollection::stream_pointer_t in_stream(zipfile.getInputStream("my/resource/file.xml"));
+
+    return 0;
+}
+```
+
+J'avais proprement déclaré la lib en static linking et ajouté son nom dans target_link_libraries() dans le CMakeLists.txt, mais j'aboutissais invariablement à des erreurs de linking "undefined reference". Alors que je faisais tout bien... De plus, une compilation à la main avec clang fonctionnait sans problème. Donc il devait bien y avoir quelque chose dans mon cmake file qui foutait le bordel.
+
+Il s'avère que c'était la ligne suivante :
+```cmake
+    add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+```
+Que j'avais ajoutée pour une raison non encore élucidée (comme je n'ai rien documenté à ce sujet). Eh bien zipios dépend explicitement de l'ABI c++11, comme le montre la commande :
+
+>> nm -C --defined-only -g ../lib/libzipios.a > libzipios_entries.txt
+
+Cette commande liste tous les symboles exportés par la lib (avec les options spécialement pour du code C++). En particulier, on y trouve :
+
+    0000000000000342 T zipios::ZipFile::ZipFile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, long, long)
+Donc on a bien une dépendance à la classe string du constructeur de ZipFile via l'ABI c++11.
+
+Commenter cette ligne rend le build fonctionnel.
+
+En espérant que ça ne me mordra pas le cul plus tard. Pourquoi diable désactivais-je l'ABI C++11 ?!

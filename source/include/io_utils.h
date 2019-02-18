@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <istream>
+#include <ostream>
 
 #include "wtypes.h"
 
@@ -42,6 +43,19 @@ extern std::vector<char> get_file_as_vector(const fs::path& file_path);
 // Get the contents of a binary file into a char vector
 extern std::vector<char> get_binary_file_as_vector(const fs::path& file_path);
 
+
+// ----------- WIP -----------
+
+// Open archive, associate it to a hash key
+extern void open_archive(const fs::path& file_path, hash_t key);
+// Close archive
+extern void close_archive(hash_t key);
+/*
+// Get a file as stream specifying a physical file path
+extern bool get_file_as_stream(const fs::path& file_path, std::istream& stream);
+// Get a file as stream from archive
+extern bool get_file_as_stream(const char* virtual_path, hash_t archive, std::istream& stream);
+*/
 
 } // namespace io
 } // namespace wcore

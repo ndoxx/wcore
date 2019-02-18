@@ -15,6 +15,11 @@ XMLParser::XMLParser(const char* filename)
     load_file_xml(filename);
 }
 
+XMLParser::XMLParser(std::istream& stream)
+{
+    load_file_xml(stream);
+}
+
 XMLParser::~XMLParser()
 {
 
@@ -52,11 +57,49 @@ void XMLParser::load_file_xml(const fs::path& filepath)
     }
 }
 
+void XMLParser::load_file_xml(std::istream& stream)
+{
+    // Sanity check
+    if(!stream.good())
+    {
+        DLOGE("[XML] Input stream error.", "core", Severity::CRIT);
+        return;
+    }
+
+#ifdef __DEBUG__
+    DLOGN("[XML] Parsing xml file from stream.", "core", Severity::LOW);
+#endif
+
+    // Read the xml file into a vector
+    buffer_ = std::vector<char>((std::istreambuf_iterator<char>(stream)),
+                                 std::istreambuf_iterator<char>());
+    buffer_.push_back('\0');
+
+    // Parse the buffer using the xml file parsing library into DOM
+    dom_.parse<0>(&buffer_[0]);
+
+    // Find our root node
+    root_ = dom_.first_node();
+    if(!root_)
+    {
+#ifdef __DEBUG__
+        DLOGE("[XML] No root node.", "core", Severity::CRIT);
+#endif
+        return;
+    }
+}
+
+// deprec
 void XMLParser::write()
 {
     std::ofstream file(filepath_);
     file << dom_;
     file.close();
+}
+
+void XMLParser::write(std::ostream& stream)
+{
+    stream << dom_;
 }
 
 void XMLParser::reset()

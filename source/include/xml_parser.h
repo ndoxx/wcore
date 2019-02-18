@@ -2,6 +2,8 @@
 #define XML_PARSER_H
 
 #include <filesystem>
+#include <istream>
+#include <ostream>
 
 #include "vendor/rapidxml/rapidxml.hpp"
 #include "xml_utils.hpp"
@@ -21,12 +23,15 @@ private:
 
 public:
     XMLParser();
-    XMLParser(const char* filename);
+    XMLParser(const char* filename); // deprec
+    XMLParser(std::istream& stream);
     ~XMLParser();
 
-    void load_file_xml(const fs::path& filepath);
+    void load_file_xml(const fs::path& filepath); // deprec
+    void load_file_xml(std::istream& stream);
     void reset();
-    void write();
+    void write(); // deprec
+    void write(std::ostream& stream);
 
     char* allocate_string(const char* str);
 
