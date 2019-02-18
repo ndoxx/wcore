@@ -56,27 +56,24 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
     std::vector<Triangle> triangles;
     std::vector<std::string> materials;
 
-    // Read first line and detect Blender exports
-    bool is_blender_export = false;
-    if(std::getline(stream, line))
-    {
-        if(!line.substr(0,9).compare("# Blender"))
-        {
-            DLOGI("<h>Blender</h> export detected.", "model", Severity::LOW);
-            is_blender_export = true;
-        }
-        // Rewind
-        stream.seekg(0);
-    }
-    else
-    {
-        DLOGW(std::string("Stream is empty."), "model", Severity::WARN);
-        return nullptr;
-    }
-
     // For each line
+    bool first_line = true;
+    bool is_blender_export = false;
     while(std::getline(stream, line))
     {
+#ifdef __DEBUG__
+        if(first_line)
+        {
+            // Read first line and detect Blender exports
+            if(!line.substr(0,9).compare("# Blender"))
+            {
+                DLOGI("<h>Blender</h> export detected.", "model", Severity::LOW);
+                is_blender_export = true;
+            }
+            first_line = false;
+        }
+#endif
+
         if(!line.substr(0,6).compare("mtllib"))
         {
             //mtllib = trim_whitespaces(&line[7]);

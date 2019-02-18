@@ -44,20 +44,6 @@ extern std::vector<char> get_file_as_vector(const fs::path& file_path);
 // Get the contents of a binary file into a char vector
 extern std::vector<char> get_binary_file_as_vector(const fs::path& file_path);
 
-
-// ----------- WIP -----------
-
-// Open archive, associate it to a hash key
-extern bool open_archive(const fs::path& file_path, hash_t key);
-// Close archive
-extern bool close_archive(hash_t key);
-
-// Get a file as stream specifying a physical file path
-extern std::shared_ptr<std::istream> get_file_as_stream(const fs::path& file_path);
-// Get a file as stream from archive
-extern std::shared_ptr<std::istream> get_file_as_stream(const char* virtual_path, hash_t archive);
-
-
 } // namespace io
 } // namespace wcore
 #endif // IO_UTILS_H

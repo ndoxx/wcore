@@ -66,7 +66,6 @@ struct Engine::EngineImpl
 {
     EngineImpl():
     game_loop(nullptr),
-    file_system(nullptr),
     ed_tweaks(nullptr),
     scene(nullptr),
     entity_system(nullptr),
@@ -84,12 +83,11 @@ struct Engine::EngineImpl
     current_model_handle(0),
     current_light_handle(0)
     {
-
+        FileSystem::Instance();
     }
 
     ~EngineImpl()
     {
-        delete file_system;
 #ifndef __DISABLE_EDITOR__
         delete ed_tweaks;
         delete editor;
@@ -106,6 +104,7 @@ struct Engine::EngineImpl
         delete scene;
         delete game_loop;
 
+        FileSystem::Kill();
         Config::Kill();
     }
 
@@ -113,7 +112,6 @@ struct Engine::EngineImpl
     {
         game_loop           = new GameLoop();
 
-        file_system         = new FileSystem();
 #ifndef __DISABLE_EDITOR__
         ed_tweaks           = new EditorTweaksInitializer();
 #endif
@@ -137,7 +135,6 @@ struct Engine::EngineImpl
     GameLoop* game_loop;
 
     // InitializerSystems
-    FileSystem*              file_system;
 #ifndef __DISABLE_EDITOR__
     EditorTweaksInitializer* ed_tweaks;
 #endif
@@ -219,7 +216,7 @@ bool Engine::UseResourceArchive(const char* filename, hash_t key)
 
     DLOGN("[Engine] Opening resource archive: ", "core", Severity::LOW);
     DLOGI("<p>" + filepath.string() + "</p>", "core", Severity::LOW);
-    eimpl_->file_system->open_archive(filepath, key);
+    FILESYSTEM.open_archive(filepath, key);
     return true;
 }
 
@@ -236,6 +233,9 @@ void Engine::Init(int argc, char const *argv[],
     if(parse_arguments)
         parse_arguments(argc, argv);
 
+    DLOG("<s>--- WCore: Loading default resource archive ---</s>", "core", Severity::LOW);
+    UseResourceArchive("pack0.zip", "pack0"_h);
+
     DLOG("<s>--- WCore: Creating game systems ---</s>", "core", Severity::LOW);
     // Create game systems
     eimpl_->init();
@@ -246,7 +246,6 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->set_render_func([&]()     { eimpl_->pipeline->render(); });
     eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
     // Initializer systems
-    eimpl_->game_loop->register_initializer_system("FileSystem"_h,   static_cast<InitializerSystem*>(eimpl_->file_system));
 #ifndef __DISABLE_EDITOR__
     eimpl_->game_loop->register_initializer_system("EditorTweaks"_h, static_cast<InitializerSystem*>(eimpl_->ed_tweaks));
 #endif

@@ -20,11 +20,11 @@ namespace wcore
 
 struct SurfaceMeshDescriptor
 {
-    bool parse(rapidxml::xml_node<char>* mesh_node, fs::path models_path);
+    bool parse(rapidxml::xml_node<char>* mesh_node);
 
     rapidxml::xml_node<char>* generator_node;
     hash_t type;
-    fs::path file_path;
+    std::string file_name;
     bool process_uv;
     bool process_normals;
     bool centered;

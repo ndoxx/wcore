@@ -1,4 +1,5 @@
 #include "surface_mesh_factory.h"
+#include "file_system.h"
 #include "surface_mesh.h"
 #include "mesh_factory.h"
 #include "rock_generator.h"
@@ -27,7 +28,7 @@ SurfaceMeshFactory::~SurfaceMeshFactory()
     delete obj_loader_;
 }
 
-bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node, fs::path models_path)
+bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node)
 {
     generator_node = mesh_node->first_node("Generator");
 
@@ -70,7 +71,6 @@ bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node, fs::path 
     // Additional info for obj files
     if(type == "obj"_h)
     {
-        std::string file_name;
         if(!xml::parse_node(mesh_node, "Location", file_name))
         {
             DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.", "parsing", Severity::WARN);
@@ -78,13 +78,6 @@ bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node, fs::path 
             return false;
         }
 
-        file_path = models_path / file_name;
-        if(!fs::exists(file_path))
-        {
-            DLOGW("[SceneLoader] File does not exist:", "parsing", Severity::WARN);
-            DLOGI("<p>" + file_path.string() + "</p>", "parsing", Severity::WARN);
-            return false;
-        }
         process_uv = false;
         process_normals = false;
         centered = false;
@@ -106,7 +99,7 @@ void SurfaceMeshFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* meshe
         if(!xml::parse_attribute(mesh_node, "name", mesh_name)) continue;
 
         SurfaceMeshDescriptor desc;
-        if(desc.parse(mesh_node, models_path_))
+        if(desc.parse(mesh_node))
         {
             instance_descriptors_.insert(std::pair(H_(mesh_name.c_str()), desc));
             #ifdef __DEBUG__
@@ -141,8 +134,8 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_surface_mesh(rapidxml::xml
     if(!mesh.compare("obj"))
     {
         SurfaceMeshDescriptor desc;
-        if(desc.parse(mesh_node, models_path_))
-            pmesh = make_obj(desc.file_path.string().c_str(),
+        if(desc.parse(mesh_node))
+            pmesh = make_obj(desc.file_name.c_str(),
                              desc.process_uv,
                              desc.process_normals,
                              desc.centered,
@@ -184,7 +177,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
             if(desc.type=="obj"_h)
             {
                 DLOGI("From obj file.", "model", Severity::LOW);
-                pmesh = make_obj(desc.file_path.string().c_str(),
+                pmesh = make_obj(desc.file_name.c_str(),
                                  desc.process_uv,
                                  desc.process_normals,
                                  desc.centered,
@@ -292,7 +285,11 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_obj(const char* filename,
                                                           bool centered,
                                                           int smooth_func)
 {
-    std::shared_ptr<SurfaceMesh> pmesh = obj_loader_->load(models_path_ / filename, process_uv, process_normals, smooth_func);
+    auto stream = FILESYSTEM.get_file_as_stream(filename, "model"_h, "pack0"_h);
+    std::shared_ptr<SurfaceMesh> pmesh = obj_loader_->load(*stream,
+                                                           process_uv,
+                                                           process_normals,
+                                                           smooth_func);
     pmesh->set_centered(centered);
 
     return pmesh;
