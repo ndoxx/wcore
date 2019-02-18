@@ -49,6 +49,7 @@ class InitializerSystem
 public:
     friend class GameSystemContainer;
 
+    virtual ~InitializerSystem() = default;
     // Initialize state of InitializerSystem
     virtual void init_self() {}
     // Write out persistent information
@@ -63,6 +64,7 @@ class GameSystem: public Listener
 public:
     friend class GameSystemContainer;
 
+    virtual ~GameSystem() = default;
     // Per-frame update
     virtual void update(const GameClock& clock) {}
     // Initialize GameSystem state

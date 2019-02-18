@@ -3,6 +3,7 @@
     <folders>
         <path name="config"    value="config/"/>
         <path name="log"       value="logs/"/>
+        <path name="res"       value="res/"/>
         <path name="level"     value="res/levels/"/>
         <path name="shader"    value="res/shaders/"/>
         <path name="shaderinc" value="res/shaders/include/"/>

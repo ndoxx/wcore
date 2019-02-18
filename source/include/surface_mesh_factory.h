@@ -31,6 +31,8 @@ struct SurfaceMeshDescriptor
     int smooth_func;
 };
 
+class ObjLoader;
+
 class SurfaceMeshFactory
 {
 public:
@@ -64,6 +66,8 @@ private:
     std::map<hash_t, std::shared_ptr<SurfaceMesh>> cache_; // Owns loaded meshes
     std::map<hash_t, std::shared_ptr<SurfaceMesh>> proc_cache_; // Owns loaded procedural meshes
     fs::path models_path_;
+
+    ObjLoader* obj_loader_;
 };
 
 } // namespace wcore

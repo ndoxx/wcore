@@ -11,6 +11,7 @@
 #include "scene.h"
 #include "model.h"
 #include "lights.h"
+#include "file_system.h"
 #include "chunk_manager.h"
 #include "camera_controller.h"
 #include "scene_loader.h"
@@ -22,8 +23,8 @@
 #include "daylight.h"
 #include "ray_caster.h"
 #ifndef __DISABLE_EDITOR__
-#include "editor.h"
-#include "editor_tweaks.h"
+    #include "editor.h"
+    #include "editor_tweaks.h"
 #endif
 #include "globals.h"
 #include "logger.h"
@@ -65,6 +66,7 @@ struct Engine::EngineImpl
 {
     EngineImpl():
     game_loop(nullptr),
+    file_system(nullptr),
     ed_tweaks(nullptr),
     scene(nullptr),
     entity_system(nullptr),
@@ -87,6 +89,7 @@ struct Engine::EngineImpl
 
     ~EngineImpl()
     {
+        delete file_system;
 #ifndef __DISABLE_EDITOR__
         delete ed_tweaks;
         delete editor;
@@ -110,6 +113,7 @@ struct Engine::EngineImpl
     {
         game_loop           = new GameLoop();
 
+        file_system         = new FileSystem();
 #ifndef __DISABLE_EDITOR__
         ed_tweaks           = new EditorTweaksInitializer();
 #endif
@@ -133,6 +137,7 @@ struct Engine::EngineImpl
     GameLoop* game_loop;
 
     // InitializerSystems
+    FileSystem*              file_system;
 #ifndef __DISABLE_EDITOR__
     EditorTweaksInitializer* ed_tweaks;
 #endif
@@ -159,20 +164,7 @@ struct Engine::EngineImpl
     uint32_t current_light_handle;
 };
 
-Engine::Engine():
-eimpl_(new EngineImpl)
-{
-
-}
-
-Engine::~Engine()
-{
-
-}
-
-
-void Engine::Init(int argc, char const *argv[],
-                  void(*parse_arguments)(int, char const **))
+Engine::Engine()
 {
     DLOG("<s>--- WCore: Loading config ---</s>", "core", Severity::LOW);
     // Parse main config file
@@ -200,6 +192,40 @@ void Engine::Init(int argc, char const *argv[],
     }
 #endif
 
+    eimpl_ = std::unique_ptr<EngineImpl>(new EngineImpl);
+}
+
+Engine::~Engine()
+{
+
+}
+
+bool Engine::UseResourceArchive(const char* filename, hash_t key)
+{
+    fs::path filepath;
+    if(!CONFIG.get("root.folders.res"_h, filepath))
+    {
+        DLOGE("[Engine] Config node folders.res is not set.", "core", Severity::CRIT);
+        return false;
+    }
+
+    filepath /= filename;
+    if(!fs::exists(filepath))
+    {
+        DLOGE("[Engine] Cannot open esource archive:", "core", Severity::CRIT);
+        DLOGI("<p>" + filepath.string() + "</p>", "core", Severity::CRIT);
+        return false;
+    }
+
+    DLOGN("[Engine] Opening resource archive: ", "core", Severity::LOW);
+    DLOGI("<p>" + filepath.string() + "</p>", "core", Severity::LOW);
+    eimpl_->file_system->open_archive(filepath, key);
+    return true;
+}
+
+void Engine::Init(int argc, char const *argv[],
+                  void(*parse_arguments)(int, char const **))
+{
     DLOG("<s>--- WCore: Parsing program arguments ---</s>", "core", Severity::LOW);
     // First, try to initialize default values using config
     CONFIG.get("root.display.width"_h,  GLB.SCR_W);
@@ -220,6 +246,7 @@ void Engine::Init(int argc, char const *argv[],
     eimpl_->game_loop->set_render_func([&]()     { eimpl_->pipeline->render(); });
     eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
     // Initializer systems
+    eimpl_->game_loop->register_initializer_system("FileSystem"_h,   static_cast<InitializerSystem*>(eimpl_->file_system));
 #ifndef __DISABLE_EDITOR__
     eimpl_->game_loop->register_initializer_system("EditorTweaks"_h, static_cast<InitializerSystem*>(eimpl_->ed_tweaks));
 #endif

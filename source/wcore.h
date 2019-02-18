@@ -23,6 +23,9 @@ namespace wcore
         Engine();
         ~Engine();
 
+        // Register a resource archive
+        bool UseResourceArchive(const char* filename, hash_t key);
+        // Register and launch systems
         void Init(int argc, char const *argv[], void(*parse_arguments)(int, char const **)=nullptr);
         // Load first level, load and send chunk geometry near to camera start position
         void LoadStart();

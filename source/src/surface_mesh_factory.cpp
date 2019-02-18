@@ -15,7 +15,8 @@ namespace wcore
 
 using namespace math;
 
-SurfaceMeshFactory::SurfaceMeshFactory()
+SurfaceMeshFactory::SurfaceMeshFactory():
+obj_loader_(new ObjLoader())
 {
     models_path_ = CONFIG.get_root_directory();
     models_path_ = models_path_ / "res/models";
@@ -23,7 +24,7 @@ SurfaceMeshFactory::SurfaceMeshFactory()
 
 SurfaceMeshFactory::~SurfaceMeshFactory()
 {
-
+    delete obj_loader_;
 }
 
 bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node, fs::path models_path)
@@ -291,7 +292,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_obj(const char* filename,
                                                           bool centered,
                                                           int smooth_func)
 {
-    std::shared_ptr<SurfaceMesh> pmesh = LOADOBJ(models_path_ / filename, process_uv, process_normals, smooth_func);
+    std::shared_ptr<SurfaceMesh> pmesh = obj_loader_->load(models_path_ / filename, process_uv, process_normals, smooth_func);
     pmesh->set_centered(centered);
 
     return pmesh;

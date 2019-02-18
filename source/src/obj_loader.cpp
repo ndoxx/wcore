@@ -23,20 +23,23 @@ namespace wcore
 
 using namespace math;
 
-ObjLoader::ObjLoader()
+#define TEXCOORD 0x01
+#define NORMAL   0x02
+struct Triangle
 {
+public:
+    math::i32vec3 indices;
+    std::array<math::vec3,3> vertices;
+    std::array<math::vec3,3> uvs;
+    std::array<math::vec3,3> normals;
+    int material;
+    int attributes;
+};
 
-}
-
-ObjLoader::~ObjLoader()
-{
-
-}
-
-std::shared_ptr<SurfaceMesh> ObjLoader::operator()(std::istream& stream,
-                                                   bool process_uv,
-                                                   bool process_normals,
-                                                   int smooth_func)
+std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
+                                             bool process_uv,
+                                             bool process_normals,
+                                             int smooth_func)
 {
 #ifdef __DEBUG__
     DLOGN("[ObjLoader] Loading obj file from stream.", "model", Severity::LOW);
@@ -254,10 +257,10 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(std::istream& stream,
     }
 }
 
-std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
-                                                   bool process_uv,
-                                                   bool process_normals,
-                                                   int smooth_func)
+std::shared_ptr<SurfaceMesh> ObjLoader::load(const char* objfile,
+                                             bool process_uv,
+                                             bool process_normals,
+                                             int smooth_func)
 {
     // Open file, sanity check
     std::ifstream stream(objfile);
@@ -267,16 +270,16 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
         return nullptr;
     }
 
-    return operator()(stream, process_uv, process_normals, smooth_func);
+    return load(stream, process_uv, process_normals, smooth_func);
 }
 
-std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const fs::path& path,
-                                                   bool process_uv,
-                                                   bool process_normals,
-                                                   int smooth_func)
+std::shared_ptr<SurfaceMesh> ObjLoader::load(const fs::path& path,
+                                             bool process_uv,
+                                             bool process_normals,
+                                             int smooth_func)
 {
     if(fs::exists(path))
-        return operator()(path.string().c_str(), process_uv, process_normals, smooth_func);
+        return load(path.string().c_str(), process_uv, process_normals, smooth_func);
     return nullptr;
 }
 
