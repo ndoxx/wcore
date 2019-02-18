@@ -98,66 +98,72 @@ std::vector<char> get_binary_file_as_vector(const fs::path& file_path)
 
 static std::map<hash_t, zipios::ZipFile> archives_;
 
-void open_archive(const fs::path& file_path, hash_t key)
+bool open_archive(const fs::path& file_path, hash_t key)
 {
+    if(!fs::exists(file_path))
+    {
+        DLOGE("Archive does not exist:", "io", Severity::CRIT);
+        DLOGI("path: <p>" + file_path.string() + "</p>", "io", Severity::CRIT);
+        DLOGI("key:  " + std::to_string(key) + " -> " + HRESOLVE(key), "io", Severity::CRIT);
+        return false;
+    }
     archives_.insert(std::pair(key, zipios::ZipFile(file_path.string().c_str())));
+    return true;
 }
 
-void close_archive(hash_t key)
+bool close_archive(hash_t key)
 {
     auto it = archives_.find(key);
-    if(it != archives_.end())
+    if(it == archives_.end())
     {
         DLOGE("Cannot close unknown archive:", "io", Severity::CRIT);
         DLOGI(std::to_string(key) + " -> " + HRESOLVE(key), "io", Severity::CRIT);
+        return false;
     }
-    else
-    {
-        it->second.close();
-        archives_.erase(it);
-    }
-}
-/*
-bool get_file_as_stream(const fs::path& file_path, std::istream& stream)
-{
-    std::ifstream ifs(file_path);
 
-    if(!ifs.is_open())
+    it->second.close();
+    archives_.erase(it);
+    return true;
+}
+
+std::shared_ptr<std::istream> get_file_as_stream(const fs::path& file_path)
+{
+    std::shared_ptr<std::ifstream> ifs = std::make_shared<std::ifstream>(std::ifstream(file_path));
+
+    if(!ifs->is_open())
     {
         DLOGE("Unable to open file:", "io", Severity::CRIT);
         DLOGI("file name= " + file_path.string(), "io", Severity::CRIT);
 
-        return false;
+        return {};
     }
 
-    stream = ifs;
-    return true;
+    return ifs;
 }
 
-bool get_file_as_stream(const char* virtual_path, hash_t archive, std::istream& stream)
+std::shared_ptr<std::istream> get_file_as_stream(const char* virtual_path, hash_t archive)
 {
     auto it = archives_.find(archive);
-    if(it != archives_.end())
+    if(it == archives_.end())
     {
         DLOGE("Cannot find unknown archive:", "io", Severity::CRIT);
-        DLOGI(std::to_string(key) + " -> " + HRESOLVE(key), "io", Severity::CRIT);
-        return false;
+        DLOGI(std::to_string(archive) + " -> " + HRESOLVE(archive), "io", Severity::CRIT);
+        return {};
     }
 
     zipios::FileCollection::stream_pointer_t in_stream(it->second.getInputStream(virtual_path));
 
-    if(!in_stream.good())
+    if(!in_stream->good())
     {
         DLOGE("Unable to form stream:", "io", Severity::CRIT);
         DLOGI("from archive: " + std::to_string(archive) + " -> " + HRESOLVE(archive), "io", Severity::CRIT);
         DLOGI("virtual path: " + std::string(virtual_path), "io", Severity::CRIT);
 
-        return false;
+        return {};
     }
 
-    stream = in_stream;
-    return true;
-}*/
+    return in_stream;
+}
 
 } // namespace io
 } // namespace wcore

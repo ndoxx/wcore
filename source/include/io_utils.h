@@ -9,9 +9,10 @@
 
 #include "wtypes.h"
 
+namespace fs = std::filesystem;
+
 namespace wcore
 {
-namespace fs = std::filesystem;
 namespace io
 {
 
@@ -47,15 +48,15 @@ extern std::vector<char> get_binary_file_as_vector(const fs::path& file_path);
 // ----------- WIP -----------
 
 // Open archive, associate it to a hash key
-extern void open_archive(const fs::path& file_path, hash_t key);
+extern bool open_archive(const fs::path& file_path, hash_t key);
 // Close archive
-extern void close_archive(hash_t key);
-/*
+extern bool close_archive(hash_t key);
+
 // Get a file as stream specifying a physical file path
-extern bool get_file_as_stream(const fs::path& file_path, std::istream& stream);
+extern std::shared_ptr<std::istream> get_file_as_stream(const fs::path& file_path);
 // Get a file as stream from archive
-extern bool get_file_as_stream(const char* virtual_path, hash_t archive, std::istream& stream);
-*/
+extern std::shared_ptr<std::istream> get_file_as_stream(const char* virtual_path, hash_t archive);
+
 
 } // namespace io
 } // namespace wcore

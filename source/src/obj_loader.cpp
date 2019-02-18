@@ -2,14 +2,21 @@
 #include <cstring>
 #include <cstdio>
 #include <sstream>
+#include <fstream>
 #include <map>
 #include <vector>
 #include <string>
+
+#include <algorithm>
+#include <cctype>
+#include <locale>
 
 #include "obj_loader.h"
 #include "surface_mesh.h"
 #include "vertex_format.h"
 #include "logger.h"
+#include "io_utils.h"
+#include "string_utils.h"
 
 namespace wcore
 {
@@ -26,51 +33,18 @@ ObjLoader::~ObjLoader()
 
 }
 
-
-static char* trim_whitespaces(char* str)
-{
-    // Trim leading spaces
-    while(isspace((unsigned char)*str)) ++str;
-
-    // If string is all spaces
-    if(*str == 0)
-    return str;
-
-    // Trim trailing spaces
-    char* end = str + strlen(str) - 1;
-    while(end > str && isspace((unsigned char)*end)) --end;
-
-    // Write new null terminator
-    *(end+1) = 0;
-
-    return str;
-}
-
-#define MAXLINE 512
-std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
+std::shared_ptr<SurfaceMesh> ObjLoader::operator()(std::istream& stream,
                                                    bool process_uv,
                                                    bool process_normals,
                                                    int smooth_func)
 {
 #ifdef __DEBUG__
-    DLOGN("[ObjLoader] Loading obj file: ", "model", Severity::LOW);
-    DLOGI("<p>" + std::string(objfile) + "</p>", "model", Severity::LOW);
+    DLOGN("[ObjLoader] Loading obj file from stream.", "model", Severity::LOW);
+    //DLOGI("<p>" + std::string(objfile) + "</p>", "model", Severity::LOW);
 #endif
 
-    // Open file, sanity check
-    FILE* fn;
-    if(objfile==NULL) return nullptr;
-    if((char)objfile[0]==0) return nullptr;
-    if((fn = fopen(objfile, "rb")) == NULL)
-    {
-        DLOGE(std::string("File ") + objfile + std::string(" not found."), "model", Severity::CRIT);
-        return nullptr;
-    }
-
     // Setup temporary variables
-    char line[MAXLINE];
-    char* mtllib;
-    memset(line, 0, MAXLINE);
+    std::string line, mtllib, usemtl;
     int material = -1;
     std::unordered_map<std::string, int> material_map;
     std::vector<vec3> positions;
@@ -81,27 +55,37 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
 
     // Read first line and detect Blender exports
     bool is_blender_export = false;
-    if(fgets(line, MAXLINE, fn) != NULL)
+    if(std::getline(stream, line))
     {
-        if(strncmp(line, "# Blender", 9) == 0)
+        if(!line.substr(0,9).compare("# Blender"))
         {
             DLOGI("<h>Blender</h> export detected.", "model", Severity::LOW);
-            // If blender export detected, we need to flip half of the triangles
             is_blender_export = true;
         }
-        fseek(fn, 0, SEEK_SET); // Seek back to beginning
+        // Rewind
+        stream.seekg(0);
+    }
+    else
+    {
+        DLOGW(std::string("Stream is empty."), "model", Severity::WARN);
+        return nullptr;
     }
 
     // For each line
-    while(fgets(line, MAXLINE, fn) != NULL)
+    while(std::getline(stream, line))
     {
-        if(strncmp(line, "mtllib", 6) == 0)
+        if(!line.substr(0,6).compare("mtllib"))
         {
-            mtllib = trim_whitespaces(&line[7]);
+            //mtllib = trim_whitespaces(&line[7]);
+            mtllib = line.substr(7);
+            trim_whitespaces(mtllib);
         }
-        if(strncmp(line, "usemtl", 6) == 0)
+        //if(strncmp(line, "usemtl", 6) == 0)
+        if(!line.substr(0,6).compare("usemtl"))
         {
-            std::string usemtl(trim_whitespaces(&line[7]));
+            //std::string usemtl(trim_whitespaces(&line[7]));
+            usemtl = line.substr(7);
+            trim_whitespaces(usemtl);
             if(material_map.find(usemtl) == material_map.end())
             {
                 material_map[usemtl] = materials.size();
@@ -116,18 +100,18 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
         vec3 normal;
         if(line[0] == 'v' && line[1] == ' ')
         {
-            if(sscanf(line,"v %f %f %f", &pos[0], &pos[1], &pos[2])==3)
+            if(sscanf(line.c_str(),"v %f %f %f", &pos[0], &pos[1], &pos[2])==3)
                 positions.push_back(pos);
         }
         // Texture coordinate
         else if(line[0] == 'v' && line[1] == 't' && line[2] == ' ')
         {
-            if(sscanf(line,"vt %f %f", &uv[0], &uv[1])==2)
+            if(sscanf(line.c_str(),"vt %f %f", &uv[0], &uv[1])==2)
             {
                 uv[2] = 0.0f;
                 uvs.push_back(uv);
             }
-            else if(sscanf(line,"vt %f %f %f", &uv[0], &uv[1], &uv[2])==3)
+            else if(sscanf(line.c_str(),"vt %f %f %f", &uv[0], &uv[1], &uv[2])==3)
             {
                 uvs.push_back(uv);
             }
@@ -135,7 +119,7 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
         // Normal
         else if(line[0] == 'v' && line[1] == 'n' && line[2] == ' ')
         {
-            if(sscanf(line,"vn %f %f %f", &normal[0], &normal[1], &normal[2])==3)
+            if(sscanf(line.c_str(),"vn %f %f %f", &normal[0], &normal[1], &normal[2])==3)
             {
                 normal.normalize();
                 normals.push_back(normal);
@@ -152,17 +136,17 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
             bool has_nm = false;
 
             // f v1 v2 v3
-            if(sscanf(line,"f %d %d %d", &integers[0], &integers[1], &integers[2])==3)
+            if(sscanf(line.c_str(),"f %d %d %d", &integers[0], &integers[1], &integers[2])==3)
             {
                 tri_ok = true;
             }
             // f v1// v2// v3//
-            else if(sscanf(line,"f %d// %d// %d//", &integers[0], &integers[1], &integers[2])==3)
+            else if(sscanf(line.c_str(),"f %d// %d// %d//", &integers[0], &integers[1], &integers[2])==3)
             {
                 tri_ok = true;
             }
             // f v1//vn1 v2//vn2 v3//vn3
-            else if(sscanf(line,"f %d//%d %d//%d %d//%d",
+            else if(sscanf(line.c_str(),"f %d//%d %d//%d %d//%d",
                 &integers[0], &integers[3],
                 &integers[1], &integers[4],
                 &integers[2], &integers[5])==6)
@@ -171,7 +155,7 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
                 has_nm = true;
             }
             // f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
-            else if(sscanf(line,"f %d/%d/%d %d/%d/%d %d/%d/%d",
+            else if(sscanf(line.c_str(),"f %d/%d/%d %d/%d/%d %d/%d/%d",
                 &integers[0], &integers[6], &integers[3],
                 &integers[1], &integers[7], &integers[4],
                 &integers[2], &integers[8], &integers[5])==9)
@@ -184,7 +168,6 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
             {
                 DLOGE("Unrecognized sequence during face extraction: ", "model", Severity::CRIT);
                 DLOGI(line, "model", Severity::CRIT);
-                fclose(fn);
                 return nullptr;
             }
 
@@ -220,8 +203,6 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
             }
         }
     }
-
-    fclose(fn);
 
     DLOGI("#triangles: <v>" + std::to_string(triangles.size()) + "</v>", "model", Severity::LOW);
     DLOGI("#vertices:  <v>" + std::to_string(positions.size()) + "</v>", "model", Severity::LOW);
@@ -271,6 +252,22 @@ std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
 
         return static_cast<std::shared_ptr<SurfaceMesh>>(pmesh);
     }
+}
+
+std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const char* objfile,
+                                                   bool process_uv,
+                                                   bool process_normals,
+                                                   int smooth_func)
+{
+    // Open file, sanity check
+    std::ifstream stream(objfile);
+    if(!stream.is_open())
+    {
+        DLOGE(std::string("Unable to open file: ") + objfile, "model", Severity::CRIT);
+        return nullptr;
+    }
+
+    return operator()(stream, process_uv, process_normals, smooth_func);
 }
 
 std::shared_ptr<SurfaceMesh> ObjLoader::operator()(const fs::path& path,

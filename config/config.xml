@@ -73,7 +73,7 @@
             <uint name="entity"    value="2"/>
             <uint name="sound"     value="3"/>
             <uint name="scene"     value="0"/>
-            <uint name="io"        value="0"/>
+            <uint name="io"        value="2"/>
             <uint name="profile"   value="0"/>
             <uint name="collision" value="0"/>
             <uint name="editor"    value="2"/>

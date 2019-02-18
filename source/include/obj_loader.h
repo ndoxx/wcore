@@ -39,6 +39,10 @@ public:
     friend ObjLoader& Singleton<ObjLoader>::Instance();
     friend void Singleton<ObjLoader>::Kill();
 
+    std::shared_ptr<SurfaceMesh> operator()(std::istream& stream,
+                                            bool process_uv=false,
+                                            bool process_normals=false,
+                                            int smooth_func=0);
     std::shared_ptr<SurfaceMesh> operator()(const char* objfile,
                                             bool process_uv=false,
                                             bool process_normals=false,
