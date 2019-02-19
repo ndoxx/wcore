@@ -15,6 +15,7 @@
     <string key="403435119425249191" value="v2_texelSize"/>
     <string key="493120509362761803" value="tr.m3_Normal"/>
     <string key="524679559595785586" value="rd.i_blindness_type"/>
+    <string key="580772045163143161" value="max"/>
     <string key="619319748659883923" value="fx"/>
     <string key="649929052871594752" value="F9"/>
     <string key="649930152383222963" value="F8"/>
@@ -80,6 +81,7 @@
     <string key="4183142239790756881" value="rd.b_enableFog"/>
     <string key="4298109543402824905" value="root.folders.shader"/>
     <string key="4324453728078389708" value="rd.v4_proj_params"/>
+    <string key="4327140908117611899" value="none"/>
     <string key="4330663222551518790" value="rd.f_cam_near"/>
     <string key="4397639838508282278" value="root.display.vsync"/>
     <string key="4475574453243228111" value="root.folders.soundbgm"/>
@@ -122,6 +124,7 @@
     <string key="5582626383380862506" value="root.folders.log"/>
     <string key="5709499356571325383" value="k_light_volumes_next_mode"/>
     <string key="5712466910721036028" value="LEFT_SUPER"/>
+    <string key="5748113403437925080" value="pack0"/>
     <string key="5907829424377857379" value="mt.AOTex"/>
     <string key="5914156520092627619" value="EntitySystem"/>
     <string key="5940711316802490476" value="mt.b_has_ao"/>
@@ -139,8 +142,10 @@
     <string key="6443438359041303644" value="rd.f_fogDensity"/>
     <string key="6461287345427881327" value="WORLD_1"/>
     <string key="6461288444939509538" value="WORLD_2"/>
+    <string key="6482013157424176291" value="RayCaster"/>
     <string key="6567858969587397525" value="tree"/>
     <string key="6599388872338826344" value="rd.b_dither"/>
+    <string key="6646603652959897822" value="root.geometry.raycast.debug.show_ray_on_click"/>
     <string key="6676740561313072862" value="PAGE_UP"/>
     <string key="6688223789818863754" value="DELETE"/>
     <string key="6694020012810373739" value="KP_MULTIPLY"/>
@@ -162,6 +167,7 @@
     <string key="7273895582857962616" value="mt.f_metallic"/>
     <string key="7425191142704782914" value="vec3"/>
     <string key="7425192242216411125" value="vec2"/>
+    <string key="7480038081765558619" value="heaviside"/>
     <string key="7540258471201886724" value="root.sound.general.channel_fadeout_s"/>
     <string key="7543418176468789887" value="root.display.width"/>
     <string key="7763496791160610254" value="RIGHT_BRACKET"/>
@@ -204,12 +210,15 @@
     <string key="9624714238657457210" value="rd.b_shadow_enabled"/>
     <string key="9662499253076612565" value="root.sound.general.volume_fx"/>
     <string key="9686246174941609651" value="rd.f_ca_shift"/>
+    <string key="9693792892718156591" value="compress_linear"/>
     <string key="9871780175443147334" value="LEFT_CONTROL"/>
+    <string key="9942377493854456016" value="pack0"/>
     <string key="9942867538528568546" value="root.display.height"/>
     <string key="9992812768470212201" value="SCR_FULL"/>
     <string key="10131965007227580052" value="input.mouse.focus"/>
     <string key="10197399472104546985" value="horizontal"/>
     <string key="10226166488886035387" value="k_test_key"/>
+    <string key="10242940794757314318" value="root.geometry.parallax.min_distance"/>
     <string key="10287213848402896983" value="mt.b_use_normal_map"/>
     <string key="10435391219972578845" value="root.camera.far"/>
     <string key="10469163888756224250" value="rd.b_FXAA_enabled"/>
@@ -226,6 +235,7 @@
     <string key="11168070871793128834" value="m4_ModelViewProjection"/>
     <string key="11172949248662994988" value="k_editor_deselect"/>
     <string key="11247620841001398765" value="SoundSystem"/>
+    <string key="11377574333308104762" value="model"/>
     <string key="11414322001157692290" value="k_cam_tg_record"/>
     <string key="11415925803770215857" value="root.render.override.allow_parallax_mapping"/>
     <string key="11424401279738075663" value="LEFT_SHIFT"/>
@@ -243,6 +253,7 @@
     <string key="12243055517940716495" value="f_far"/>
     <string key="12329333359250199469" value="rd.v2_texelSize"/>
     <string key="12342839200479500345" value="mt.b_has_albedo"/>
+    <string key="12407858727649439328" value="linear"/>
     <string key="12478602338661553948" value="arial"/>
     <string key="12562532267625770907" value="rd.v3_vibrance_bal"/>
     <string key="12638130025950975024" value="5"/>
@@ -290,7 +301,6 @@
     <string key="13266389867668131512" value="root.display.target_fps"/>
     <string key="13299179948045175049" value="root.render.override.allow_normal_mapping"/>
     <string key="13306031419076402870" value="VARIANT_R_ONLY"/>
-    <string key="13560232547377416707" value="root.debug.raycast.geometry.show_on_click"/>
     <string key="13562996776508296560" value="LEFT"/>
     <string key="13564699378621278909" value="root.gui.cursor.custom"/>
     <string key="13565850423286419713" value="rd.i_daltonize_mode"/>
@@ -327,6 +337,7 @@
     <string key="15648856704112604011" value="k_reload_map"/>
     <string key="15654719910843979612" value="rd.f_ca_strength"/>
     <string key="15665000655920542122" value="END"/>
+    <string key="15684466622802537888" value="compress_quadratic"/>
     <string key="15764305153560685364" value="tr.m4_ModelViewProjection"/>
     <string key="15861100924798520104" value="INSERT"/>
     <string key="15877337454682615842" value="rd.v3_gamma"/>
@@ -371,6 +382,7 @@
     <string key="17453382643516468302" value="rd.f_vignette_bal"/>
     <string key="17607934400217285021" value="root.camera.speed_slow"/>
     <string key="17720195001682701390" value="CameraController"/>
+    <string key="17793400099383336470" value="root.folders.res"/>
     <string key="17953394579615142639" value="cursor"/>
     <string key="18097647533062089343" value="maze_bgm"/>
     <string key="18100165628774196105" value=".geom"/>

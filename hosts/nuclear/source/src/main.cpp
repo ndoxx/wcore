@@ -280,7 +280,7 @@ int main()
 //#include "vendor/zipios/zipfile.hpp"
 
 #include <iostream>
-#include "io_utils.h"
+#include "file_system.h"
 #include "wtypes.h"
 #include "config.h"
 
@@ -288,26 +288,16 @@ using namespace wcore;
 
 int main()
 {
-    /*
-    zipios::ZipFile zipfile("../res/levels.zip");
-    zipios::FileEntry::pointer_t entry(zipfile.getEntry("levels/assets.xml"));
-    zipios::FileCollection::stream_pointer_t in_stream(zipfile.getInputStream("levels/assets.xml"));
-
-    std::string content{std::istreambuf_iterator<char>(*in_stream),
-                        std::istreambuf_iterator<char>()};
-
-    std::cout << in_stream->rdbuf() << std::endl;*/
-
     CONFIG.init();
 
-    io::open_archive(fs::path("../res/levels.zip"), "levels"_h);
+    FILESYSTEM.open_archive(fs::path("../res/pack0.zip"), "pack0"_h);
 
-    auto stream = io::get_file_as_stream("levels/assets.xml", "levels"_h);
+    auto stream = FILESYSTEM.get_file_as_stream("anvil.mtl", "model"_h, "pack0"_h);
     std::string content{std::istreambuf_iterator<char>(*stream),
                         std::istreambuf_iterator<char>()};
     std::cout << content << std::endl;
 
-    io::close_archive("levels"_h);
+    FILESYSTEM.close_archive("pack0"_h);
 
     return 0;
 }

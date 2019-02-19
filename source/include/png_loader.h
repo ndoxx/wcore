@@ -2,6 +2,7 @@
 #define PNG_LOADER_H
 
 #include <filesystem>
+#include <istream>
 
 namespace wcore
 {
@@ -15,8 +16,10 @@ public:
     PngLoader() = default;
     ~PngLoader() = default;
 
-    PixelBuffer* load_png(const fs::path& file_path);
+    PixelBuffer* load_png(std::istream& stream);
 
+    // deprec: use streams instead
+    PixelBuffer* load_png(const fs::path& file_path);
 };
 
 }

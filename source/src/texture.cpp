@@ -7,7 +7,7 @@
 #include "algorithms.h"
 #include "material_common.h"
 #include "config.h"
-#include "io_utils.h"
+#include "file_system.h"
 #include "error.h"
 
 namespace wcore
@@ -187,8 +187,8 @@ ID_(++Ninst)
         }
         formats[ii] = descriptor.parameters.format;
 
-        fs::path file_path = io::get_file("root.folders.texture"_h, descriptor.locations.at(key));
-        px_bufs[ii] = png_loader_.load_png(file_path);
+        auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations.at(key).c_str(), "texture"_h, "pack0"_h);
+        px_bufs[ii] = png_loader_.load_png(*stream);
 
         if(px_bufs[ii])
         {

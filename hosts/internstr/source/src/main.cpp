@@ -26,6 +26,7 @@ static fs::path conf_path_;
 // Non greedy regex that matches the H_("any_str") macro
 static std::regex hash_str_tag("H_\\(\"(.+?)\"\\)");
 // Non greedy regex that matches the "abcd"_h string literal
+// BUG: seems to be greedy anyway -> will generate a faulty XML file
 static std::regex hash_str_literal_tag("\"(.+?)\"_h");
 // Associates hashes to original strings
 static std::map<hash_t, std::string> intern_strings_;
