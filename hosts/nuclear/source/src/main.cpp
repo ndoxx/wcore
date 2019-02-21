@@ -278,24 +278,37 @@ int main()
 */
 
 #include <iostream>
-#include "file_system.h"
-#include "wtypes.h"
-#include "config.h"
+#include <vector>
+#include "gnuplot-iostream.h"
+#include "easing.h"
 
 using namespace wcore;
 
 int main()
 {
-    CONFIG.init();
+    float(*func)(float) = &easing::bounce_bezier_3;
 
-    FILESYSTEM.open_archive(fs::path("../res/pack0.zip"), "pack0"_h);
+    std::vector<std::tuple<float, float, float, float>> plot_points;
 
-    auto stream = FILESYSTEM.get_file_as_stream("anvil.mtl", "model"_h, "pack0"_h);
-    std::string content{std::istreambuf_iterator<char>(*stream),
-                        std::istreambuf_iterator<char>()};
-    std::cout << content << std::endl;
+    int N    = 20;
+    float t  = 0.f;
+    float dt = 1.0f/N;
+    for(int ii=0; ii<N; ++ii)
+    {
+        float y = (*func)(t);
+        t += dt;
+        float dy = (*func)(t)-y;
+        plot_points.push_back(std::make_tuple(t-dt,y,dt,dy));
+    }
 
-    FILESYSTEM.close_archive("pack0"_h);
+    // Plot
+    Gnuplot gp;
+
+    // Don't forget to put "\n" at the end of each line!
+    gp << "set xrange [0:1]\nset yrange [0:1]\n";
+    // '-' means read from stdin.  The send1d() function sends data to gnuplot's stdin.
+    gp << "plot '-' with vectors title 'traj'\n";
+    gp.send1d(plot_points);
 
     return 0;
 }

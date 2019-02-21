@@ -54,11 +54,11 @@ set_target_properties(zipios PROPERTIES
 )
 
 target_link_libraries(nuclear
-                      zipios
-                      z
+                      #zipios
+                      #z
                       iwcore
-                      #boost_iostreams
-                      #boost_system
-                      #boost_filesystem
+                      boost_iostreams
+                      boost_system
+                      boost_filesystem
                       )
 cotire(nuclear)
