@@ -6398,55 +6398,6 @@ L'érosion est réparée. L'étape de stitching a été modifiée pour recaler a
 ## Distance-enabled parallax mapping
 Un nouveau tweak de la pipeline permet de régler la distance minimale d'un objet à la caméra au dessus de laquelle le parallax mapping est désactivé (default to normal mapping). Bonne optimisation.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-* TODO:
-    [X] Persistent entities (no reload)
-
-    [X] Don't pass/return shared_ptr unless sharedness needs to be passed/returned.
-        -> get_camera()...
-
-    [X] Reprendre l'idée du LoD based parallax mapping @2874, mais au lieu de brancher dans le shader, modifier _GeometryRenderer_ pour désactiver le parallax mapping quand l'objet est trop loin.
-
-    [ ] Pre-multiplied alpha:
-        https://www.essentialmath.com/GDC2015/VanVerth_Jim_DoingMathwRGB.pdf
-
-    [ ] Check extension support before using
-        - GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT (texture.cpp)
-        - GL_COMPRESSED_RGBA_S3TC_DXT1_EXT (material_common.cpp)
-        -> Il faut tester la présence de l'extension GL_EXT_texture_compression_s3tc.
-        -> GLEW ne permet pas de détecter l'extension correctement, ne supporte pas vraiment les contextes core profile, et de plus nécessite glewExperimental pour ne pas segfault lamentablement lors d'un glGenVertexArrays(). __Passer sous GLAD__ (penser à linker avec libdl sous nux (-ldl)).
-        https://github.com/Dav1dde/glad
-        https://glad.dav1d.de/
-        https://github.com/LibreVR/Revive/commit/86926af6908f7a99c443559a961b38b3ce33c74d
-
-    [ ] Perform texture compression offline.
-        - Use glCompressedTexImage2D()
-        https://opengl.developpez.com/tutoriels/opengl-tutorial/5-un-cube-texture/#LVII
-
-    [ ] Bien penser à updater les bounding boxes pour les objets qui bougent.
-
-    [ ] Insp better chunk loading:
-
-        What we do is actually pretty simple. Each frame we loop though all active chunks for update. During the update, we check and see if a chunk is missing any neighbors. If it is, we check and see if the neighbor chunk slots are withing the loading range. If they are, we load chunks and hook them up to their neighbors.
-
-
 #[17-02-19]
 ## zipios linking
 J'ai galéré 3h à essayer de build du foutu code de test pour la lib zipios que je compte utiliser pour gérer les packs de ressources (archives) du jeu :
@@ -6482,3 +6433,105 @@ Donc on a bien une dépendance à la classe string du constructeur de ZipFile vi
 Commenter cette ligne rend le build fonctionnel.
 
 En espérant que ça ne me mordra pas le cul plus tard. Pourquoi diable désactivais-je l'ABI C++11 ?!
+
+
+#[21-02-19]
+
+## Archives
+Le nouveau singleton _FileSystem_ d'alias FILESYSTEM regroupe les fonctions d'entrée-sortie. Il est utilisé conjointement au sous-système de gestion des chemins d'accès de CONFIG. _FileSystem_ permet de récupérer des std::istream depuis des fichiers en physique, mais aussi depuis des fichiers contenus dans une archive, au moyen de la lib Zipios. Deux fonctions get_file_as_stream() à 2 arguments implémentent ces deux modes d'accès.
+
+Une fonction "smart" get_file_as_stream() qui prend 3 arguments cherche d'abord à obtenir un stream depuis une archive, et le cas échéant depuis un fichier physique. Chaque archive doit inclure un manifeste du nom de MANIFEST.xml à la racine :
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<archive>
+    <vpath name="model"   value="models/"/>
+    <vpath name="texture" value="textures/"/>
+</archive>
+```
+Ce fichier déclare des noeuds *vpath* qui représentent des overrides sur les folder nodes de config.xml. Ainsi il est possible d'avoir une hiérarchie interne dans les archives qui émule une hiérarchie physique de dossiers, par exemple ici, le dossier virtuel models/ à la racine de l'archive est une alternative au dossier physique res/models/ défini par le folder node "model".
+A l'ouverture d'une archive ce fichier est parsé et la fonction get_file_as_stream(3) à 3 arguments peut se servir de ces informations pour dispatcher correctement vers les fonctions get_file_as_stream(2) à 2 arguments.
+L'avantage de cette méthode est que l'ajout de nouveaux assets peut se faire dans des dossiers lors d'une phase de test, et ces assets sont ensuite packés dans une archive pour plus d'efficacité (cache friendliness) lorsqu'ils sont suffisamment matures.
+
+```cpp
+    // After CONFIG.init()
+    FILESYSTEM.open_archive(fs::path("../res/some_archive.zip"), "some_archive"_h);
+
+    auto stream = FILESYSTEM.get_file_as_stream("anvil.mtl", "model"_h, "some_archive"_h);
+    std::string content{std::istreambuf_iterator<char>(*stream),
+                        std::istreambuf_iterator<char>()};
+    std::cout << content << std::endl;
+
+    FILESYSTEM.close_archive("some_archive"_h);
+```
+
+Une archive par défaut du nom de "pack0.zip" est chargée par le moteur. Cette archive contiendra à terme les assets propres au moteur, mais je m'en sers en ce moment pour mes assets test. Un peu plus tard, il conviendra de définir dans assets.xml dans quelle archive se trouve chaque asset.
+La fonction wcore::UseResourceArchive() de l'API permet de charger une archive côté user. Cette fonction peut être appelée avant wcore::Init() car elle ne dépend que des données de config disponibles dès la construction d'un objet wcore::Engine.
+
+Tous les systèmes qui réalisaient eux-même les accès io doivent être modifiés pour prendre des streams en entrée. Pour l'instant, les modèles et les textures sont gérés par le système d'archives. Les fichiers xml restent dans des dossiers pour que je puisse les modifier facilement. Je modifierai peut être get_file_as_stream(3) pour chercher les fichiers dans les dossiers physiques en priorité, ce qui devrait améliorer le workflow.
+Le _SoundSystem_ devra à terme fonctionner sur ce mode, mais la principale emmerde est que je n'ai aucune foutue idée de comment **streamer** un son depuis une archive. FMOD propose bien une fonction pour lire un son depuis la mémoire, ce qui convient sans problème pour les sons de courte durée. Mais les sons longs doivent être streamés et FMOD ne supporte pas std::istream comme entrée.
+
+## Better ObjLoader
+_ObjLoader_ peut maintenant lire les normales dans un fichier .obj. Elles étaient jusque-là générées par le moteur via l'implémentation de _TriangularMesh_. Si les normales doivent être lues, un _FaceMesh_ est généré à la place, les normales sont initialisées depuis les données obj, mais peuvent toutefois être adoucies via l'une des fonctions de smoothing disponibles :
+
+```xml
+        <Mesh name=".interior01" type="obj">
+            <Location>interior01.obj</Location>
+            <ProcessUV>false</ProcessUV>
+            <ProcessNormals>true</ProcessNormals>
+            <SmoothNormals>heaviside</SmoothNormals>
+            <Centered>false</Centered>
+        </Mesh>
+```
+Le noeud *SmoothNormals* peut prendre les valeurs suivantes :
+- none
+- max
+- heaviside
+- linear
+- compress_linear
+- compress_quadratic
+
+Idéalement j'aimerais avoir un système plus flexible capable de détecter et calculer les normales manquantes, sans nécessité de dupliquer chaque vertex comme l'implique l'utilisation de _FaceMesh_. Mais ça me demande de refonder complètement les meshs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* TODO:
+    [ ] Pre-multiplied alpha:
+        https://www.essentialmath.com/GDC2015/VanVerth_Jim_DoingMathwRGB.pdf
+
+    [ ] Check extension support before using
+        - GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT (texture.cpp)
+        - GL_COMPRESSED_RGBA_S3TC_DXT1_EXT (material_common.cpp)
+        -> Il faut tester la présence de l'extension GL_EXT_texture_compression_s3tc.
+        -> GLEW ne permet pas de détecter l'extension correctement, ne supporte pas vraiment les contextes core profile, et de plus nécessite glewExperimental pour ne pas segfault lamentablement lors d'un glGenVertexArrays(). __Passer sous GLAD__ (penser à linker avec libdl sous nux (-ldl)).
+        https://github.com/Dav1dde/glad
+        https://glad.dav1d.de/
+        https://github.com/LibreVR/Revive/commit/86926af6908f7a99c443559a961b38b3ce33c74d
+
+    [ ] Perform texture compression offline.
+        - Use glCompressedTexImage2D()
+        https://opengl.developpez.com/tutoriels/opengl-tutorial/5-un-cube-texture/#LVII
+
+    [ ] Bien penser à updater les bounding boxes pour les objets qui bougent.
+
+    [ ] Insp better chunk loading:
+
+        What we do is actually pretty simple. Each frame we loop though all active chunks for update. During the update, we check and see if a chunk is missing any neighbors. If it is, we check and see if the neighbor chunk slots are withing the loading range. If they are, we load chunks and hook them up to their neighbors.

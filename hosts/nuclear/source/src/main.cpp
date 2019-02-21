@@ -277,8 +277,6 @@ int main()
 }
 */
 
-//#include "vendor/zipios/zipfile.hpp"
-
 #include <iostream>
 #include "file_system.h"
 #include "wtypes.h"

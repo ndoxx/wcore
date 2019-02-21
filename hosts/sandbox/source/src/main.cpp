@@ -1,8 +1,6 @@
 #include "wcore.h"
 #include "arguments.h"
 
-using namespace wcore;
-
 int main(int argc, char const *argv[])
 {
     wcore::Engine engine;
