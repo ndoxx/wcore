@@ -284,7 +284,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_obj(const char* filename,
                                                           bool centered,
                                                           int smooth_func)
 {
-    auto stream = FILESYSTEM.get_file_as_stream(filename, "model"_h, "pack0"_h);
+    auto stream = FILESYSTEM.get_file_as_stream(filename, "root.folders.model"_h, "pack0"_h);
     std::shared_ptr<SurfaceMesh> pmesh = obj_loader_->load(*stream,
                                                            process_uv,
                                                            process_normals,

@@ -149,7 +149,7 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* virtual
 
     DLOGN("[FileSystem] Getting stream from archive:", "io", Severity::LOW);
     DLOGI(std::string("archive: ") + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io", Severity::LOW);
-    DLOGI(std::string("vpath:   <p>") + virtual_path + "</p>", "io", Severity::LOW);
+    DLOGI(std::string("<h>vpath</h>:   <p>") + virtual_path + "</p>", "io", Severity::LOW);
 
     return in_stream;
 }

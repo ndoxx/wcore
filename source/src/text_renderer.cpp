@@ -4,7 +4,7 @@
 #include "vertex_format.h"
 #include "mesh.hpp"
 #include "globals.h"
-#include "io_utils.h"
+#include "file_system.h"
 #include "error.h"
 
 namespace wcore
@@ -56,18 +56,22 @@ void TextRenderer::load_face(const char* fontname,
                              uint32_t height,
                              uint32_t width)
 {
+    // Get stream to file and load ttf face to memory
     std::string font_file(fontname);
     font_file += ".ttf";
-    fs::path file_path(io::get_file("root.folders.font"_h, font_file));
 
-    std::string full_path_str(file_path.string());
-
-    // Generate new face
-    // TODO: use FT_Open_Face to load from memory, so we can use streams
-    FT_Face face;
-    if (FT_New_Face(ft_, full_path_str.c_str(), 0, &face))
+    auto pstream = FILESYSTEM.get_file_as_stream(font_file.c_str(), "root.folders.font"_h, "pack0"_h);
+    if(pstream == nullptr)
     {
-        DLOGE("[TextRenderer] Failed to load font: <p>" + full_path_str + "</p>", "text", Severity::CRIT);
+        DLOGE("[TextRenderer] Cannot get stream to file: ", "text", Severity::CRIT);
+        DLOGI(font_file, "text", Severity::CRIT);
+        return;
+    }
+    std::vector<char> buffer((std::istreambuf_iterator<char>(*pstream)), std::istreambuf_iterator<char>());
+    FT_Face face;
+    if(FT_New_Memory_Face(ft_, reinterpret_cast<FT_Byte*>(&buffer[0]), buffer.size(), 0, &face))
+    {
+        DLOGE("[TextRenderer] Failed to load font: <p>" + font_file + "</p>", "text", Severity::CRIT);
         return;
     }
 
@@ -128,7 +132,7 @@ void TextRenderer::load_face(const char* fontname,
 
 #ifdef __DEBUG__
     DLOGN("[TextRenderer] New face: <n>" + std::string(fontname) + "</n>", "text", Severity::LOW);
-    DLOGI("from file: <p>" + full_path_str + "</p>", "text", Severity::LOW);
+    DLOGI("from file: <p>" + font_file + "</p>", "text", Severity::LOW);
 #endif
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4); // Restore byte-alignment state

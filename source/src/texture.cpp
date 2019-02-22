@@ -187,7 +187,7 @@ ID_(++Ninst)
         }
         formats[ii] = descriptor.parameters.format;
 
-        auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations.at(key).c_str(), "texture"_h, "pack0"_h);
+        auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations.at(key).c_str(), "root.folders.texture"_h, "pack0"_h);
         px_bufs[ii] = png_loader_.load_png(*stream);
 
         if(px_bufs[ii])
