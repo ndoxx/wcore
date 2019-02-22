@@ -66,14 +66,16 @@ public:
                          bool repeat = false);
 
     bool stroke_debounce(Context& context,
-                         hash_t binding_name,
-                         std::function<void(void)> Action); // DEPREC
-
-    bool stroke_debounce(Context& context,
                          hash_t binding_name);
 
+    [[deprecated("call stroke_debounce(2), handle input.keyboard events")]]
+    bool stroke_debounce(Context& context,
+                         hash_t binding_name,
+                         std::function<void(void)> Action);
+
+    [[deprecated("call stroke_debounce(2), handle input.keyboard events")]]
     void register_action(hash_t binding_name,
-                         std::function<void(void)> Action); // DEPREC
+                         std::function<void(void)> Action);
 
     void handle_keybindings(Context& context);
 

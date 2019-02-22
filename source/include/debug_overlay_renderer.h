@@ -15,14 +15,14 @@ namespace dbg
 struct DebugTextureProperties
 {
 public:
-    DebugTextureProperties(unsigned int texture_index,
+    DebugTextureProperties(uint32_t texture_index,
                            const std::string& sampler_name,
                            bool is_depth):
     texture_index(texture_index),
     sampler_name(sampler_name),
     is_depth(is_depth){}
 
-    unsigned int texture_index;
+    uint32_t texture_index;
     std::string sampler_name;
     bool is_depth;
 };

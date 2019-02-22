@@ -241,7 +241,7 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
     std::cout << std::endl;*/
 
     // * Don't allow frustum to shrink below the size of other cam long diagonal
-    float full_diagonal = other.get_frustum_diagonal();
+    [[maybe_unused]] float full_diagonal = other.get_frustum_diagonal();
     float diagonal = (corners_world[0]-corners_world[6]).norm();
     float x_mid = 0.5f*(extent[0]+extent[1]);
     float y_mid = 0.5f*(extent[2]+extent[3]);

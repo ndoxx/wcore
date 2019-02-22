@@ -9,7 +9,7 @@
 namespace wcore
 {
 
-void fatal(const char* message)
+void fatal(const char* message) noexcept
 {
     std::cerr << "[FATAL ERROR] " << message << std::endl;
     exit(EXIT_FAILURE);

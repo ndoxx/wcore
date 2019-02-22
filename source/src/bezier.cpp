@@ -8,7 +8,7 @@ namespace math
 {
 
 static constexpr const int factorial[] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800};
-static constexpr const uint32_t nfact  = sizeof(factorial)/sizeof(int);
+[[maybe_unused]] static constexpr const uint32_t nfact  = sizeof(factorial)/sizeof(int);
 
 Bezier::Bezier():
 control_(),

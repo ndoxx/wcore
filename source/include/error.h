@@ -8,8 +8,8 @@
 namespace wcore
 {
 
-extern void fatal(const char* message="");
-extern inline void fatal(const std::string& message)
+[[noreturn]] extern void fatal(const char* message="") noexcept;
+[[noreturn]] extern inline void fatal(const std::string& message) noexcept
 {
     fatal(message.c_str());
 }

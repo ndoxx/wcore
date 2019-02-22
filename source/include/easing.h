@@ -5,7 +5,7 @@
 
 namespace wcore
 {
-namespace easing
+namespace ease
 {
 
 // * Utility

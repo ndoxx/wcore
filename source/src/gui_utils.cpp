@@ -78,7 +78,7 @@ void PlotVarFlushOldEntries()
 
 void WCombo(const char* combo_name, const char* text, int& current_index, int nitems, const char** items)
 {
-    ImGuiComboFlags flags = ImGuiComboFlags_NoArrowButton;
+    [[maybe_unused]] ImGuiComboFlags flags = ImGuiComboFlags_NoArrowButton;
 
     ImGuiStyle& style = ImGui::GetStyle();
     float w = ImGui::CalcItemWidth();
@@ -118,7 +118,7 @@ void WCombo(const char* combo_name, const char* text, int& current_index, int ni
             current_index = 0;
     }
     ImGui::SameLine(0, style.ItemInnerSpacing.x);
-    ImGui::Text(text);
+    ImGui::TextUnformatted(text);
 }
 
 }

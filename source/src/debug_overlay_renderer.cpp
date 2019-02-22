@@ -164,7 +164,7 @@ void DebugOverlayRenderer::generate_widget()
     dbg::DebugTextureProperties& props = debug_panes_[current_pane][current_tex];
     ImGui::Text("name: %s", props.sampler_name.c_str());
 
-    ImGui::GetWindowDrawList()->AddImage((void *)props.texture_index,
+    ImGui::GetWindowDrawList()->AddImage((void*)(uint64_t)props.texture_index,
                                          ImGui::GetCursorScreenPos(),
                                          ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y),
                                          ImVec2(0, 1), ImVec2(1, 0));

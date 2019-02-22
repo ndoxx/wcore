@@ -113,7 +113,7 @@ public:
 
 private:
     float radius_;
-    float speed_;
+    //float speed_;
     float t_;
     math::vec3 lookat_pos_;
     std::weak_ptr<Model> wtarget_;

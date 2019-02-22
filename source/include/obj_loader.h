@@ -19,12 +19,13 @@ public:
                                       bool process_uv=false,
                                       bool process_normals=false,
                                       int smooth_func=0);
-    // deprec: use streams instead
+
+    [[deprecated("use streams instead")]]
     std::shared_ptr<SurfaceMesh> load(const char* objfile,
                                       bool process_uv=false,
                                       bool process_normals=false,
                                       int smooth_func=0);
-    // deprec: use streams instead
+    [[deprecated("use streams instead")]]
     std::shared_ptr<SurfaceMesh> load(const fs::path& path,
                                       bool process_uv=false,
                                       bool process_normals=false,

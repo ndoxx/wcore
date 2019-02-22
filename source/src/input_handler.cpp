@@ -138,7 +138,7 @@ bool InputHandler::stroke_debounce(Context& context,
     return false;
 }
 
-// DEPREC
+// deprec
 bool InputHandler::stroke_debounce(Context& context,
                                    hash_t binding_name,
                                    std::function<void(void)> Action)
@@ -166,7 +166,7 @@ bool InputHandler::stroke_debounce(Context& context,
     return false;
 }
 
-// DEPREC
+// deprec
 void InputHandler::register_action(hash_t binding_name,
                                    std::function<void(void)> Action)
 {

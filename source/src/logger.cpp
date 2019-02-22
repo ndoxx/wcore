@@ -81,8 +81,8 @@ Logger::Logger()
 : Listener()
 , file_mode_(FileMode::OVERWRITE)
 , backtrace_on_error_(false)
-, messages_()
 , start_time_(std::chrono::high_resolution_clock::now())
+, messages_()
 {
     // Create a default debugging channel
     register_channel("core", 3u);

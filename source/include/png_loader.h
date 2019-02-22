@@ -18,7 +18,7 @@ public:
 
     PixelBuffer* load_png(std::istream& stream);
 
-    // deprec: use streams instead
+    [[deprecated("use streams instead")]]
     PixelBuffer* load_png(const fs::path& file_path);
 };
 

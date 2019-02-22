@@ -276,7 +276,7 @@ void CameraStateTrackingShot::generate_interpolator()
 
 CameraStateCircleAround::CameraStateCircleAround():
 radius_(1.f),
-speed_(1.f),
+//speed_(1.f),
 t_(0.f)
 {
 
