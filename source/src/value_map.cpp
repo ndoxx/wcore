@@ -4,9 +4,16 @@
 namespace wcore
 {
 
+// deprec
 void ValueMap::parse_xml_file(const fs::path& path)
 {
     xml_parser_.load_file_xml(path);
+    retrieve_configuration(xml_parser_.get_root(), "root");
+}
+
+void ValueMap::parse_xml_file(std::istream& stream)
+{
+    xml_parser_.load_file_xml(stream);
     retrieve_configuration(xml_parser_.get_root(), "root");
 }
 
@@ -303,5 +310,42 @@ template <> bool ValueMap::get(hash_t name, bool& destination)
     }
     return false;
 }
+
+#ifdef __DEBUG__
+void ValueMap::debug_display_content()
+{
+    std::cout << "--uints--" << std::endl;
+    for(auto&& [key, value]: uints_)
+        std::cout << "    " << key << " -> " << value << std::endl;
+
+    std::cout << "--ints--" << std::endl;
+    for(auto&& [key, value]: ints_)
+        std::cout << "    " << key << " -> " << value << std::endl;
+
+    std::cout << "--floats--" << std::endl;
+    for(auto&& [key, value]: floats_)
+        std::cout << "    " << key << " -> " << value << std::endl;
+
+    std::cout << "--vec2--" << std::endl;
+    for(auto&& [key, value]: vec2s_)
+        std::cout << "    " << key << " -> " << value << std::endl;
+
+    std::cout << "--vec3--" << std::endl;
+    for(auto&& [key, value]: vec3s_)
+        std::cout << "    " << key << " -> " << value << std::endl;
+
+    std::cout << "--strings--" << std::endl;
+    for(auto&& [key, value]: strings_)
+        std::cout << "    " << key << " -> " << value << std::endl;
+
+    std::cout << "--paths--" << std::endl;
+    for(auto&& [key, value]: paths_)
+        std::cout << "    " << key << " -> " << value << std::endl;
+
+    std::cout << "--bools--" << std::endl;
+    for(auto&& [key, value]: bools_)
+        std::cout << "    " << key << " -> " << value << std::endl;
+}
+#endif
 
 } // namespace wcore

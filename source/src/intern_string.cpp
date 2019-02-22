@@ -2,6 +2,7 @@
 #include "config.h"
 #include "logger.h"
 #include "xml_parser.h"
+#include "file_system.h"
 #include "wtypes.h"
 
 namespace wcore
@@ -21,15 +22,17 @@ InternStringLocator::~InternStringLocator()
 void InternStringLocator::init()
 {
     DLOGS("[InternStringLocator] Retrieving intern string table.", "core", Severity::LOW);
-    fs::path xmlpath = CONFIG.get_config_directory() / "dbg_intern_strings.xml";
-    if(!fs::exists(xmlpath))
+
+    auto pstream = FILESYSTEM.get_file_as_stream("dbg_intern_strings.xml", "root.folders.config"_h, "pack0"_h);
+    if(pstream == nullptr)
     {
         DLOGE("[InternStringLocator] Cannot find intern string hash table file.", "core", Severity::WARN);
-        DLOGI(xmlpath.string(), "core", Severity::WARN);
+        DLOGI("<p>config/dbg_intern_strings.xml</p>", "core", Severity::WARN);
         DLOGI("Run the \"internstr\" utility.", "core", Severity::WARN);
         return;
     }
-    xml_parser_->load_file_xml(xmlpath);
+    xml_parser_->load_file_xml(*pstream);
+
     retrieve_table(xml_parser_->get_root());
     DLOGES("core", Severity::LOW);
 }

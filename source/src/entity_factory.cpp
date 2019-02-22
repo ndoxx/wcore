@@ -1,7 +1,8 @@
 #include <filesystem>
 
 #include "entity_factory.h"
-#include "io_utils.h"
+#include "file_system.h"
+#include "error.h"
 #include "xml_utils.hpp"
 #include "logger.h"
 
@@ -17,8 +18,14 @@ EntityFactory::EntityFactory(const char* entityfile)
 
 void EntityFactory::parse_entity_file(const char* xmlfile)
 {
-    fs::path file_path(io::get_file("root.folders.level"_h, xmlfile));
-    xml_parser_.load_file_xml(file_path);
+    auto pstream = FILESYSTEM.get_file_as_stream(xmlfile, "root.folders.level"_h, "pack0"_h);
+    if(pstream == nullptr)
+    {
+        DLOGE("[EntityFactory] Unable to open file:", "entity", Severity::CRIT);
+        DLOGI(xmlfile, "entity", Severity::CRIT);
+        fatal();
+    }
+    xml_parser_.load_file_xml(*pstream);
 }
 
 void EntityFactory::parse_blueprints(rapidxml::xml_node<>* blueprints_node)

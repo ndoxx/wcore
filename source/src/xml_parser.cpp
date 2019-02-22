@@ -25,6 +25,7 @@ XMLParser::~XMLParser()
 
 }
 
+// deprec
 void XMLParser::load_file_xml(const fs::path& filepath)
 {
     if(!fs::exists(filepath))

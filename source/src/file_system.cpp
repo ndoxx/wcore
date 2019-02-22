@@ -158,26 +158,51 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* filenam
                                                              hash_t folder_node,
                                                              hash_t archive)
 {
-    // * First, try to get stream from archive
-    // Find virtual path to asset in archive (saved from the manifest)
-    const auto& vpaths = pimpl_->vpaths.at(archive);
-    auto itvpath = vpaths.find(folder_node);
-    if(itvpath != vpaths.end())
-    {
-        // Found. Dispatch to archive stream creator
-        const std::string& vpath = itvpath->second;
-        auto stream = get_file_as_stream((vpath+filename).c_str(), archive);
-        if(stream) return stream;
-    }
-
-    // * Couldn't find file in archive, try in folders
+    // * First, try to find file in folders
     // Get path from config folder node, dispatch to file stream creator
     fs::path file_path;
     if(CONFIG.get(folder_node, file_path))
-        return get_file_as_stream(file_path / filename);
+    {
+        file_path /= filename;
+        if(fs::exists(file_path))
+        {
+            auto stream = get_file_as_stream(file_path);
+            if(stream)
+                return stream;
+        }
+    }
+
+    // * Couldn't find file in folders, try to get stream from archive
+    // Find virtual path to asset in archive (saved from the manifest)
+    auto itvpaths = pimpl_->vpaths.find(archive);
+    if(itvpaths != pimpl_->vpaths.end())
+    {
+        const auto& vpaths = itvpaths->second;
+        auto itvpath = vpaths.find(folder_node);
+        if(itvpath != vpaths.end())
+        {
+            // Found. Dispatch to archive stream creator
+            const std::string& vpath = itvpath->second;
+            auto stream = get_file_as_stream((vpath+filename).c_str(), archive);
+            if(stream)
+                return stream;
+        }
+    }
 
     return nullptr;
 }
 
+std::string FileSystem::get_file_as_string(const char* filename,
+                                           hash_t folder_node,
+                                           hash_t archive)
+{
+    auto pstream = get_file_as_stream(filename, folder_node, archive);
+    if(!pstream)
+        return "";
+
+    // Read file to buffer
+    return std::string((std::istreambuf_iterator<char>(*pstream)),
+                        std::istreambuf_iterator<char>());
+}
 
 } // namespace wcore

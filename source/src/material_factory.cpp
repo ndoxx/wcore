@@ -1,8 +1,9 @@
 #include "material_factory.h"
 #include "material.h"
 #include "colors.h"
-#include "io_utils.h"
 #include "logger.h"
+#include "file_system.h"
+#include "error.h"
 
 namespace wcore
 {
@@ -21,8 +22,14 @@ std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
 
 MaterialFactory::MaterialFactory(const char* xml_file)
 {
-    fs::path file_path(io::get_file("root.folders.level"_h, xml_file));
-    xml_parser_.load_file_xml(file_path);
+    auto pstream = FILESYSTEM.get_file_as_stream(xml_file, "root.folders.level"_h, "pack0"_h);
+    if(pstream == nullptr)
+    {
+        DLOGE("[MaterialFactory] Unable to open file:", "material", Severity::CRIT);
+        DLOGI(xml_file, "material", Severity::CRIT);
+        fatal();
+    }
+    xml_parser_.load_file_xml(*pstream);
     retrieve_asset_descriptions(xml_parser_.get_root()->first_node("Materials"));
 }
 

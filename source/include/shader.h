@@ -5,7 +5,6 @@
 #include <vector>
 #include <algorithm>
 #include <map>
-#include <filesystem>
 #include <GL/glew.h>
 
 #include "math3d.h"
@@ -13,8 +12,6 @@
 
 namespace wcore
 {
-
-namespace fs = std::filesystem;
 
 class Texture;
 class Material;
@@ -24,9 +21,9 @@ class Light;
 struct ShaderResource
 {
 public:
-    fs::path vertex_shader;   // filename.ext for vertex shader
-    fs::path geometry_shader; // filename.ext for geometry shader
-    fs::path fragment_shader; // filename.ext for fragment shader
+    std::string vertex_shader;   // filename.ext for vertex shader
+    std::string geometry_shader; // filename.ext for geometry shader
+    std::string fragment_shader; // filename.ext for fragment shader
 
     std::vector<std::string> flags; // list of flags that will end up in #define directives
 
@@ -49,7 +46,7 @@ private:
 
     std::map<hash_t, GLint> uniform_locations_;
 
-    GLuint compile_shader(const fs::path& shader_file,
+    GLuint compile_shader(const std::string& shader_file,
                           GLenum ShaderType,
                           const std::vector<std::string>& flags);
     void parse_include(const std::string& line, std::string& shader_source);

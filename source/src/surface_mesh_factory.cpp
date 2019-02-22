@@ -5,7 +5,6 @@
 #include "rock_generator.h"
 #include "tree_generator.h"
 #include "config.h"
-#include "io_utils.h"
 #include "obj_loader.h"
 #include "cspline.h"
 #include "logger.h"

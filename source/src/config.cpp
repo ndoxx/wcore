@@ -90,29 +90,6 @@ void Config::init_logger_channels()
         dbg::LOG.register_channel(channel.c_str(),  verbosity);
     }
 }
-
-void Config::debug_display_content()
-{
-    std::cout << "--uints--" << std::endl;
-    for(auto&& [key, value]: uints_)
-        std::cout << "    " << key << " -> " << value << std::endl;
-
-    std::cout << "--ints--" << std::endl;
-    for(auto&& [key, value]: ints_)
-        std::cout << "    " << key << " -> " << value << std::endl;
-
-    std::cout << "--floats--" << std::endl;
-    for(auto&& [key, value]: floats_)
-        std::cout << "    " << key << " -> " << value << std::endl;
-
-    std::cout << "--strings--" << std::endl;
-    for(auto&& [key, value]: strings_)
-        std::cout << "    " << key << " -> " << value << std::endl;
-
-    std::cout << "--bools--" << std::endl;
-    for(auto&& [key, value]: bools_)
-        std::cout << "    " << key << " -> " << value << std::endl;
-}
 #endif
 
 }

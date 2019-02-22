@@ -1,5 +1,6 @@
 #include <cstring>
 #include <set>
+#include <filesystem>
 
 #include "shader.h"
 #include "lights.h"
@@ -7,9 +8,10 @@
 #include "texture.h"
 #include "logger.h"
 #include "material_common.h"
-#include "io_utils.h"
+#include "file_system.h"
 #include "error.h"
 
+namespace fs = std::filesystem;
 
 namespace wcore
 {
@@ -78,7 +80,8 @@ FragmentShaderID_(0)
 {
 #ifdef __DEBUG__
     if(++instance_count_ == 1) dbg_show_defines();
-    name_ = res.vertex_shader.stem().string();
+    // strip extension from vertex shader filename to get shader name, ugly but ok
+    name_ = fs::path(res.vertex_shader).stem().string();
     DLOGS("[Shader] Creating new shader program:", "shader", Severity::LOW);
     DLOGI("name= <n>" + name_ + "</n>", "shader", Severity::LOW);
 #endif
@@ -87,7 +90,7 @@ FragmentShaderID_(0)
     {
         VertexShaderID_   = compile_shader(res.vertex_shader, GL_VERTEX_SHADER, res.flags);
 #ifdef __DEBUG__
-        DLOGI("<g>Compiled</g> vertex shader from: <p>" + res.vertex_shader.string() + "</p>", "shader", Severity::DET);
+        DLOGI("<g>Compiled</g> vertex shader from: <p>" + res.vertex_shader + "</p>", "shader", Severity::DET);
 #endif
     }
 
@@ -96,7 +99,7 @@ FragmentShaderID_(0)
     {
         GeometryShaderID_ = compile_shader(res.geometry_shader, GL_GEOMETRY_SHADER, res.flags);
 #ifdef __DEBUG__
-        DLOGI("<g>Compiled</g> geometry shader from: <p>" + res.geometry_shader.string() + "</p>", "shader", Severity::DET);
+        DLOGI("<g>Compiled</g> geometry shader from: <p>" + res.geometry_shader + "</p>", "shader", Severity::DET);
 #endif
     }
 
@@ -105,7 +108,7 @@ FragmentShaderID_(0)
     {
         FragmentShaderID_ = compile_shader(res.fragment_shader, GL_FRAGMENT_SHADER, res.flags);
 #ifdef __DEBUG__
-        DLOGI("<g>Compiled</g> fragment shader from: <p>" + res.fragment_shader.string() + "</p>", "shader", Severity::DET);
+        DLOGI("<g>Compiled</g> fragment shader from: <p>" + res.fragment_shader + "</p>", "shader", Severity::DET);
 #endif
     }
 
@@ -202,7 +205,7 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
     uint32_t offset = sizeof(incStr) + 2;
 
     std::string file_name(incline.substr(offset, incline.length()-(offset+1)));
-    std::string include_source(io::get_file_as_string("root.folders.shaderinc"_h, file_name));
+    std::string include_source(FILESYSTEM.get_file_as_string(file_name.c_str(), "root.folders.shaderinc"_h, "pack0"_h));
 #ifdef __DEBUG__
     DLOGI("Dependency: <p>" + file_name + "</p>", "shader", Severity::DET);
 #endif
@@ -247,14 +250,11 @@ void Shader::setup_defines(std::string& shader_source,
     }
 }
 
-GLuint Shader::compile_shader(const fs::path& shader_file,
+GLuint Shader::compile_shader(const std::string& shader_file,
                               GLenum ShaderType,
                               const std::vector<std::string>& flags)
 {
-    //fs::path shader_path = io::get_file("root.folders.shader"_h, shader_file);
-
-    std::string shader_file_name(shader_file.string());
-    std::string shader_source_raw(io::get_file_as_string("root.folders.shader"_h, shader_file));
+    std::string shader_source_raw(FILESYSTEM.get_file_as_string(shader_file.c_str(), "root.folders.shader"_h, "pack0"_h));
     std::string shader_source;
     {
         std::stringstream ss(shader_source_raw);
@@ -280,8 +280,8 @@ GLuint Shader::compile_shader(const fs::path& shader_file,
     GLuint ShaderID = glCreateShader(ShaderType);
     if(ShaderID == 0)
     {
-        DLOGF("Cannot create shader: <p>" + shader_file_name + "</p>", "shader", Severity::CRIT);
-        fatal("Cannot create shader: " + shader_file_name);
+        DLOGF("Cannot create shader: <p>" + shader_file + "</p>", "shader", Severity::CRIT);
+        fatal("Cannot create shader: " + shader_file);
     }
 
     const GLchar* source = (const GLchar*) shader_source.c_str();
@@ -297,8 +297,8 @@ GLuint Shader::compile_shader(const fs::path& shader_file,
 
         //We don't need the shader anymore.
         glDeleteShader(ShaderID);
-        DLOGF("Shader will not compile: <p>" + shader_file_name + "</p>", "shader", Severity::CRIT);
-        fatal("Shader will not compile: " + shader_file_name);
+        DLOGF("Shader will not compile: <p>" + shader_file + "</p>", "shader", Severity::CRIT);
+        fatal("Shader will not compile: " + shader_file);
     }
 
     return ShaderID;

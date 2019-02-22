@@ -2,14 +2,17 @@
 
 #include "xml_utils.hpp"
 #include "input_handler.h"
-#include "io_utils.h"
 #include "logger.h"
 #include "keymap.h"
 #include "context.h"
 #include "globals.h"
+#include "file_system.h"
+#include "error.h"
 
 namespace wcore
 {
+
+static const char* keybindingsfile = "keybindings.xml";
 
 using namespace rapidxml;
 
@@ -23,8 +26,14 @@ void InputHandler::import_key_bindings()
 {
     DLOGS("[InputHandler] Parsing key bindings.", "input", Severity::LOW);
 
-    fs::path file_path(io::get_file("root.folders.config"_h, "keybindings.xml"));
-    xml_parser_.load_file_xml(file_path);
+    auto pstream = FILESYSTEM.get_file_as_stream(keybindingsfile, "root.folders.config"_h, "pack0"_h);
+    if(pstream == nullptr)
+    {
+        DLOGE("[InputHandler] Unable to open file:", "input", Severity::CRIT);
+        DLOGI(keybindingsfile, "input", Severity::CRIT);
+        fatal();
+    }
+    xml_parser_.load_file_xml(*pstream);
 
     for (xml_node<>* cat=xml_parser_.get_root()->first_node("Category");
          cat; cat=cat->next_sibling("Category"))

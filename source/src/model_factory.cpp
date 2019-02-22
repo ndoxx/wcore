@@ -4,13 +4,14 @@
 #include "material_factory.h"
 #include "surface_mesh_factory.h"
 #include "terrain_factory.h"
-#include "io_utils.h"
 #include "xml_utils.hpp"
 #include "material.h"
 #include "surface_mesh.h"
 #include "terrain_patch.h"
 #include "model.h"
 #include "logger.h"
+#include "file_system.h"
+#include "error.h"
 
 namespace fs = std::filesystem;
 
@@ -62,8 +63,14 @@ std::shared_ptr<SurfaceMesh> ModelFactory::preload_mesh_model_instance(hash_t na
 
 void ModelFactory::parse_asset_file(const char* xmlfile)
 {
-    fs::path file_path(io::get_file("root.folders.level"_h, xmlfile));
-    xml_parser_.load_file_xml(file_path);
+    auto pstream = FILESYSTEM.get_file_as_stream(xmlfile, "root.folders.level"_h, "pack0"_h);
+    if(pstream == nullptr)
+    {
+        DLOGE("[ModelFactory] Unable to open file:", "model", Severity::CRIT);
+        DLOGI(xmlfile, "model", Severity::CRIT);
+        fatal();
+    }
+    xml_parser_.load_file_xml(*pstream);
 }
 
 void ModelFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* models_node)

@@ -39,8 +39,6 @@ public:
     void init();
 #ifdef __DEBUG__
     void init_logger_channels();
-    // Display maps content
-    void debug_display_content();
 #endif // __DEBUG__
 };
 

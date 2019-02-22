@@ -83,7 +83,11 @@ struct Engine::EngineImpl
     current_model_handle(0),
     current_light_handle(0)
     {
+        // Instanciate singletons
         FileSystem::Instance();
+#ifdef __DEBUG__
+        InternStringLocator::Instance();
+#endif
     }
 
     ~EngineImpl()
@@ -104,6 +108,10 @@ struct Engine::EngineImpl
         delete scene;
         delete game_loop;
 
+        // Kill singletons
+#ifdef __DEBUG__
+        InternStringLocator::Kill();
+#endif
         FileSystem::Kill();
         Config::Kill();
     }

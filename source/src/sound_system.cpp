@@ -6,13 +6,13 @@
 #include "algorithms.h"
 #include "sound_system.h"
 #include "xml_utils.hpp"
-#include "io_utils.h"
 #include "input_handler.h"
 #include "game_clock.h"
 #include "camera.h"
 #include "config.h"
 #include "error.h"
 #include "logger.h"
+#include "file_system.h"
 
 #include "vendor/fmod/fmod.hpp"
 #ifdef __DEBUG__
@@ -455,8 +455,14 @@ void SoundSystem::init_self()
 
 void SoundSystem::parse_asset_file(const char* xmlfile)
 {
-    fs::path file_path(io::get_file("root.folders.level"_h, xmlfile));
-    xml_parser_.load_file_xml(file_path);
+    auto pstream = FILESYSTEM.get_file_as_stream(xmlfile, "root.folders.level"_h, "pack0"_h);
+    if(pstream == nullptr)
+    {
+        DLOGE("[SoundSystem] Unable to open file:", "sound", Severity::CRIT);
+        DLOGI(xmlfile, "sound", Severity::CRIT);
+        fatal();
+    }
+    xml_parser_.load_file_xml(*pstream);
 
     for (rapidxml::xml_node<>* sound_node=xml_parser_.get_root()->first_node("Sound");
          sound_node;

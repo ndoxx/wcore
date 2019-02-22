@@ -15,7 +15,6 @@
 #include "surface_mesh.h"
 #include "vertex_format.h"
 #include "logger.h"
-#include "io_utils.h"
 #include "string_utils.h"
 
 namespace wcore

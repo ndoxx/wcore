@@ -24,13 +24,13 @@ private:
 public:
     XMLParser();
 
-    //[[deprecated("use streams instead")]]
+    [[deprecated("use streams instead")]]
     XMLParser(const char* filename);
 
     XMLParser(std::istream& stream);
     ~XMLParser();
 
-    //[[deprecated("use streams instead")]]
+    [[deprecated("use streams instead")]]
     void load_file_xml(const fs::path& filepath);
 
     void load_file_xml(std::istream& stream);

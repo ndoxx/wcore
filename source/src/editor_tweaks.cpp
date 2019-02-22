@@ -1,9 +1,12 @@
 #include "editor_tweaks.h"
 #include "logger.h"
 #include "config.h"
+#include "file_system.h"
 
 namespace wcore
 {
+
+static const char* tweaksfile = "edtweaks.xml";
 
 EditorTweaksInitializer::~EditorTweaksInitializer()
 {
@@ -12,21 +15,22 @@ EditorTweaksInitializer::~EditorTweaksInitializer()
 
 void EditorTweaksInitializer::init_self()
 {
-
+    // Set root directory
     const fs::path& root_path_ = CONFIG.get_root_directory();
-    const fs::path& conf_path_ = CONFIG.get_config_directory();
-    fs::path filepath = conf_path_ / "edtweaks.xml";
-    if(!fs::exists(filepath))
+    value_map_.set_root_directory(root_path_);
+
+    // Get stream to tweaks file
+    auto pstream = FILESYSTEM.get_file_as_stream(tweaksfile, "root.folders.config"_h, "pack0"_h);
+    if(pstream == nullptr)
     {
-        DLOGE("[EditorTweaksInitializer] Cannot open file: " + filepath.string(), "editor", Severity::CRIT);
+        DLOGE("[EditorTweaksInitializer] Cannot open file: " + std::string(tweaksfile), "editor", Severity::CRIT);
         return;
     }
 
+    // Parse tweaks file
     DLOGN("[EditorTweaksInitializer] Parsing tweaks file:", "editor", Severity::LOW);
-    DLOGI(filepath.string(), "core", Severity::LOW);
-
-    value_map_.set_root_directory(root_path_);
-    value_map_.parse_xml_file(filepath);
+    DLOGI(tweaksfile, "core", Severity::LOW);
+    value_map_.parse_xml_file(*pstream);
 
     DLOGI("done.", "editor", Severity::LOW);
 }

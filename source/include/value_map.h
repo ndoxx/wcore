@@ -2,6 +2,7 @@
 #define VALUE_MAP_H
 
 #include <map>
+#include <istream>
 
 #include "wtypes.h"
 #include "math3d.h"
@@ -22,9 +23,16 @@ public:
     inline void set_root_directory(const fs::path& path) { root_path_ = path; }
 
     // Read an XML file into the different maps
+    [[deprecated("use streams instead")]]
     void parse_xml_file(const fs::path& path);
+    void parse_xml_file(std::istream& stream);
     // Write to XML file
     void write_xml();
+
+#ifdef __DEBUG__
+    // Display maps content
+    void debug_display_content();
+#endif
 
 protected:
     // Recursive method for XML data hierarchy exploration

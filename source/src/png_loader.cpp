@@ -7,7 +7,6 @@
 #include "png_loader.h"
 #include "logger.h"
 #include "pixel_buffer.h"
-#include "io_utils.h"
 
 namespace wcore
 {

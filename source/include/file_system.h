@@ -2,6 +2,7 @@
 #define FILE_SYSTEM_H
 
 #include <filesystem>
+#include <string>
 
 #include "wtypes.h"
 #include "singleton.hpp"
@@ -30,10 +31,14 @@ public:
     std::shared_ptr<std::istream> get_file_as_stream(const fs::path& file_path);
     // Get file as stream from archive
     std::shared_ptr<std::istream> get_file_as_stream(const char* virtual_path, hash_t archive);
-    // Get file as stream, try from archive first
+    // Get file as stream, try from folder first then archive
     std::shared_ptr<std::istream> get_file_as_stream(const char* filename,
                                                      hash_t folder_node,
                                                      hash_t archive);
+    // Get file as string, try from folder first then archive
+    std::string get_file_as_string(const char* filename,
+                                   hash_t folder_node,
+                                   hash_t archive);
 
 private:
     struct Impl;

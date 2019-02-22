@@ -24,7 +24,7 @@
 #include "sound_system.h"
 #include "entity_system.h"
 #include "input_handler.h"
-#include "io_utils.h"
+#include "file_system.h"
 #include "basic_components.h"
 
 namespace wcore
@@ -106,8 +106,17 @@ static inline std::string level_file(const char* level_name)
 void SceneLoader::load_level(const char* level_name)
 {
     DLOGS("[SceneLoader] Parsing xml scene description.", "scene", Severity::LOW);
-    fs::path file_path(io::get_file("root.folders.level"_h, level_file(level_name)));
-    xml_parser_.load_file_xml(file_path);
+
+    std::string levelfilename(level_file(level_name));
+    auto pstream = FILESYSTEM.get_file_as_stream(levelfilename.c_str(), "root.folders.level"_h, "pack0"_h);
+    if(pstream == nullptr)
+    {
+        DLOGF("Cannot access level file:", "scene", Severity::CRIT);
+        DLOGI(levelfilename, "scene", Severity::CRIT);
+        fatal();
+    }
+    xml_parser_.load_file_xml(*pstream);
+
     current_map_ = level_name;
 }
 

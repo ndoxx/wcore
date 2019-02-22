@@ -63,6 +63,7 @@ void TextRenderer::load_face(const char* fontname,
     std::string full_path_str(file_path.string());
 
     // Generate new face
+    // TODO: use FT_Open_Face to load from memory, so we can use streams
     FT_Face face;
     if (FT_New_Face(ft_, full_path_str.c_str(), 0, &face))
     {
