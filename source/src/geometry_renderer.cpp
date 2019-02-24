@@ -91,7 +91,7 @@ void GeometryRenderer::render(Scene* pscene)
     },
     wcore::ORDER::FRONT_TO_BACK);
 
-    GBuffer::Instance().unbind_as_target();
+    //GBuffer::Instance().unbind_as_target();
     geometry_pass_shader_.unuse();
 
     // Lock depth buffer (read only)

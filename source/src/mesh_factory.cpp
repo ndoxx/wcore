@@ -142,6 +142,7 @@ std::shared_ptr<MeshP> make_skybox_3P()
 {
     std::shared_ptr<MeshP> pmesh(new MeshP);
 
+    // TODO: optimize this (many vertices are repeated)
     pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
     pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, -1.0f));
     pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
@@ -183,6 +184,24 @@ std::shared_ptr<MeshP> make_skybox_3P()
     pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
     pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
     pmesh->_emplace_vertex(vec3( 1.0f, -1.0f,  1.0f));
+
+    pmesh->_push_triangle(0,  1,  2);
+    pmesh->_push_triangle(3,  4,  5);
+
+    pmesh->_push_triangle(6,  7,  8);
+    pmesh->_push_triangle(9,  10, 11);
+
+    pmesh->_push_triangle(12, 13, 14);
+    pmesh->_push_triangle(15, 16, 17);
+
+    pmesh->_push_triangle(18, 19, 20);
+    pmesh->_push_triangle(21, 22, 23);
+
+    pmesh->_push_triangle(24, 25, 26);
+    pmesh->_push_triangle(27, 28, 29);
+
+    pmesh->_push_triangle(30, 31, 32);
+    pmesh->_push_triangle(33, 34, 35);
 
     return pmesh;
 }

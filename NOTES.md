@@ -6494,17 +6494,89 @@ Le noeud *SmoothNormals* peut prendre les valeurs suivantes :
 
 Idéalement j'aimerais avoir un système plus flexible capable de détecter et calculer uniquement les normales manquantes, sans nécessité de dupliquer chaque vertex comme l'implique l'utilisation de _FaceMesh_. Mais ça me demande de refonder complètement les meshs.
 
+#[24-02-18]
+
+## Cubemap & Skybox
+La nouvelle classe _Cubemap_ vient abstraire les cubemaps d'OpenGL. Une cubemap est générée depuis un descripteur de type _CubemapDescriptor_, lui-même parsé depuis assets.xml :
+
+```xml
+<Assets>
+    <Cubemaps>
+        <CubemapTexture name="skybox01">
+            <XMinus>sky01_left.png</XMinus>
+            <XPlus>sky01_right.png</XPlus>
+            <YMinus>sky01_bottom.png</YMinus>
+            <YPlus>sky01_top.png</YPlus>
+            <ZMinus>sky01_back.png</ZMinus>
+            <ZPlus>sky01_front.png</ZPlus>
+        </CubemapTexture>
+    </Cubemaps>
+    <!-- ... -->
+</Assets>
+```
+Ici on définit une texture cubemap depuis 6 fichiers image, un par face. Le descripteur est produit par _MaterialFactory_ au chargement du moteur.
+
+Je passe les détails concernant la génération de la texture cubemap, car c'est très semblable à la génération d'une texture2D de base. Voir cubemap.cpp.
+
+La nouvelle classe _SkyBox_ utilise en sous-main un _mesh3P_ et une _Cubemap_ afin de définir un modèle affichable par le _ForwardRenderer_. Le _GameObjectFactory_ peut produire un objet _SkyBox_ depuis un hashname de cubemap déclaré dans assets.xml. La _Scene_ peut optionnellement charger une _SkyBox_ via Scene::set_skybox(1), avec comme seul argument un shared_ptr vers une skybox. Le _SceneLoader_ s'occupe de celà automatiquement lors du parsing des globales de la scène.
+
+Une map peut déclarer une skybox dans les globales en précisant uniquement le nom d'asset à utiliser pour la cubemap :
+
+```xml
+<Scene>
+    <Skybox disable="false">
+        <CubemapTexture name="skybox01"/>
+    </Skybox>
+    <!-- ... -->
+</Scene>
+```
+L'attribut optionnel disable permet de désactiver la skybox rapidement depuis le fichier xml de la map.
+
+### Drawing
+Une _SkyBox_ possède son propre _BufferUnit<Vertex3P>_ et son propre _VertexArray<Vertex3P>_. Comme c'est un objet unique dans une scène, j'ai voulu faire simple. Je l'ai munie d'une fonction Skybox::draw() pour dessiner la géométrie.
+
+La skybox est un simple cube aligné avec les axes principaux de la map, qui suit la caméra. La partie translationnelle de la view matrix de la cam est annulée, de sorte que la position de la skybox ne soit pas affectée par la position de la caméra dans le repère monde. Elle est toujours centrée sur la cam.
+
+Un shader spécialisé de _ForwardRenderer_ (skybox.vert, skybox.frag) est utilisé pour l'affichage. _ForwardRenderer_ dessine la skybox en dernier, de sorte qu'un maximum de fragments échoue au depth test. Pour que celà soit possible, il faut se démerder dans le vertex shader pour que la composante en z de la position des vertices soit toujours égale à 1.0 après le perspective divide (profondeur max en coordonnées NDC), et utiliser GL_LEQUAL au lieu de GL_LESS comme fonction de depth test (voir [1]). De fait, un fragment de la skybox ne sera rendu que si aucun fragment n'est plus proche, elle est donc effectivement à l'infini du point de vue de la cam.
+
+skybox.vert :
+```c
+#version 400 core
+
+layout (location = 0) in vec3 in_position;
+out vec3 v3_texCoord;
+uniform mat4 m4_view_projection;
+
+void main()
+{
+    v3_texCoord = in_position;
+    vec4 pos = m4_view_projection * vec4(in_position, 1.0);
+    // z component always 1 after perspective divide
+    gl_Position = pos.xyww;
+}
+```
+
+skybox.frag :
+```c
+#version 400 core
+
+out vec4 FragColor;
+in vec3 v3_texCoord;
+uniform samplerCube skyboxTex;
+
+void main()
+{
+    FragColor = texture(skyboxTex, v3_texCoord);
+}
+```
+
+### Merdique (TODO)
+[ ] Les textures sont toutes inversées, celà semble provenir du _PngLoader_. J'ai merdiquement inversé les textures de la skybox à la main pour m'en convaincre et laissé ça en état. Il faut régler ce problème rapidement.
+[ ] Lorsqu'il y a du fog en pleine nuit, le bord de certains objets (branches d'arbre, bord de map) est entouré d'un halo clair à la couleur de la skybox. Je ne sais pas si ce problème persistera quand la skybox sera adaptative (changera de teinte en fonction de l'heure de la journée).
 
 
-
-
-
-
-
-
-
-
-
+* sources :
+[1] https://learnopengl.com/Advanced-OpenGL/Cubemaps
 
 
 

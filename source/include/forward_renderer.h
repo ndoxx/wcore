@@ -15,6 +15,7 @@ class ForwardRenderer : public Renderer<Vertex3P3N3T2U>
 {
 private:
     Shader forward_stage_shader_;
+    Shader skybox_shader_;
 
 public:
     bool active_;
