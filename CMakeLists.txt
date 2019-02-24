@@ -22,6 +22,7 @@ set(SRC_CORE
     ${CMAKE_SOURCE_DIR}/source/src/wcore.cpp
     ${CMAKE_SOURCE_DIR}/source/src/engine_core.cpp
     ${CMAKE_SOURCE_DIR}/source/src/context.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/thread_utils.cpp
     ${CMAKE_SOURCE_DIR}/source/src/error.cpp
     ${CMAKE_SOURCE_DIR}/source/src/stack_trace.cpp
     ${CMAKE_SOURCE_DIR}/source/src/value_map.cpp
@@ -105,6 +106,7 @@ set(SRC_RES
     ${CMAKE_SOURCE_DIR}/source/src/png_loader.cpp
     ${CMAKE_SOURCE_DIR}/source/src/pixel_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/texture.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/cubemap.cpp
     ${CMAKE_SOURCE_DIR}/source/src/material.cpp
     ${CMAKE_SOURCE_DIR}/source/src/material_common.cpp)
 

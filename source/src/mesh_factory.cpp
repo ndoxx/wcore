@@ -138,6 +138,55 @@ std::shared_ptr<FaceMesh> make_box(const math::extent_t& extent, float texture_s
     return pmesh;
 }
 
+std::shared_ptr<MeshP> make_skybox_3P()
+{
+    std::shared_ptr<MeshP> pmesh(new MeshP);
+
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
+
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
+
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
+
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
+
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
+
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f,  1.0f));
+
+    return pmesh;
+}
+
 MeshP* make_cube_3P()
 {
     MeshP* pmesh = new MeshP;

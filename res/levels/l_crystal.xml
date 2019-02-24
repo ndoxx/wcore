@@ -3,6 +3,9 @@
     <Audio>
         <BGM>desert_bgm</BGM>
     </Audio>
+    <Skybox disable="false">
+        <CubemapTexture name="skybox01"/>
+    </Skybox>
     <Terrain chunkSize="33" latticeScale="1.0" textureScale="0.25">
         <TerrainPatch origin="(0,0)" size="(5,5)" height="0">
             <Generator type="simplex" seed="6">

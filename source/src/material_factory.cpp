@@ -1,5 +1,6 @@
 #include "material_factory.h"
 #include "material.h"
+#include "cubemap.h"
 #include "colors.h"
 #include "logger.h"
 #include "file_system.h"
@@ -30,7 +31,7 @@ MaterialFactory::MaterialFactory(const char* xml_file)
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);
-    retrieve_asset_descriptions(xml_parser_.get_root()->first_node("Materials"));
+    retrieve_material_descriptions(xml_parser_.get_root()->first_node("Materials"));
 }
 
 MaterialFactory::MaterialFactory()
@@ -94,7 +95,7 @@ std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc)
 }
 #endif
 
-void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* materials_node)
+void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* materials_node)
 {
     for (xml_node<>* mat_node=materials_node->first_node("Material");
          mat_node;
@@ -122,6 +123,36 @@ void MaterialFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* material
     }
 }
 
+void MaterialFactory::retrieve_cubemap_descriptions(rapidxml::xml_node<>* cubemaps_node)
+{
+    for (xml_node<>* cmap_node=cubemaps_node->first_node("CubemapTexture");
+         cmap_node;
+         cmap_node=cmap_node->next_sibling("CubemapTexture"))
+    {
+        std::string cubemap_name;
+        if(xml::parse_attribute(cmap_node, "name", cubemap_name))
+        {
+            hash_t resource_id = H_(cubemap_name.c_str());
+#ifdef __DEBUG__
+            if(cubemap_descriptors_.find(resource_id) != cubemap_descriptors_.end())
+            {
+                DLOGW("[MaterialFactory] Cubemap redefinition or collision: ", "material", Severity::WARN);
+                DLOGI(cubemap_name, "material", Severity::WARN);
+            }
+#endif
+
+            CubemapDescriptor descriptor;
+            parse_cubemap_descriptor(cmap_node, descriptor);
+            descriptor.resource_id = resource_id;
+            cubemap_descriptors_[H_(cubemap_name.c_str())] = descriptor;
+#ifdef __DEBUG__
+            HRESOLVE.add_intern_string(cubemap_name);
+#endif
+        }
+    }
+}
+
+
 Material* MaterialFactory::make_material(hash_t asset_name)
 {
     // Try to find in cache, make new material if not cached
@@ -130,7 +161,7 @@ Material* MaterialFactory::make_material(hash_t asset_name)
         return it->second;
     else
     {*/
-        Material* ret = new Material(get_descriptor(asset_name));
+        Material* ret = new Material(get_material_descriptor(asset_name));
         //cache_.insert(std::pair(asset_name, ret));
         ret->set_cached(true);
         return ret;
@@ -223,5 +254,34 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
             xml::parse_node(ovd_node, "ParallaxMap", descriptor.enable_parallax_mapping);
     }
 }
+
+static std::vector<std::string> CubeMapFaces =
+{
+    "XMinus", "XPlus", "YMinus", "YPlus", "ZMinus", "ZPlus"
+};
+
+void MaterialFactory::parse_cubemap_descriptor(rapidxml::xml_node<>* node,
+                                               CubemapDescriptor& descriptor)
+{
+    // Get nodes for each cubemap face in the right order (-x, +x, -y, +y, -z, +z)
+    for(int ii=0; ii<CubeMapFaces.size(); ++ii)
+    {
+        std::string tex_name;
+        if(!xml::parse_node(node, CubeMapFaces[ii].c_str(), tex_name))
+        {
+            DLOGW("[MaterialFactory] Cubemap texture ill-declared:", "material", Severity::WARN);
+            DLOGI("Missing node <x>" + CubeMapFaces[ii] + "</x>", "material", Severity::WARN);
+            DLOGI("Descriptor will be incomplete.", "material", Severity::WARN);
+            return;
+        }
+        descriptor.locations.push_back(tex_name);
+    }
+}
+
+Cubemap* MaterialFactory::make_cubemap(hash_t cubemap_name)
+{
+    return new Cubemap(get_cubemap_descriptor(cubemap_name));
+}
+
 
 }

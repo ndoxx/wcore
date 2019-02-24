@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <map>
+#include <vector>
+#include <string>
 
 #include "wtypes.h"
 #include "math3d.h"
@@ -73,6 +75,12 @@ public:
 #ifdef __DEBUG__
     friend std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc);
 #endif
+};
+
+struct CubemapDescriptor
+{
+    std::vector<std::string> locations;
+    hash_t resource_id;
 };
 
 }

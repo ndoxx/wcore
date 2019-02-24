@@ -1,17 +1,23 @@
 #ifndef SKY_H
 #define SKY_H
 
+#include <memory>
+#include "mesh.hpp"
+
 namespace wcore
 {
 
-class SkyDome
+class Cubemap;
+class SkyBox
 {
-private:
-
-
 public:
-    SkyDome();
-    virtual ~SkyDome();
+    SkyBox(Cubemap* cubemap);
+    ~SkyBox();
+
+private:
+    Cubemap* cubemap_;
+
+    static std::shared_ptr<MeshP> mesh_;
 };
 
 }

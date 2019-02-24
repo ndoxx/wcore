@@ -4,6 +4,7 @@
 #include "wcore.h"
 
 #include "gfx_driver.h" // Won't compile if removed: ensures GLFW header included before GL
+#include "thread_utils.h"
 #include "error.h"
 #include "config.h"
 #include "intern_string.h"
@@ -171,6 +172,8 @@ struct Engine::EngineImpl
 
 Engine::Engine()
 {
+    //thread::max_thread_priority();
+
     DLOG("<s>--- WCore: Loading config ---</s>", "core", Severity::LOW);
     // Parse main config file
     try
@@ -399,13 +402,14 @@ void Engine::SetLightBrightness(uint32_t light_index, float value)
         it->second->set_brightness(value);
 }
 
-
 int Engine::Run()
 {
     int ret = eimpl_->game_loop->run();
+    DLOG("<s>--- WCore: Game loop stopped ---</s>", "core", Severity::LOW);
 #ifdef __DEBUG__
     eimpl_->pipeline->dbg_show_statistics();
 #endif
+    DLOG("<s>--- WCore: Serializing ---</s>", "core", Severity::LOW);
     try
     {
         eimpl_->game_loop->serialize_system_parameters();
@@ -416,6 +420,7 @@ int Engine::Run()
         DLOGF("[Engine] Stream exception while serializing system parameters.", "core", Severity::CRIT);
         DLOGI(e.what(), "core", Severity::CRIT);
     }
+    DLOG("<s>--- WCore: Meow! ---</s>", "core", Severity::LOW);
     return ret;
 }
 

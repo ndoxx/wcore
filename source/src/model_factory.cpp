@@ -9,6 +9,7 @@
 #include "surface_mesh.h"
 #include "terrain_patch.h"
 #include "model.h"
+#include "sky.h"
 #include "logger.h"
 #include "file_system.h"
 #include "error.h"
@@ -25,9 +26,11 @@ terrain_factory_(new TerrainFactory())
 {
     parse_asset_file(assetfile);
     rapidxml::xml_node<>* materials_node = xml_parser_.get_root()->first_node("Materials");
+    rapidxml::xml_node<>* cubemaps_node  = xml_parser_.get_root()->first_node("Cubemaps");
     rapidxml::xml_node<>* meshes_node    = xml_parser_.get_root()->first_node("Meshes");
     rapidxml::xml_node<>* models_node    = xml_parser_.get_root()->first_node("Models");
-    material_factory_->retrieve_asset_descriptions(materials_node);
+    material_factory_->retrieve_material_descriptions(materials_node);
+    material_factory_->retrieve_cubemap_descriptions(cubemaps_node);
     mesh_factory_->retrieve_asset_descriptions(meshes_node);
     retrieve_asset_descriptions(models_node);
 }
@@ -176,6 +179,13 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
         desc.texture_scale
     );
 }
+
+std::shared_ptr<SkyBox> ModelFactory::make_skybox(hash_t cubemap_name)
+{
+    Cubemap* cmap = material_factory_->make_cubemap(cubemap_name);
+    return std::make_shared<SkyBox>(cmap);
+}
+
 
 } // namespace wcore
 

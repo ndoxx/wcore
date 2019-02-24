@@ -64,6 +64,9 @@ namespace factory
     extern MeshP* make_segment_z_3P();
     extern MeshP* make_cross3D_3P();
 
+    // Skybox
+    extern std::shared_ptr<MeshP> make_skybox_3P();
+
     // 3D procedural meshes
     extern std::shared_ptr<FaceMesh> make_crystal(unsigned seed=0);
     extern std::shared_ptr<FaceMesh> make_tentacle(const math::CSplineCatmullV3& spline,

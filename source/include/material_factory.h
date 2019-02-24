@@ -11,13 +11,16 @@ namespace wcore
 {
 
 class Material;
+class Cubemap;
 class MaterialFactory
 {
 private:
-    typedef std::map<hash_t, MaterialDescriptor> AssetMap;
+    typedef std::map<hash_t, MaterialDescriptor> MaterialMap;
+    typedef std::map<hash_t, CubemapDescriptor> CubemapsMap;
 
     XMLParser xml_parser_;
-    AssetMap  material_descriptors_;
+    MaterialMap material_descriptors_;
+    CubemapsMap cubemap_descriptors_;
     std::map<hash_t, Material*> cache_;
     static std::map<TextureUnit, const char*> TEX_SAMPLERS_NODES;
 
@@ -28,16 +31,22 @@ public:
 
     typedef std::mt19937* OptRngT;
 
-    void retrieve_asset_descriptions(rapidxml::xml_node<>* materials_node);
+    void retrieve_material_descriptions(rapidxml::xml_node<>* materials_node);
+    void retrieve_cubemap_descriptions(rapidxml::xml_node<>* cubemaps_node);
     Material* make_material(hash_t asset_name);
     Material* make_material(MaterialDescriptor& descriptor);
     Material* make_material(rapidxml::xml_node<>* material_node,
                             OptRngT opt_rng=nullptr);
+    Cubemap* make_cubemap(hash_t cubemap_name);
 
-    inline const MaterialDescriptor& get_descriptor(hash_t asset_name)  { return material_descriptors_.at(asset_name); }
+    inline const MaterialDescriptor& get_material_descriptor(hash_t asset_name) { return material_descriptors_.at(asset_name); }
+    inline const CubemapDescriptor& get_cubemap_descriptor(hash_t asset_name)   { return cubemap_descriptors_.at(asset_name); }
+
     void parse_material_descriptor(rapidxml::xml_node<>* node,
                                    MaterialDescriptor& descriptor,
                                    OptRngT opt_rng=nullptr);
+    void parse_cubemap_descriptor(rapidxml::xml_node<>* node,
+                                  CubemapDescriptor& descriptor);
 
 private:
 };

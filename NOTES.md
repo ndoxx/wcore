@@ -6469,6 +6469,7 @@ Une archive par défaut du nom de "pack0.zip" est chargée par le moteur. Cette 
 La fonction wcore::UseResourceArchive() de l'API permet de charger une archive côté user. Cette fonction peut être appelée avant wcore::Init() car elle ne dépend que des données de config disponibles dès la construction d'un objet wcore::Engine.
 
 Tous les systèmes qui réalisaient eux-même les accès io doivent être modifiés pour prendre des streams en entrée. De fait, l'origine des données est opaque de leur point de vue. Pour l'instant, les modèles et les textures sont gérés par le système d'archives. Les fichiers xml restent dans des dossiers pour que je puisse les modifier facilement, même si techniquement _XMLParser_ est d'ores et déjà capable de lire des streams. Je modifierai peut être get_file_as_stream(3) pour chercher les fichiers dans les dossiers physiques en priorité, ce qui devrait améliorer le workflow.
+    -> C'est fait.
 Le _SoundSystem_ devra à terme fonctionner sur ce mode, mais la principale emmerde est que je n'ai aucune foutue idée de comment **streamer** un son depuis une archive. FMOD propose bien une fonction pour lire un son depuis la mémoire, ce qui convient sans problème pour les sons de courte durée. Mais les sons longs doivent être streamés et FMOD ne supporte pas std::istream comme entrée.
 
 ## Better ObjLoader

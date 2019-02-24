@@ -18,6 +18,7 @@ struct ModelInstanceDescriptor
 };
 
 class Model;
+class SkyBox;
 class TerrainChunk;
 class SurfaceMeshFactory;
 class MaterialFactory;
@@ -47,6 +48,8 @@ public:
     // Create terrain patch from descriptor and an optional random engine
     std::shared_ptr<TerrainChunk> make_terrain_patch(const TerrainPatchDescriptor& desc,
                                                      OptRngT opt_rng=nullptr);
+    // Create skybox from cubemap name
+    std::shared_ptr<SkyBox> make_skybox(hash_t cubemap_name);
 
     // Preload mesh instance by model instance name
     std::shared_ptr<SurfaceMesh> preload_mesh_model_instance(hash_t name);

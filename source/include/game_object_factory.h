@@ -43,8 +43,13 @@ public:
     {
         return model_factory_->make_model(mesh_node, mat_node, mesh_is_instance, opt_rng);
     }
-    // Register a component creation function for the entity factory to use
+    // Create skybox from cubemap name
+    inline std::shared_ptr<SkyBox> make_skybox(hash_t cubemap_name)
+    {
+        return model_factory_->make_skybox(cubemap_name);
+    }
 
+    // Register a component creation function for the entity factory to use
     inline void register_component_factory(hash_t name, EntityFactory::ComponentCreatorFunc func)
     {
 #ifdef __DEBUG__

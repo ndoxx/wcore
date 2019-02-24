@@ -118,6 +118,7 @@ void SceneLoader::load_level(const char* level_name)
     xml_parser_.load_file_xml(*pstream);
 
     current_map_ = level_name;
+    DLOGES("scene", Severity::LOW);
 }
 
 bool SceneLoader::onKeyboardEvent(const WData& data)
@@ -187,6 +188,8 @@ void SceneLoader::load_global(DaylightSystem& daylight)
     parse_directional_light(xml_parser_.get_root()->first_node("Light"));
     // Parse ambient parameters
     parse_ambient(daylight, xml_parser_.get_root()->first_node("Ambient"));
+    // Parse skybox declaration if any
+    parse_skybox(xml_parser_.get_root()->first_node("Skybox"));
     // Preload mesh instances used in this level
     preload_instances();
 }
@@ -456,6 +459,33 @@ void SceneLoader::parse_ambient(DaylightSystem& daylight, rapidxml::xml_node<>* 
     daylight.set_ambient_strength_interp(ambient_strength_interpolator);
 }
 
+void SceneLoader::parse_skybox(rapidxml::xml_node<>* node)
+{
+    // Skybox is optional, if no Skybox node just return
+    if(!node) return;
+
+    // Check if skybox is disabled
+    bool disabled = false;
+    if(xml::parse_attribute(node, "disable", disabled))
+        if(disabled) return;
+
+    // Look for a CubemapTexture node and extract name
+    xml_node<>* cmap_node = node->first_node("CubemapTexture");
+    if(!cmap_node) return;
+
+    std::string cmap_name;
+    if(xml::parse_attribute(cmap_node, "name", cmap_name))
+    {
+        hash_t cmap_id = H_(cmap_name.c_str());
+        auto sb = game_object_factory_->make_skybox(cmap_id);
+        if(sb)
+        {
+            DLOGN("[SceneLoader] Using skybox:", "scene", Severity::LOW);
+            DLOGI("cubemap: <n>" + cmap_name + "</n>", "scene", Severity::LOW);
+            pscene_->set_skybox(sb);
+        }
+    }
+}
 
 uint32_t SceneLoader::load_chunk(const i32vec2& chunk_coords, bool finalize)
 {

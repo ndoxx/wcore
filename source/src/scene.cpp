@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "camera.h"
 #include "texture.h"
+#include "sky.h"
 #include "logger.h"
 #include "debug_info.h"
 #include "lights.h"
@@ -37,6 +38,7 @@ uint32_t Scene::SHADOW_WIDTH  = 1024;
 Scene::Scene():
 instance_buffer_unit_(),
 instance_vertex_array_(instance_buffer_unit_),
+skybox_(nullptr),
 camera_(std::make_shared<Camera>(GLB.WIN_W, GLB.WIN_H)),
 light_camera_(std::make_shared<Camera>(1, 1)),
 chunk_size_m_(32),

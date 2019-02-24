@@ -22,6 +22,7 @@ namespace wcore
 struct Vertex3P3N3T2U;
 struct ModelRenderInfo;
 class Model;
+class SkyBox;
 class Camera;
 class Light;
 class HeightMap;
@@ -50,6 +51,7 @@ private:
     std::vector<uint64_t> displayable_entities_;
     StaticOctree static_octree;
 
+    std::shared_ptr<SkyBox> skybox_;           // Optional skybox
     std::shared_ptr<Light> directional_light_; // The only directionnal light
     pCamera camera_;                           // Freefly camera (editor)
     pCamera light_camera_;                     // Virtual camera for shadow mapping
@@ -96,6 +98,9 @@ public:
     const HeightMap& get_heightmap(uint32_t chunk_index) const;
     float get_height(math::vec3 position) const;
 
+    inline bool has_skybox() const          { return (skybox_ != nullptr); }
+    inline const SkyBox& get_skybox() const { return *skybox_; }
+
     inline uint32_t get_vertex_count() const;
     inline uint32_t get_triangles_count() const;
 
@@ -118,6 +123,8 @@ public:
     void add_terrain(std::shared_ptr<TerrainChunk> terrain, uint32_t chunk_index);
     inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index)   { chunks_.at(chunk_index)->add_position_updater(updater); }
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)            { chunks_.at(chunk_index)->add_rotator(rotator); }
+
+    inline void set_skybox(std::shared_ptr<SkyBox> skybox) { skybox_ = skybox; }
 
     //uint64_t add_entity(std::shared_ptr<WEntity> entity);
     inline void register_displayable_entity(uint64_t id) { displayable_entities_.push_back(id); }

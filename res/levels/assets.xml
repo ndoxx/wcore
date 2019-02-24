@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Assets>
+    <Cubemaps>
+        <CubemapTexture name="skybox01">
+            <XMinus>sky01_left.png</XMinus>
+            <XPlus>sky01_right.png</XPlus>
+            <YMinus>sky01_bottom.png</YMinus>
+            <YPlus>sky01_top.png</YPlus>
+            <ZMinus>sky01_back.png</ZMinus>
+            <ZPlus>sky01_front.png</ZPlus>
+        </CubemapTexture>
+    </Cubemaps>
+
     <Materials>
         <Material name="ball01">
             <Texture>

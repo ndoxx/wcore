@@ -114,6 +114,7 @@ public:
     void parse_camera(rapidxml::xml_node<>* node);
     void parse_directional_light(rapidxml::xml_node<>* node);
     void parse_ambient(DaylightSystem& daylight, rapidxml::xml_node<>* node);
+    void parse_skybox(rapidxml::xml_node<>* node);
     void preload_instances();
     // -----------------------------------------------------------------
 
