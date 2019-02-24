@@ -21,40 +21,40 @@ std::shared_ptr<FaceMesh> make_cube(bool finalize)
     std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
     //                  /--------POSITION------  /----------UV----------
     //Front 1          |                        |
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(0.0f, 1.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(0.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(0.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(0.0f, 1.0f));
 
     //Right 2
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(2.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(2.0f/3.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 1.0f));
 
     //Back 4
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f/3.0f, 0.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(0.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(0.0f, 0.5f));
 
     //Left 5
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(2.0f/3.0f, 0.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(2.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f/3.0f, 0.5f));
 
     //Top 3
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f,0.5f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(1.0f,1.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(2.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f,1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(1.0f,0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(2.0f/3.0f, 1.0f));
 
     //Bottom 6
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(1.0f,0.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f,0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(2.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(1.0f,0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f,0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(2.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
 
     pmesh->push_triangle(0,  1,  2);
     pmesh->push_triangle(0,  2,  3);
@@ -142,66 +142,32 @@ std::shared_ptr<MeshP> make_skybox_3P()
 {
     std::shared_ptr<MeshP> pmesh(new MeshP);
 
-    // TODO: optimize this (many vertices are repeated)
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f)); // 0
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, -1.0f)); // 1
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f)); // 2
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f, -1.0f)); // 3
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f)); // 4
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f,  1.0f)); // 5
+    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f,  1.0f)); // 6
+    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f)); // 7
 
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
+    pmesh->_push_triangle(0, 1, 2);
+    pmesh->_push_triangle(2, 3, 0);
 
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
+    pmesh->_push_triangle(4, 1, 0);
+    pmesh->_push_triangle(0, 5, 4);
 
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
+    pmesh->_push_triangle(2, 6, 7);
+    pmesh->_push_triangle(7, 3, 2);
 
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, -1.0f));
+    pmesh->_push_triangle(4, 5, 7);
+    pmesh->_push_triangle(7, 6, 4);
 
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f, -1.0f));
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f,  1.0f));
-    pmesh->_emplace_vertex(vec3( 1.0f, -1.0f,  1.0f));
+    pmesh->_push_triangle(0, 3, 7);
+    pmesh->_push_triangle(7, 5, 0);
 
-    pmesh->_push_triangle(0,  1,  2);
-    pmesh->_push_triangle(3,  4,  5);
-
-    pmesh->_push_triangle(6,  7,  8);
-    pmesh->_push_triangle(9,  10, 11);
-
-    pmesh->_push_triangle(12, 13, 14);
-    pmesh->_push_triangle(15, 16, 17);
-
-    pmesh->_push_triangle(18, 19, 20);
-    pmesh->_push_triangle(21, 22, 23);
-
-    pmesh->_push_triangle(24, 25, 26);
-    pmesh->_push_triangle(27, 28, 29);
-
-    pmesh->_push_triangle(30, 31, 32);
-    pmesh->_push_triangle(33, 34, 35);
+    pmesh->_push_triangle(1, 4, 2);
+    pmesh->_push_triangle(2, 4, 6);
 
     return pmesh;
 }

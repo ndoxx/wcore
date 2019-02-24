@@ -23,8 +23,7 @@ aspect_ratio_((1.0f*imgWidth)/imgHeight)
     // Set row pointers to the correct offsets in data buffer (one for each row)
     for (uint32_t ii=0; ii < imgHeight; ++ii) // For each row
     {
-        // Reverse row order to make it compatible with OpenGL
-        uint32_t offset = (imgHeight - ii - 1) * stride_;
+        uint32_t offset = ii * stride_;
         pp_rows_[ii]    = (unsigned char*)p_data_ + offset;
     }
 }

@@ -6534,6 +6534,7 @@ L'attribut optionnel disable permet de désactiver la skybox rapidement depuis l
 
 ### Drawing
 Une _SkyBox_ possède son propre _BufferUnit<Vertex3P>_ et son propre _VertexArray<Vertex3P>_. Comme c'est un objet unique dans une scène, j'ai voulu faire simple. Je l'ai munie d'une fonction Skybox::draw() pour dessiner la géométrie.
+Note : j'utilise des Vertex3P car seule la position des vertices est nécessaire pour sampler une cubemap, pas besoin de spécifier de coordonnées UV.
 
 La skybox est un simple cube aligné avec les axes principaux de la map, qui suit la caméra. La partie translationnelle de la view matrix de la cam est annulée, de sorte que la position de la skybox ne soit pas affectée par la position de la caméra dans le repère monde. Elle est toujours centrée sur la cam.
 
@@ -6571,8 +6572,10 @@ void main()
 ```
 
 ### Merdique (TODO)
-[ ] Les textures sont toutes inversées, celà semble provenir du _PngLoader_. J'ai merdiquement inversé les textures de la skybox à la main pour m'en convaincre et laissé ça en état. Il faut régler ce problème rapidement.
+[X] Les textures sont toutes inversées, celà semble provenir du _PngLoader_. J'ai merdiquement inversé les textures de la skybox à la main pour m'en convaincre et laissé ça en état. Il faut régler ce problème rapidement.
+    -> J'inversais volontairement l'ordre des lignes dans _PixelBuffer_, surement pour rendre l'affichage correct du fait que j'inversais aussi la coordonnée V des cubes texturés...
 [ ] Lorsqu'il y a du fog en pleine nuit, le bord de certains objets (branches d'arbre, bord de map) est entouré d'un halo clair à la couleur de la skybox. Je ne sais pas si ce problème persistera quand la skybox sera adaptative (changera de teinte en fonction de l'heure de la journée).
+[X] Le mesh de la skybox est sous-optimal, chaque vertex est répété 4 fois, je ne tire pas partie de l'IBO.
 
 
 * sources :

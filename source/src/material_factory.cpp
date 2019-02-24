@@ -255,10 +255,9 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
     }
 }
 
-// WTF order
 static std::vector<std::string> CubeMapFaces =
 {
-    "XMinus", "XPlus", "YPlus", "YMinus", "ZPlus", "ZMinus"
+    "XPlus", "XMinus", "YPlus", "YMinus", "ZPlus", "ZMinus"
 };
 
 void MaterialFactory::parse_cubemap_descriptor(rapidxml::xml_node<>* node,
