@@ -38,6 +38,8 @@ std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_2_ =
     {TextureUnit::ROUGHNESS, "mt.sg2.roughnessTex"_h}
 };
 
+static uint32_t SAMPLER_GROUP_SIZE = 6;
+
 PngLoader Texture::png_loader_;
 
 static std::map<GLenum, GLenum> DATA_TYPES =
@@ -53,7 +55,7 @@ static std::map<GLenum, GLenum> DATA_TYPES =
     {GL_R8, GL_BYTE},
 };
 
-static const std::map<TextureUnit, hash_t>& select_sampler_group(uint8_t group)
+const std::map<TextureUnit, hash_t>& Texture::select_sampler_group(uint8_t group)
 {
     if(group == 1)
         return Texture::SAMPLER_NAMES_;
@@ -187,7 +189,7 @@ ID_(++Ninst)
     GLenum* formats         = new GLenum[numTextures_];
 
     uint32_t ii=0;
-    for(auto&& [key, sampler_name]: select_sampler_group(descriptor.sampler_group))
+    for(auto&& [key, sampler_name]: Texture::select_sampler_group(descriptor.sampler_group))
     {
         if(!descriptor.has_unit(key))
             continue;
@@ -371,6 +373,7 @@ Texture::Texture(const std::vector<hash_t>& sampler_names,
                  bool lazy_mipmap):
 resourceID_(H_("")),
 units_(0),
+sampler_group_(1),
 uniform_sampler_names_(sampler_names)
 {
     GLenum* filters         = new GLenum[sampler_names.size()];
@@ -419,19 +422,22 @@ internal_(new TextureInternal(textureTarget,
                               lazy_mipmap)),
 resourceID_(H_("")),
 units_(0),
+sampler_group_(1),
 uniform_sampler_names_(sampler_names){}
 
 Texture::Texture(const Texture& texture) :
 internal_(texture.internal_),
 resourceID_(texture.resourceID_),
 units_(texture.units_),
+sampler_group_(texture.sampler_group_),
 uniform_sampler_names_(texture.uniform_sampler_names_),
 unit_indices_(texture.unit_indices_){}
 
 Texture::Texture(Texture&& texture):
 internal_(std::move(texture.internal_)),
-resourceID_(std::move(texture.resourceID_)),
-units_(std::move(texture.units_)),
+resourceID_(texture.resourceID_),
+units_(texture.units_),
+sampler_group_(texture.sampler_group_),
 uniform_sampler_names_(std::move(texture.uniform_sampler_names_)),
 unit_indices_(std::move(texture.unit_indices_)){}
 
@@ -455,11 +461,12 @@ units_(descriptor.units)
     bool cache_exists = (it != RESOURCE_MAP_.end());
 
     // Register a sampler name for each unit
-    for(auto&& [key, sampler_name]: select_sampler_group(descriptor.sampler_group))
+    sampler_group_ = descriptor.sampler_group;
+    for(auto&& [key, sampler_name]: Texture::select_sampler_group(descriptor.sampler_group))
     {
         if(descriptor.has_unit(key))
         {
-            unit_indices_[key] = uniform_sampler_names_.size();
+            unit_indices_[key] = uniform_sampler_names_.size() + (descriptor.sampler_group-1)*descriptor.n_units;
             uniform_sampler_names_.push_back(sampler_name);
 
             #if __DEBUG__

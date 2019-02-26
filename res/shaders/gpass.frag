@@ -61,6 +61,9 @@ float edge_factor();
 // Write to g-buffer
 void main()
 {
+    // TMP splat
+    float splat=0.5f;
+
     // Do we use normal+parallax mapping?
     vec2 texCoords = frag_texCoord;
     vec3 normal;
@@ -69,10 +72,21 @@ void main()
         vec3 viewDir = -frag_tangent_viewDir;//normalize(frag_tangent_fragPos-frag_tangent_viewPos);
         //viewDir.y=-viewDir.y;
         if(mt.b_use_parallax_map)
-            texCoords = parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex);
+        {
+            #ifdef VARIANT_SPLAT
+                texCoords = (1.f-splat)*parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex)
+                          + splat*parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg2.depthTex);
+            #else
+                texCoords = parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex);
+            #endif
+        }
 
         // Normal vector from normal map
-        normal = texture(mt.sg1.normalTex, texCoords).rgb;
+        #ifdef VARIANT_SPLAT
+            normal = (1.f-splat)*texture(mt.sg1.normalTex, texCoords).rgb + splat*texture(mt.sg2.normalTex, texCoords).rgb;
+        #else
+            normal = texture(mt.sg1.normalTex, texCoords).rgb;
+        #endif
         normal = normalize(normal*2.0 - 1.0);
         normal = normalize(frag_TBN*normal);
     }
@@ -84,10 +98,37 @@ void main()
 
     vec2 normal_cmp = compress_normal(normal);
 
+#ifdef VARIANT_SPLAT
+    vec3  albedo;
+    if(mt.b_has_albedo)
+        albedo = (1.f-splat)*texture(mt.sg1.albedoTex, texCoords).rgb + splat*texture(mt.sg2.albedoTex, texCoords).rgb;
+    else
+        albedo = mt.v3_albedo;
+
+    float roughness;
+    if(mt.b_has_roughness)
+        roughness = (1.f-splat)*texture(mt.sg1.roughnessTex, texCoords).r + splat*texture(mt.sg2.roughnessTex, texCoords).r;
+    else
+        roughness = mt.f_roughness;
+
+    float metallic;
+    if(mt.b_has_metallic)
+        metallic = (1.f-splat)*texture(mt.sg1.metallicTex, texCoords).r + splat*texture(mt.sg2.metallicTex, texCoords).r;
+    else
+        metallic = mt.f_metallic;
+
+    float ao;
+    if(mt.b_has_ao)
+        ao = (1.f-splat)*texture(mt.sg1.AOTex, texCoords).r + splat*texture(mt.sg2.AOTex, texCoords).r;
+    else
+        ao = 1.0f;
+
+#else
     vec3  albedo    = mt.b_has_albedo?    texture(mt.sg1.albedoTex, texCoords).rgb:  mt.v3_albedo;
     float roughness = mt.b_has_roughness? texture(mt.sg1.roughnessTex, texCoords).r: mt.f_roughness;
     float metallic  = mt.b_has_metallic?  texture(mt.sg1.metallicTex, texCoords).r:  mt.f_metallic;
     float ao        = mt.b_has_ao?        texture(mt.sg1.AOTex, texCoords).r:        1.0f;
+#endif
 
     // DEBUG wireframe color
     float wireframe = edge_factor() * rd.f_wireframe_mix;

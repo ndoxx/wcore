@@ -83,7 +83,12 @@ FragmentShaderID_(0)
     // strip extension from vertex shader filename to get shader name, ugly but ok
     name_ = fs::path(res.vertex_shader).stem().string();
     DLOGS("[Shader] Creating new shader program:", "shader", Severity::LOW);
-    DLOGI("name= <n>" + name_ + "</n>", "shader", Severity::LOW);
+    DLOGI("name: <n>" + name_ + "</n>", "shader", Severity::LOW);
+
+    for(int ii=0; ii<res.flags.size(); ++ii)
+    {
+        DLOGI("variant: <n>" + res.flags[ii] + "</n>", "shader", Severity::LOW);
+    }
 #endif
     // VERTEX SHADER
     if(!res.vertex_shader.empty())
@@ -571,7 +576,7 @@ bool Shader::send_uniforms<Material>(const Material& material) const
 
     if((has_map = material.has_texture(TextureUnit::ALBEDO)))
     {
-        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::ALBEDO),
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::ALBEDO),
                           material.get_texture().get_unit_index(TextureUnit::ALBEDO));
     }
     else
@@ -582,14 +587,14 @@ bool Shader::send_uniforms<Material>(const Material& material) const
 
     if((has_map = material.has_texture(TextureUnit::AO)))
     {
-        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::AO),
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::AO),
                           material.get_texture().get_unit_index(TextureUnit::AO));
     }
     send_uniform("mt.b_has_ao"_h, has_map);
 
     if((has_map = material.has_texture(TextureUnit::METALLIC)))
     {
-        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::METALLIC),
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::METALLIC),
                           material.get_texture().get_unit_index(TextureUnit::METALLIC));
     }
     else
@@ -600,7 +605,7 @@ bool Shader::send_uniforms<Material>(const Material& material) const
 
     if((has_map = material.has_texture(TextureUnit::ROUGHNESS)))
     {
-        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::ROUGHNESS),
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::ROUGHNESS),
                           material.get_texture().get_unit_index(TextureUnit::ROUGHNESS));
     }
     else
@@ -611,14 +616,14 @@ bool Shader::send_uniforms<Material>(const Material& material) const
 
     if(material.has_normal_map())
     {
-        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::NORMAL),
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::NORMAL),
                           material.get_texture().get_unit_index(TextureUnit::NORMAL));
     }
     send_uniform("mt.b_use_normal_map"_h, material.has_normal_map());
 
     if(material.has_parallax_map())
     {
-        send_uniform<int>(Texture::unit_to_sampler_name(TextureUnit::DEPTH),
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::DEPTH),
                           material.get_texture().get_unit_index(TextureUnit::DEPTH));
         send_uniform("mt.f_parallax_height_scale"_h, material.get_parallax_height_scale());
     }

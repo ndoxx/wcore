@@ -36,6 +36,7 @@ private:
     pInternal internal_;
     hash_t    resourceID_;
     uint16_t  units_;
+    uint8_t   sampler_group_;
     std::vector<hash_t> uniform_sampler_names_;
     std::map<TextureUnit, uint32_t> unit_indices_;
 
@@ -107,8 +108,12 @@ public:
     inline bool has_unit(TextureUnit unit) const { return (units_&(uint16_t)unit); }
 
     inline uint32_t get_unit_index(TextureUnit unit) const { return unit_indices_.at(unit); }
-    static inline hash_t unit_to_sampler_name(TextureUnit unit) { return SAMPLER_NAMES_.at(unit); }
 
+    static const std::map<TextureUnit, hash_t>& select_sampler_group(uint8_t group);
+    inline hash_t unit_to_sampler_name(TextureUnit unit) const
+    {
+        return select_sampler_group(sampler_group_).at(unit);
+    }
 
     bool operator==(const Texture& texture) const;
     bool operator!=(const Texture& texture) const;

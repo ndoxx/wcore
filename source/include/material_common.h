@@ -45,13 +45,14 @@ public:
     uint16_t units = 0;
     // Sampler group number
     uint8_t sampler_group = 1;
+    uint8_t n_units = 0;
     // OpenGL texture parameters
     TextureParameters parameters;
     // Unique id
     hash_t resource_id;
 
     inline bool has_unit(TextureUnit unit) const { return (units&(uint16_t)unit); }
-    inline void add_unit(TextureUnit unit)       { units |= (uint16_t)unit; }
+    inline void add_unit(TextureUnit unit)       { units |= (uint16_t)unit; ++n_units; }
 };
 
 struct MaterialDescriptor
