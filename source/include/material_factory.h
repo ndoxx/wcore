@@ -33,7 +33,7 @@ public:
 
     void retrieve_material_descriptions(rapidxml::xml_node<>* materials_node);
     void retrieve_cubemap_descriptions(rapidxml::xml_node<>* cubemaps_node);
-    Material* make_material(hash_t asset_name);
+    Material* make_material(hash_t asset_name, uint8_t sampler_group=1);
     Material* make_material(MaterialDescriptor& descriptor);
     Material* make_material(rapidxml::xml_node<>* material_node,
                             OptRngT opt_rng=nullptr);

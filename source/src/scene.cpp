@@ -293,7 +293,7 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
         // TERRAINS
         // Terrains are heavily occluded by the static geometry on top,
         // so we draw them last so as to maximize depth test fails
-        for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
+        /*for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
         {
             Chunk* chunk = chunks_.at(chunks_order_[ii]);
             // * Chunk frustum culling
@@ -314,7 +314,7 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
             TerrainChunk& terrain = chunk->get_terrain_nc();
             prepare(terrain);
             chunk->draw(terrain.get_mesh().get_buffer_token());
-        }
+        }*/
     }
     //Traverse chunks back to front for transparent geometry
     else if(model_cat==wcore::MODEL_CATEGORY::TRANSPARENT)
@@ -337,6 +337,33 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
                 chunk->draw(model.get_mesh().get_buffer_token());
             }, evaluate, order, model_cat);
         }
+    }
+}
+
+void Scene::draw_terrains(std::function<void(const TerrainChunk&)> prepare,
+                          ModelEvaluator evaluate) const
+{
+    for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
+    {
+        Chunk* chunk = chunks_.at(chunks_order_[ii]);
+        // * Chunk frustum culling
+        // Always traverse the chunk we're at, else, frustum cull
+        if(chunk->get_index()!=current_chunk_index_)
+        {
+            // ----- /!\ (APPROX) /!\ -----
+            // Is chunk visible? ~= Is terrain visible? (when viewed from the top)
+
+            // Get terrain chunk OBB
+            OBB& obb = chunk->get_terrain_nc().get_OBB();
+            // Frustum cull entire chunk
+            if(!camera_->frustum_collides(obb))
+                continue;
+        }
+
+        // Draw terrains
+        TerrainChunk& terrain = chunk->get_terrain_nc();
+        prepare(terrain);
+        chunk->draw(terrain.get_mesh().get_buffer_token());
     }
 }
 

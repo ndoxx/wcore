@@ -41,11 +41,12 @@ private:
 
     static RMap RESOURCE_MAP_;   // TextureInternal cache
     static TMap NAMED_TEXTURES_; // Holds pointers to named textures
-    static std::map<TextureUnit, hash_t> SAMPLER_NAMES_;
     static PngLoader png_loader_;
 
 public:
     static const std::string TEX_IMAGE_PATH;
+    static std::map<TextureUnit, hash_t> SAMPLER_NAMES_;
+    static std::map<TextureUnit, hash_t> SAMPLER_NAMES_2_; // Sampler names for alt-materials used in splat-mapping
 
     // Load texture from TextureDescriptor structure
     // Can be obtained from MaterialFactory

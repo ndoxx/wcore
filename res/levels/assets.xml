@@ -9,6 +9,14 @@
             <ZMinus>sky01_back.png</ZMinus>
             <ZPlus>sky01_front.png</ZPlus>
         </CubemapTexture>
+        <CubemapTexture name="skybox02">
+            <XMinus>toh_rt.png</XMinus>
+            <XPlus>toh_lf.png</XPlus>
+            <YMinus>toh_dn.png</YMinus>
+            <YPlus>toh_up.png</YPlus>
+            <ZMinus>toh_bk.png</ZMinus>
+            <ZPlus>toh_ft.png</ZPlus>
+        </CubemapTexture>
     </Cubemaps>
 
     <Materials>

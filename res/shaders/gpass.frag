@@ -3,7 +3,7 @@
 #include "normal_compression.glsl"
 #include "parallax.glsl"
 
-struct material
+struct sampler_group
 {
     sampler2D albedoTex;
     sampler2D AOTex;
@@ -11,6 +11,14 @@ struct material
     sampler2D roughnessTex;
     sampler2D normalTex;
     sampler2D depthTex;
+};
+
+struct material
+{
+    sampler_group sg1;
+#ifdef VARIANT_SPLAT
+    sampler_group sg2;
+#endif
 
     float f_parallax_height_scale;
 
@@ -61,10 +69,10 @@ void main()
         vec3 viewDir = -frag_tangent_viewDir;//normalize(frag_tangent_fragPos-frag_tangent_viewPos);
         //viewDir.y=-viewDir.y;
         if(mt.b_use_parallax_map)
-            texCoords = parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.depthTex);
+            texCoords = parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex);
 
         // Normal vector from normal map
-        normal = texture(mt.normalTex, texCoords).rgb;
+        normal = texture(mt.sg1.normalTex, texCoords).rgb;
         normal = normalize(normal*2.0 - 1.0);
         normal = normalize(frag_TBN*normal);
     }
@@ -76,10 +84,10 @@ void main()
 
     vec2 normal_cmp = compress_normal(normal);
 
-    vec3  albedo    = mt.b_has_albedo?    texture(mt.albedoTex, texCoords).rgb:  mt.v3_albedo;
-    float roughness = mt.b_has_roughness? texture(mt.roughnessTex, texCoords).r: mt.f_roughness;
-    float metallic  = mt.b_has_metallic?  texture(mt.metallicTex, texCoords).r:  mt.f_metallic;
-    float ao        = mt.b_has_ao?        texture(mt.AOTex, texCoords).r:        1.0f;
+    vec3  albedo    = mt.b_has_albedo?    texture(mt.sg1.albedoTex, texCoords).rgb:  mt.v3_albedo;
+    float roughness = mt.b_has_roughness? texture(mt.sg1.roughnessTex, texCoords).r: mt.f_roughness;
+    float metallic  = mt.b_has_metallic?  texture(mt.sg1.metallicTex, texCoords).r:  mt.f_metallic;
+    float ao        = mt.b_has_ao?        texture(mt.sg1.AOTex, texCoords).r:        1.0f;
 
     // DEBUG wireframe color
     float wireframe = edge_factor() * rd.f_wireframe_mix;

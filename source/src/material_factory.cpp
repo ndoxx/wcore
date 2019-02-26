@@ -153,19 +153,13 @@ void MaterialFactory::retrieve_cubemap_descriptions(rapidxml::xml_node<>* cubema
 }
 
 
-Material* MaterialFactory::make_material(hash_t asset_name)
+Material* MaterialFactory::make_material(hash_t asset_name, uint8_t sampler_group)
 {
-    // Try to find in cache, make new material if not cached
-    /*auto it = cache_.find(asset_name);
-    if(it != cache_.end())
-        return it->second;
-    else
-    {*/
-        Material* ret = new Material(get_material_descriptor(asset_name));
-        //cache_.insert(std::pair(asset_name, ret));
-        ret->set_cached(true);
-        return ret;
-    //}
+    MaterialDescriptor descriptor(get_material_descriptor(asset_name));
+    descriptor.texture_descriptor.sampler_group = sampler_group;
+
+    Material* ret = new Material(descriptor);
+    return ret;
 }
 
 Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
@@ -179,7 +173,14 @@ Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node, Op
     bool use_asset = xml::parse_attribute(material_node, "name", asset);
 
     if(use_asset)
-        return make_material(H_(asset.c_str()));
+    {
+        // Check sampler group
+        uint8_t sampler_group = 1;
+        if(!strcmp(material_node->name(), "MaterialAlt"))
+            sampler_group = 2;
+
+        return make_material(H_(asset.c_str()), sampler_group);
+    }
 
     MaterialDescriptor desc;
     parse_material_descriptor(material_node, desc, opt_rng);

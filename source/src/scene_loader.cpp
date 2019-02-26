@@ -663,6 +663,7 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
 
     // Get nodes
     xml_node<>* mat_node = patch->first_node("Material");
+    xml_node<>* altmat_node = patch->first_node("MaterialAlt");
     if(!mat_node) return;
     xml_node<>* trn_node = patch->first_node("Transform");
     xml_node<>* shadow_node = patch->first_node("Shadow");
@@ -675,12 +676,14 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
 
     TerrainPatchDescriptor desc;
     desc.chunk_size = chunk_size_;
+    desc.chunk_index = chunk_index;
     desc.chunk_x = chunk_coords.x();
     desc.chunk_z = chunk_coords.y();
     desc.lattice_scale = lattice_scale_;
     desc.texture_scale = texture_scale_;
     desc.height = height;
     desc.material_node = mat_node;
+    desc.alt_material_node = altmat_node;
     desc.generator_node = generator_node;
     desc.height_modifier_node = height_modifier_node;
 

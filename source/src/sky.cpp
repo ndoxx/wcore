@@ -13,6 +13,7 @@ mesh_(factory::make_skybox_3P()),
 buffer_unit_(),
 vertex_array_(buffer_unit_)
 {
+    // Upload geometry
     buffer_unit_.submit(*mesh_);
     buffer_unit_.upload();
 }
@@ -29,10 +30,9 @@ void SkyBox::bind() const
 
 void SkyBox::draw() const
 {
-    const BufferToken& token = mesh_->get_buffer_token();
-
+    // Bind vertex array and draw geometry
     vertex_array_.bind();
-    buffer_unit_.draw(token);
+    buffer_unit_.draw(mesh_->get_buffer_token());
 }
 
 

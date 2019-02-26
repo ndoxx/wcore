@@ -43,6 +43,8 @@ public:
     TexMap locations;
     // Flags for each unit
     uint16_t units = 0;
+    // Sampler group number
+    uint8_t sampler_group = 1;
     // OpenGL texture parameters
     TextureParameters parameters;
     // Unique id

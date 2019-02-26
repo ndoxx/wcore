@@ -4,7 +4,7 @@
         <BGM>desert_bgm</BGM>
     </Audio>
     <Skybox disable="false">
-        <CubemapTexture name="skybox01"/>
+        <CubemapTexture name="skybox02"/>
     </Skybox>
     <Terrain chunkSize="33" latticeScale="1.0" textureScale="0.25">
         <TerrainPatch origin="(0,0)" size="(5,5)" height="0">
@@ -47,6 +47,7 @@
                 <Position>(0,0,0)</Position>
             </Transform>
             <Material name="beachSand"/>
+            <MaterialAlt name="sandstone"/>
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>

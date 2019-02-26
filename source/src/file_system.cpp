@@ -134,24 +134,31 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* virtual
         return nullptr;
     }
 
-    // Get stream to archive file using zipios API
-    zipios::FileCollection::stream_pointer_t in_stream(it->second.getInputStream(virtual_path));
-
-    // Sanity check
-    if(!in_stream->good())
+    // Check if entry exists in archive
+    zipios::FileEntry::pointer_t entry(it->second.getEntry(virtual_path));
+    if(entry)
     {
-        DLOGE("Unable to form stream:", "io", Severity::CRIT);
-        DLOGI("from archive: " + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io", Severity::CRIT);
-        DLOGI("virtual path: <p>" + std::string(virtual_path) + "</p>", "io", Severity::CRIT);
+        // Get stream to archive file using zipios API
+        zipios::FileCollection::stream_pointer_t in_stream(it->second.getInputStream(virtual_path));
 
-        return nullptr;
+        // Sanity check
+        if(!in_stream->good())
+        {
+            DLOGE("Unable to form stream:", "io", Severity::CRIT);
+            DLOGI("from archive: " + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io", Severity::CRIT);
+            DLOGI("virtual path: <p>" + std::string(virtual_path) + "</p>", "io", Severity::CRIT);
+
+            return nullptr;
+        }
+
+        DLOGN("[FileSystem] Getting stream from archive:", "io", Severity::LOW);
+        DLOGI(std::string("archive: ") + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io", Severity::LOW);
+        DLOGI(std::string("<h>vpath</h>:   <p>") + virtual_path + "</p>", "io", Severity::LOW);
+
+        return in_stream;
     }
 
-    DLOGN("[FileSystem] Getting stream from archive:", "io", Severity::LOW);
-    DLOGI(std::string("archive: ") + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io", Severity::LOW);
-    DLOGI(std::string("<h>vpath</h>:   <p>") + virtual_path + "</p>", "io", Severity::LOW);
-
-    return in_stream;
+    return nullptr;
 }
 
 std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* filename,
@@ -188,6 +195,11 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* filenam
                 return stream;
         }
     }
+
+    DLOGE("[FileSystem] File couldn't be reached:", "io", Severity::CRIT);
+    DLOGI("filename: <p>" + std::string(filename) + "</p>", "io", Severity::CRIT);
+    DLOGI("folder node: " + std::to_string(folder_node) + " -> <x>" + HRESOLVE(folder_node) + "</x>", "io", Severity::CRIT);
+    DLOGI("archive:     " + std::to_string(archive) + " -> <h>" + HRESOLVE(archive) + "</h>", "io", Severity::CRIT);
 
     return nullptr;
 }

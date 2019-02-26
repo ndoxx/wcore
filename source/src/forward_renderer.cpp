@@ -101,7 +101,7 @@ void ForwardRenderer::render(Scene* pscene)
         skybox_shader_.unuse();
         glDepthFunc(GL_LESS);
     }
-    //LBuffer::Instance().unbind_as_target();
+    LBuffer::Instance().unbind_as_target();
 
     // Restore state
     GFX::disable_depth_testing();

@@ -6494,7 +6494,7 @@ Le noeud *SmoothNormals* peut prendre les valeurs suivantes :
 
 Idéalement j'aimerais avoir un système plus flexible capable de détecter et calculer uniquement les normales manquantes, sans nécessité de dupliquer chaque vertex comme l'implique l'utilisation de _FaceMesh_. Mais ça me demande de refonder complètement les meshs.
 
-#[24-02-18]
+#[24-02-19]
 
 ## Cubemap & Skybox
 La nouvelle classe _Cubemap_ vient abstraire les cubemaps d'OpenGL. Une cubemap est générée depuis un descripteur de type _CubemapDescriptor_, lui-même parsé depuis assets.xml :
@@ -6574,22 +6574,35 @@ void main()
 ### Merdique (TODO)
 [X] Les textures sont toutes inversées, celà semble provenir du _PngLoader_. J'ai merdiquement inversé les textures de la skybox à la main pour m'en convaincre et laissé ça en état. Il faut régler ce problème rapidement.
     -> J'inversais volontairement l'ordre des lignes dans _PixelBuffer_, surement pour rendre l'affichage correct du fait que j'inversais aussi la coordonnée V des cubes texturés...
-[ ] Lorsqu'il y a du fog en pleine nuit, le bord de certains objets (branches d'arbre, bord de map) est entouré d'un halo clair à la couleur de la skybox. Je ne sais pas si ce problème persistera quand la skybox sera adaptative (changera de teinte en fonction de l'heure de la journée).
+[X] Lorsqu'il y a du fog en pleine nuit, le bord de certains objets (branches d'arbre, bord de map) est entouré d'un halo clair à la couleur de la skybox. Je ne sais pas si ce problème persistera quand la skybox sera adaptative (changera de teinte en fonction de l'heure de la journée).
+    -> C'est dû à l'effet bloom et à la FXAA ! Le problème est largement circonscrit en inversant l'ordre forward pass / bloom pass dans la pipeline. La FXAA cause le problème en premier lieu en faisant baver la skybox sur quelques px à l'intérieur des objets, et l'effet bloom élargit le halo ainsi créé. Pour réellement régler le problème, il faudrait générer le fog avant le sampling de la FXAA. Pour l'instant, je me contente d'inverser l'ordre forward pass / bloom pass ce qui implique que l'effet bloom ne pourra pas s'appliquer aux objets rendus en forward.
 [X] Le mesh de la skybox est sous-optimal, chaque vertex est répété 4 fois, je ne tire pas partie de l'IBO.
 
 
 * sources :
 [1] https://learnopengl.com/Advanced-OpenGL/Cubemaps
 
+#[25-02-19]
+
+## A propos de SIMD
+J'entretenais quelque velléité de rendre mes classes de maths compatibles SIMD. Mais il y a plusieurs raisons qui entraîneront que je ne le ferai probablement pas. Déjà, le meilleur moyen d'utiliser SIMD est de travailler avec des types compiler-dependent (personne ne se tape de l'assembleur pour une lib math SIMD). Ensuite, je lis que l'efficacité n'est pas nécessairement au rendez-vous lorsque l'on utilise SIMD dans un gros game engine, à cause notamment de la contrainte d'allignement sur 16 bytes qui rend le bordel assez peu cache-friendly.
+
+Voici un com assez sagace d'un type en réponse à TheCherno qui vient de produire une vidéo sur comment et pourquoi il utilisera la lib GLM dans son moteur Hazel :
+
+    I disagree that simd math is absolutely necessary. It is simply not true that simd math is way faster in a huge and complex engine. There are a couple reasons for that. First, to make full use of simd, data needs to be stored in these registers as long as possible, which is often not the case. Second, simd sse data needs to be 16 byte aligned which can also decrease performance, e.g. because now you have to load more data in the cache than before and if you forgot to manually align it, it will be even slower. Yes the actual calculations are faster than non-simd, but simd is not the holy grail of graphics programming. And now the reason why i tell you this. Last year i thought exactly the same, because everyone teaches it. Now, i work with the guys who created the cryengine and did farcry, crysis etc. and they are not even using simd math. Back when they tried it it was actually slower in their engine. Another thing i want to mention is to have the abilitiy to question everything. Today, computer graphics is taught exclusively using matrix math. Guess what? Cryengine does not use it except in a few cases (Mainly for projection). Matrices are slow and have to much unnecessary data. I would argue that replacing matrices with something else (we use dual-quats and qtangents) it is way faster than using simd math. Have a nice day! :)﻿
 
 
+## Batch image conversion
 
-
-
-
+    >> mogrify -format png ./*.jpg
+Convertit tous les .jpg du dossier courant en .png.
 
 
 * TODO:
+    [ ] New texture maps (possibly grouped in same Gbuffer chan):
+        * Emissivity map
+        * Reflection map
+
     [ ] Pre-multiplied alpha:
         https://www.essentialmath.com/GDC2015/VanVerth_Jim_DoingMathwRGB.pdf
 

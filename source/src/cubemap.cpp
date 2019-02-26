@@ -7,6 +7,7 @@
 #include "png_loader.h"
 #include "file_system.h"
 #include "logger.h"
+#include "error.h"
 
 namespace wcore
 {
@@ -36,6 +37,12 @@ Cubemap::Cubemap(const CubemapDescriptor& descriptor)
     for(GLuint ii=0; ii<6; ++ii)
     {
         auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations[ii].c_str(), "root.folders.texture"_h, "pack0"_h);
+        // Sanity check
+        if(stream == nullptr)
+        {
+            DLOGF("[Cubemap] Invalid stream.", "io", Severity::CRIT);
+            fatal();
+        }
         px_bufs[ii] = PNG_LOADER.load_png(*stream);
 
 #ifdef __DEBUG__

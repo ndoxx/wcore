@@ -170,14 +170,43 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
         return nullptr;
     }
 
+    // Alt material for splat mapping
+    Material* pmat2 = nullptr;
+    if(desc.alt_material_node)
+    {
+        pmat2 = material_factory_->make_material(desc.alt_material_node);
+        if(!pmat2)
+        {
+            DLOGW("[ModelFactory] Incomplete alt-material declaration.", "parsing", Severity::WARN);
+            delete pmat2;
+        }
+    }
+
     HeightMap* heightmap = terrain_factory_->make_heightmap(desc);
 
-    return std::make_shared<TerrainChunk>(
+    auto ret = std::make_shared<TerrainChunk>(
         heightmap,
         pmat,
         desc.lattice_scale,
         desc.texture_scale
     );
+
+    // If we have an alternative material
+    if(pmat2)
+    {
+        // Try to load splatmap
+        std::string splatmap_name("splat_");
+        splatmap_name += std::to_string(desc.chunk_index) + ".png";
+
+        DLOGN("[ModelFactory] Trying to load splat map:", "parsing", Severity::LOW);
+        DLOGI("<p>" + splatmap_name + "</p>", "parsing", Severity::LOW);
+
+        // Add them to the terrain chunk
+        ret->add_alternative_material(pmat2);
+        ret->add_splat_mat(/* */);
+    }
+
+    return ret;
 }
 
 std::shared_ptr<SkyBox> ModelFactory::make_skybox(hash_t cubemap_name)

@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "vertex_format.h"
 #include "model.h"
+#include "terrain_patch.h"
 #include "math3d.h"
 #include "g_buffer.h"
 #include "bounding_boxes.h"
@@ -20,6 +21,7 @@ using namespace math;
 GeometryRenderer::GeometryRenderer():
 Renderer<Vertex3P3N3T2U>(),
 geometry_pass_shader_(ShaderResource("gpass.vert;gpass.geom;gpass.frag")),
+terrain_shader_(ShaderResource("gpass.vert;gpass.geom;gpass.frag", "VARIANT_SPLAT")),
 wireframe_mix_(0.0f),
 min_parallax_distance_(20.f),
 allow_normal_mapping_(true),
@@ -90,9 +92,51 @@ void GeometryRenderer::render(Scene* pscene)
         return model.is_visible(); // Visibility is evaluated during update by Scene::visibility_pass()
     },
     wcore::ORDER::FRONT_TO_BACK);
-
-    //GBuffer::Instance().unbind_as_target();
     geometry_pass_shader_.unuse();
+
+
+    // TERRAINS
+    // Terrains are heavily occluded by the static geometry on top,
+    // so we draw them last so as to maximize depth test fails
+    terrain_shader_.use();
+    pscene->draw_terrains([&](const TerrainChunk& terrain)
+    {
+        // Get model matrix and compute products
+        mat4 M = const_cast<TerrainChunk&>(terrain).get_model_matrix();
+        mat4 MV = V*M;
+        mat4 MVP = PV*M;
+
+        // normal matrix for light calculation
+        terrain_shader_.send_uniform("tr.m3_Normal"_h, MV.submatrix(3,3)); // Transposed inverse of M if non uniform scales
+        // model matrix
+        terrain_shader_.send_uniform("tr.m4_ModelView"_h, MV);
+        // MVP matrix
+        terrain_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
+        // material uniforms
+        terrain_shader_.send_uniforms(terrain.get_material());
+        if(terrain.has_splat_map())
+            terrain_shader_.send_uniforms(terrain.get_alternative_material());
+
+        // overrides
+        if(!allow_normal_mapping_)
+            terrain_shader_.send_uniform("mt.b_use_normal_map"_h, false);
+        if(!allow_parallax_mapping_)
+            terrain_shader_.send_uniform("mt.b_use_parallax_map"_h, false);
+        else
+        {
+            // use parallax mapping only if object is close enough
+            float dist = (terrain.get_position()-campos).norm();
+            terrain_shader_.send_uniform("mt.b_use_parallax_map"_h, (dist < min_parallax_distance_));
+        }
+        if(terrain.get_material().is_textured())
+        {
+            // bind current material texture units if any
+            terrain.get_material().bind_texture();
+        }
+    });
+    terrain_shader_.unuse();
+
+    GBuffer::Instance().unbind_as_target();
 
     // Lock depth buffer (read only)
     GFX::lock_depth_buffer();

@@ -558,27 +558,6 @@ void RenderPipeline::render()
     }
     #endif
 
-// ------- FORWARD PASS (draw anything incompatible with deferred pass) -------
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
-    #endif
-
-    forward_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        forward_dt_fifo_.push(dt);
-    }
-    #endif
-
 // ------- BLUR PASS (draw on textures "bloom_i" with i in [0,3]) -------------
     #ifdef __PROFILE__
     if(profile_renderers)
@@ -598,6 +577,27 @@ void RenderPipeline::render()
         period = profile_clock_.get_elapsed_time();
         dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
         bloom_dt_fifo_.push(dt);
+    }
+    #endif
+
+// ------- FORWARD PASS (draw anything incompatible with deferred pass) -------
+    #ifdef __PROFILE__
+    if(profile_renderers)
+    {
+        GFX::finish();
+        profile_clock_.restart();
+    }
+    #endif
+
+    forward_renderer_->render(pscene);
+
+    #ifdef __PROFILE__
+    if(profile_renderers)
+    {
+        GFX::finish();
+        period = profile_clock_.get_elapsed_time();
+        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
+        forward_dt_fifo_.push(dt);
     }
     #endif
 

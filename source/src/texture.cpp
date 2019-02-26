@@ -19,12 +19,23 @@ Texture::TMap Texture::NAMED_TEXTURES_;
 
 std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
 {
-    {TextureUnit::ALBEDO,    "mt.albedoTex"_h},
-    {TextureUnit::AO,        "mt.AOTex"_h},
-    {TextureUnit::DEPTH,     "mt.depthTex"_h},
-    {TextureUnit::METALLIC,  "mt.metallicTex"_h},
-    {TextureUnit::NORMAL,    "mt.normalTex"_h},
-    {TextureUnit::ROUGHNESS, "mt.roughnessTex"_h}
+    {TextureUnit::ALBEDO,    "mt.sg1.albedoTex"_h},
+    {TextureUnit::AO,        "mt.sg1.AOTex"_h},
+    {TextureUnit::DEPTH,     "mt.sg1.depthTex"_h},
+    {TextureUnit::METALLIC,  "mt.sg1.metallicTex"_h},
+    {TextureUnit::NORMAL,    "mt.sg1.normalTex"_h},
+    {TextureUnit::ROUGHNESS, "mt.sg1.roughnessTex"_h}
+};
+
+// Alternative samplet group for splat mapping
+std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_2_ =
+{
+    {TextureUnit::ALBEDO,    "mt.sg2.albedoTex"_h},
+    {TextureUnit::AO,        "mt.sg2.AOTex"_h},
+    {TextureUnit::DEPTH,     "mt.sg2.depthTex"_h},
+    {TextureUnit::METALLIC,  "mt.sg2.metallicTex"_h},
+    {TextureUnit::NORMAL,    "mt.sg2.normalTex"_h},
+    {TextureUnit::ROUGHNESS, "mt.sg2.roughnessTex"_h}
 };
 
 PngLoader Texture::png_loader_;
@@ -41,6 +52,14 @@ static std::map<GLenum, GLenum> DATA_TYPES =
     {GL_RGB8, GL_BYTE},
     {GL_R8, GL_BYTE},
 };
+
+static const std::map<TextureUnit, hash_t>& select_sampler_group(uint8_t group)
+{
+    if(group == 1)
+        return Texture::SAMPLER_NAMES_;
+    else //if(group == 2)
+        return Texture::SAMPLER_NAMES_2_;
+}
 
 static GLenum internal_format_to_data_type(GLenum iformat)
 {
@@ -168,13 +187,13 @@ ID_(++Ninst)
     GLenum* formats         = new GLenum[numTextures_];
 
     uint32_t ii=0;
-    for(auto&& [key, sampler_name]: SAMPLER_NAMES_)
+    for(auto&& [key, sampler_name]: select_sampler_group(descriptor.sampler_group))
     {
         if(!descriptor.has_unit(key))
             continue;
 
         filters[ii] = descriptor.parameters.filter;
-        if(sampler_name == "mt.diffuseTex"_h)
+        if(sampler_name == "mt.sg1.diffuseTex"_h)
         {
             // Load Albedo / Diffuse textures as sRGB to avoid
             // double gamma-correction.
@@ -436,7 +455,7 @@ units_(descriptor.units)
     bool cache_exists = (it != RESOURCE_MAP_.end());
 
     // Register a sampler name for each unit
-    for(auto&& [key, sampler_name]: SAMPLER_NAMES_)
+    for(auto&& [key, sampler_name]: select_sampler_group(descriptor.sampler_group))
     {
         if(descriptor.has_unit(key))
         {
