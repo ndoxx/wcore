@@ -1,5 +1,7 @@
 #include <cassert>
 #include <vector>
+#include <sstream>
+
 
 #include "texture.h"
 #include "pixel_buffer.h"
@@ -291,6 +293,35 @@ ID_(++Ninst)
     delete [] px_bufs;
 }
 
+Texture::TextureInternal::TextureInternal(std::istream& stream)
+{
+    if(!stream.good())
+    {
+        DLOGE("[Texture] Failed to create texture from stream: stream is bad.", "texture", Severity::CRIT);
+        return;
+    }
+
+    PixelBuffer* px_buf = png_loader_.load_png(stream);
+
+    textureID_ = new GLuint[1];
+    is_depth_  = new bool[1];
+    is_depth_[0] = false;
+    glGenTextures(1, textureID_);
+    glBindTexture(GL_TEXTURE_2D, textureID_[0]);
+
+    // Specify OpenGL texture
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB,
+                 px_buf->get_width(),
+                 px_buf->get_height(),
+                 0,
+                 GL_RGB,
+                 GL_BYTE,
+                 px_buf->get_data_pointer());
+
+    delete px_buf;
+}
 
 Texture::TextureInternal::TextureInternal(GLenum textureTarget,
                                           uint32_t numTextures,
@@ -425,24 +456,6 @@ units_(0),
 sampler_group_(1),
 uniform_sampler_names_(sampler_names){}
 
-Texture::Texture(const Texture& texture) :
-internal_(texture.internal_),
-resourceID_(texture.resourceID_),
-units_(texture.units_),
-sampler_group_(texture.sampler_group_),
-uniform_sampler_names_(texture.uniform_sampler_names_),
-unit_indices_(texture.unit_indices_){}
-
-Texture::Texture(Texture&& texture):
-internal_(std::move(texture.internal_)),
-resourceID_(texture.resourceID_),
-units_(texture.units_),
-sampler_group_(texture.sampler_group_),
-uniform_sampler_names_(std::move(texture.uniform_sampler_names_)),
-unit_indices_(std::move(texture.unit_indices_)){}
-
-#include <sstream>
-
 Texture::Texture(const TextureDescriptor& descriptor):
 resourceID_(descriptor.resource_id),
 units_(descriptor.units)
@@ -499,6 +512,14 @@ units_(descriptor.units)
     }
 }
 
+Texture::Texture(std::istream& stream):
+resourceID_(""_h),
+units_(1)
+{
+    internal_ = std::make_shared<TextureInternal>(stream);
+}
+
+
 Texture::~Texture()
 {
     // If only the object which caused destruction of Texture
@@ -506,7 +527,7 @@ Texture::~Texture()
     // no need to cache texture anymore
     if(internal_.use_count() == 2)
     {
-        if(resourceID_ != H_(""))
+        if(resourceID_ != ""_h)
         {
             RESOURCE_MAP_.erase(resourceID_);
             #ifdef __DEBUG__

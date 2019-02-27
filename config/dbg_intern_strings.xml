@@ -8,7 +8,6 @@
     <string key="126269861530532084" value="texture"/>
     <string key="258029378701860198" value="v4_line_color"/>
     <string key="271672890340345462" value="path"/>
-    <string key="300159695422047069" value="mt.diffuseTex"/>
     <string key="332692525705157832" value="k_run"/>
     <string key="360889090461457270" value="rd.v3_fogColor"/>
     <string key="397725169173227793" value="root.ssao.radius"/>
@@ -29,33 +28,37 @@
     <string key="662339240616752384" value="UP"/>
     <string key="750393415753537846" value="sdiChunk"/>
     <string key="784379219033146998" value="rd.f_contrast"/>
+    <string key="846030630359076500" value="mt.sg1.AOTex"/>
     <string key="861027079397864862" value="core"/>
+    <string key="868596975789480376" value="skyboxTex"/>
     <string key="916638524616673858" value="v3_color"/>
     <string key="940534571439560742" value="SCROLL_LOCK"/>
     <string key="940676371841988263" value="inv_gamma_r"/>
+    <string key="977075612236989300" value="mt.sg1.diffuseTex"/>
     <string key="1009809161560322634" value="rd.f_radius"/>
     <string key="1257079576020054407" value="PAGE_DOWN"/>
     <string key="1260601502544752171" value="k_tg_wireframe"/>
     <string key="1261501771575938509" value="ENTER"/>
     <string key="1294221133309910365" value="root.sound.general.rolloff_scale"/>
     <string key="1326587244035926933" value="root.postproc.vignette.falloff"/>
+    <string key="1345558381599645151" value="mt.sg2.roughnessTex"/>
     <string key="1354332443335044921" value="m3_Normal"/>
-    <string key="1468727303474109060" value="mt.albedoTex"/>
     <string key="1494619669263255324" value="bloom"/>
     <string key="1533019300363245691" value="root.ssao.scale"/>
+    <string key="1599008660829963376" value="mt.sg2.normalTex"/>
     <string key="1668764284665207626" value="KP_DIVIDE"/>
     <string key="1822684255179955993" value="rd.f_inv_far"/>
     <string key="1835899233338147479" value="KP_SUBTRACT"/>
     <string key="1863603941557477773" value="sdiAngles"/>
     <string key="1887491037416224730" value="obj"/>
     <string key="2030094403841163005" value="root.debug.logger.print_backtrace_on_error"/>
+    <string key="2073735945648089989" value="root.folders.model"/>
     <string key="2213964022818352189" value="shadowmap"/>
     <string key="2345495575848284325" value="root.ssao.blur.kernel_half_size"/>
     <string key="2351491429091079500" value="lt.v3_lightColor"/>
     <string key="2377904621432626534" value="root.camera.speed_fast"/>
     <string key="2576809748952221054" value="root.camera.near"/>
     <string key="2758056727152387417" value="rd.f_bias"/>
-    <string key="2861446283222450436" value="mt.depthTex"/>
     <string key="2958903810522046217" value="input.mouse.unlocked"/>
     <string key="2972418606900973698" value="screenTex"/>
     <string key="3143511548502526014" value="int"/>
@@ -73,7 +76,6 @@
     <string key="3960499203144025830" value="sdiPosition"/>
     <string key="4000193554061510222" value="RIGHT_SHIFT"/>
     <string key="4065584643982063156" value="rd.f_saturation"/>
-    <string key="4075892785313248797" value="mt.roughnessTex"/>
     <string key="4078327762553393345" value="k_reload_chunks"/>
     <string key="4095489122264647498" value="mt.b_has_roughness"/>
     <string key="4128981603702996129" value="uint"/>
@@ -105,7 +107,6 @@
     <string key="5375663403181666835" value="Scene"/>
     <string key="5413329254476999769" value="k_tg_fog"/>
     <string key="5417827944999695778" value="root.render.override.allow_shadow_mapping"/>
-    <string key="5444861671349379636" value="mt.metallicTex"/>
     <string key="5453233685459444193" value="PRINT_SCREEN"/>
     <string key="5470672258687767110" value="ESCAPE"/>
     <string key="5497878670064540503" value="normalTex"/>
@@ -125,7 +126,6 @@
     <string key="5709499356571325383" value="k_light_volumes_next_mode"/>
     <string key="5712466910721036028" value="LEFT_SUPER"/>
     <string key="5748113403437925080" value="pack0"/>
-    <string key="5907829424377857379" value="mt.AOTex"/>
     <string key="5914156520092627619" value="EntitySystem"/>
     <string key="5940711316802490476" value="mt.b_has_ao"/>
     <string key="6030703297166523719" value="m4_ModelView"/>
@@ -139,6 +139,7 @@
     <string key="6325457071842862761" value="k_tg_chunk_mgr"/>
     <string key="6397362739859996101" value="rd.f_intensity"/>
     <string key="6412403349859836949" value="root.postproc.color.vibrance.strength"/>
+    <string key="6412751975946041216" value="mt.sg1.roughnessTex"/>
     <string key="6443438359041303644" value="rd.f_fogDensity"/>
     <string key="6461287345427881327" value="WORLD_1"/>
     <string key="6461288444939509538" value="WORLD_2"/>
@@ -156,6 +157,8 @@
     <string key="6776674288011162496" value="k_cam_new_keyframe"/>
     <string key="6852621249730883206" value="KP_ADD"/>
     <string key="7007482603673366505" value="root.sound.general.doppler_scale"/>
+    <string key="7067202264915700150" value="mt.sg2.metallicTex"/>
+    <string key="7072071965576282124" value="m4_view_projection"/>
     <string key="7085902643359509389" value="k_ascend"/>
     <string key="7147820914469755098" value="rd.b_lighting_enabled"/>
     <string key="7175216374236181665" value="root.folders.soundfx"/>
@@ -167,13 +170,13 @@
     <string key="7273895582857962616" value="mt.f_metallic"/>
     <string key="7425191142704782914" value="vec3"/>
     <string key="7425192242216411125" value="vec2"/>
+    <string key="7464274105254009398" value="mt.sg2.depthTex"/>
     <string key="7480038081765558619" value="heaviside"/>
     <string key="7540258471201886724" value="root.sound.general.channel_fadeout_s"/>
     <string key="7543418176468789887" value="root.display.width"/>
     <string key="7763496791160610254" value="RIGHT_BRACKET"/>
     <string key="7807768329891329634" value="GameObjectFactory"/>
     <string key="7814851573345229548" value="TAB"/>
-    <string key="7952170930200309190" value="mt.normalTex"/>
     <string key="8032862286348801866" value="root.ssao.blur.compression"/>
     <string key="8045022990616832925" value="root.ssao.blur.kernel_sigma"/>
     <string key="8091808378024623192" value="string"/>
@@ -193,6 +196,7 @@
     <string key="8765055733592539675" value="root.sound.general.distance_factor"/>
     <string key="8789155474940414302" value="SEMICOLON"/>
     <string key="8876691523862406279" value="rd.v2_frameBufSize"/>
+    <string key="8899109142282214656" value="root.folders.config"/>
     <string key="8989313031775417964" value="k_frame_speed_up"/>
     <string key="9064088918824115502" value="HOME"/>
     <string key="9068244765153526487" value="root.sound.general.max_channels"/>
@@ -201,6 +205,7 @@
     <string key="9208007087286972917" value="root.camera.speed_rot"/>
     <string key="9267355454750825242" value="MENU"/>
     <string key="9290956324708965906" value="shadowTex"/>
+    <string key="9294616819712044073" value="mt.sg1.normalTex"/>
     <string key="9303086797489380362" value="k_tg_editor"/>
     <string key="9312070011128083972" value="SCR_H"/>
     <string key="9312077707709481449" value="SCR_W"/>
@@ -231,11 +236,11 @@
     <string key="10910956258448488348" value="k_forward"/>
     <string key="10925683996511890393" value="LAST"/>
     <string key="10986755340644892234" value="SLASH"/>
+    <string key="11031387749758185530" value="mt.sg2.albedoTex"/>
     <string key="11158050064215466014" value="root.render.shadowmap.height"/>
     <string key="11168070871793128834" value="m4_ModelViewProjection"/>
     <string key="11172949248662994988" value="k_editor_deselect"/>
     <string key="11247620841001398765" value="SoundSystem"/>
-    <string key="11377574333308104762" value="model"/>
     <string key="11414322001157692290" value="k_cam_tg_record"/>
     <string key="11415925803770215857" value="root.render.override.allow_parallax_mapping"/>
     <string key="11424401279738075663" value="LEFT_SHIFT"/>
@@ -249,6 +254,7 @@
     <string key="11841446149970781532" value="f_near"/>
     <string key="12032221677502956178" value="icosahedron"/>
     <string key="12059396907497688696" value="Editor"/>
+    <string key="12087927464889887995" value="mt.sg1.metallicTex"/>
     <string key="12094814583269164686" value="rd.f_scale"/>
     <string key="12243055517940716495" value="f_far"/>
     <string key="12329333359250199469" value="rd.v2_texelSize"/>
@@ -256,6 +262,7 @@
     <string key="12407858727649439328" value="linear"/>
     <string key="12478602338661553948" value="arial"/>
     <string key="12562532267625770907" value="rd.v3_vibrance_bal"/>
+    <string key="12619697744259456877" value="mt.sg2.AOTex"/>
     <string key="12638130025950975024" value="5"/>
     <string key="12638131125462603235" value="4"/>
     <string key="12638132224974231446" value="7"/>
@@ -294,6 +301,7 @@
     <string key="12638252071741706445" value="Z"/>
     <string key="12729476311476713428" value="LEFT_ALT"/>
     <string key="12744897013347446891" value="k_debug_overlay_next_mode"/>
+    <string key="12811533581298956859" value="mt.splatTex"/>
     <string key="12863514207781384271" value="depthTex"/>
     <string key="12950247791072433867" value="lt.f_ambientStrength"/>
     <string key="13027510015358381833" value="k_frame_slow_down"/>
@@ -307,6 +315,7 @@
     <string key="13655078268800881723" value="root.postproc.vignette.balance"/>
     <string key="13677753513359909797" value="GRAVE_ACCENT"/>
     <string key="13846512612090863089" value="root.input.mouse.y_inverted"/>
+    <string key="14025262221873303767" value="mt.sg1.albedoTex"/>
     <string key="14035664742179330174" value="brightTex"/>
     <string key="14036129794298887022" value="input.keyboard"/>
     <string key="14039659329443927417" value="rd.v2_shadowTexelSize"/>
@@ -357,6 +366,7 @@
     <string key="17030330393165192822" value="k_show_neighbors"/>
     <string key="17067919005753676216" value="COMMA"/>
     <string key="17190761703808769086" value="f_normalOffset"/>
+    <string key="17257624037310082490" value="f_splat"/>
     <string key="17290000723479194119" value="k_tg_pause"/>
     <string key="17301654883360166805" value="DOWN"/>
     <string key="17381840277743886800" value="root.postproc.aberration.magnitude"/>
@@ -381,6 +391,7 @@
     <string key="17418898723818815743" value="F24"/>
     <string key="17453382643516468302" value="rd.f_vignette_bal"/>
     <string key="17607934400217285021" value="root.camera.speed_slow"/>
+    <string key="17661753592772283449" value="mt.sg1.depthTex"/>
     <string key="17720195001682701390" value="CameraController"/>
     <string key="17793400099383336470" value="root.folders.res"/>
     <string key="17953394579615142639" value="cursor"/>

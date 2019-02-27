@@ -39,6 +39,10 @@ public:
     std::string get_file_as_string(const char* filename,
                                    hash_t folder_node,
                                    hash_t archive);
+    // Just check if file exists in folder or in archive
+    bool file_exists(const char* filename,
+                     hash_t folder_node,
+                     hash_t archive);
 
 private:
     struct Impl;

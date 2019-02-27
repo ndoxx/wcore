@@ -4,6 +4,7 @@
 #include <map>
 #include <variant>
 #include <random>
+#include <istream>
 #include "xml_parser.h"
 #include "material_common.h"
 
@@ -11,6 +12,7 @@ namespace wcore
 {
 
 class Material;
+class Texture;
 class Cubemap;
 class MaterialFactory
 {
@@ -37,6 +39,7 @@ public:
     Material* make_material(MaterialDescriptor& descriptor);
     Material* make_material(rapidxml::xml_node<>* material_node,
                             OptRngT opt_rng=nullptr);
+    Texture* make_texture(std::istream& stream);
     Cubemap* make_cubemap(hash_t cubemap_name);
 
     inline const MaterialDescriptor& get_material_descriptor(hash_t asset_name) { return material_descriptors_.at(asset_name); }

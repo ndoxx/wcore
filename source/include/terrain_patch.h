@@ -15,11 +15,13 @@ class HeightMap;
     a chunk. It's basically a Model, with additional
     properties.
 */
+class Texture;
 class TerrainChunk : public Model
 {
 private:
     HeightMap* heightmap_;
     Material* alt_material_;
+    Texture* splatmap_;
     bool use_splat_;
 
     static uint32_t chunk_size_;
@@ -45,9 +47,10 @@ public:
 
     // Splat mapping
     inline void add_alternative_material(Material* pmat);
-    inline void add_splat_mat(/* */);
+    inline void add_splat_mat(Texture* splatmap);
     inline bool is_multi_textured() const;
     inline const Material& get_alternative_material() const;
+    inline const Texture& get_splatmap() const;
 };
 
 inline Vertex3P3N3T2U& TerrainChunk::east(uint32_t index) const
@@ -74,9 +77,9 @@ inline void TerrainChunk::add_alternative_material(Material* pmat)
 {
     alt_material_ = pmat;
 }
-inline void TerrainChunk::add_splat_mat(/* */)
+inline void TerrainChunk::add_splat_mat(Texture* splatmap)
 {
-
+    splatmap_ = splatmap;
     use_splat_ = true;
 }
 inline bool TerrainChunk::is_multi_textured() const
@@ -89,6 +92,11 @@ inline const Material& TerrainChunk::get_alternative_material() const
         return *alt_material_;
     else
         return *pmaterial_;
+}
+
+inline const Texture& TerrainChunk::get_splatmap() const
+{
+    return *splatmap_;
 }
 
 

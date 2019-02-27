@@ -12,6 +12,7 @@
 #include "g_buffer.h"
 #include "bounding_boxes.h"
 #include "material.h"
+#include "texture.h"
 
 namespace wcore
 {
@@ -136,6 +137,15 @@ void GeometryRenderer::render(Scene* pscene)
                 terrain.get_alternative_material().bind_texture();
             }
             shader->send_uniform("f_splat"_h, tmp_splat_);
+
+            //shader->send_uniform("tr.m4_Model"_h, M);
+
+            // Send splatmap
+            //const Texture& splatmap = terrain.get_splatmap();
+            ////splatmap.bind(12,0);
+            //glActiveTexture(GL_TEXTURE0 + 12);
+            //glBindTexture(GL_TEXTURE_2D, splatmap[0]);
+            //shader->send_uniform<int>("mt.splatTex"_h, 12);
         }
 
         // overrides

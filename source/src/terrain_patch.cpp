@@ -3,6 +3,7 @@
 #include "surface_mesh.h"
 #include "height_map.h"
 #include "material.h"
+#include "texture.h"
 #include "scene.h"
 
 namespace wcore
@@ -22,6 +23,7 @@ Model(static_cast<std::shared_ptr<SurfaceMesh>>(factory::make_terrain_tri_mesh(*
       pmat),
 heightmap_(phm),
 alt_material_(nullptr),
+splatmap_(nullptr),
 use_splat_(false)
 {
     is_terrain_ = true;
@@ -32,6 +34,8 @@ TerrainChunk::~TerrainChunk()
     delete heightmap_;
     if(alt_material_)
         delete alt_material_;
+    if(splatmap_)
+        delete splatmap_;
 }
 
 namespace terrain

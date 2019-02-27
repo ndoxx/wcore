@@ -18,6 +18,7 @@ struct material
     sampler_group sg1;
 #ifdef VARIANT_SPLAT
     sampler_group sg2;
+    sampler2D splatTex;
 #endif
 
     float f_parallax_height_scale;
@@ -49,6 +50,10 @@ in vec3 frag_tangent_viewDir;
 in vec2 frag_texCoord;
 in mat3 frag_TBN;
 
+#ifdef VARIANT_SPLAT
+in vec2 frag_landscape_coord;
+#endif
+
 layout(location = 0) out vec4 out_normal;
 layout(location = 1) out vec4 out_albedo;
 
@@ -62,6 +67,11 @@ float edge_factor();
 // Write to g-buffer
 void main()
 {
+    #ifdef VARIANT_SPLAT
+    ////float f_splat = texture(mt.splatTex, frag_landscape_coord).r;
+    //float f_splat = texture(mt.splatTex, frag_texCoord).r;
+    #endif
+
     // Do we use normal+parallax mapping?
     vec2 texCoords = frag_texCoord;
     vec3 normal;
@@ -101,9 +111,12 @@ void main()
 #ifdef VARIANT_SPLAT
     vec3  albedo;
     if(mt.b_has_albedo)
+    {
         albedo = mix(texture(mt.sg1.albedoTex, texCoords).rgb,
                      texture(mt.sg2.albedoTex, texCoords).rgb,
                      f_splat);
+        //albedo = vec3(f_splat,0,0);
+    }
     else
         albedo = mt.v3_albedo;
 

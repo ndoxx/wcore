@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <cassert>
+#include <istream>
 #include <unordered_map>
 #include <functional>
 #include <vector>
@@ -53,6 +54,10 @@ public:
     // Can be obtained from MaterialFactory
     Texture(const TextureDescriptor& descriptor);
 
+    // Create single texture2D from stream with all default options
+    // These cannot be cached
+    Texture(std::istream& stream);
+
     // Create an empty texture, ideal for creating a render target for an FBO
     // Init all units with same filter and format parameters
     Texture(const std::vector<hash_t>& sampler_names,
@@ -74,10 +79,6 @@ public:
             GLenum textureTarget   = GL_TEXTURE_2D,
             bool clamp             = false,
             bool lazy_mipmap       = true);
-
-    Texture(const Texture& texture);
-
-    Texture(Texture&& texture);
 
     ~Texture();
 
@@ -129,6 +130,7 @@ class Texture::TextureInternal
 {
 public:
     TextureInternal(const TextureDescriptor& descriptor);
+    TextureInternal(std::istream& stream);
 
     TextureInternal(GLenum textureTarget,
                     uint32_t numTextures,

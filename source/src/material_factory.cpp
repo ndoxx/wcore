@@ -1,5 +1,6 @@
 #include "material_factory.h"
 #include "material.h"
+#include "texture.h"
 #include "cubemap.h"
 #include "colors.h"
 #include "logger.h"
@@ -282,6 +283,11 @@ void MaterialFactory::parse_cubemap_descriptor(rapidxml::xml_node<>* node,
 Cubemap* MaterialFactory::make_cubemap(hash_t cubemap_name)
 {
     return new Cubemap(get_cubemap_descriptor(cubemap_name));
+}
+
+Texture* MaterialFactory::make_texture(std::istream& stream)
+{
+    return new Texture(stream);
 }
 
 

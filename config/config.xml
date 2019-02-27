@@ -30,7 +30,7 @@
         </shadowmap>
         <override>
             <bool name="allow_normal_mapping"   value="true"/>
-            <bool name="allow_parallax_mapping" value="true"/>
+            <bool name="allow_parallax_mapping" value="false"/>
             <bool name="allow_shadow_mapping"   value="true"/>
         </override>
     </render>

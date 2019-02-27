@@ -217,4 +217,37 @@ std::string FileSystem::get_file_as_string(const char* filename,
                         std::istreambuf_iterator<char>());
 }
 
+bool FileSystem::file_exists(const char* filename,
+                             hash_t folder_node,
+                             hash_t archive)
+{
+    fs::path file_path;
+    if(CONFIG.get(folder_node, file_path))
+    {
+        file_path /= filename;
+        if(fs::exists(file_path))
+            return true;
+    }
+
+    auto itvpaths = pimpl_->vpaths.find(archive);
+    if(itvpaths != pimpl_->vpaths.end())
+    {
+        const auto& vpaths = itvpaths->second;
+        auto itvpath = vpaths.find(folder_node);
+        if(itvpath != vpaths.end())
+        {
+            auto itarch = pimpl_->archives.find(archive);
+            if(itarch == pimpl_->archives.end())
+            {
+                const std::string& vpath = itvpath->second;
+                zipios::FileEntry::pointer_t entry(itarch->second.getEntry((vpath+filename).c_str()));
+                if(entry)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 } // namespace wcore
