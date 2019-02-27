@@ -25,7 +25,8 @@ terrain_shader_(ShaderResource("gpass.vert;gpass.geom;gpass.frag", "VARIANT_SPLA
 wireframe_mix_(0.0f),
 min_parallax_distance_(20.f),
 allow_normal_mapping_(true),
-allow_parallax_mapping_(true)
+allow_parallax_mapping_(true),
+tmp_splat_(0.5f)
 {
     CONFIG.get("root.render.override.allow_normal_mapping"_h, allow_normal_mapping_);
     CONFIG.get("root.render.override.allow_parallax_mapping"_h, allow_parallax_mapping_);
@@ -101,7 +102,7 @@ void GeometryRenderer::render(Scene* pscene)
     Shader* shader = nullptr;
     pscene->draw_terrains([&](const TerrainChunk& terrain)
     {
-        if(terrain.has_splat_map())
+        if(terrain.is_multi_textured())
             shader = &terrain_shader_;
         else
             shader = &geometry_pass_shader_;
@@ -127,13 +128,14 @@ void GeometryRenderer::render(Scene* pscene)
             terrain.get_material().bind_texture();
         }
 
-        if(terrain.has_splat_map())
+        if(terrain.is_multi_textured())
         {
             shader->send_uniforms(terrain.get_alternative_material());
             if(terrain.get_alternative_material().is_textured())
             {
                 terrain.get_alternative_material().bind_texture();
             }
+            shader->send_uniform("f_splat"_h, tmp_splat_);
         }
 
         // overrides

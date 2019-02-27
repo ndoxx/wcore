@@ -55,27 +55,25 @@ layout(location = 1) out vec4 out_albedo;
 // UNIFORMS
 uniform material mt;
 uniform render_data rd;
+uniform float f_splat=0.5f;
 
 float edge_factor();
 
 // Write to g-buffer
 void main()
 {
-    // TMP splat
-    float splat=0.5f;
-
     // Do we use normal+parallax mapping?
     vec2 texCoords = frag_texCoord;
     vec3 normal;
     if(mt.b_use_normal_map)
     {
-        vec3 viewDir = -frag_tangent_viewDir;//normalize(frag_tangent_fragPos-frag_tangent_viewPos);
-        //viewDir.y=-viewDir.y;
+        vec3 viewDir = -frag_tangent_viewDir;
         if(mt.b_use_parallax_map)
         {
             #ifdef VARIANT_SPLAT
-                texCoords = (1.f-splat)*parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex)
-                          + splat*parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg2.depthTex);
+                texCoords = mix(parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex),
+                                parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg2.depthTex),
+                                f_splat);
             #else
                 texCoords = parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex);
             #endif
@@ -83,7 +81,9 @@ void main()
 
         // Normal vector from normal map
         #ifdef VARIANT_SPLAT
-            normal = (1.f-splat)*texture(mt.sg1.normalTex, texCoords).rgb + splat*texture(mt.sg2.normalTex, texCoords).rgb;
+            normal = mix(texture(mt.sg1.normalTex, texCoords).rgb,
+                         texture(mt.sg2.normalTex, texCoords).rgb,
+                         f_splat);
         #else
             normal = texture(mt.sg1.normalTex, texCoords).rgb;
         #endif
@@ -101,25 +101,33 @@ void main()
 #ifdef VARIANT_SPLAT
     vec3  albedo;
     if(mt.b_has_albedo)
-        albedo = (1.f-splat)*texture(mt.sg1.albedoTex, texCoords).rgb + splat*texture(mt.sg2.albedoTex, texCoords).rgb;
+        albedo = mix(texture(mt.sg1.albedoTex, texCoords).rgb,
+                     texture(mt.sg2.albedoTex, texCoords).rgb,
+                     f_splat);
     else
         albedo = mt.v3_albedo;
 
     float roughness;
     if(mt.b_has_roughness)
-        roughness = (1.f-splat)*texture(mt.sg1.roughnessTex, texCoords).r + splat*texture(mt.sg2.roughnessTex, texCoords).r;
+        roughness = mix(texture(mt.sg1.roughnessTex, texCoords).r,
+                        texture(mt.sg2.roughnessTex, texCoords).r,
+                        f_splat);
     else
         roughness = mt.f_roughness;
 
     float metallic;
     if(mt.b_has_metallic)
-        metallic = (1.f-splat)*texture(mt.sg1.metallicTex, texCoords).r + splat*texture(mt.sg2.metallicTex, texCoords).r;
+        metallic = mix(texture(mt.sg1.metallicTex, texCoords).r,
+                       texture(mt.sg2.metallicTex, texCoords).r,
+                       f_splat);
     else
         metallic = mt.f_metallic;
 
     float ao;
     if(mt.b_has_ao)
-        ao = (1.f-splat)*texture(mt.sg1.AOTex, texCoords).r + splat*texture(mt.sg2.AOTex, texCoords).r;
+        ao = mix(texture(mt.sg1.AOTex, texCoords).r,
+                 texture(mt.sg2.AOTex, texCoords).r,
+                 f_splat);
     else
         ao = 1.0f;
 

@@ -6598,6 +6598,24 @@ Voici un com assez sagace d'un type en réponse à TheCherno qui vient de produi
 Convertit tous les .jpg du dossier courant en .png.
 
 
+#[27-02-19]
+
+## Splat mapping
+J'ai un début de multi-texturing qui fonctionne ! Un terrain patch peut déclarer un material alternatif avec un node *MaterialAlt* dans le fichier XML de la map. Pour l'instant un slider du debug GUI permet d'interpoler linéairement et de manière uniforme sur tout le terrain. Il s'agira de charger en sus de celà une texture par chunk (la splat map) afin de déterminer localement le coefficient d'interpolation.
+Le shader gpass possède une variante __VARIANT_SPLAT__ qui est utilisée par le _GeometryRenderer_ pour le rendu du terrain uniquement, si tant est que le terrain en question est multi-texturé (TerrainChunk::is_multi_textured() permet de s'en assurer). Cette variante procède à l'interpolation des valeurs issues de deux *sampler groups*. Un sampler group est une struct du shader qui regroupe pour l'instant 6 sampler2D (albedo, AO, metallic, roughness, normal, depth). Le premier sampler group (celui par défaut) s'appèle sg1 et le deuxième sg2. Donc par exemple pour accéder à la texture albedo du premier sampler group, il faut utiliser le nom d'uniform *mt.sg1.albedoTex* au lieu de
+mt.albedoTex précédemment.
+
+Beaucoup de ruses à tendance "hacky" ont été utilisées à cet effet, le moteur n'était absolument pas pensé pour que celà soit possible :
+
+* MaterialFactory::make_material(xml_node* ) a été modifié pour vérifier le nom du noeud utilisé pour déclarer le material. Si le nom est *MaterialAlt* au lieu de simplement *Material*, alors une valeur sampler_group initialisée à 2 au lieu de 1 est passée au _TextureDescriptor_ qui servira à générer la texture alternative.
+* La classe _Texture_ a été modifiée pour tenir compte du sampler_group du _TextureDescriptor_ qui sert à l'initialiser. Au départ, une map statique associant un type enum à un hash_t permettait de sélectionner le sampler name à associer à une texture unit pour permettre le bind automatique des textures aux bons samplers dans les shaders (Texture::SAMPLER_NAMES_). Maintenant, une deuxième map (Texture::SAMPLER_NAMES_2_) qui déclare les noms d'uniforms pour sg2 (ex : mt.sg2.albedoTex) est utilisée alternativement à la première si le sampler_group du _TextureDescriptor_ vaut 2. Un peu d'arithmétique permet de s'assurer qu'une texture alternative va bind avec le bon numéro de sampler. Les samplers de sg1 possèdent les indices de 0 à 5, ceux de sg2 de 6 à 11. Les fonctions Texture::unit_to_sampler_name() et Texture::get_unit_index() sont modifiées pour renvoyer les sampler names et unit index corrects en fonction du sampler group de la _Texture_.
+* La _Scene_ possède une méthode Scene::draw_terrains() qui permet de dessiner les terrains. Scene::draw_models() ne se charge plus de l'affichage des terrains, et ça, c'est une bonne chose en soit. _GeometryRenderer_ va d'abord rendre les modèles puis ensuite les terrains lors d'une seconde passe. Si un terrain n'est pas multi-texturé, alors c'est le shader gpass de base qui est utilisé, sinon c'est sa variante __VARIANT_SPLAT__.
+
+A terme, le moteur tentera pour chaque chunk de charger une texture du nom de "splat_[chunk_index].png" en tant que splat map. C'est pour l'instant _ModelFactory_ qui va générer ce nom dynamiquement à la création d'un terrain, si une texture alternative a bien été définie et générée avec succès. L'existence de cette texture sera une condition nécessaire pour que le splat-mapping soit activé pour le chunk en question. Une autre condition nécessaire sera que les deux materials définissent les même textures.
+
+A noter que l'activation simultanée du parallax mapping et du splat mapping fonctionne sans problème à ceci près que c'est foutrement lent.
+    -> Ue amélioration possible serait de charger les textures qui devraient l'être en niveau de gris, plutôt que de forcer une conversion RGB pour ensuite ne lire que la composante R dans les shaders comme je le fais pour le moment. Ca devrait libérer pas mal de ressources.
+
 * TODO:
     [ ] New texture maps (possibly grouped in same Gbuffer chan):
         * Emissivity map

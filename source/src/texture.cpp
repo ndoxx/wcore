@@ -27,7 +27,7 @@ std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
     {TextureUnit::ROUGHNESS, "mt.sg1.roughnessTex"_h}
 };
 
-// Alternative samplet group for splat mapping
+// Alternative sampler group for splat mapping
 std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_2_ =
 {
     {TextureUnit::ALBEDO,    "mt.sg2.albedoTex"_h},
@@ -466,7 +466,7 @@ units_(descriptor.units)
     {
         if(descriptor.has_unit(key))
         {
-            unit_indices_[key] = uniform_sampler_names_.size() + (descriptor.sampler_group-1)*descriptor.n_units;
+            unit_indices_[key] = uniform_sampler_names_.size() + (descriptor.sampler_group-1)*SAMPLER_GROUP_SIZE;
             uniform_sampler_names_.push_back(sampler_name);
 
             #if __DEBUG__
@@ -521,7 +521,7 @@ Texture::~Texture()
 void Texture::bind(GLuint unit) const
 {
     assert(unit >= 0 && unit <= 31);
-    glActiveTexture(GL_TEXTURE0 + unit);
+    glActiveTexture(GL_TEXTURE0 + unit + (sampler_group_-1)*SAMPLER_GROUP_SIZE);
     internal_->bind(unit);
 
 #ifdef __DEBUG__

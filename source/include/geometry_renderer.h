@@ -38,6 +38,8 @@ public:
     inline float& get_min_parallax_distance_nc()   { return min_parallax_distance_; }
 
     inline void toggle_wireframe();
+
+    float tmp_splat_;
 };
 
 inline void GeometryRenderer::toggle_wireframe()

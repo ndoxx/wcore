@@ -46,7 +46,7 @@ public:
     // Splat mapping
     inline void add_alternative_material(Material* pmat);
     inline void add_splat_mat(/* */);
-    inline bool has_splat_map() const;
+    inline bool is_multi_textured() const;
     inline const Material& get_alternative_material() const;
 };
 
@@ -79,7 +79,7 @@ inline void TerrainChunk::add_splat_mat(/* */)
 
     use_splat_ = true;
 }
-inline bool TerrainChunk::has_splat_map() const
+inline bool TerrainChunk::is_multi_textured() const
 {
     return use_splat_;
 }
