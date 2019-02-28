@@ -46,8 +46,10 @@
             <Transform>
                 <Position>(0,0,0)</Position>
             </Transform>
-            <Material name="beachSand"/>
-            <MaterialAlt name="sandstone"/>
+            <Splat>
+                <Material name="beachSand"/>
+                <Material name="sandstone"/>
+            </Splat>
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>
@@ -546,7 +548,7 @@
 
     <Ambient>
         <Directional>
-            <ShadowBias>0.05</ShadowBias>
+            <ShadowBias>0.3</ShadowBias>
             <Color>
                 <CSpline base="vec3" tangentPolicy="CatmullRom">
                     <Control locus="0.0" value="(0.10,0.25,0.85)"/>

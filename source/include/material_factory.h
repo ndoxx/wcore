@@ -38,6 +38,7 @@ public:
     Material* make_material(hash_t asset_name, uint8_t sampler_group=1);
     Material* make_material(MaterialDescriptor& descriptor);
     Material* make_material(rapidxml::xml_node<>* material_node,
+                            uint8_t sampler_group=1,
                             OptRngT opt_rng=nullptr);
     Texture* make_texture(std::istream& stream);
     Cubemap* make_cubemap(hash_t cubemap_name);

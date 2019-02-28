@@ -118,6 +118,13 @@ void RenderPipeline::init_self()
     edtweaks->register_variable("root.ssao.blur.kernel_half_size"_h,       SSAO_kernel_half_size);
     edtweaks->register_variable("root.ssao.blur.kernel_sigma"_h,           SSAO_sigma);
 
+    // Shadow tweaks
+    /*
+    Scene* pscene = locate<Scene>("Scene"_h);
+    edtweaks->register_variable("root.shadow.depth_bias"_h,    pscene->shadow_bias_);
+    edtweaks->register_variable("root.shadow.slope_bias"_h,    lighting_renderer_->shadow_slope_bias_);
+    edtweaks->register_variable("root.shadow.normal_offset"_h, lighting_renderer_->normal_offset_);
+    */
 #endif
 }
 

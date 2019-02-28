@@ -168,18 +168,15 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
     return new Material(descriptor);
 }
 
-Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node, OptRngT opt_rng)
+Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node,
+                                         uint8_t sampler_group,
+                                         OptRngT opt_rng)
 {
     std::string asset;
     bool use_asset = xml::parse_attribute(material_node, "name", asset);
 
     if(use_asset)
     {
-        // Check sampler group
-        uint8_t sampler_group = 1;
-        if(!strcmp(material_node->name(), "MaterialAlt"))
-            sampler_group = 2;
-
         return make_material(H_(asset.c_str()), sampler_group);
     }
 

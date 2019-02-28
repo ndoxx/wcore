@@ -32,27 +32,29 @@ out vec2 landscape_coord;
 uniform Transform tr;
 uniform render_data rd;
 
+#ifdef VARIANT_SPLAT
+uniform float f_inv_chunk_size;
+#endif
+
 void main()
 {
     vec4 viewPos   = tr.m4_ModelView * vec4(in_position, 1.0);
     vertex_pos  = viewPos.xyz/viewPos.w;
     vertex_texCoord = in_texCoord;
 
-    vec3 N   = normalize(tr.m3_Normal * in_normal);
+    vec3 N = normalize(tr.m3_Normal * in_normal);
     vec3 T = normalize(tr.m3_Normal * in_tangent);
     // re-orthogonalize T with respect to N (Gram-Schmidt process)
     T = normalize(T - dot(T, N)*N);
-    vec3 B = cross(N, T);
+    vec3 B = -cross(N, T); // Apparently minus is needed for normal/parallax mapping to work correctly
     vertex_TBN = mat3(T,B,N);
     mat3 TBN_inv = transpose(vertex_TBN);
 
     vertex_normal = N;
     tangent_viewDir = normalize(TBN_inv * vertex_pos);
-    tangent_viewDir.y = -tangent_viewDir.y; // WTF? else parallax mapping would give wrong perspective along world z axis
 
     #ifdef VARIANT_SPLAT
-    landscape_coord = in_position.xz;
-    landscape_coord /= 33.0; // TMP
+    landscape_coord = in_position.xz * f_inv_chunk_size;
     #endif
 
     gl_Position = tr.m4_ModelViewProjection * vec4(in_position,1.0);

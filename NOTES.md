@@ -6616,6 +6616,35 @@ A terme, le moteur tentera pour chaque chunk de charger une texture du nom de "s
 A noter que l'activation simultanée du parallax mapping et du splat mapping fonctionne sans problème à ceci près que c'est foutrement lent.
     -> Ue amélioration possible serait de charger les textures qui devraient l'être en niveau de gris, plutôt que de forcer une conversion RGB pour ensuite ne lire que la composante R dans les shaders comme je le fais pour le moment. Ca devrait libérer pas mal de ressources.
 
+#[27-02-19]
+
+## Splat mapping
+Le splat mapping fonctionne. La classe _Texture_ a été augmentée pour pouvoir charger des textures simples depuis un stream. De telles textures sont chargées avec des paramètres par défaut non configurables pour l'instant. _MaterialFactory_ peut créer de telles textures simples depuis un stream.
+ModelFactory::make_terrain_patch(2) vérifie la présence d'un fichier splat map pour le chunk qui doit être chargé via la nouvelle fonction FileSystem::file_exists(3), et si un tel fichier est trouvé, alors la splat map est chargée sous forme de texture simple via _MaterialFactory_, et les ("la" pour l'instant) textures alternatives sont générées et ajoutées au _TerrainChunk_.
+
+Au lieu du noeud *MaterialAlt*, un *TerrainPatch* de fichier map XML peut maintenant définir un noeud *Splat* dans lequel les différentes textures sont déclarées dans l'ordre des sampler groups :
+
+```xml
+<Terrain chunkSize="33" latticeScale="1.0" textureScale="0.25">
+    <TerrainPatch origin="(0,0)" size="(5,5)" height="0">
+        <!-- ... -->
+        <Splat>
+            <Material name="beachSand"/>
+            <Material name="sandstone"/>
+        </Splat>
+        <!-- ... -->
+    </TerrainPatch>
+</Terrain>
+```
+Ici, le material par défaut est "beachSand" qui sera lié au sampler group 1, et le material "sandstone" sera lié au sampler group 2. Pour l'instant seuls 2 sampler groups sont pris en charge, une future tâche consistera à augmenter ce système pour en gérer jusqu'à 3-4.
+Noter qu'il est toujours possible de définir un simple noeud *Material* comme auparavant, quand le terrain n'est pas multi-texturé.
+
+Les coordonnées sur la splat map sont calculées dans le vertex shader de gpass dans sa variante __VARIANT_SPLAT__ depuis les composantes x et z de la position des vertices dans l'espace modèle, avec un scaling selon la taille du chunk (qui détermine la taille du terrain chunk). Ces coordonnées nommées *landscape coordinates* sont exportées vers les shader stages suivants. Le fragment shader se sert de ces coordonnées pour sampler la splat map et déterminer l'interpolation locale entre les différents sampler groups.
+
+##[BUG] Octree non robuste
+Lorsque le volume de l'octree de la géométrie statique est suffisamment grand, ce qui peut se produire après avoir parcouru une grande partie de la map, en revenant verse la position initiale de la caméra on peut constater que certaines cellules ne subdivisent plus.
+    -> Profondeur max atteinte ?
+
 * TODO:
     [ ] Réparer le fucking programme internstr
     [ ] New texture maps (possibly grouped in same Gbuffer chan):

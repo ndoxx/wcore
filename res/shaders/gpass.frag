@@ -69,7 +69,6 @@ void main()
 {
     #ifdef VARIANT_SPLAT
     float f_splat = texture(mt.splatTex, frag_landscape_coord).r;
-    //float f_splat = texture(mt.splatTex, frag_texCoord).r;
     #endif
 
     // Do we use normal+parallax mapping?

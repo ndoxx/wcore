@@ -148,7 +148,7 @@ std::shared_ptr<Model> ModelFactory::make_model(rapidxml::xml_node<>* mesh_node,
         return nullptr;
     }
 
-    Material* pmat = material_factory_->make_material(mat_node, opt_rng);
+    Material* pmat = material_factory_->make_material(mat_node, 1, opt_rng);
     if(!pmat)
     {
         DLOGW("[ModelFactory] Incomplete material declaration.", "parsing", Severity::WARN);
@@ -162,8 +162,12 @@ std::shared_ptr<Model> ModelFactory::make_model(rapidxml::xml_node<>* mesh_node,
 std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatchDescriptor& desc,
                                                                OptRngT opt_rng)
 {
+    // Is splat mapping enabled?
+    bool use_splat = desc.material_nodes.size()>1;
+
     // --- Material
-    Material* pmat = material_factory_->make_material(desc.material_node);
+    // Base material uses sampler group 1
+    Material* pmat = material_factory_->make_material(desc.material_nodes[0], 1);
     if(!pmat)
     {
         DLOGW("[ModelFactory] Incomplete material declaration.", "parsing", Severity::WARN);
@@ -192,9 +196,10 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
         {
             Texture* splatmap = material_factory_->make_texture(*pstream);
             // Try to load alt material for splat mapping
-            if(desc.alt_material_node)
+            if(use_splat)
             {
-                Material* pmat2 = material_factory_->make_material(desc.alt_material_node);
+                // Alternative material with sampler group 2
+                Material* pmat2 = material_factory_->make_material(desc.material_nodes[1], 2);
                 if(pmat2)
                 {
                     DLOGN("[ModelFactory] Using splat map:", "parsing", Severity::LOW);
@@ -206,7 +211,7 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
                 }
                 else
                 {
-                    DLOGW("[ModelFactory] Incomplete alt-material declaration.", "parsing", Severity::WARN);
+                    DLOGW("[ModelFactory] Incomplete splat material declaration.", "parsing", Severity::WARN);
                     delete splatmap;
                 }
             }

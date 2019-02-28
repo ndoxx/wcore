@@ -662,9 +662,9 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     xml_node<>* patch = it->second;
 
     // Get nodes
+    xml_node<>* splat_node = patch->first_node("Splat");
     xml_node<>* mat_node = patch->first_node("Material");
-    xml_node<>* altmat_node = patch->first_node("MaterialAlt");
-    if(!mat_node) return;
+    //xml_node<>* altmat_node = patch->first_node("MaterialAlt");
     xml_node<>* trn_node = patch->first_node("Transform");
     xml_node<>* shadow_node = patch->first_node("Shadow");
     xml_node<>* generator_node = patch->first_node("Generator");
@@ -682,10 +682,30 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     desc.lattice_scale = lattice_scale_;
     desc.texture_scale = texture_scale_;
     desc.height = height;
-    desc.material_node = mat_node;
-    desc.alt_material_node = altmat_node;
     desc.generator_node = generator_node;
     desc.height_modifier_node = height_modifier_node;
+
+    // Check if terrain uses splat mapping
+    if(splat_node)
+    {
+        // Push all materials in order
+        for(xml_node<>* splat_mat_node=splat_node->first_node("Material");
+            splat_mat_node;
+            splat_mat_node=splat_mat_node->next_sibling("Material"))
+        {
+            desc.material_nodes.push_back(splat_mat_node);
+        }
+    }
+    else
+    {
+        if(mat_node)
+            desc.material_nodes.push_back(mat_node);
+        else
+        {
+            DLOGE("[SceneLoader] No Material node detected in TerrainPatch.", "parsing", Severity::CRIT);
+            return;
+        }
+    }
 
     pTerrain terrain = game_object_factory_->make_terrain_patch(desc);
 
