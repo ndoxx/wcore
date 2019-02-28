@@ -70,7 +70,7 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
 
     // Get a handle on png file
     png_structp p_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!p_png)
+    if(!p_png)
     {
         DLOGE("[PngLoader] Couldn't initialize png read struct.", "io", Severity::CRIT);
         return nullptr;
@@ -78,7 +78,7 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
 
     // Get info struct
     png_infop p_info = png_create_info_struct(p_png);
-    if (!p_info)
+    if(!p_info)
     {
         DLOGE("[PngLoader] Couldn't initialize png info struct.", "io", Severity::CRIT);
         png_destroy_read_struct(&p_png, (png_infopp)0, (png_infopp)0);
@@ -88,7 +88,7 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
     PixelBuffer* px_buf = nullptr;
 
     // DIRTY Error handling, libpng JUMPS here on error.
-    if (setjmp(png_jmpbuf(p_png)))
+    if(setjmp(png_jmpbuf(p_png)))
     {
         //An error occured, so clean up what we have allocated so far...
         png_destroy_read_struct(&p_png, &p_info,(png_infopp)0);
@@ -112,7 +112,7 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
     png_uint_32 colorType = png_get_color_type(p_png, p_info); // Color type. (RGB, RGBA, Luminance, luminance alpha... palette... etc)
 
     // We may want to convert formats to have proper rgb color
-    switch (colorType)
+    switch(colorType)
     {
         // Load palette as RGB
         case PNG_COLOR_TYPE_PALETTE:
@@ -128,13 +128,13 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
     }
 
     // Convert to full alpha if transparency is set
-    if (png_get_valid(p_png, p_info, PNG_INFO_tRNS))
+    if(png_get_valid(p_png, p_info, PNG_INFO_tRNS))
     {
         png_set_tRNS_to_alpha(p_png);
         channels+=1;
     }
 
-    if (bitDepth == 16)
+    if(bitDepth == 16)
     {
         png_set_strip_16(p_png);
         bitDepth = 8;

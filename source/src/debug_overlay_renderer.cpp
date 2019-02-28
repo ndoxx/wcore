@@ -54,10 +54,9 @@ text_renderer_(text_renderer)
     register_debug_pane(LBuffer::Instance());
     register_debug_pane(SSAOBuffer::Instance());
 
-    register_debug_pane({(*plbuffer)[1],(*pbloom)[0]},
-                        {"screenTex",
-                         "bloomTex"},
-                        {false,false});
+    register_debug_pane({(*plbuffer)[1], (*pbloom)[0]},
+                        {"screenTex", "bloomTex"},
+                        {false, false});
 }
 
 void DebugOverlayRenderer::register_debug_pane(std::vector<unsigned int>&& texture_indices,

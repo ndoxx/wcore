@@ -14,10 +14,16 @@
 #include "material.h"
 #include "texture.h"
 
+#ifndef __DISABLE_EDITOR__
+    #include "imgui/imgui.h"
+    #include "gui_utils.h"
+#endif
+
 namespace wcore
 {
 
 using namespace math;
+
 
 GeometryRenderer::GeometryRenderer():
 Renderer<Vertex3P3N3T2U>(),
@@ -26,12 +32,13 @@ terrain_shader_(ShaderResource("gpass.vert;gpass.geom;gpass.frag", "VARIANT_SPLA
 wireframe_mix_(0.0f),
 min_parallax_distance_(20.f),
 allow_normal_mapping_(true),
-allow_parallax_mapping_(true),
-tmp_splat_(0.5f)
+allow_parallax_mapping_(true)
 {
     CONFIG.get("root.render.override.allow_normal_mapping"_h, allow_normal_mapping_);
     CONFIG.get("root.render.override.allow_parallax_mapping"_h, allow_parallax_mapping_);
 }
+
+static uint64_t texture_index;
 
 void GeometryRenderer::render(Scene* pscene)
 {
@@ -136,16 +143,11 @@ void GeometryRenderer::render(Scene* pscene)
             {
                 terrain.get_alternative_material().bind_texture();
             }
-            shader->send_uniform("f_splat"_h, tmp_splat_);
-
-            //shader->send_uniform("tr.m4_Model"_h, M);
 
             // Send splatmap
-            //const Texture& splatmap = terrain.get_splatmap();
-            ////splatmap.bind(12,0);
-            //glActiveTexture(GL_TEXTURE0 + 12);
-            //glBindTexture(GL_TEXTURE_2D, splatmap[0]);
-            //shader->send_uniform<int>("mt.splatTex"_h, 12);
+            const Texture& splatmap = terrain.get_splatmap();
+            splatmap.bind(12,0);
+            shader->send_uniform<int>("mt.splatTex"_h, 12);
         }
 
         // overrides
@@ -168,5 +170,24 @@ void GeometryRenderer::render(Scene* pscene)
     GFX::lock_depth_buffer();
     GFX::disable_depth_testing();
 }
+
+// TMP for debugging
+#ifndef __DISABLE_EDITOR__
+void GeometryRenderer::generate_widget()
+{
+    if(!ImGui::Begin("Texture peek"))
+    {
+        ImGui::End();
+        return;
+    }
+
+    ImGui::GetWindowDrawList()->AddImage((void*)texture_index,
+                                         ImGui::GetCursorScreenPos(),
+                                         ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y),
+                                         ImVec2(0, 1), ImVec2(1, 0));
+
+    ImGui::End();
+}
+#endif
 
 }

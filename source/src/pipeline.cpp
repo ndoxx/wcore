@@ -290,8 +290,6 @@ void RenderPipeline::generate_widget()
         ImGui::Separator();
         ImGui::Text("Parallax mapping");
         ImGui::SliderFloat("min distance", &geometry_renderer_->get_min_parallax_distance_nc(), 0.0f, 100.0f);
-
-        ImGui::SliderFloat("tmp splat", &geometry_renderer_->tmp_splat_, 0.f, 1.f);
     }
 
     // SSAO OPTIONS

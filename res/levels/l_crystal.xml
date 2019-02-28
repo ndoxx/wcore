@@ -47,7 +47,7 @@
                 <Position>(0,0,0)</Position>
             </Transform>
             <Material name="beachSand"/>
-            <MaterialAlt name="pavedFloor"/>
+            <MaterialAlt name="sandstone"/>
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>

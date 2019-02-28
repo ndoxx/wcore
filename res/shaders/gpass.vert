@@ -7,9 +7,6 @@ layout(location = 3) in vec2 in_texCoord;
 
 struct Transform
 {
-#ifdef VARIANT_SPLAT
-    mat4 m4_Model;
-#endif
     mat4 m4_ModelView;
     mat4 m4_ModelViewProjection;
     mat3 m3_Normal; // Normal matrix to transform normals
@@ -54,7 +51,7 @@ void main()
     tangent_viewDir.y = -tangent_viewDir.y; // WTF? else parallax mapping would give wrong perspective along world z axis
 
     #ifdef VARIANT_SPLAT
-    landscape_coord = (tr.m4_Model * vec4(in_position, 1.0)).xz;
+    landscape_coord = in_position.xz;
     landscape_coord /= 33.0; // TMP
     #endif
 

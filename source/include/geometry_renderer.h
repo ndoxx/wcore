@@ -39,7 +39,9 @@ public:
 
     inline void toggle_wireframe();
 
-    float tmp_splat_;
+#ifndef __DISABLE_EDITOR__
+    void generate_widget();
+#endif
 };
 
 inline void GeometryRenderer::toggle_wireframe()

@@ -293,7 +293,10 @@ ID_(++Ninst)
     delete [] px_bufs;
 }
 
-Texture::TextureInternal::TextureInternal(std::istream& stream)
+Texture::TextureInternal::TextureInternal(std::istream& stream):
+textureTarget_(GL_TEXTURE_2D),
+numTextures_(1),
+ID_(++Ninst)
 {
     if(!stream.good())
     {
@@ -303,21 +306,30 @@ Texture::TextureInternal::TextureInternal(std::istream& stream)
 
     PixelBuffer* px_buf = png_loader_.load_png(stream);
 
+#if __DEBUG__
+    DLOGN("[PixelBuffer]", "texture", Severity::DET);
+    if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
+        px_buf->debug_display();
+#endif
+
     textureID_ = new GLuint[1];
     is_depth_  = new bool[1];
     is_depth_[0] = false;
     glGenTextures(1, textureID_);
-    glBindTexture(GL_TEXTURE_2D, textureID_[0]);
+    glBindTexture(textureTarget_, textureID_[0]);
+
+    handle_filter(GL_LINEAR, textureTarget_);
+    handle_addressUV(true, textureTarget_);
 
     // Specify OpenGL texture
-    glTexImage2D(GL_TEXTURE_2D,
+    glTexImage2D(textureTarget_,
                  0,
                  GL_RGB,
                  px_buf->get_width(),
                  px_buf->get_height(),
                  0,
                  GL_RGB,
-                 GL_BYTE,
+                 GL_UNSIGNED_BYTE,
                  px_buf->get_data_pointer());
 
     delete px_buf;

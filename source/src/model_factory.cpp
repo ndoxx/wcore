@@ -184,9 +184,6 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
     std::string splatmap_name("splat_");
     splatmap_name += std::to_string(desc.chunk_x) + "_" + std::to_string(desc.chunk_z) + ".png";
 
-    DLOGN("[ModelFactory] Trying to load splat map:", "parsing", Severity::LOW);
-    DLOGI("<p>" + splatmap_name + "</p>", "parsing", Severity::LOW);
-
     // Check that splatmap file exists before proceeding
     if(FILESYSTEM.file_exists(splatmap_name.c_str(), "root.folders.texture"_h, "pack0"_h))
     {
@@ -200,6 +197,9 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
                 Material* pmat2 = material_factory_->make_material(desc.alt_material_node);
                 if(pmat2)
                 {
+                    DLOGN("[ModelFactory] Using splat map:", "parsing", Severity::LOW);
+                    DLOGI("<p>" + splatmap_name + "</p>", "parsing", Severity::LOW);
+
                     // Add them to the terrain chunk
                     ret->add_alternative_material(pmat2);
                     ret->add_splat_mat(splatmap);

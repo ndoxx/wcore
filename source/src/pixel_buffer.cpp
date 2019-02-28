@@ -59,7 +59,7 @@ void PixelBuffer::debug_display()
     DLOGI(stream.str(), "texture", Severity::DET);
     stream.str("");
 
-    stream << "stride= " << stride_ << " total size= " << size_/1024.0f << "kB";
+    stream << "stride= " << stride_ << ", total size= " << size_/1024.0f << "kB";
     DLOGI(stream.str(), "texture", Severity::DET);
     stream.str("");
 

@@ -60,7 +60,7 @@ layout(location = 1) out vec4 out_albedo;
 // UNIFORMS
 uniform material mt;
 uniform render_data rd;
-uniform float f_splat=0.5f;
+//uniform float f_splat=0.5f;
 
 float edge_factor();
 
@@ -68,7 +68,7 @@ float edge_factor();
 void main()
 {
     #ifdef VARIANT_SPLAT
-    ////float f_splat = texture(mt.splatTex, frag_landscape_coord).r;
+    float f_splat = texture(mt.splatTex, frag_landscape_coord).r;
     //float f_splat = texture(mt.splatTex, frag_texCoord).r;
     #endif
 
@@ -115,7 +115,6 @@ void main()
         albedo = mix(texture(mt.sg1.albedoTex, texCoords).rgb,
                      texture(mt.sg2.albedoTex, texCoords).rgb,
                      f_splat);
-        //albedo = vec3(f_splat,0,0);
     }
     else
         albedo = mt.v3_albedo;
