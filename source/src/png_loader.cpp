@@ -15,13 +15,12 @@ static constexpr const int PNGSIGSIZE = 8;
 
 static bool is_valid_png(std::istream& stream)
 {
+    if(!stream.good()) return false;
 
     // Compare file signature
     png_byte pngsig[PNGSIGSIZE];
     int is_png = 0;
     stream.read((char*)pngsig, PNGSIGSIZE);
-
-    if (!stream.good()) return false;
 
     is_png = png_sig_cmp(pngsig, 0, PNGSIGSIZE);
     return (is_png == 0);

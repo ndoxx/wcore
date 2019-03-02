@@ -116,6 +116,7 @@ void GeometryRenderer::render(Scene* pscene)
             shader = &geometry_pass_shader_;
 
         shader->use();
+        shader->send_uniform("rd.f_wireframe_mix"_h, wireframe_mix_);
 
         // Get model matrix and compute products
         mat4 M = const_cast<TerrainChunk&>(terrain).get_model_matrix();

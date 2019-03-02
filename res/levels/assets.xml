@@ -54,6 +54,30 @@
             </Override>
         </Material>
 
+        <Material name="grass">
+            <Texture>
+                <Albedo>grass_albedo.png</Albedo>
+                <AO>grass_ao.png</AO>
+                <Depth>grass_depth.png</Depth>
+                <!--<Metallic>grass_metal.png</Metallic>-->
+                <Normal>grass_norm.png</Normal>
+                <Roughness>grass_rough.png</Roughness>
+                <Parameters>
+                    <MinFilter>nearest_mipmap_linear</MinFilter>
+                    <MagFilter>linear</MagFilter>
+                    <AddressU>wrap</AddressU>
+                    <AddressV>wrap</AddressV>
+                </Parameters>
+            </Texture>
+            <Uniform>
+                <ParallaxHeightScale>0.05</ParallaxHeightScale>
+            </Uniform>
+            <Override>
+                <NormalMap>true</NormalMap>
+                <ParallaxMap>true</ParallaxMap>
+            </Override>
+        </Material>
+
         <Material name="brickWall">
             <Texture>
                 <Albedo>brickWall_albedo.png</Albedo>

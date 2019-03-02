@@ -15,6 +15,7 @@ struct TerrainPatchDescriptor
     float lattice_scale;
     float texture_scale;
     float height;
+    std::string splatmap_name;
     rapidxml::xml_node<>* generator_node;
     rapidxml::xml_node<>* height_modifier_node;
     std::vector<rapidxml::xml_node<>*> material_nodes;

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Scene>
+    <Audio>
+        <BGM>desert_bgm</BGM>
+    </Audio>
+    <Skybox disable="false">
+        <CubemapTexture name="skybox02"/>
+    </Skybox>
+    <Terrain chunkSize="64" latticeScale="1.0" textureScale="0.25">
+        <TerrainPatch origin="(0,0)" size="(3,3)" height="0">
+            <Generator type="simplex" seed="1">
+                <Octaves>10</Octaves>
+                <Frequency>0.01</Frequency>
+                <Persistence>0.4</Persistence>
+                <LoBound>2.0</LoBound>
+                <HiBound>30.0</HiBound>
+            </Generator>
+            <HeightModifier>
+                <Erosion type="droplets">
+                    <Iterations>150</Iterations>
+                    <Kq>10.0</Kq>
+                    <Kw>0.001</Kw>
+                    <Kr>0.9</Kr>
+                    <Kd>0.02</Kd>
+                    <Ki>0.1</Ki>
+                    <Kg>40.0</Kg>
+                    <MinSlope>0.05</MinSlope>
+                    <Epsilon>1e-3</Epsilon>
+                    <Seed>1</Seed>
+                </Erosion>
+                <Offset y="-5.5"></Offset>
+            </HeightModifier>
+            <Transform>
+                <Position>(0,0,0)</Position>
+            </Transform>
+            <Material name="grass"/>
+            <!--<Splat>
+                <Material name="beachSand"/>
+                <Material name="sandstone"/>
+            </Splat>-->
+            <Shadow>
+                <CullFace>1</CullFace>
+            </Shadow>
+        </TerrainPatch>
+    </Terrain>
+
+    <Chunk coords="(0,0)"/>
+    <Chunk coords="(0,1)"/>
+    <Chunk coords="(0,2)"/>
+    <Chunk coords="(1,0)"/>
+    <Chunk coords="(1,1)"/>
+    <Chunk coords="(1,2)"/>
+    <Chunk coords="(2,0)"/>
+    <Chunk coords="(2,1)"/>
+    <Chunk coords="(2,2)"/>
+
+    <Ambient>
+        <Directional>
+            <ShadowBias>0.3</ShadowBias>
+            <Color>
+                <CSpline base="vec3" tangentPolicy="CatmullRom">
+                    <Control locus="0.0" value="(0.02,0.55,1.0)"/>
+                    <Control locus="6.0" value="(0.0,0.54,0.41)"/>
+                    <Control locus="8.0" value="(0.09,0.89,0.76)"/>
+                    <Control locus="12.0" value="(0.93,0.93,0.80)"/>
+                    <Control locus="16.0" value="(1.0,0.88,0.65)"/>
+                    <Control locus="18.0" value="(1.0,0.76,0.65)"/>
+                    <Control locus="22.0" value="(1.0,0.59,0.60)"/>
+                    <Control locus="22.1" value="(0.32,0.29,0.60)"/>
+                    <Control locus="23.9" value="(0.02,0.55,1.0)"/>
+                </CSpline>
+            </Color>
+            <Brightness>
+                <CSpline base="float" tangentPolicy="Finite">
+                    <Control locus="0.0" value="1.0"/>
+                    <Control locus="6.0" value="0.0"/>
+                    <Control locus="12.0" value="3.0"/>
+                    <Control locus="21.0" value="2.0"/>
+                    <Control locus="22.0" value="0.0"/>
+                    <Control locus="22.1" value="0.0"/>
+                    <Control locus="23.9" value="1.0"/>
+                </CSpline>
+            </Brightness>
+            <AmbientStrength>
+                <CSpline base="float" tangentPolicy="Cardinal">
+                    <Control locus="0.0" value="0.03"/>
+                    <Control locus="6.0" value="0.09"/>
+                    <Control locus="12.0" value="0.1"/>
+                    <Control locus="16.0" value="0.2"/>
+                    <Control locus="22.0" value="0.03"/>
+                    <Control locus="23.9" value="0.03"/>
+                </CSpline>
+            </AmbientStrength>
+        </Directional>
+        <PostProcessing>
+            <Gamma>
+                <CSpline base="vec3" tangentPolicy="CatmullRom">
+                    <Control locus="0.0" value="(1.0,1.1,1.2)"/>
+                    <Control locus="6.0" value="(1.0,1.1,1.1)"/>
+                    <Control locus="18.0" value="(1.2,1.1,1.0)"/>
+                    <Control locus="23.9" value="(1.0,1.1,1.2)"/>
+                </CSpline>
+            </Gamma>
+            <Saturation>
+                <CSpline base="float" tangentPolicy="CatmullRom">
+                    <Control locus="0.0" value="0.8"/>
+                    <Control locus="6.0" value="1.0"/>
+                    <Control locus="18.0" value="1.4"/>
+                    <Control locus="22.0" value="1.0"/>
+                    <Control locus="23.9" value="0.8"/>
+                </CSpline>
+            </Saturation>
+            <FogDensity>
+                <CSpline base="float" tangentPolicy="Cardinal">
+                    <Control locus="0.0" value="0.01"/>
+                    <Control locus="6.0" value="0.025"/>
+                    <Control locus="8.0" value="0.01"/>
+                    <Control locus="12.0" value="0.0"/>
+                    <Control locus="22.0" value="0.0"/>
+                    <Control locus="23.9" value="0.01"/>
+                </CSpline>
+            </FogDensity>
+        </PostProcessing>
+    </Ambient>
+
+    <Camera>
+        <Position>(4.2,30.0,9.0)</Position>
+        <Orientation>(133.0,24.0)</Orientation>
+    </Camera>
+
+    <!-- Sun -->
+    <Light type="directional">
+        <Position>(16.0,0.5,17.5)</Position>
+        <Color>(0.85,0.25,0.20)</Color>
+        <Brightness>15.0</Brightness>
+    </Light>
+
+</Scene>

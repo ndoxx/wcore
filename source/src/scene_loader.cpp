@@ -695,6 +695,8 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
         {
             desc.material_nodes.push_back(splat_mat_node);
         }
+        // Generate splatmap name
+        desc.splatmap_name = "splat_" + current_map_ + "_" + std::to_string(desc.chunk_x) + "_" + std::to_string(desc.chunk_z) + ".png";
     }
     else
     {

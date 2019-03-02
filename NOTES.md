@@ -6611,7 +6611,7 @@ Beaucoup de ruses à tendance "hacky" ont été utilisées à cet effet, le mote
 * La classe _Texture_ a été modifiée pour tenir compte du sampler_group du _TextureDescriptor_ qui sert à l'initialiser. Au départ, une map statique associant un type enum à un hash_t permettait de sélectionner le sampler name à associer à une texture unit pour permettre le bind automatique des textures aux bons samplers dans les shaders (Texture::SAMPLER_NAMES_). Maintenant, une deuxième map (Texture::SAMPLER_NAMES_2_) qui déclare les noms d'uniforms pour sg2 (ex : mt.sg2.albedoTex) est utilisée alternativement à la première si le sampler_group du _TextureDescriptor_ vaut 2. Un peu d'arithmétique permet de s'assurer qu'une texture alternative va bind avec le bon numéro de sampler. Les samplers de sg1 possèdent les indices de 0 à 5, ceux de sg2 de 6 à 11. Les fonctions Texture::unit_to_sampler_name() et Texture::get_unit_index() sont modifiées pour renvoyer les sampler names et unit index corrects en fonction du sampler group de la _Texture_.
 * La _Scene_ possède une méthode Scene::draw_terrains() qui permet de dessiner les terrains. Scene::draw_models() ne se charge plus de l'affichage des terrains, et ça, c'est une bonne chose en soit. _GeometryRenderer_ va d'abord rendre les modèles puis ensuite les terrains lors d'une seconde passe. Si un terrain n'est pas multi-texturé, alors c'est le shader gpass de base qui est utilisé, sinon c'est sa variante __VARIANT_SPLAT__.
 
-A terme, le moteur tentera pour chaque chunk de charger une texture du nom de "splat_x_z.png" en tant que splat map (avec x et z les coordonnées du chunk). C'est pour l'instant _ModelFactory_ qui va générer ce nom dynamiquement à la création d'un terrain, si une texture alternative a bien été définie et générée avec succès. L'existence de cette texture sera une condition nécessaire pour que le splat-mapping soit activé pour le chunk en question. Une autre condition nécessaire sera que les deux materials définissent les même textures.
+A terme, le moteur tentera pour chaque chunk de charger une texture du nom de "splat_levelname_x_z.png" en tant que splat map (avec x et z les coordonnées du chunk), par exemple "splat_crystal_0_0.png" sera utilisée par le niveau "crystal" au chunk (0,0). C'est pour l'instant _ModelFactory_ qui va générer ce nom dynamiquement à la création d'un terrain, si une texture alternative a bien été définie et générée avec succès. L'existence de cette texture sera une condition nécessaire pour que le splat-mapping soit activé pour le chunk en question. Une autre condition nécessaire sera que les deux materials définissent les même textures.
 
 A noter que l'activation simultanée du parallax mapping et du splat mapping fonctionne sans problème à ceci près que c'est foutrement lent.
     -> Ue amélioration possible serait de charger les textures qui devraient l'être en niveau de gris, plutôt que de forcer une conversion RGB pour ensuite ne lire que la composante R dans les shaders comme je le fais pour le moment. Ca devrait libérer pas mal de ressources.
@@ -6641,12 +6641,75 @@ Noter qu'il est toujours possible de définir un simple noeud *Material* comme a
 
 Les coordonnées sur la splat map sont calculées dans le vertex shader de gpass dans sa variante __VARIANT_SPLAT__ depuis les composantes x et z de la position des vertices dans l'espace modèle, avec un scaling selon la taille du chunk (qui détermine la taille du terrain chunk). Ces coordonnées nommées *landscape coordinates* sont exportées vers les shader stages suivants. Le fragment shader se sert de ces coordonnées pour sampler la splat map et déterminer l'interpolation locale entre les différents sampler groups.
 
+Le nom de la splatmap à charger est produit dynamiquement par _SceneLoader_ :
+
+    splat_[level_name]_[chunk_x]_[chunk_z].png
+
+
 ##[BUG] Octree non robuste
 Lorsque le volume de l'octree de la géométrie statique est suffisamment grand, ce qui peut se produire après avoir parcouru une grande partie de la map, en revenant verse la position initiale de la caméra on peut constater que certaines cellules ne subdivisent plus.
     -> Profondeur max atteinte ?
 
+## Réparation de internstr
+Dans la configuration où sur une même ligne j'avais plusieurs string litterals et un hash string litteral, internstr matchait bêtement tout ce qui se trouvait entre le premier et le dernier guillemet, conduisant à une erreur de parsing XML au chargement de debug_intern_strings.xml. J'ai effectué la modification suivante dans les regex :
+
+```cpp
+// Avant
+static std::regex hash_str_tag("H_\\(\"(.+?)\"\\)");
+static std::regex hash_str_literal_tag("\"(.+?)\"_h");
+// Après
+static std::regex hash_str_tag("H_\\(\"([a-zA-Z0-9_\\.]+?)\"\\)");
+static std::regex hash_str_literal_tag("\"([a-zA-Z0-9_\\.]+?)\"_h");
+```
+De fait, on ne match que les caractères alphanumériques, les underscores et les points, plus les guillemets...
+
+#[01-03-19]
+
+## Material Editor
+Une grosse optimisation à faire serait de pré-compiler toutes les texture maps (Albedo, Roughness, Normal, Metallic, AO et Depth) dans 3 images png 4 canaux :
+
+    [   Image1    ]  [     Image2     ]  [    Image3    ]
+    [[R][G][B] [A]]  [[R][G]  [B]  [A]]  [[R]  [G][B][A]]
+      Albedo  Rough   Normal Metal AO    Depth    ???
+
+Les sampler groups ne comporteront plus que 3 samplers au lieu de 6 et on divisera vraisemblablement les accès texture par 2.
+
+Mais générer de telles images nécessite un outil, sans quoi ce serait une galère sans nom. Donc il faut que je bosse sur un material editor. On peut imaginer les features suivants :
+
+* Génération assistée de la normal map depuis la depth map
+    -> Par filtrage (Sobel, Scharr...)
+* Possibilité de spécifier des valeurs uniformes au lieu d'images
+* Compilation des textures
+* Export des materials en XML
+* Visualisation d'objets texturés sous wcore
+    -> Avec choix des sources de lumière
+    -> Et choix des objets (cube, plane, sphere, .obj)
+* Opérations de base sur chaque texture map
+    -> Invert, Bias, Curve...
+* Export sous différentes résolutions
+
+Et un peu de fluff quand j'aurai le temps :
+* Drag & drop de fichiers image
+* Batch mode
+
+
+Peut-être que pour se simplifier la vie -je sens que je vais regretter le début de cette phrase- et étendre le nombre de formats pris en charge en entrée, on pourrait utiliser une grosse lib image loader genre Assimp.
+
+Le programme serait en standalone (tool) et utiliserait une interface graphique solide (Qt ?).
+
+
+
+
+
+
+
+
+
+
+
+
+
 * TODO:
-    [ ] Réparer le fucking programme internstr
     [ ] New texture maps (possibly grouped in same Gbuffer chan):
         * Emissivity map
         * Reflection map

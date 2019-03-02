@@ -221,6 +221,9 @@ bool FileSystem::file_exists(const char* filename,
                              hash_t folder_node,
                              hash_t archive)
 {
+    if(strlen(filename)==0)
+        return false;
+
     fs::path file_path;
     if(CONFIG.get(folder_node, file_path))
     {
