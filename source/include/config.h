@@ -11,10 +11,11 @@
 #include "wtypes.h"
 #include "xml_parser.h"
 
+namespace fs = std::filesystem;
+
+
 namespace wcore
 {
-
-namespace fs = std::filesystem;
 
 // Singleton class for holding named global variables
 class Config: public Singleton<Config>, public ValueMap

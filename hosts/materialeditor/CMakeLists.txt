@@ -11,6 +11,7 @@ else()
 endif()
 
 add_definitions(-std=c++17)
+add_definitions(-D__DEBUG__)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 ")
 
 set(CMAKE_BUILD_TYPE Release)
@@ -32,12 +33,14 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 set(materialeditor_SRCS
     mainwindow.ui
     mainwindow.cpp
+    droplabel.cpp
     main.cpp
 )
 # Tell CMake to create the materialeditor executable
 add_executable(materialeditor ${materialeditor_SRCS})
 
 target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/hosts/materialeditor/source/include")
+target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/source/include")
 
 set_target_properties(materialeditor
     PROPERTIES

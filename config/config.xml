@@ -9,6 +9,7 @@
         <path name="shaderinc" value="res/shaders/include/"/>
         <path name="font"      value="res/fonts/"/>
         <path name="texture"   value="res/textures/"/>
+        <path name="texwork"   value="res/textures/work/"/>
         <path name="soundfx"   value="res/sound/fx/"/>
         <path name="soundbgm"  value="res/sound/bgm/"/>
         <path name="model"     value="res/models/"/>
