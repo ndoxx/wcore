@@ -31,7 +31,8 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 
 # Populate a CMake variable with the sources
 set(materialeditor_SRCS
-    mainwindow.ui
+    editor_model.cpp
+    texlist_model.cpp
     mainwindow.cpp
     droplabel.cpp
     main.cpp
