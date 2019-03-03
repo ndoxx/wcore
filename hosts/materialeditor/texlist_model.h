@@ -12,7 +12,7 @@ class TexListModel: public QStringListModel
 
 public:
     // To append data to list
-    void append(const QString& string);
+    QModelIndex append(const QString& string);
     TexListModel& operator<<(const QString& string);
 };
 

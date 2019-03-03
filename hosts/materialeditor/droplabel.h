@@ -29,6 +29,8 @@ public:
     QPixmap scaledPixmap() const;
     // Set member pixmap
     void setPixmap(const QPixmap& pixmap);
+    void setPixmap(const QString& pix_path);
+    void clear();
 
     // Gets the current file path to loaded image
     inline const QString& get_path() { return current_path_; }

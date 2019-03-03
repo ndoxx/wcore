@@ -7,6 +7,7 @@ class QTreeView;
 class QListView;
 class QLineEdit;
 class QFileSystemModel;
+class QItemSelection;
 
 namespace medit
 {
@@ -20,8 +21,13 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void save_texture(const QString& texname);
+    void update_texture_view();
+
 public slots:
-    void new_texture();
+    void handle_new_texture();
+    void handle_save_current_texture();
+    void handle_texlist_selection_changed(const QItemSelection& selection);
 
 private:
     EditorModel* editor_model_;

@@ -3,10 +3,11 @@
 namespace medit
 {
 
-void TexListModel::append(const QString& string)
+QModelIndex TexListModel::append(const QString& string)
 {
     insertRows(rowCount(), 1);
     setData(index(rowCount()-1), string);
+    return index(rowCount()-1);
 }
 
 TexListModel& TexListModel::operator<<(const QString& string)

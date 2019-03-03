@@ -42,6 +42,20 @@ void DropLabel::setPixmap(const QPixmap& pixmap)
 {
     pixmap_ = pixmap;
     QLabel::setPixmap(scaledPixmap());
+    setMask(pixmap_.mask());
+    show();
+}
+
+void DropLabel::setPixmap(const QString& pix_path)
+{
+    setPixmap(QPixmap(pix_path));
+    current_path_ = pix_path;
+}
+
+void DropLabel::clear()
+{
+    QLabel::clear();
+    current_path_ = "";
 }
 
 void DropLabel::resizeEvent(QResizeEvent* event)
@@ -71,8 +85,6 @@ void DropLabel::dropEvent(QDropEvent* event)
     current_path_ = QUrl(event->mimeData()->text()).toLocalFile();
     // Generate a pixmap and set label to use it (but rescaled)
     setPixmap(QPixmap(current_path_));
-    setMask(pixmap_.mask());
-    show();
 }
 
 } // namespace medit
