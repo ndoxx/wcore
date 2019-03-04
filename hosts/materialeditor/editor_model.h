@@ -51,6 +51,9 @@ public:
     QModelIndex add_texture(const QString& name);
 
     inline TextureEntry& get_texture_entry(wcore::hash_t name) { return texture_descriptors_.at(name); }
+    bool has_entry(wcore::hash_t name);
+    void delete_current_texture(QListView* tex_list);
+    void rename_texture(const QString& old_name, const QString& new_name);
 
 private:
     QString current_texname_;

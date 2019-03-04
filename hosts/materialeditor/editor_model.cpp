@@ -48,7 +48,7 @@ void EditorModel::set_output_folder(const QString& path)
 void EditorModel::set_current_texture_name(const QString& name)
 {
     current_texname_ = name;
-    DLOGN("Working on texture: <n>" + current_texname_.toStdString() + "</n>", "core", Severity::LOW);
+    DLOGN("Working on texture <n>" + current_texname_.toStdString() + "</n>", "core", Severity::LOW);
 }
 
 void EditorModel::setup_list_model(QListView* listview)
@@ -74,6 +74,40 @@ QModelIndex EditorModel::add_texture(const QString& name)
 
     // index is a source index and needs to be remapped to proxy sorted index
     return texlist_sort_proxy_model_->mapFromSource(index);
+}
+
+bool EditorModel::has_entry(wcore::hash_t name)
+{
+    return (texture_descriptors_.find(name) != texture_descriptors_.end());
+}
+
+void EditorModel::delete_current_texture(QListView* tex_list)
+{
+    if(!current_texname_.isEmpty())
+    {
+        hash_t hname = H_(current_texname_.toUtf8().constData());
+        auto it = texture_descriptors_.find(hname);
+        if(it != texture_descriptors_.end())
+        {
+            current_texname_ = "";
+            texture_descriptors_.erase(it);
+            texlist_model_->removeRow(texlist_sort_proxy_model_->mapToSource(tex_list->currentIndex()).row());
+        }
+    }
+}
+
+void EditorModel::rename_texture(const QString& old_name, const QString& new_name)
+{
+    // Just remap the descriptor to the new name hash
+    hash_t hname = H_(old_name.toUtf8().constData());
+    auto it = texture_descriptors_.find(hname);
+    if(it != texture_descriptors_.end())
+    {
+        hash_t new_hname = H_(new_name.toUtf8().constData());
+        current_texname_ = new_name;
+        texture_descriptors_.insert(std::pair(new_hname, it->second));
+        texture_descriptors_.erase(it);
+    }
 }
 
 

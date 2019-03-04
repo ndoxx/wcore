@@ -33,6 +33,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 set(materialeditor_SRCS
     editor_model.cpp
     texlist_model.cpp
+    texlist_delegate.cpp
     mainwindow.cpp
     droplabel.cpp
     main.cpp

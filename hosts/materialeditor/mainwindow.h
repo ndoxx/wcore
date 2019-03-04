@@ -13,6 +13,7 @@ namespace medit
 {
 
 class EditorModel;
+class TexlistDelegate;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -24,10 +25,16 @@ public:
     void save_texture(const QString& texname);
     void update_texture_view();
 
+    virtual bool eventFilter(QObject* object, QEvent* event) override;
+
+
 public slots:
     void handle_new_texture();
+    void handle_delete_current_texture();
+    void handle_rename_current_texture();
     void handle_save_current_texture();
     void handle_texlist_selection_changed(const QItemSelection& selection);
+    void handle_texlist_context_menu(const QPoint& pos);
 
 private:
     EditorModel* editor_model_;
@@ -36,6 +43,7 @@ private:
     QTreeView* dir_hierarchy_;
     QListView* tex_list_;
     QLineEdit* texname_edit_;
+    TexlistDelegate* tex_list_delegate_;
 };
 
 

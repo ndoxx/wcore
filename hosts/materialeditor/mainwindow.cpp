@@ -10,10 +10,13 @@
 #include <QListView>
 #include <QSpacerItem>
 #include <QLineEdit>
+#include <QKeyEvent>
+#include <QMenu>
 
 #include "mainwindow.h"
 #include "droplabel.h"
 #include "editor_model.h"
+#include "texlist_delegate.h"
 
 // wcore
 #include "config.h"
@@ -56,8 +59,6 @@ QGroupBox::title\
     padding:0px 10px;\
 }";
 
-static QString dlStyleSheet = "border-radius: 5px; background: white;";
-
 static std::vector<TexMapControl> texmap_controls;
 
 static void push_texmap_control(const QString& title, QLayout* parent)
@@ -69,7 +70,6 @@ static void push_texmap_control(const QString& title, QLayout* parent)
 
     ctl.droplabel->setAcceptDrops(true);
     ctl.droplabel->setMinimumSize(QSize(128,128));
-    ctl.droplabel->setStyleSheet(dlStyleSheet);
 
     ctl.layout->addSpacerItem(new QSpacerItem(20, 10));
     ctl.layout->addWidget(ctl.droplabel);
@@ -88,6 +88,25 @@ static void retrieve_texmap_path(TexMapControlIndex index, QString& dest_path, b
     has_map = !dest_path.isEmpty();
 }
 
+static bool validate_texture_name(const QString& name)
+{
+    if(name.isEmpty()) return false;
+
+    // Check that name is alphanumeric (underscores are allowed)
+    QRegularExpression re("^[a-zA-Z0-9_]+$");
+    QRegularExpressionMatch match = re.match(name);
+
+    bool ret = match.hasMatch();
+
+    if(!ret)
+    {
+        DLOGW("Invalid texture name.", "core", Severity::WARN);
+        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores are allowed.", "core", Severity::WARN);
+    }
+
+    return ret;
+}
+
 MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
 editor_model_(new EditorModel),
@@ -95,7 +114,8 @@ dir_fs_model_(new QFileSystemModel),
 window_(new QWidget),
 dir_hierarchy_(new QTreeView),
 tex_list_(new QListView),
-texname_edit_(new QLineEdit)
+texname_edit_(new QLineEdit),
+tex_list_delegate_(new TexlistDelegate)
 {
     window_->setWindowFlags(Qt::Window);
     setWindowTitle("WCore Material Editor");
@@ -199,6 +219,11 @@ texname_edit_(new QLineEdit)
     // Side panel list view will use model and data from editor model
     editor_model_->setup_list_model(tex_list_);
     tex_list_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tex_list_->installEventFilter(this);
+    tex_list_->setContextMenuPolicy(Qt::CustomContextMenu);
+    tex_list_delegate_->set_editor_model(editor_model_);
+    tex_list_delegate_->set_item_name_validator(&validate_texture_name);
+    tex_list_->setItemDelegate(tex_list_delegate_);
 
     // * Configure signals and slots
     QObject::connect(button_new_tex, SIGNAL(clicked()),
@@ -207,6 +232,9 @@ texname_edit_(new QLineEdit)
                      this,           SLOT(handle_new_texture()));
     QObject::connect(tex_list_->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      this,                        SLOT(handle_texlist_selection_changed(QItemSelection)));
+
+    QObject::connect(tex_list_, SIGNAL(customContextMenuRequested(const QPoint&)),
+                     this,      SLOT(handle_texlist_context_menu(const QPoint&)));
 }
 
 MainWindow::~MainWindow()
@@ -214,6 +242,22 @@ MainWindow::~MainWindow()
     delete dir_fs_model_;
     delete window_;
     delete editor_model_;
+}
+
+bool MainWindow::eventFilter(QObject* object, QEvent* event)
+{
+    if (object == tex_list_ && event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent* ke = static_cast<QKeyEvent*>(event);
+        if(ke->key() == Qt::Key_Delete)
+        {
+            handle_delete_current_texture();
+            return true;
+        }
+        return false;
+    }
+    else
+        return false;
 }
 
 void MainWindow::save_texture(const QString& texname)
@@ -247,22 +291,19 @@ void MainWindow::update_texture_view()
     }
 }
 
-static bool validate_texture_name(const QString& name)
-{
-    if(name.isEmpty()) return false;
-
-    // Check that name is alphanumeric (underscores are allowed)
-    QRegularExpression re("^[a-zA-Z0-9_]+$");
-    QRegularExpressionMatch match = re.match(name);
-
-    return match.hasMatch();
-}
-
 void MainWindow::handle_new_texture()
 {
     QString newtex_name = texname_edit_->text();
     texname_edit_->clear();
 
+    // First, check that no texture of the same name exists already
+    if(editor_model_->has_entry(H_(newtex_name.toUtf8().constData())))
+    {
+        DLOGW("Texture <n>" + newtex_name.toStdString() + "</n> already exists.", "core", Severity::WARN);
+        return;
+    }
+
+    // If name is valid, add texture to editor model
     if(validate_texture_name(newtex_name))
     {
         DLOGN("New texture: <n>" + newtex_name.toStdString() + "</n>", "core", Severity::LOW);
@@ -274,16 +315,35 @@ void MainWindow::handle_new_texture()
             tex_list_->selectionModel()->select(index, QItemSelectionModel::Select);
         }
     }
-    else
-    {
-        DLOGW("Invalid texture name.", "core", Severity::WARN);
-        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores are allowed.", "core", Severity::WARN);
-    }
 }
 
 void MainWindow::handle_save_current_texture()
 {
-    save_texture(editor_model_->get_current_texture_name());
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+        save_texture(texname);
+}
+
+void MainWindow::handle_delete_current_texture()
+{
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        DLOGN("Deleting texture <n>" + texname.toStdString() + "</n>", "core", Severity::LOW);
+        // Remove from editor model
+        editor_model_->delete_current_texture(tex_list_);
+    }
+}
+
+void MainWindow::handle_rename_current_texture()
+{
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        // Edit texture item at current index
+        QModelIndex index = tex_list_->currentIndex();
+        tex_list_->edit(index);
+    }
 }
 
 void MainWindow::handle_texlist_selection_changed(const QItemSelection& selection)
@@ -301,5 +361,17 @@ void MainWindow::handle_texlist_selection_changed(const QItemSelection& selectio
     }
 }
 
+void MainWindow::handle_texlist_context_menu(const QPoint& pos)
+{
+    // Map widget coords to global coords
+    // QListView uses QAbstractScrollArea, so we need to get its viewport coords
+    QPoint globalPos = tex_list_->viewport()->mapToGlobal(pos);
+
+    QMenu context_menu;
+    context_menu.addAction("Rename", this, SLOT(handle_rename_current_texture()));
+    context_menu.addAction("Delete", this, SLOT(handle_delete_current_texture()));
+
+    context_menu.exec(globalPos);
+}
 
 } // namespace medit

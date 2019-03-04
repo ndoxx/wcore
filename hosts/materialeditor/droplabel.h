@@ -39,6 +39,7 @@ protected:
     virtual void resizeEvent(QResizeEvent* event) override;
     virtual void dropEvent(QDropEvent* event) override;
     virtual void dragEnterEvent(QDragEnterEvent* event) override;
+    virtual void dragLeaveEvent(QDragLeaveEvent *event) override;
 
 private:
     QPixmap pixmap_;

@@ -10,16 +10,19 @@
 namespace medit
 {
 
+static QString ssIdle = "border-radius: 5px; border: none; background: white;";
+static QString ssHoverDnD = "border-radius: 5px; border: 5px dashed rgb(0,204,255); background: white;";
+
 DropLabel::DropLabel(QWidget* parent, Qt::WindowFlags f):
 QLabel(parent, f)
 {
-
+    setStyleSheet(ssIdle);
 }
 
 DropLabel::DropLabel(const QString& text, QWidget* parent, Qt::WindowFlags f):
 QLabel(parent, f)
 {
-
+    setStyleSheet(ssIdle);
 }
 /*
 int DropLabel::heightForWidth(int width) const
@@ -66,15 +69,21 @@ void DropLabel::resizeEvent(QResizeEvent* event)
 
 void DropLabel::dragEnterEvent(QDragEnterEvent* event)
 {
-    /*
-    QStringList mime_formats = event->mimeData()->formats();
+    /*QStringList mime_formats = event->mimeData()->formats();
     for(int ii=0; ii<mime_formats.size(); ++ii)
-         std::cout << "format: " << mime_formats.at(ii).toLocal8Bit().constData() << std::endl;
-    */
+         std::cout << "format: " << mime_formats.at(ii).toLocal8Bit().constData() << std::endl;*/
 
     // Accept drops from treeView entries
     if(event->mimeData()->hasFormat("text/uri-list"))
+    {
+        setStyleSheet(ssHoverDnD);
         event->acceptProposedAction();
+    }
+}
+
+void DropLabel::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    setStyleSheet(ssIdle);
 }
 
 void DropLabel::dropEvent(QDropEvent* event)
@@ -82,9 +91,10 @@ void DropLabel::dropEvent(QDropEvent* event)
     //std::cout << "drop: " << event->mimeData()->text().toUtf8().constData() << std::endl;
 
     // Get path to file from mime data in event
-    current_path_ = QUrl(event->mimeData()->text()).toLocalFile();
+    current_path_ = event->mimeData()->urls().first().toLocalFile();
     // Generate a pixmap and set label to use it (but rescaled)
     setPixmap(QPixmap(current_path_));
+    setStyleSheet(ssIdle);
 }
 
 } // namespace medit
