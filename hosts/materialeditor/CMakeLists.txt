@@ -29,6 +29,9 @@ set(CMAKE_AUTOUIC ON)
 # Find the QtWidgets library
 find_package(Qt5Widgets CONFIG REQUIRED)
 
+set(CMAKE_AUTORCC ON)
+qt5_add_resources(RCC_SOURCES resources.qrc)
+
 # Populate a CMake variable with the sources
 set(materialeditor_SRCS
     editor_model.cpp
@@ -39,7 +42,7 @@ set(materialeditor_SRCS
     main.cpp
 )
 # Tell CMake to create the materialeditor executable
-add_executable(materialeditor ${materialeditor_SRCS})
+add_executable(materialeditor ${materialeditor_SRCS} ${RCC_SOURCES})
 
 target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/hosts/materialeditor/source/include")
 target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/source/include")

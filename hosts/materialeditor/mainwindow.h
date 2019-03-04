@@ -6,6 +6,7 @@
 class QTreeView;
 class QListView;
 class QLineEdit;
+class QToolBar;
 class QFileSystemModel;
 class QItemSelection;
 
@@ -32,9 +33,18 @@ public slots:
     void handle_new_texture();
     void handle_delete_current_texture();
     void handle_rename_current_texture();
+    void handle_clear_current_texture();
     void handle_save_current_texture();
+    void handle_save_all_textures();
     void handle_texlist_selection_changed(const QItemSelection& selection);
     void handle_texlist_context_menu(const QPoint& pos);
+    void handle_compile_current();
+    void handle_compile_all();
+    void handle_serialize();
+    void handle_serialize_all();
+
+protected:
+    void create_toolbars();
 
 private:
     EditorModel* editor_model_;
@@ -43,6 +53,7 @@ private:
     QTreeView* dir_hierarchy_;
     QListView* tex_list_;
     QLineEdit* texname_edit_;
+    QToolBar* toolbar_;
     TexlistDelegate* tex_list_delegate_;
 };
 

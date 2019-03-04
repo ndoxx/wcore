@@ -4,6 +4,8 @@
 #include <QMimeData>
 #include <QPixmap>
 #include <QBitmap>
+#include <QMenu>
+
 #include "droplabel.h"
 
 
@@ -14,16 +16,17 @@ static QString ssIdle = "border-radius: 5px; border: none; background: white;";
 static QString ssHoverDnD = "border-radius: 5px; border: 5px dashed rgb(0,204,255); background: white;";
 
 DropLabel::DropLabel(QWidget* parent, Qt::WindowFlags f):
-QLabel(parent, f)
+QLabel(parent, f),
+initialized_(false)
 {
+    // Set style
     setStyleSheet(ssIdle);
+    // Set contextual menu
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
+                     this, SLOT(handle_context_menu(const QPoint&)));
 }
 
-DropLabel::DropLabel(const QString& text, QWidget* parent, Qt::WindowFlags f):
-QLabel(parent, f)
-{
-    setStyleSheet(ssIdle);
-}
 /*
 int DropLabel::heightForWidth(int width) const
 {
@@ -47,6 +50,7 @@ void DropLabel::setPixmap(const QPixmap& pixmap)
     QLabel::setPixmap(scaledPixmap());
     setMask(pixmap_.mask());
     show();
+    initialized_ = true;
 }
 
 void DropLabel::setPixmap(const QString& pix_path)
@@ -59,11 +63,12 @@ void DropLabel::clear()
 {
     QLabel::clear();
     current_path_ = "";
+    initialized_ = false;
 }
 
 void DropLabel::resizeEvent(QResizeEvent* event)
 {
-    if(!pixmap_.isNull())
+    if(!pixmap_.isNull() && initialized_)
         QLabel::setPixmap(scaledPixmap());
 }
 
@@ -81,7 +86,7 @@ void DropLabel::dragEnterEvent(QDragEnterEvent* event)
     }
 }
 
-void DropLabel::dragLeaveEvent(QDragLeaveEvent *event)
+void DropLabel::dragLeaveEvent(QDragLeaveEvent* event)
 {
     setStyleSheet(ssIdle);
 }
@@ -96,6 +101,20 @@ void DropLabel::dropEvent(QDropEvent* event)
     setPixmap(QPixmap(current_path_));
     setStyleSheet(ssIdle);
 }
+
+void DropLabel::handle_context_menu(const QPoint& pos)
+{
+    // tmp? nothing to show if label is empty
+    if(!initialized_) return;
+
+    QPoint globalPos = mapToGlobal(pos);
+
+    QMenu context_menu;
+    context_menu.addAction("Clear", this, SLOT(clear()));
+
+    context_menu.exec(globalPos);
+}
+
 
 } // namespace medit
 

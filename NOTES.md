@@ -6701,12 +6701,24 @@ Le programme serait en standalone (tool) et utiliserait une interface graphique 
 
 
 
+texture compiling scheme:
 
+MapIndex   Name
+    0      ALBEDO
+    1      ROUGHNESS
+    2      METALLIC
+    3      AO
+    4      DEPTH
+    5      NORMAL
 
+BlockIndex Content
+    0      ALBEDO, ROUGHNESS
+    1      NORMAL, METALLIC, AO
+    2      DEPTH
 
-
-
-
+    [   Image1    ]  [     Image2     ]  [    Image3    ]
+    [[R][G][B] [A]]  [[R][G][B]  [A]]  [[R]  [G] [B][A]]
+      Albedo  Rough     Normal  Depth  Metal AO   ???
 
 
 * TODO:

@@ -4,8 +4,8 @@
 #include <map>
 #include <array>
 #include <QString>
+#include <QDir>
 #include <QStringList>
-#include <filesystem>
 
 #include "wtypes.h"
 
@@ -13,20 +13,22 @@
     Defines the behavior of the material editor application
 */
 
-namespace fs = std::filesystem;
-
 class QStringListModel;
 class QSortFilterProxyModel;
 class QListView;
 namespace medit
 {
 
+#define NTEXMAPS 6
+
 struct TextureEntry
 {
     QString name;
 
-    std::array<QString, 6> paths;
-    std::array<bool, 6> has_map;
+    std::array<QString, NTEXMAPS> paths;
+    std::array<bool, NTEXMAPS> has_map;
+    int width  = 0;
+    int height = 0;
 
     void debug_display();
 };
@@ -44,7 +46,7 @@ public:
 
     // composite textures output folder
     void set_output_folder(const QString& path);
-    inline const fs::path& get_output_folder() const { return output_folder_; }
+    inline const QDir& get_output_folder() const { return output_folder_; }
 
     // texture list access
     void setup_list_model(QListView* listview);
@@ -55,10 +57,12 @@ public:
     void delete_current_texture(QListView* tex_list);
     void rename_texture(const QString& old_name, const QString& new_name);
 
+    void compile(const QString& texname);
+
 private:
     QString current_texname_;
     QStringList texlist_;
-    fs::path output_folder_;
+    QDir output_folder_;
     TexListModel* texlist_model_;
     QSortFilterProxyModel* texlist_sort_proxy_model_;
     std::map<wcore::hash_t, TextureEntry> texture_descriptors_;

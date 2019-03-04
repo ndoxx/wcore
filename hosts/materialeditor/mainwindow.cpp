@@ -12,6 +12,7 @@
 #include <QLineEdit>
 #include <QKeyEvent>
 #include <QMenu>
+#include <QToolBar>
 
 #include "mainwindow.h"
 #include "droplabel.h"
@@ -120,6 +121,9 @@ tex_list_delegate_(new TexlistDelegate)
     window_->setWindowFlags(Qt::Window);
     setWindowTitle("WCore Material Editor");
 
+    // Toolbars
+    create_toolbars();
+
     // Layouts
     QHBoxLayout* hlayout_main = new QHBoxLayout();
     QVBoxLayout* vlayout_side_panel = new QVBoxLayout();
@@ -223,7 +227,7 @@ tex_list_delegate_(new TexlistDelegate)
     tex_list_->setContextMenuPolicy(Qt::CustomContextMenu);
     tex_list_delegate_->set_editor_model(editor_model_);
     tex_list_delegate_->set_item_name_validator(&validate_texture_name);
-    tex_list_->setItemDelegate(tex_list_delegate_);
+    tex_list_->setItemDelegate(tex_list_delegate_); // For editing purposes
 
     // * Configure signals and slots
     QObject::connect(button_new_tex, SIGNAL(clicked()),
@@ -232,7 +236,6 @@ tex_list_delegate_(new TexlistDelegate)
                      this,           SLOT(handle_new_texture()));
     QObject::connect(tex_list_->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      this,                        SLOT(handle_texlist_selection_changed(QItemSelection)));
-
     QObject::connect(tex_list_, SIGNAL(customContextMenuRequested(const QPoint&)),
                      this,      SLOT(handle_texlist_context_menu(const QPoint&)));
 }
@@ -242,6 +245,31 @@ MainWindow::~MainWindow()
     delete dir_fs_model_;
     delete window_;
     delete editor_model_;
+}
+
+void MainWindow::create_toolbars()
+{
+    toolbar_ = addToolBar("Texture");
+    toolbar_->addAction(QIcon(":/res/icons/save.png"), "Save",
+                        this, SLOT(handle_serialize()));
+    toolbar_->addAction(QIcon(":/res/icons/save_all.png"), "Save All",
+                        this, SLOT(handle_serialize_all()));
+
+    toolbar_->addSeparator();
+
+    toolbar_->addAction(QIcon(":/res/icons/rename.png"), "Rename",
+                        this, SLOT(handle_rename_current_texture()));
+    toolbar_->addAction(QIcon(":/res/icons/clear.png"), "Clear",
+                        this, SLOT(handle_clear_current_texture()));
+    toolbar_->addAction(QIcon(":/res/icons/delete.png"), "Delete",
+                        this, SLOT(handle_delete_current_texture()));
+
+    toolbar_->addSeparator();
+
+    toolbar_->addAction(QIcon(":/res/icons/compile.png"), "Compile",
+                        this, SLOT(handle_compile_current()));
+    toolbar_->addAction(QIcon(":/res/icons/compile_all.png"), "Compile All",
+                        this, SLOT(handle_compile_all()));
 }
 
 bool MainWindow::eventFilter(QObject* object, QEvent* event)
@@ -274,6 +302,17 @@ void MainWindow::save_texture(const QString& texname)
 
     for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
         retrieve_texmap_path(TexMapControlIndex(ii), entry.paths[ii], entry.has_map[ii]);
+
+    // Set dimensions to first defined texture dimensions
+    for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+    {
+        if(entry.has_map[ii])
+        {
+            entry.width  = texmap_controls[ii].droplabel->getPixmap().width();
+            entry.height = texmap_controls[ii].droplabel->getPixmap().height();
+            break;
+        }
+    }
 }
 
 void MainWindow::update_texture_view()
@@ -324,6 +363,11 @@ void MainWindow::handle_save_current_texture()
         save_texture(texname);
 }
 
+void MainWindow::handle_save_all_textures()
+{
+    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+}
+
 void MainWindow::handle_delete_current_texture()
 {
     const QString& texname = editor_model_->get_current_texture_name();
@@ -335,6 +379,11 @@ void MainWindow::handle_delete_current_texture()
     }
 }
 
+void MainWindow::handle_clear_current_texture()
+{
+    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+}
+
 void MainWindow::handle_rename_current_texture()
 {
     const QString& texname = editor_model_->get_current_texture_name();
@@ -342,7 +391,8 @@ void MainWindow::handle_rename_current_texture()
     {
         // Edit texture item at current index
         QModelIndex index = tex_list_->currentIndex();
-        tex_list_->edit(index);
+        if(index.isValid())
+            tex_list_->edit(index);
     }
 }
 
@@ -373,5 +423,32 @@ void MainWindow::handle_texlist_context_menu(const QPoint& pos)
 
     context_menu.exec(globalPos);
 }
+
+void MainWindow::handle_compile_current()
+{
+    // First, save texture to editor model
+    handle_save_current_texture();
+
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+        editor_model_->compile(texname);
+}
+
+void MainWindow::handle_compile_all()
+{
+    DLOGN("Compiling <h>all</h> textures.", "core", Severity::LOW);
+    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+}
+
+void MainWindow::handle_serialize()
+{
+    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+}
+
+void MainWindow::handle_serialize_all()
+{
+    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+}
+
 
 } // namespace medit
