@@ -3250,7 +3250,7 @@ Sources :
 * Le Variance Shadow Mapping a été implémenté.
 
 ##[Logger] Debugger avec style
-Les styles et pseudo-icones du _Logger_ ont été placés dans des maps avec des clés de type MsgType. De fait les switch ont disparu du code. J'ai implémenté un parseur regex qui cherche dans les messages soumis à DLOGx() des tags de la forme :
+Les styles et pseudo-icônes du _Logger_ ont été placés dans des maps avec des clés de type MsgType. De fait les switch ont disparu du code. J'ai implémenté un parseur regex qui cherche dans les messages soumis à DLOGx() des tags de la forme :
     <x>plop</x>
 et les remplace par les séquences ANSI qui vont bien. Les tags sont toujours de simples caractères et font référence à un type d'information que l'on veut mettre en valeur à travers un style fixe. Le premier tag est toujours remplacé par un des styles de la map TAG_STYLES :
 
@@ -4750,7 +4750,7 @@ L'affichage console est beaucoup plus clair :
     [0.181183][inp]     [PRESS] LEFT_SHIFT -> Freecam: Faster camera movements.
     [0.181203][inp]     [RELEASE] LEFT_SHIFT -> Freecam: Slower camera movements.
 
-Les canaux sont affichés en abrégé (3 premières lettres) avec une couleur de fond correspondant à leur styles, l'icone est maintenant un caractère unicode simple, chaque ligne commence par un timestamp en vert, les sections sont en noir sur fond blanc pour un bon contraste...
+Les canaux sont affichés en abrégé (3 premières lettres) avec une couleur de fond correspondant à leur styles, l'icône est maintenant un caractère unicode simple, chaque ligne commence par un timestamp en vert, les sections sont en noir sur fond blanc pour un bon contraste...
 
 Les defines __DEBUG_x__ ont tous été supprimés au profit de __DEBUG__, les tags __PROFILING_x__ n'ont pas été touchés.
 
@@ -6697,8 +6697,254 @@ Peut-être que pour se simplifier la vie -je sens que je vais regretter le débu
 
 Le programme serait en standalone (tool) et utiliserait une interface graphique solide (Qt ?).
 
+#[05-03-19] Material Editor
+J'ai un bon début d'éditeur (target materialeditor) fait avec Qt. Le namespace utilisé est *medit* Le programme utilise _Config_ pour se localiser et déterminer les chemins d'accès vers le dossier de travail (res/textures/work/) et le dossier d'export (res/testures/). La fenêtre principale est une classe _MainWindow_ qui hérite de QMainWindow. Qt utilise un système de layouts pour positionner les contrôles de manière robuste. Noter qu'il faut remplir les layouts de widgets avant de les attacher à la fenêtre ou à un layout parent avec addLayout().
 
+Dans le panneau de gauche, on trouve une liste QListView pour afficher les textures sur lesquelles on travaille, avec au dessus un input QLineInput et un bouton QPushButton pour ajouter une nouvelle texture (le nom doit être alphanumérique avec éventuellement des underscores), et en dessous un explorateur QTreeView qui permet de se déplacer dans le dossier de travail (dont on suppose qu'il contient un dossier par texture regroupant toutes les texture maps). Il est possible de renommer une texture en double-cliquant sur son nom dans la liste, ou en tapant F2 avec son nom sélectionné, depuis le menu contextuel de la liste, ou encore en cliquant sur le bouton "Rename" de la toolbar. Il est aussi possible de supprimer la texture courante en pressant Suppr, depuis le menu contextuel, ou en cliquant sur le bouton "Delete" de la toolbar. La liste est classée par ordre lexical dynamiquement grâce à un modèle proxy.
 
+Le panneau de droite contient pour l'instant uniquement des contrôles customs _DropLabel_ hérités de QLabel, dans lesquels on peut glisser déposer des images, soit depuis l'explorateur du programme, soit depuis l'explorateur de l'OS. Une texture map peut être désinitialisée (clear) depuis le menu contextuel des _DropLabel_.
+
+Une barre d'outils QToolBar regroupe les contrôles les plus utilisés : la sérialisation du projet, l'édition de textures (rename, clear, delete) et la compilation. Les icônes sont généreusement produites par Jess !
+
+Le workflow consiste à créer une nouvelle texture, puis à initialiser les champs qui doivent l'être (les images, mais aussi plus tard les grandeurs uniformes), puis à compiler cette dernière dans 3 images composites (qui plus tard seront concaténées dans une archive). De telles textures composites seront nommées __Blocks__.
+
+Le paradigme de programmation suivi est Modèle/Vue, afin de rester cohérent avec la façon dont fonctionne Qt. La classe _EditorModel_ représente le comportement de l'application et implémente les algos effectifs sur les données à traîter. _MainWindow_ intéragit avec cette classe dans ses slots. _EditorModel_ possède une map de descripteurs vers les textures en cours d'édition. Ces descripteurs sont des structures _TextureEntry_ qui possèdent en outre des chemins d'accès vers les images sources. Ces descripteurs sont ordonnés par hash du nom de texture.
+
+## Utilisation d'un modèle proxy pour le tri d'une liste
+Qt propose des widgets qui opèrent une séparation modèle/vue. QListView est l'un d'entre eux (son alternative plus simple est QListWidget de mémoire). Une QListView est construite avec un modèle par défaut mais ce modèle peut être remplacé par une implémentation custom si besoin. Le modèle a besoin d'une source de données pour fonctionner (en l'occurrence une QStringList dans mon cas). Si l'on veut trier dynamiquement les données d'une QListView une possibilité est d'utiliser deux modèles. Le premier est un *modèle source* qui intéragit avec les données directement, et le deuxième est un proxy qui va remapper les indices du modèle source de sorte à réordonner les entrées de la liste dans la vue. Les indices de la vue sont donc ceux du modèle proxy. Ainsi on n'opère jamais sur les données directement pour trier leur représentation :
+
+```cpp
+    QListView* listview;
+    TexListModel* texlist_model_;
+    QSortFilterProxyModel* texlist_sort_proxy_model_;
+    QStringList texlist_;
+    // ...
+    // Custom model uses string list as data
+    texlist_model_->setStringList(texlist_);
+    // Proxy model for sorting the texture list view when a new item is added
+    texlist_sort_proxy_model_->setDynamicSortFilter(true);
+    texlist_sort_proxy_model_->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    texlist_sort_proxy_model_->setFilterKeyColumn(0);
+    texlist_sort_proxy_model_->setSourceModel(texlist_model_);
+    listview->setModel(texlist_sort_proxy_model_);
+```
+Voir EditorModel::setup_list_model() dans editor_model.cpp.
+Il suffit ensuite d'appeler la fonction sort() du proxy à chaque insertion dans la liste :
+```cpp
+QModelIndex EditorModel::add_texture(const QString& name)
+{
+    // Append texture name to list view data and sort
+    QModelIndex index = texlist_model_->append(name);
+    texlist_sort_proxy_model_->sort(0);
+
+    // Add texture descriptor
+    texture_descriptors_.insert(std::pair(H_(name.toUtf8().constData()), TextureEntry()));
+
+    // index is a source index and needs to be remapped to proxy sorted index
+    return texlist_sort_proxy_model_->mapFromSource(index);
+}
+```
+Noter que les indices fournis par le modèle source doivent être remappés via le modèle proxy pour correspondre aux indices de la vue. L'opération inverse (texlist_sort_proxy_model_->mapToSource()) est nécessaire quand on veut accéder aux données du modèle source depuis un indice de la vue.
+
+## Gestion de la sélection dans une QListView
+Le mécanisme de sélection de Qt est assez complexe car il doit englober des représentations et des cas d'utilisation très différents. En gros, il y a une séparation entre la notion d'indice courant et de sélection. Cette séparation est ténue dans le cas d'une QListView qui n'autorise pas de sélection multiple.
+Mon modèle source est custom. J'utilise ma classe _TexListModel_ héritée de QStringListModel. Elle définit une fonction append() et un opérateur de stream qui se chargent d'ajouter une entrée dans la QStringList sous-jacente. append() retourne un indice source de type QModelIndex correspondant à la position de la donnée nouvellement insérée dans le modèle source. Un QModelIndex est non scalaire car une QListView peut gérer des entrées à plusieurs colonnes. On utilise ses membres row() et column() pour récupérer la ligne et la colonne. La ligne suivante extraite de EditorModel::delete_current_texture() supprime une ligne entière du modèle source depuis l'indice courant :
+```cpp
+    texlist_model_->removeRow(texlist_sort_proxy_model_->mapToSource(tex_list->currentIndex()).row());
+
+```
+
+La sélection elle-même évolue en fonction des intéractions user avec la QListView (click, flèches haut/bas...). Une QListView possède un modèle qui gère la sélection (selection model). Ce modèle est accessible via QListView::selectionModel(). Le modèle de sélection émet un signal selectionChanged() quand la sélection vient de changer, il suffit de connecter ce signal à un slot pour intercepter le changement de sélection :
+```cpp
+    QObject::connect(tex_list_->selectionModel(),
+                     SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+                     this,
+                     SLOT(handle_texlist_selection_changed(QItemSelection)));
+```
+Voir mainwindow.cpp. Le slot handle_texlist_selection_changed() de _MainWindow_ vérifie que la nouvelle sélection est non vide, procède à la sauvegarde de la texture précédemment sélectionnée, récupère l'indice vers la nouvelle sélection, demande à l'_EditorModel_ de changer de texture courante puis enfin met à jour la vue (charge les images de la texture sélectionnée dans les _DropLabel_ etc.).
+
+## Edition custom
+Parfois Qt a recours à des mécaniqmes compliqués pour résoudre des problèmes en apparence simple du point de vue user. La customisation du comportement à l'édition d'une entrée de QListView est un exemple dont ma tension artérielle porte encore la trace.
+Comme tous les noms de texture ne sont pas permis (seulement des caractères alphanumériques et des underscores), je dois valider le nom d'une texture à l'insertion, mais aussi au renommage. Donc je dois d'une manière ou d'une autre intercepter l'événement de commit des données dans la liste. Le signal edit() de QListView est généré lorsqu'une intéraction user produit une transition d'état du widget vers un état "editing". Lorsque celà se produit, un "editor widget" est spawné par Qt à l'emplacement de l'édition. Par défaut pour une entrée textuelle dans une QListView il s'agit d'un QLineEdit. En fait, Qt utilise une factory pour produire ces editor widgets à la volée, et ces widgets peuvent assumer à peut près n'importe quelle implémentation sous-jacente. Lorsque l'utilisateur termine l'édition, plusieurs fonctions d'un délégué interne à la liste de type QItemDelegate sont appelées, dont setModelData() qui doit récupérer le contenu du widget editor auquel il n'a accès qu'à travers un type de base QWidget, et copier ce contenu dans le modèle pointé par un index en argument. Et c'est ici que ma classe _TexlistDelegate_ intervient.
+
+_TexlistDelegate_ hérite de QItemDelegate et une instance de cette classe remplace le delegate de base dans la QListView. _TexlistDelegate_ surcharge setModelData() de sorte à faire intervenir un foncteur de validation du nom. Les données ne sont commit dans le modèle que si le nom est valide selon le foncteur. _TexlistDelegate_ demande en outre un pointeur vers le modèle _EditorModel_. Pour installer un tel delegate dans la QListView, je fais ceci dans le constructeur de _MainWindow_ :
+```cpp
+    tex_list_ = new QListView();
+    tex_list_delegate_ = new TexlistDelegate();
+    // ...
+    tex_list_delegate_->set_editor_model(editor_model_);
+    tex_list_delegate_->set_item_name_validator(&validate_texture_name);
+    tex_list_->setItemDelegate(tex_list_delegate_); // For editing purposes
+```
+Et voici un extrait de TexlistDelegate::setModelData() :
+```cpp
+void TexlistDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+{
+    QLineEdit* line_editor = qobject_cast<QLineEdit*>(editor);
+    QString old_name = index.model()->data(index, Qt::EditRole).toString();
+    QString new_name = line_editor->text();
+
+    // Check that the name has indeed changed
+    if(!old_name.compare(new_name)) return;
+
+    // Validate name and commit
+    if(item_name_validator_(new_name))
+    {
+        hash_t new_hname = H_(new_name.toUtf8().constData());
+        if(!editor_model_->has_entry(new_hname))
+        {
+            editor_model_->rename_texture(old_name, new_name);
+            model->setData(index, QVariant::fromValue(new_name));
+        }
+    }
+}
+```
+Voir texlist_delegate.cpp.
+Donc on downcast l'editor widget vers un QLineEdit, on récupère les valeurs de l'ancienne entrée et de la nouvelle entrée (pour l'instant dans le champ texte du QLineEdit), on valide la nouvelle entrée grâce au foncteur de validation, on vérifie que le nouveau nom n'existe pas déjà dans la liste, et si ça passe on modifie les données dans le modèle de l'application et dans la liste.
+EditorModel::rename_texture() va simplement créer une nouvelle entrée sous le nouveau nom, y copier le descripteur de l'ancienne entrée et supprimer cette dernière.
+
+## Compilation ad hoc des textures
+La fonction EditorModel::compile(const QString& texname) récupère les données pixel des images sources d'un descripteur pointé par le nom de texture en argument. Ces données sont ensuite combinées dans 3 images, les __blocks__. Le type QImage est utilisé plutôt que QPixmap car il permet l'accès bas niveau dont j'ai besoin.
+Au lieu de générer de telles QImage depuis une conversion des QPixmap contenues dans mes _DropLabel_, ce qui supposerait un couplage trop important avec la vue, je me contente de les générer ab initio depuis les chemins d'accès du descripteur.
+
+Voici comment je génère le block 0 pour référence :
+```cpp
+    QImage block0(entry.width, entry.height, QImage::Format_RGBA8888);
+
+    QImage** texmaps = new QImage*[NTEXMAPS];
+    for(int ii=0; ii<NTEXMAPS; ++ii)
+    {
+        if(entry.has_map[ii])
+            texmaps[ii] = new QImage(entry.paths[ii]);
+        else
+            texmaps[ii] = nullptr;
+    }
+
+    // Block 0
+    for(int xx=0; xx<entry.width; ++xx)
+    {
+        for(int yy=0; yy<entry.width; ++yy)
+        {
+            QRgb albedo   = texmaps[0] ? texmaps[0]->pixel(xx,yy) : qRgb(0,0,0);
+            int roughness = texmaps[1] ? qRed(texmaps[1]->pixel(xx,yy)) : 0;
+
+            QRgb out_color = qRgba(qRed(albedo), qGreen(albedo), qBlue(albedo), roughness);
+            block0.setPixel(xx, yy, out_color);
+        }
+    }
+
+    QString block0_name = texname + "_block0.png";
+    block0.save(output_folder_.filePath(block0_name));
+
+    delete[] texmaps;
+```
+
+## Menus contextuels
+Un menu contextuel est instancié lors d'un rclick sur un widget. Plusieurs mécanismes sous Qt permettent leur élaboration. J'ai choisi une méthode assez simple (mais pas nécessairement scalable). Déjà, on crée un slot qui produit le menu, par exemple pour le menu contextuel de la liste de textures :
+```cpp
+void MainWindow::handle_texlist_context_menu(const QPoint& pos)
+{
+    // Map widget coords to global coords
+    // QListView uses QAbstractScrollArea, so we need to get its viewport coords
+    QPoint globalPos = tex_list_->viewport()->mapToGlobal(pos);
+
+    QMenu context_menu;
+    context_menu.addAction("Rename", this, SLOT(handle_rename_current_texture()));
+    context_menu.addAction("Delete", this, SLOT(handle_delete_current_texture()));
+
+    context_menu.exec(globalPos);
+}
+```
+On récupère la position globale du rclick pour pouvoir faire spawner le menu au bon endroit. Pour la plupart des widgets, il suffit de faire :
+```cpp
+    any_widget->mapToGlobal(pos);
+```
+Mais dans le cas d'une QListView qui peut être scrollée, il faut en revanche convertir les coordonnées du viewport. Ensuite on génère un QMenu et on lui ajoute des QActions au moyen de la fonction addAction(). Si l'on doit mapper ces actions vers des slots déjà existants alors c'est très simple, il suffit de préciser ces slots en argument. Ensuite le menu est spawné via exec() ou popup().
+
+## Barres d'outils
+Une toolbar fonctionne un peu sur le même principe qu'un menu. Elle est ajoutée à la fenêtre via la fonction addToolBar("toolbar_name") et des actions lui sont ajoutées. Ces actions peuvent prendre une icône en premier argument (on verra après d'où elles viennent), puis un texte et un slot. Des séparateurs peuvent être ajoutés via addSeparator() ou insertSeparator(). Voici un extrait de ma fonction de création de toolbar qui est appelée dans le constructeur de _MainWindow_ :
+```cpp
+void MainWindow::create_toolbars()
+{
+    toolbar_ = addToolBar("Texture");
+    toolbar_->addAction(QIcon(":/res/icons/save.png"), "Save",
+                        this, SLOT(handle_serialize()));
+    toolbar_->addAction(QIcon(":/res/icons/save_all.png"), "Save All",
+                        this, SLOT(handle_serialize_all()));
+
+    toolbar_->addSeparator();
+
+    toolbar_->addAction(QIcon(":/res/icons/rename.png"), "Rename",
+                        this, SLOT(handle_rename_current_texture()));
+    // ...
+}
+```
+
+## Gestion des ressources
+Les fameuses icônes sont des fichiers png localisés dans hosts/materialeditor/res/icons. Toutes ces images sont déclarées dans le fichier resources.qrc dans un format xml-like :
+```xml
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>res/icons/rename.png</file>
+    <file>res/icons/clear.png</file>
+    <!-- ... -->
+</qresource>
+</RCC>
+```
+Un tel fichier peut être passé au compilateur de ressources de Qt nommé RCC et le pack résultant linké avec l'exécutable. Sous CMake cette opération peut être lancée automatiquement lors du build :
+```cmake
+    set(CMAKE_AUTORCC ON)
+    qt5_add_resources(RCC_SOURCES resources.qrc)
+    # ...
+    add_executable(materialeditor ${materialeditor_SRCS} ${RCC_SOURCES})
+```
+Dans le programme, les chemins d'accès vers de tels ressources commencent par ":/", c'est ce que je fais avec les icônes :
+```cpp
+    QIcon(":/res/icons/save.png");
+```
+Noter qu'il est possible de définir des alias dans le .qrc :
+```xml
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias="rename.png">res/icons/rename-icon.png</file>
+    <!-- ... -->
+</qresource>
+</RCC>
+```
+```cpp
+    QIcon(":/rename.png");
+```
+
+## Installation d'un event filter
+Ma liste QListView doit pouvoir répondre à l'appui sur la touche Suppr pour supprimer la texture courante. Le moyen le plus simple que j'ai trouvé est de surcharger la fonction eventFilter() dans la classe _MainWindow_ et d'y opérer le dispatch en fonction de l'objet et de l'événement concernés :
+```cpp
+bool MainWindow::eventFilter(QObject* object, QEvent* event)
+{
+    if (object == tex_list_ && event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent* ke = static_cast<QKeyEvent*>(event);
+        if(ke->key() == Qt::Key_Delete)
+        {
+            handle_delete_current_texture();
+            return true;
+        }
+        return false;
+    }
+    else
+        return false;
+}
+
+// Puis dans le constructeur
+{
+    // ...
+    tex_list_->installEventFilter(this);
+    // ...
+}
+
+```
+
+## Gestion du drag and drop
+// TODO
 
 
 texture compiling scheme:
@@ -6719,6 +6965,14 @@ BlockIndex Content
     [   Image1    ]  [     Image2     ]  [    Image3    ]
     [[R][G][B] [A]]  [[R][G][B]  [A]]  [[R]  [G] [B][A]]
       Albedo  Rough     Normal  Depth  Metal AO   ???
+
+rch : est-ce qu'on pré-compresse les normales ou pas ? (pour l'instant c'est pas le cas)
+    -> Regarder si la compression commute avec une lerp, si pas le cas, incompatible avec le splatmapping (il faudrait décompresser->lerp->recompresser).
+
+-> Regarder l'accès aux archivess depuis Qt.
+
+
+
 
 
 * TODO:

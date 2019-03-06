@@ -13,11 +13,16 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QToolBar>
+#include <QFrame>
+#include <QFile>
+#include <QTextStream>
+#include <QCoreApplication>
 
 #include "mainwindow.h"
 #include "droplabel.h"
 #include "editor_model.h"
 #include "texlist_delegate.h"
+#include "new_project_dialog.h"
 
 // wcore
 #include "config.h"
@@ -47,19 +52,6 @@ struct TexMapControl
     DropLabel* droplabel = nullptr;
 };
 
-static QString gbStyleSheet =
-"QGroupBox\
-{\
-    border: 2px solid gray;\
-    background: rgb(200,200,200);\
-}\
-QGroupBox::title\
-{\
-    background-color: transparent;\
-    subcontrol-position: top center;\
-    padding:0px 10px;\
-}";
-
 static std::vector<TexMapControl> texmap_controls;
 
 static void push_texmap_control(const QString& title, QLayout* parent)
@@ -72,11 +64,14 @@ static void push_texmap_control(const QString& title, QLayout* parent)
     ctl.droplabel->setAcceptDrops(true);
     ctl.droplabel->setMinimumSize(QSize(128,128));
 
+    QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    policy.setHeightForWidth(true);
+    ctl.droplabel->setSizePolicy(policy);
+
     ctl.layout->addSpacerItem(new QSpacerItem(20, 10));
     ctl.layout->addWidget(ctl.droplabel);
     ctl.layout->setAlignment(ctl.droplabel, Qt::AlignTop);
     ctl.groupbox->setLayout(ctl.layout);
-    ctl.groupbox->setStyleSheet(gbStyleSheet);
 
     parent->addWidget(ctl.groupbox);
     texmap_controls.push_back(ctl);
@@ -116,17 +111,31 @@ window_(new QWidget),
 dir_hierarchy_(new QTreeView),
 tex_list_(new QListView),
 texname_edit_(new QLineEdit),
-tex_list_delegate_(new TexlistDelegate)
+tex_list_delegate_(new TexlistDelegate),
+new_project_dialog_(new NewProjectDialog)
 {
+    // Load style
+    QFile stylesheet_file(":/res/stylesheets/arduino_style.css");
+    if(stylesheet_file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QTextStream in(&stylesheet_file);
+        QString stylesheet = in.readAll();
+        setStyleSheet(stylesheet);
+    }
+
     window_->setWindowFlags(Qt::Window);
-    setWindowTitle("WCore Material Editor");
+    window_->setObjectName("Window");
+    update_window_title("", false);
 
     // Toolbars
     create_toolbars();
 
+    QFrame* side_panel = new QFrame();
+    side_panel->setObjectName("SidePanel");
+
     // Layouts
     QHBoxLayout* hlayout_main = new QHBoxLayout();
-    QVBoxLayout* vlayout_side_panel = new QVBoxLayout();
+    QVBoxLayout* vlayout_side_panel = new QVBoxLayout(side_panel);
     QHBoxLayout* hlayout_sp_nt = new QHBoxLayout();
     QVBoxLayout* vlayout_main_panel = new QVBoxLayout();
     QHBoxLayout* hlayout_tex_maps = new QHBoxLayout();
@@ -142,6 +151,8 @@ tex_list_delegate_(new TexlistDelegate)
     vlayout_side_panel->addLayout(hlayout_sp_nt);
     vlayout_side_panel->addWidget(tex_list_);
     vlayout_side_panel->addWidget(dir_hierarchy_);
+
+    side_panel->setMaximumWidth(300);
 
     // * Setup main panel
     // Texture maps
@@ -163,14 +174,13 @@ tex_list_delegate_(new TexlistDelegate)
     vlayout_main_panel->addLayout(hlayout_preview);
 
     // * Setup main layout
-    hlayout_main->addLayout(vlayout_side_panel);
+    hlayout_main->addWidget(side_panel);
     hlayout_main->addLayout(vlayout_main_panel);
     hlayout_main->setSizeConstraint(QLayout::SetMinimumSize);
 
     window_->setLayout(hlayout_main);
 
     setCentralWidget(window_);
-
 
     // * Setup directory hierarchy view to display texture work folder
     // Get texture working directory from config
@@ -188,6 +198,8 @@ tex_list_delegate_(new TexlistDelegate)
         DLOGI("<p>" + work_path.string() + "</p>", "core", Severity::LOW);
         work_path_qstr = QString::fromStdString(work_path.string());
     }
+    editor_model_->set_project_folder(work_path_qstr);
+
     // Get output texture directory
     fs::path tex_path;
     if(!CONFIG.get<fs::path>("root.folders.texture"_h, tex_path))
@@ -205,7 +217,11 @@ tex_list_delegate_(new TexlistDelegate)
 
     // * Setup directory view
     // Set treeView to work with QFileSystemModel and change current directory
+    QStringList extension_filters; // Filter files by extension
+    extension_filters << "*.png" << "*.jpg" << "*.jpeg" << "*.bmp" << "*.gif";
     dir_fs_model_->setRootPath(work_path_qstr);
+    dir_fs_model_->setNameFilters(extension_filters);
+    dir_fs_model_->setNameFilterDisables(false); // Filtered out files are hidden
     dir_hierarchy_->setModel(dir_fs_model_);
     dir_hierarchy_->setRootIndex(dir_fs_model_->index(work_path_qstr));
 
@@ -238,6 +254,8 @@ tex_list_delegate_(new TexlistDelegate)
                      this,                        SLOT(handle_texlist_selection_changed(QItemSelection)));
     QObject::connect(tex_list_, SIGNAL(customContextMenuRequested(const QPoint&)),
                      this,      SLOT(handle_texlist_context_menu(const QPoint&)));
+    QObject::connect(editor_model_, SIGNAL(sig_save_requested_state(bool)),
+                     this,          SLOT(handle_project_save_state_changed(bool)));
 }
 
 MainWindow::~MainWindow()
@@ -250,10 +268,18 @@ MainWindow::~MainWindow()
 void MainWindow::create_toolbars()
 {
     toolbar_ = addToolBar("Texture");
-    toolbar_->addAction(QIcon(":/res/icons/save.png"), "Save",
-                        this, SLOT(handle_serialize()));
-    toolbar_->addAction(QIcon(":/res/icons/save_all.png"), "Save All",
-                        this, SLOT(handle_serialize_all()));
+    toolbar_->setFixedHeight(50);
+
+    toolbar_->addAction(/*QIcon(":/res/icons/new_project.png"), */"New project",
+                        this, SLOT(handle_new_project()));
+    toolbar_->addAction(/*QIcon(":/res/icons/open.png"), */"Open project",
+                        this, SLOT(handle_open_project()));
+    toolbar_->addAction(QIcon(":/res/icons/save.png"), "Save project",
+                        this, SLOT(handle_serialize_project()));
+    toolbar_->addAction(/*QIcon(":/res/icons/save_as.png"), */"Save project as",
+                        this, SLOT(handle_serialize_project_as()));
+    toolbar_->addAction(/*QIcon(":/res/icons/close.png"), */"Close project",
+                        this, SLOT(handle_close_project()));
 
     toolbar_->addSeparator();
 
@@ -268,16 +294,16 @@ void MainWindow::create_toolbars()
 
     toolbar_->addAction(QIcon(":/res/icons/compile.png"), "Compile",
                         this, SLOT(handle_compile_current()));
-    toolbar_->addAction(QIcon(":/res/icons/compile_all.png"), "Compile All",
+    toolbar_->addAction(QIcon(":/res/icons/compile_all.png"), "Compile all",
                         this, SLOT(handle_compile_all()));
 }
 
 bool MainWindow::eventFilter(QObject* object, QEvent* event)
 {
-    if (object == tex_list_ && event->type() == QEvent::KeyPress)
+    if(event->type() == QEvent::KeyPress)
     {
         QKeyEvent* ke = static_cast<QKeyEvent*>(event);
-        if(ke->key() == Qt::Key_Delete)
+        if(ke->key() == Qt::Key_Delete && object == tex_list_)
         {
             handle_delete_current_texture();
             return true;
@@ -286,6 +312,25 @@ bool MainWindow::eventFilter(QObject* object, QEvent* event)
     }
     else
         return false;
+}
+
+void MainWindow::keyPressEvent(QKeyEvent* event)
+{
+    if(event->type() == QEvent::KeyPress)
+    {
+        if(event->matches(QKeySequence::New))
+            handle_new_project();
+        if(event->matches(QKeySequence::Open))
+            handle_open_project();
+        if(event->matches(QKeySequence::Save))
+            handle_serialize_project();
+        if(event->matches(QKeySequence::SaveAs))
+            handle_serialize_project_as();
+        if(event->matches(QKeySequence::Close))
+            handle_close_project();
+        if(event->matches(QKeySequence::Quit))
+            handle_quit();
+    }
 }
 
 void MainWindow::save_texture(const QString& texname)
@@ -440,14 +485,97 @@ void MainWindow::handle_compile_all()
     DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
 }
 
-void MainWindow::handle_serialize()
+void MainWindow::handle_serialize_project()
 {
-    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+    handle_save_current_texture();
+
+    // If project is the unnamed project, use save as instead
+    if(!editor_model_->get_current_project().isEmpty())
+        editor_model_->save_project();
+    else
+        handle_serialize_project_as();
 }
 
-void MainWindow::handle_serialize_all()
+void MainWindow::handle_serialize_project_as()
 {
-    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+    // TODO: handle project overwrite
+    auto ret = new_project_dialog_->exec();
+    if(ret == QDialog::Accepted)
+    {
+        QString project_name = new_project_dialog_->get_project_name();
+        if(editor_model_->validate_project_name(project_name))
+        {
+            editor_model_->save_project_as(project_name);
+        }
+    }
+}
+
+void MainWindow::handle_new_project()
+{
+    // TODO: handle project overwrite
+    // if new project name is an existing project let user choose btw:
+    //  -> Overwrite
+    //  -> Open
+    //  -> Cancel
+    auto ret = new_project_dialog_->exec();
+    if(ret == QDialog::Accepted)
+    {
+        QString project_name = new_project_dialog_->get_project_name();
+        if(editor_model_->validate_project_name(project_name))
+        {
+            // Check if current project is the unnamed project
+            bool is_unnamed = editor_model_->get_current_project().isEmpty();
+            editor_model_->new_project(project_name);
+            // Clear view only if an actual project was closed
+            if(!is_unnamed)
+                clear_view();
+            // Serialize newly created project
+            handle_serialize_project();
+        }
+    }
+}
+
+void MainWindow::handle_open_project()
+{
+
+}
+
+void MainWindow::handle_close_project()
+{
+    editor_model_->close_project();
+    clear_view();
+}
+
+void MainWindow::handle_project_save_state_changed(bool state)
+{
+    update_window_title(editor_model_->get_current_project(), state);
+}
+
+void MainWindow::handle_quit()
+{
+    QCoreApplication::quit();
+}
+
+void MainWindow::update_window_title(const QString& project_name, bool needs_saving)
+{
+    QString title = "WCore Material Editor - ";
+    if(project_name.isEmpty())
+        title += "[unnamed project]";
+    else
+        title += project_name;
+    if(needs_saving)
+        title += " *";
+
+    setWindowTitle(title);
+}
+
+void MainWindow::clear_view()
+{
+    // * Clear drop labels
+    for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+    {
+        texmap_controls[ii].droplabel->clear();
+    }
 }
 
 

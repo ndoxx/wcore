@@ -13,7 +13,7 @@ namespace medit
 {
 
 static QString ssIdle = "border-radius: 5px; border: none; background: white;";
-static QString ssHoverDnD = "border-radius: 5px; border: 5px dashed rgb(0,204,255); background: white;";
+static QString ssHoverDnD = "border-radius: 5px; border: none; background: rgb(0,204,255);";
 
 DropLabel::DropLabel(QWidget* parent, Qt::WindowFlags f):
 QLabel(parent, f),
@@ -27,13 +27,12 @@ initialized_(false)
                      this, SLOT(handle_context_menu(const QPoint&)));
 }
 
-/*
 int DropLabel::heightForWidth(int width) const
 {
-    return pixmap_.isNull() ? this->height() : ((qreal)pixmap_.height()*width)/pixmap_.width();
+    return pixmap_.isNull() ? width : ((qreal)pixmap_.height()*width)/pixmap_.width();
 }
 
-QSize DropLabel::sizeHint() const
+/*QSize DropLabel::sizeHint() const
 {
     int w = this->width();
     return QSize(w, heightForWidth(w));

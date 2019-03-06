@@ -38,14 +38,16 @@ set(materialeditor_SRCS
     texlist_model.cpp
     texlist_delegate.cpp
     mainwindow.cpp
+    new_project_dialog.cpp
     droplabel.cpp
     main.cpp
 )
 # Tell CMake to create the materialeditor executable
 add_executable(materialeditor ${materialeditor_SRCS} ${RCC_SOURCES})
 
-target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/hosts/materialeditor/source/include")
-target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/source/include")
+target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/hosts/materialeditor/source/include/")
+target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/source/include/")
+target_include_directories(materialeditor PRIVATE "${CMAKE_SOURCE_DIR}/source/")
 
 set_target_properties(materialeditor
     PROPERTIES

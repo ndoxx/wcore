@@ -21,9 +21,9 @@ public:
     DropLabel(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 
     // Get preferred height given width (preserves pixmap aspect ratio)
-    /*virtual int heightForWidth(int width) const override;
+    virtual int heightForWidth(int width) const override;
     // Get recommended size using heightForWidth
-    virtual QSize sizeHint() const override;*/
+    //virtual QSize sizeHint() const override;
     // Get a scaled version of member pixmap
     QPixmap scaledPixmap() const;
     // Set member pixmap

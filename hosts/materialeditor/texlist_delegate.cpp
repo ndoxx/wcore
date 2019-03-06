@@ -24,11 +24,12 @@ void TexlistDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
     QString old_name = index.model()->data(index, Qt::EditRole).toString();
     QString new_name = line_editor->text();
 
+    // Check that the name has indeed changed
+    if(!old_name.compare(new_name)) return;
+
+    // Validate name and commit
     if(item_name_validator_(new_name))
     {
-        // Check that the name has indeed changed
-        if(!old_name.compare(new_name)) return;
-
         hash_t new_hname = H_(new_name.toUtf8().constData());
         if(!editor_model_->has_entry(new_hname))
         {

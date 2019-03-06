@@ -1,4 +1,6 @@
 #include <vector>
+#include <fstream>
+#include <string>
 #include <QListView>
 #include <QImage>
 #include <QSortFilterProxyModel>
@@ -7,11 +9,24 @@
 #include "texlist_model.h"
 #include "logger.h"
 
+#include "vendor/rapidxml/rapidxml.hpp"
+#include "vendor/rapidxml/rapidxml_print.hpp"
+
 using namespace wcore;
+using namespace rapidxml;
 
 namespace medit
 {
 
+static std::map<int, std::string> texmap_names =
+{
+    {0, "Albedo"},
+    {1, "Roughness"},
+    {2, "Metallic"},
+    {3, "AO"},
+    {4, "Depth"},
+    {5, "Normal"}
+};
 
 void TextureEntry::debug_display()
 {
@@ -24,10 +39,10 @@ void TextureEntry::debug_display()
     if(has_map[5]) DLOGI("normal: <p>"    + paths[5].toStdString() + "</p>", "core", Severity::LOW);
 }
 
-
 EditorModel::EditorModel():
 texlist_model_(new TexListModel),
-texlist_sort_proxy_model_(new QSortFilterProxyModel)
+texlist_sort_proxy_model_(new QSortFilterProxyModel),
+needs_saving_(false)
 {
 
 }
@@ -74,6 +89,7 @@ QModelIndex EditorModel::add_texture(const QString& name)
 
     // Add texture descriptor
     texture_descriptors_.insert(std::pair(H_(name.toUtf8().constData()), TextureEntry()));
+    project_save_requested(true);
 
     // index is a source index and needs to be remapped to proxy sorted index
     return texlist_sort_proxy_model_->mapFromSource(index);
@@ -95,6 +111,7 @@ void EditorModel::delete_current_texture(QListView* tex_list)
             current_texname_ = "";
             texture_descriptors_.erase(it);
             texlist_model_->removeRow(texlist_sort_proxy_model_->mapToSource(tex_list->currentIndex()).row());
+            project_save_requested(true);
         }
     }
 }
@@ -110,6 +127,7 @@ void EditorModel::rename_texture(const QString& old_name, const QString& new_nam
         current_texname_ = new_name;
         texture_descriptors_.insert(std::pair(new_hname, it->second));
         texture_descriptors_.erase(it);
+        project_save_requested(true);
     }
 }
 
@@ -191,8 +209,208 @@ void EditorModel::compile(const QString& texname)
 
         delete[] texmaps;
     }
-
-
 }
+
+void EditorModel::project_save_requested(bool state)
+{
+    needs_saving_ = state;
+    sig_save_requested_state(state);
+}
+
+void EditorModel::clear()
+{
+    current_texname_ = "";
+    current_project_ = "";
+    texture_descriptors_.clear();
+    texlist_ = QStringList{};
+    texlist_model_->setStringList(texlist_);
+}
+
+void EditorModel::set_project_folder(const QString& path)
+{
+    project_folder_ = QDir(path);
+    if(!project_folder_.exists())
+    {
+        DLOGE("Project folder does not exist:", "core", Severity::CRIT);
+        DLOGI(path.toStdString(), "core", Severity::CRIT);
+    }
+}
+
+void EditorModel::new_project(const QString& project_name)
+{
+    // Validate project name and create a new empty project
+    if(validate_project_name(project_name))
+    {
+        // If a project is open, save it and close it
+        if(!current_project_.isEmpty())
+        {
+            close_project();
+        }
+        // Else, unnamed project became named
+
+        current_project_ = project_name;
+        DLOGN("New project: <n>" + project_name.toStdString() + "</n>", "core", Severity::LOW);
+        project_save_requested(true);
+    }
+}
+
+void EditorModel::open_project(const QString& infile)
+{
+    // TODO
+    // * Open and parse project file
+    // * Retrieve descriptors and initialize model
+
+    DLOGN("Opening project:", "core", Severity::LOW);
+    DLOGI("<p>" + infile.toStdString() + "</p>", "core", Severity::LOW);
+
+    project_save_requested(false);
+}
+
+static void node_add_attribute(xml_document<>& doc, xml_node<>* node, const char* attr_name, const char* attr_val)
+{
+    char* al_attr_name = doc.allocate_string(attr_name);
+    char* al_attr_val = doc.allocate_string(attr_val);
+    xml_attribute<>* attr = doc.allocate_attribute(al_attr_name, al_attr_val);
+    node->append_attribute(attr);
+}
+
+void EditorModel::save_project_as(const QString& project_name)
+{
+    if(!project_name.isEmpty())
+    {
+        DLOGN("Saving project: <n>" + project_name.toStdString() + "</n>", "core", Severity::LOW);
+        QString filepath = project_path_from_name(project_name);
+
+        // * Generate XML output from descriptors and write to file
+        // Doctype declaration
+        xml_document<> doc;
+        xml_node<>* decl = doc.allocate_node(node_declaration);
+        decl->append_attribute(doc.allocate_attribute("version", "1.0"));
+        decl->append_attribute(doc.allocate_attribute("encoding", "UTF-8"));
+        doc.append_node(decl);
+
+        // Root node
+        xml_node<>* root = doc.allocate_node(node_element, "Materials");
+        doc.append_node(root);
+
+        // Write descriptors
+        for(auto&& [key, entry]: texture_descriptors_)
+        {
+            // Material node with name attribute
+            xml_node<>* mat_node = doc.allocate_node(node_element, "Material");
+            node_add_attribute(doc, mat_node, "name", entry.name.toUtf8().constData());
+
+            // TextureMaps node to hold texture maps paths
+            xml_node<>* texmap_node = doc.allocate_node(node_element, "TextureMaps");
+            for(int ii=0; ii<NTEXMAPS; ++ii)
+            {
+                if(entry.has_map[ii])
+                {
+                    xml_node<>* tex_node = doc.allocate_node(node_element, "TextureMap");
+                    node_add_attribute(doc, tex_node, "name", texmap_names[ii].c_str());
+                    node_add_attribute(doc, tex_node, "path", entry.paths[ii].toUtf8().constData());
+
+                    texmap_node->append_node(tex_node);
+                }
+            }
+            // Uniforms node to hold uniform data
+            xml_node<>* unis_node = doc.allocate_node(node_element, "Uniforms");
+            if(!entry.has_map[0]) // No albedo map
+            {
+                xml_node<>* uni_node = doc.allocate_node(node_element, "Uniform");
+                node_add_attribute(doc, uni_node, "name", texmap_names[0].c_str());
+                node_add_attribute(doc, uni_node, "value", "(0,0,0)"); // TMP
+
+                unis_node->append_node(uni_node);
+            }
+            if(!entry.has_map[1]) // No roughness map
+            {
+                xml_node<>* uni_node = doc.allocate_node(node_element, "Uniform");
+                node_add_attribute(doc, uni_node, "name", texmap_names[1].c_str());
+                node_add_attribute(doc, uni_node, "value", "0.2"); // TMP
+
+                unis_node->append_node(uni_node);
+            }
+            if(!entry.has_map[2]) // No metallic map
+            {
+                xml_node<>* uni_node = doc.allocate_node(node_element, "Uniform");
+                node_add_attribute(doc, uni_node, "name", texmap_names[2].c_str());
+                node_add_attribute(doc, uni_node, "value", "0"); // TMP
+
+                unis_node->append_node(uni_node);
+            }
+            if(!entry.has_map[3]) // No AO map
+            {
+                xml_node<>* uni_node = doc.allocate_node(node_element, "Uniform");
+                node_add_attribute(doc, uni_node, "name", texmap_names[3].c_str());
+                node_add_attribute(doc, uni_node, "value", "1"); // TMP
+
+                unis_node->append_node(uni_node);
+            }
+
+            mat_node->append_node(texmap_node);
+            mat_node->append_node(unis_node);
+
+            root->append_node(mat_node);
+        }
+
+        std::ofstream outfile;
+        outfile.open(filepath.toUtf8().constData());
+        outfile << doc;
+
+        //std::cout << doc << std::endl;
+
+        current_project_ = project_name;
+        project_save_requested(false);
+    }
+}
+
+void EditorModel::close_project()
+{
+    save_project();
+    DLOGN("Closing project: <n>" + current_project_.toStdString() + "</n>", "core", Severity::LOW);
+    clear();
+    project_save_requested(false);
+}
+
+bool EditorModel::save_project()
+{
+    if(!current_project_.isEmpty())
+    {
+        save_project_as(current_project_);
+        return true;
+    }
+    return false;
+}
+
+bool EditorModel::validate_project_name(const QString& name)
+{
+    if(name.isEmpty()) return false;
+
+    // Check that name is alphanumeric (underscores are allowed)
+    QRegularExpression re("^[a-zA-Z0-9_]+$");
+    QRegularExpressionMatch match = re.match(name);
+
+    bool ret = match.hasMatch();
+
+    if(!ret)
+    {
+        DLOGW("Invalid project name.", "core", Severity::WARN);
+        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores are allowed.", "core", Severity::WARN);
+    }
+
+    return ret;
+}
+
+QString EditorModel::project_path_from_name(const QString& name)
+{
+    return project_folder_.filePath(project_file_from_name(name));
+}
+
+QString EditorModel::project_file_from_name(const QString& name)
+{
+    return name + ".xml";
+}
+
 
 } // namespace medit

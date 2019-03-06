@@ -15,6 +15,7 @@ namespace medit
 
 class EditorModel;
 class TexlistDelegate;
+class NewProjectDialog;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -27,7 +28,7 @@ public:
     void update_texture_view();
 
     virtual bool eventFilter(QObject* object, QEvent* event) override;
-
+    virtual void keyPressEvent(QKeyEvent* event) override;
 
 public slots:
     void handle_new_texture();
@@ -40,11 +41,18 @@ public slots:
     void handle_texlist_context_menu(const QPoint& pos);
     void handle_compile_current();
     void handle_compile_all();
-    void handle_serialize();
-    void handle_serialize_all();
+    void handle_serialize_project();
+    void handle_serialize_project_as();
+    void handle_new_project();
+    void handle_open_project();
+    void handle_close_project();
+    void handle_project_save_state_changed(bool state);
+    void handle_quit();
 
 protected:
     void create_toolbars();
+    void update_window_title(const QString& project_name, bool needs_saving);
+    void clear_view();
 
 private:
     EditorModel* editor_model_;
@@ -55,6 +63,9 @@ private:
     QLineEdit* texname_edit_;
     QToolBar* toolbar_;
     TexlistDelegate* tex_list_delegate_;
+
+    // Dialogs
+    NewProjectDialog* new_project_dialog_;
 };
 
 
