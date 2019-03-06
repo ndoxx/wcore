@@ -8,6 +8,8 @@
 #include "editor_model.h"
 #include "texlist_model.h"
 #include "logger.h"
+#include "xml_parser.h"
+#include "xml_utils.hpp"
 
 #include "vendor/rapidxml/rapidxml.hpp"
 #include "vendor/rapidxml/rapidxml_print.hpp"
@@ -27,6 +29,22 @@ static std::map<int, std::string> texmap_names =
     {4, "Depth"},
     {5, "Normal"}
 };
+
+static std::map<hash_t, int> texmap_names_to_index =
+{
+    {"Albedo"_h, 0},
+    {"Roughness"_h, 1},
+    {"Metallic"_h, 2},
+    {"AO"_h, 3},
+    {"Depth"_h, 4},
+    {"Normal"_h, 5}
+};
+
+TextureEntry::TextureEntry():
+has_map({false,false,false,false,false,false})
+{
+
+}
 
 void TextureEntry::debug_display()
 {
@@ -256,12 +274,76 @@ void EditorModel::new_project(const QString& project_name)
 
 void EditorModel::open_project(const QString& infile)
 {
-    // TODO
-    // * Open and parse project file
-    // * Retrieve descriptors and initialize model
-
     DLOGN("Opening project:", "core", Severity::LOW);
     DLOGI("<p>" + infile.toStdString() + "</p>", "core", Severity::LOW);
+
+    // * Open and parse project file
+    std::ifstream ifs(infile.toStdString());
+    XMLParser parser(ifs);
+    xml_node<>* root = parser.get_root(); // MEditProject node
+
+    // Get project name
+    std::string project_name;
+    xml::parse_attribute(root, "name", project_name);
+    current_project_ = QString::fromStdString(project_name);
+
+    xml_node<>* mats_node = root->first_node("Materials");
+
+    // * Retrieve descriptors and initialize model
+    for(xml_node<>* mat_node=mats_node->first_node("Material");
+        mat_node;
+        mat_node=mat_node->next_sibling("Material"))
+    {
+
+        TextureEntry entry;
+
+        // Parse entry name
+        std::string entryname;
+        xml::parse_attribute(mat_node, "name", entryname);
+        xml::parse_attribute(mat_node, "width", entry.width);
+        xml::parse_attribute(mat_node, "height", entry.height);
+        hash_t hentryname = H_(entryname.c_str());
+        entry.name = QString::fromStdString(entryname);
+
+        // Get TextureMaps node
+        xml_node<>* texmaps_node = mat_node->first_node("TextureMaps");
+        if(texmaps_node)
+        {
+            // For each texturemap
+            for(xml_node<>* texmap_node=texmaps_node->first_node("TextureMap");
+                texmap_node;
+                texmap_node=texmap_node->next_sibling("TextureMap"))
+            {
+                std::string texmap_name, texmap_path;
+                xml::parse_attribute(texmap_node, "name", texmap_name);
+                xml::parse_attribute(texmap_node, "path", texmap_path);
+                int index = texmap_names_to_index[H_(texmap_name.c_str())];
+                entry.has_map[index] = true;
+                entry.paths[index] = QString::fromStdString(texmap_path);
+            }
+        }
+        xml_node<>* unis_node = mat_node->first_node("Uniforms");
+        if(unis_node)
+        {
+            // For each uniform
+            for(xml_node<>* uni_node=unis_node->first_node("Uniform");
+                uni_node;
+                uni_node=uni_node->next_sibling("Uniform"))
+            {
+                // TODO
+                std::string uni_name, uni_val;
+                xml::parse_attribute(uni_node, "name", uni_name);
+                xml::parse_attribute(uni_node, "value", uni_val);
+                //std::cout << uni_name << ": " << uni_val << std::endl;
+            }
+        }
+
+        // Insert descriptor
+        texture_descriptors_.insert(std::pair(hentryname, entry));
+        // Populate texture list
+        texlist_model_->append(entry.name);
+    }
+    texlist_sort_proxy_model_->sort(0);
 
     project_save_requested(false);
 }
@@ -290,8 +372,17 @@ void EditorModel::save_project_as(const QString& project_name)
         doc.append_node(decl);
 
         // Root node
-        xml_node<>* root = doc.allocate_node(node_element, "Materials");
+        xml_node<>* root = doc.allocate_node(node_element, "MEditProject");
         doc.append_node(root);
+
+        // Project name
+        node_add_attribute(doc, root, "name", project_name.toUtf8().constData());
+
+        // Config node
+        //xml_node<>* cfg_node = doc.allocate_node(node_element, "Config");
+
+        // Materials node
+        xml_node<>* mats_node = doc.allocate_node(node_element, "Materials");
 
         // Write descriptors
         for(auto&& [key, entry]: texture_descriptors_)
@@ -299,6 +390,8 @@ void EditorModel::save_project_as(const QString& project_name)
             // Material node with name attribute
             xml_node<>* mat_node = doc.allocate_node(node_element, "Material");
             node_add_attribute(doc, mat_node, "name", entry.name.toUtf8().constData());
+            node_add_attribute(doc, mat_node, "width", std::to_string(entry.width).c_str());
+            node_add_attribute(doc, mat_node, "height", std::to_string(entry.height).c_str());
 
             // TextureMaps node to hold texture maps paths
             xml_node<>* texmap_node = doc.allocate_node(node_element, "TextureMaps");
@@ -351,8 +444,10 @@ void EditorModel::save_project_as(const QString& project_name)
             mat_node->append_node(texmap_node);
             mat_node->append_node(unis_node);
 
-            root->append_node(mat_node);
+            mats_node->append_node(mat_node);
         }
+
+        root->append_node(mats_node);
 
         std::ofstream outfile;
         outfile.open(filepath.toUtf8().constData());
@@ -409,7 +504,7 @@ QString EditorModel::project_path_from_name(const QString& name)
 
 QString EditorModel::project_file_from_name(const QString& name)
 {
-    return name + ".xml";
+    return name + ".wmp";
 }
 
 

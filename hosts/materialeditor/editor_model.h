@@ -23,6 +23,8 @@ namespace medit
 
 struct TextureEntry
 {
+    TextureEntry();
+
     QString name;
 
     std::array<QString, NTEXMAPS> paths;

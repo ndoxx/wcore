@@ -9,6 +9,7 @@ class QLineEdit;
 class QToolBar;
 class QFileSystemModel;
 class QItemSelection;
+class QFileDialog;
 
 namespace medit
 {
@@ -66,6 +67,7 @@ private:
 
     // Dialogs
     NewProjectDialog* new_project_dialog_;
+    QFileDialog* file_dialog_;
 };
 
 

@@ -17,6 +17,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QCoreApplication>
+#include <QFileDialog>
 
 #include "mainwindow.h"
 #include "droplabel.h"
@@ -112,7 +113,8 @@ dir_hierarchy_(new QTreeView),
 tex_list_(new QListView),
 texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
-new_project_dialog_(new NewProjectDialog)
+new_project_dialog_(new NewProjectDialog(this)),
+file_dialog_(new QFileDialog(this))
 {
     // Load style
     QFile stylesheet_file(":/res/stylesheets/arduino_style.css");
@@ -199,6 +201,11 @@ new_project_dialog_(new NewProjectDialog)
         work_path_qstr = QString::fromStdString(work_path.string());
     }
     editor_model_->set_project_folder(work_path_qstr);
+
+    QStringList project_extension_filters; // Filter files by extension
+    project_extension_filters << "*.wmp";
+    file_dialog_->setDirectory(work_path_qstr);
+    file_dialog_->setNameFilters(project_extension_filters);
 
     // Get output texture directory
     fs::path tex_path;
@@ -537,7 +544,14 @@ void MainWindow::handle_new_project()
 
 void MainWindow::handle_open_project()
 {
+    // Close current project if any and clear view
+    handle_close_project();
 
+    if(file_dialog_->exec())
+    {
+        QString filename = file_dialog_->selectedFiles().first();
+        editor_model_->open_project(filename);
+    }
 }
 
 void MainWindow::handle_close_project()
