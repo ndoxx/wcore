@@ -6962,9 +6962,9 @@ BlockIndex Content
     1      NORMAL, METALLIC, AO
     2      DEPTH
 
-    [   Image1    ]  [     Image2     ]  [    Image3    ]
-    [[R][G][B] [A]]  [[R][G][B]  [A]]  [[R]  [G] [B][A]]
-      Albedo  Rough     Normal  Depth  Metal AO   ???
+    [   Image1   ]  [     Image2     ]  [    Image3      ]
+    [[R][G][B][A]]  [[R][G][B]  [A]]  [[R]  [G] [B]   [A]]
+      Albedo           Normal  Depth  Metal AO  Rough  ?
 
 rch : est-ce qu'on pré-compresse les normales ou pas ? (pour l'instant c'est pas le cas)
     -> Regarder si la compression commute avec une lerp, si pas le cas, incompatible avec le splatmapping (il faudrait décompresser->lerp->recompresser).

@@ -40,21 +40,213 @@ static std::map<hash_t, int> texmap_names_to_index =
     {"Normal"_h, 5}
 };
 
-TextureEntry::TextureEntry():
-has_map({false,false,false,false,false,false})
+TextureMap::TextureMap():
+texture_enabled(false)
 {
 
 }
 
+#ifdef __DEBUG__
+void TextureMap::debug_display()
+{
+
+}
+void AlbedoMap::debug_display()
+{
+    if(texture_enabled) DLOGI("albedo: <p>"    + path.toStdString() + "</p>", "core", Severity::LOW);
+}
+void RoughnessMap::debug_display()
+{
+    if(texture_enabled) DLOGI("roughness: <p>" + path.toStdString() + "</p>", "core", Severity::LOW);
+}
+void MetallicMap::debug_display()
+{
+    if(texture_enabled) DLOGI("metallic: <p>"  + path.toStdString() + "</p>", "core", Severity::LOW);
+}
+void AOMap::debug_display()
+{
+    if(texture_enabled) DLOGI("ao: <p>"        + path.toStdString() + "</p>", "core", Severity::LOW);
+}
+void DepthMap::debug_display()
+{
+    if(texture_enabled) DLOGI("depth: <p>"     + path.toStdString() + "</p>", "core", Severity::LOW);
+}
+void NormalMap::debug_display()
+{
+    if(texture_enabled) DLOGI("normal: <p>"    + path.toStdString() + "</p>", "core", Severity::LOW);
+}
 void TextureEntry::debug_display()
 {
     DLOG("Texture <n>" + name.toStdString() + "</n>", "core", Severity::LOW);
-    if(has_map[0]) DLOGI("albedo: <p>"    + paths[0].toStdString() + "</p>", "core", Severity::LOW);
-    if(has_map[1]) DLOGI("roughness: <p>" + paths[1].toStdString() + "</p>", "core", Severity::LOW);
-    if(has_map[2]) DLOGI("metallic: <p>"  + paths[2].toStdString() + "</p>", "core", Severity::LOW);
-    if(has_map[3]) DLOGI("ao: <p>"        + paths[3].toStdString() + "</p>", "core", Severity::LOW);
-    if(has_map[4]) DLOGI("depth: <p>"     + paths[4].toStdString() + "</p>", "core", Severity::LOW);
-    if(has_map[5]) DLOGI("normal: <p>"    + paths[5].toStdString() + "</p>", "core", Severity::LOW);
+    for(int ii=0; ii<NTEXMAPS; ++ii)
+        texture_maps[ii]->debug_display();
+}
+#endif
+
+TextureEntry::TextureEntry():
+texture_maps({new AlbedoMap,
+              new RoughnessMap,
+              new MetallicMap,
+              new AOMap,
+              new DepthMap,
+              new NormalMap})
+{
+
+}
+
+TextureEntry::TextureEntry(const TextureEntry& other):
+texture_maps({new AlbedoMap(*static_cast<AlbedoMap*>(other.texture_maps[0])),
+              new RoughnessMap(*static_cast<RoughnessMap*>(other.texture_maps[1])),
+              new MetallicMap(*static_cast<MetallicMap*>(other.texture_maps[2])),
+              new AOMap(*static_cast<AOMap*>(other.texture_maps[3])),
+              new DepthMap(*static_cast<DepthMap*>(other.texture_maps[4])),
+              new NormalMap(*static_cast<NormalMap*>(other.texture_maps[5]))}),
+name(other.name),
+width(other.width),
+height(other.height)
+{
+
+}
+
+TextureEntry::~TextureEntry()
+{
+    for(int ii=0; ii<NTEXMAPS; ++ii)
+        delete texture_maps[ii];
+}
+
+hash_t TextureEntry::parse_node(xml_node<>* mat_node)
+{
+    // Parse entry name
+    std::string entryname;
+    xml::parse_attribute(mat_node, "name", entryname);
+    xml::parse_attribute(mat_node, "width", width);
+    xml::parse_attribute(mat_node, "height", height);
+    name = QString::fromStdString(entryname);
+
+    // Get TextureMaps node
+    xml_node<>* texmaps_node = mat_node->first_node("TextureMaps");
+    if(texmaps_node)
+    {
+        // For each texturemap
+        for(xml_node<>* texmap_node=texmaps_node->first_node("TextureMap");
+            texmap_node;
+            texmap_node=texmap_node->next_sibling("TextureMap"))
+        {
+            std::string texmap_name, texmap_path, texmap_unival;
+            xml::parse_attribute(texmap_node, "name", texmap_name);
+            int index = texmap_names_to_index[H_(texmap_name.c_str())];
+            if(xml::parse_attribute(texmap_node, "path", texmap_path))
+            {
+                texture_maps[index]->texture_enabled = true;
+                texture_maps[index]->path = QString::fromStdString(texmap_path);
+            }
+            else if(xml::parse_attribute(texmap_node, "value", texmap_unival))
+            {
+                texture_maps[index]->parse_uniform_value(texmap_unival);
+            }
+        }
+    }
+
+    return H_(entryname.c_str());
+}
+
+static void node_add_attribute(xml_document<>& doc, xml_node<>* node, const char* attr_name, const char* attr_val)
+{
+    char* al_attr_name = doc.allocate_string(attr_name);
+    char* al_attr_val = doc.allocate_string(attr_val);
+    xml_attribute<>* attr = doc.allocate_attribute(al_attr_name, al_attr_val);
+    node->append_attribute(attr);
+}
+
+void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materials_node)
+{
+    // Material node with name attribute
+    xml_node<>* mat_node = doc.allocate_node(node_element, "Material");
+    node_add_attribute(doc, mat_node, "name", name.toUtf8().constData());
+    node_add_attribute(doc, mat_node, "width", std::to_string(width).c_str());
+    node_add_attribute(doc, mat_node, "height", std::to_string(height).c_str());
+
+    // TextureMaps node to hold texture maps paths
+    xml_node<>* texmap_node = doc.allocate_node(node_element, "TextureMaps");
+    for(int ii=0; ii<NTEXMAPS; ++ii)
+    {
+        xml_node<>* tex_node = doc.allocate_node(node_element, "TextureMap");
+        node_add_attribute(doc, tex_node, "name", texmap_names[ii].c_str());
+        if(texture_maps[ii]->texture_enabled)
+        {
+            node_add_attribute(doc, tex_node, "path", texture_maps[ii]->path.toUtf8().constData());
+        }
+        else
+        {
+            std::string value_str(texture_maps[ii]->uniform_value_string());
+            if(value_str.size()!=0)
+                node_add_attribute(doc, tex_node, "value", value_str.c_str());
+        }
+        texmap_node->append_node(tex_node);
+    }
+
+    mat_node->append_node(texmap_node);
+    materials_node->append_node(mat_node);
+}
+
+void AlbedoMap::parse_uniform_value(const std::string& value_str)
+{
+
+}
+
+void RoughnessMap::parse_uniform_value(const std::string& value_str)
+{
+
+}
+
+void MetallicMap::parse_uniform_value(const std::string& value_str)
+{
+
+}
+
+void AOMap::parse_uniform_value(const std::string& value_str)
+{
+
+}
+
+void DepthMap::parse_uniform_value(const std::string& value_str)
+{
+
+}
+
+void NormalMap::parse_uniform_value(const std::string& value_str)
+{
+
+}
+
+std::string AlbedoMap::uniform_value_string()
+{
+    return "(0,0,0,1)";
+}
+
+std::string RoughnessMap::uniform_value_string()
+{
+    return "0.2";
+}
+
+std::string MetallicMap::uniform_value_string()
+{
+    return "0.0";
+}
+
+std::string AOMap::uniform_value_string()
+{
+    return "1.0";
+}
+
+std::string DepthMap::uniform_value_string()
+{
+    return "";
+}
+
+std::string NormalMap::uniform_value_string()
+{
+    return "";
 }
 
 EditorModel::EditorModel():
@@ -167,8 +359,8 @@ void EditorModel::compile(const QString& texname)
         QImage** texmaps = new QImage*[NTEXMAPS];
         for(int ii=0; ii<NTEXMAPS; ++ii)
         {
-            if(entry.has_map[ii])
-                texmaps[ii] = new QImage(entry.paths[ii]);
+            if(entry.texture_maps[ii]->texture_enabled)
+                texmaps[ii] = new QImage(entry.texture_maps[ii]->path);
             else
                 texmaps[ii] = nullptr;
         }
@@ -176,20 +368,18 @@ void EditorModel::compile(const QString& texname)
         // Block 0
         for(int xx=0; xx<entry.width; ++xx)
         {
-            for(int yy=0; yy<entry.width; ++yy)
+            for(int yy=0; yy<entry.height; ++yy)
             {
-                QRgb albedo   = texmaps[0] ? texmaps[0]->pixel(xx,yy) : qRgb(0,0,0);
-                int roughness = texmaps[1] ? qRed(texmaps[1]->pixel(xx,yy)) : 0;
+                QRgb albedo = texmaps[0] ? texmaps[0]->pixel(xx,yy) : qRgba(0,0,0,1);
 
-                QRgb out_color = qRgba(qRed(albedo), qGreen(albedo), qBlue(albedo), roughness);
-                block0.setPixel(xx, yy, out_color);
+                block0.setPixel(xx, yy, albedo);
             }
         }
 
         // Block 1
         for(int xx=0; xx<entry.width; ++xx)
         {
-            for(int yy=0; yy<entry.width; ++yy)
+            for(int yy=0; yy<entry.height; ++yy)
             {
                 QRgb normal = texmaps[5] ? texmaps[5]->pixel(xx,yy) : qRgb(0,0,0);
                 int depth   = texmaps[4] ? qRed(texmaps[4]->pixel(xx,yy)) : 0;
@@ -202,12 +392,13 @@ void EditorModel::compile(const QString& texname)
         // Block 2
         for(int xx=0; xx<entry.width; ++xx)
         {
-            for(int yy=0; yy<entry.width; ++yy)
+            for(int yy=0; yy<entry.height; ++yy)
             {
-                int metallic = texmaps[2] ? qRed(texmaps[2]->pixel(xx,yy)) : 0;
-                int ao       = texmaps[3] ? qRed(texmaps[3]->pixel(xx,yy)) : 0;
+                int metallic  = texmaps[2] ? qRed(texmaps[2]->pixel(xx,yy)) : 0;
+                int ao        = texmaps[3] ? qRed(texmaps[3]->pixel(xx,yy)) : 0;
+                int roughness = texmaps[1] ? qRed(texmaps[1]->pixel(xx,yy)) : 0;
 
-                QRgb out_color = qRgba(metallic, ao, 0, 0);
+                QRgb out_color = qRgba(metallic, ao, roughness, 0);
                 block2.setPixel(xx, yy, out_color);
             }
         }
@@ -296,48 +487,7 @@ void EditorModel::open_project(const QString& infile)
     {
 
         TextureEntry entry;
-
-        // Parse entry name
-        std::string entryname;
-        xml::parse_attribute(mat_node, "name", entryname);
-        xml::parse_attribute(mat_node, "width", entry.width);
-        xml::parse_attribute(mat_node, "height", entry.height);
-        hash_t hentryname = H_(entryname.c_str());
-        entry.name = QString::fromStdString(entryname);
-
-        // Get TextureMaps node
-        xml_node<>* texmaps_node = mat_node->first_node("TextureMaps");
-        if(texmaps_node)
-        {
-            // For each texturemap
-            for(xml_node<>* texmap_node=texmaps_node->first_node("TextureMap");
-                texmap_node;
-                texmap_node=texmap_node->next_sibling("TextureMap"))
-            {
-                std::string texmap_name, texmap_path;
-                xml::parse_attribute(texmap_node, "name", texmap_name);
-                xml::parse_attribute(texmap_node, "path", texmap_path);
-                int index = texmap_names_to_index[H_(texmap_name.c_str())];
-                entry.has_map[index] = true;
-                entry.paths[index] = QString::fromStdString(texmap_path);
-            }
-        }
-        xml_node<>* unis_node = mat_node->first_node("Uniforms");
-        if(unis_node)
-        {
-            // For each uniform
-            for(xml_node<>* uni_node=unis_node->first_node("Uniform");
-                uni_node;
-                uni_node=uni_node->next_sibling("Uniform"))
-            {
-                // TODO
-                std::string uni_name, uni_val;
-                xml::parse_attribute(uni_node, "name", uni_name);
-                xml::parse_attribute(uni_node, "value", uni_val);
-                //std::cout << uni_name << ": " << uni_val << std::endl;
-            }
-        }
-
+        hash_t hentryname = entry.parse_node(mat_node);
         // Insert descriptor
         texture_descriptors_.insert(std::pair(hentryname, entry));
         // Populate texture list
@@ -346,14 +496,6 @@ void EditorModel::open_project(const QString& infile)
     texlist_sort_proxy_model_->sort(0);
 
     project_save_requested(false);
-}
-
-static void node_add_attribute(xml_document<>& doc, xml_node<>* node, const char* attr_name, const char* attr_val)
-{
-    char* al_attr_name = doc.allocate_string(attr_name);
-    char* al_attr_val = doc.allocate_string(attr_val);
-    xml_attribute<>* attr = doc.allocate_attribute(al_attr_name, al_attr_val);
-    node->append_attribute(attr);
 }
 
 void EditorModel::save_project_as(const QString& project_name)
@@ -386,66 +528,7 @@ void EditorModel::save_project_as(const QString& project_name)
 
         // Write descriptors
         for(auto&& [key, entry]: texture_descriptors_)
-        {
-            // Material node with name attribute
-            xml_node<>* mat_node = doc.allocate_node(node_element, "Material");
-            node_add_attribute(doc, mat_node, "name", entry.name.toUtf8().constData());
-            node_add_attribute(doc, mat_node, "width", std::to_string(entry.width).c_str());
-            node_add_attribute(doc, mat_node, "height", std::to_string(entry.height).c_str());
-
-            // TextureMaps node to hold texture maps paths
-            xml_node<>* texmap_node = doc.allocate_node(node_element, "TextureMaps");
-            for(int ii=0; ii<NTEXMAPS; ++ii)
-            {
-                if(entry.has_map[ii])
-                {
-                    xml_node<>* tex_node = doc.allocate_node(node_element, "TextureMap");
-                    node_add_attribute(doc, tex_node, "name", texmap_names[ii].c_str());
-                    node_add_attribute(doc, tex_node, "path", entry.paths[ii].toUtf8().constData());
-
-                    texmap_node->append_node(tex_node);
-                }
-            }
-            // Uniforms node to hold uniform data
-            xml_node<>* unis_node = doc.allocate_node(node_element, "Uniforms");
-            if(!entry.has_map[0]) // No albedo map
-            {
-                xml_node<>* uni_node = doc.allocate_node(node_element, "Uniform");
-                node_add_attribute(doc, uni_node, "name", texmap_names[0].c_str());
-                node_add_attribute(doc, uni_node, "value", "(0,0,0)"); // TMP
-
-                unis_node->append_node(uni_node);
-            }
-            if(!entry.has_map[1]) // No roughness map
-            {
-                xml_node<>* uni_node = doc.allocate_node(node_element, "Uniform");
-                node_add_attribute(doc, uni_node, "name", texmap_names[1].c_str());
-                node_add_attribute(doc, uni_node, "value", "0.2"); // TMP
-
-                unis_node->append_node(uni_node);
-            }
-            if(!entry.has_map[2]) // No metallic map
-            {
-                xml_node<>* uni_node = doc.allocate_node(node_element, "Uniform");
-                node_add_attribute(doc, uni_node, "name", texmap_names[2].c_str());
-                node_add_attribute(doc, uni_node, "value", "0"); // TMP
-
-                unis_node->append_node(uni_node);
-            }
-            if(!entry.has_map[3]) // No AO map
-            {
-                xml_node<>* uni_node = doc.allocate_node(node_element, "Uniform");
-                node_add_attribute(doc, uni_node, "name", texmap_names[3].c_str());
-                node_add_attribute(doc, uni_node, "value", "1"); // TMP
-
-                unis_node->append_node(uni_node);
-            }
-
-            mat_node->append_node(texmap_node);
-            mat_node->append_node(unis_node);
-
-            mats_node->append_node(mat_node);
-        }
+            entry.write_node(doc, mats_node);
 
         root->append_node(mats_node);
 

@@ -21,18 +21,98 @@ namespace medit
 
 #define NTEXMAPS 6
 
+struct TextureMap
+{
+    TextureMap();
+    virtual ~TextureMap() = default;
+    virtual void parse_uniform_value(const std::string& value_str) {}
+    virtual std::string uniform_value_string() { return ""; }
+#ifdef __DEBUG__
+    virtual void debug_display();
+#endif
+
+    QString path;
+    bool texture_enabled;
+};
+
+struct AlbedoMap: public TextureMap
+{
+    virtual ~AlbedoMap() = default;
+    virtual void parse_uniform_value(const std::string& value_str) override;
+    virtual std::string uniform_value_string() override;
+#ifdef __DEBUG__
+    virtual void debug_display() override;
+#endif
+};
+
+struct RoughnessMap: public TextureMap
+{
+    virtual ~RoughnessMap() = default;
+    virtual void parse_uniform_value(const std::string& value_str) override;
+    virtual std::string uniform_value_string() override;
+#ifdef __DEBUG__
+    virtual void debug_display() override;
+#endif
+};
+
+struct MetallicMap: public TextureMap
+{
+    virtual ~MetallicMap() = default;
+    virtual void parse_uniform_value(const std::string& value_str) override;
+    virtual std::string uniform_value_string() override;
+#ifdef __DEBUG__
+    virtual void debug_display() override;
+#endif
+};
+
+struct AOMap: public TextureMap
+{
+    virtual ~AOMap() = default;
+    virtual void parse_uniform_value(const std::string& value_str) override;
+    virtual std::string uniform_value_string() override;
+#ifdef __DEBUG__
+    virtual void debug_display() override;
+#endif
+};
+
+struct DepthMap: public TextureMap
+{
+    virtual ~DepthMap() = default;
+    virtual void parse_uniform_value(const std::string& value_str) override;
+    virtual std::string uniform_value_string() override;
+#ifdef __DEBUG__
+    virtual void debug_display() override;
+#endif
+};
+
+struct NormalMap: public TextureMap
+{
+    virtual ~NormalMap() = default;
+    virtual void parse_uniform_value(const std::string& value_str) override;
+    virtual std::string uniform_value_string() override;
+#ifdef __DEBUG__
+    virtual void debug_display() override;
+#endif
+};
+
 struct TextureEntry
 {
     TextureEntry();
+    TextureEntry(const TextureEntry&);
+    ~TextureEntry();
 
+    wcore::hash_t parse_node(rapidxml::xml_node<>* mat_node);
+    void write_node(rapidxml::xml_document<>& doc, rapidxml::xml_node<>* materials_node);
+
+    std::array<TextureMap*, NTEXMAPS> texture_maps;
     QString name;
 
-    std::array<QString, NTEXMAPS> paths;
-    std::array<bool, NTEXMAPS> has_map;
     int width  = 0;
     int height = 0;
 
+#ifdef __DEBUG__
     void debug_display();
+#endif
 };
 
 class TexListModel;

@@ -275,7 +275,7 @@ MainWindow::~MainWindow()
 void MainWindow::create_toolbars()
 {
     toolbar_ = addToolBar("Texture");
-    toolbar_->setFixedHeight(50);
+    //toolbar_->setFixedHeight(50);
 
     toolbar_->addAction(/*QIcon(":/res/icons/new_project.png"), */"New project",
                         this, SLOT(handle_new_project()));
@@ -353,12 +353,12 @@ void MainWindow::save_texture(const QString& texname)
     entry.name = texname;
 
     for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-        retrieve_texmap_path(TexMapControlIndex(ii), entry.paths[ii], entry.has_map[ii]);
+        retrieve_texmap_path(TexMapControlIndex(ii), entry.texture_maps[ii]->path, entry.texture_maps[ii]->texture_enabled);
 
     // Set dimensions to first defined texture dimensions
     for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
-        if(entry.has_map[ii])
+        if(entry.texture_maps[ii]->texture_enabled)
         {
             entry.width  = texmap_controls[ii].droplabel->getPixmap().width();
             entry.height = texmap_controls[ii].droplabel->getPixmap().height();
@@ -377,8 +377,8 @@ void MainWindow::update_texture_view()
     for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
         texmap_controls[ii].droplabel->clear();
-        if(entry.has_map[ii])
-            texmap_controls[ii].droplabel->setPixmap(entry.paths[ii]);
+        if(entry.texture_maps[ii]->texture_enabled)
+            texmap_controls[ii].droplabel->setPixmap(entry.texture_maps[ii]->path);
     }
 }
 
@@ -551,6 +551,10 @@ void MainWindow::handle_open_project()
     {
         QString filename = file_dialog_->selectedFiles().first();
         editor_model_->open_project(filename);
+        // Select first texture by default (shows the user something happened)
+        QModelIndex index = tex_list_->model()->index(0,0);
+        if(index.isValid())
+            tex_list_->selectionModel()->select(index, QItemSelectionModel::Select);
     }
 }
 
