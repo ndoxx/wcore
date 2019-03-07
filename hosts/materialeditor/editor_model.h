@@ -8,6 +8,7 @@
 #include <QStringList>
 
 #include "wtypes.h"
+#include "math3d.h"
 
 /*
     Defines the behavior of the material editor application
@@ -43,6 +44,8 @@ struct AlbedoMap: public TextureMap
 #ifdef __DEBUG__
     virtual void debug_display() override;
 #endif
+
+    wcore::math::vec4 u_albedo;
 };
 
 struct RoughnessMap: public TextureMap
@@ -53,6 +56,8 @@ struct RoughnessMap: public TextureMap
 #ifdef __DEBUG__
     virtual void debug_display() override;
 #endif
+
+    float u_roughness;
 };
 
 struct MetallicMap: public TextureMap
@@ -63,6 +68,8 @@ struct MetallicMap: public TextureMap
 #ifdef __DEBUG__
     virtual void debug_display() override;
 #endif
+
+    float u_metallic;
 };
 
 struct AOMap: public TextureMap
@@ -73,6 +80,8 @@ struct AOMap: public TextureMap
 #ifdef __DEBUG__
     virtual void debug_display() override;
 #endif
+
+    float u_ao;
 };
 
 struct DepthMap: public TextureMap
@@ -127,6 +136,7 @@ public:
     // current texture name
     void set_current_texture_name(const QString& name);
     inline const QString& get_current_texture_name() const { return current_texname_; }
+    inline wcore::hash_t get_current_texture_key() const   { return wcore::H_(current_texname_.toUtf8().constData()); }
 
     // composite textures output folder
     void set_output_folder(const QString& path);
@@ -137,6 +147,7 @@ public:
     QModelIndex add_texture(const QString& name);
 
     inline TextureEntry& get_texture_entry(wcore::hash_t name) { return texture_descriptors_.at(name); }
+    inline TextureEntry& get_current_texture_entry()           { return get_texture_entry(wcore::H_(current_texname_.toUtf8().constData())); }
     bool has_entry(wcore::hash_t name);
     void delete_current_texture(QListView* tex_list);
     void rename_texture(const QString& old_name, const QString& new_name);

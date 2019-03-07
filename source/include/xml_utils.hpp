@@ -1,7 +1,6 @@
 #ifndef XML_UTILS_H
 #define XML_UTILS_H
 
-#include <cstring>
 #include <sstream>
 #include <functional>
 #include <memory>
@@ -17,13 +16,6 @@ typedef unsigned long long hash_t;
 
 namespace xml
 {
-
-template <typename T>
-bool str_val(const char* value, T& result)
-{
-    std::istringstream iss(value);
-    return !(iss >> result).fail();
-}
 
 template <typename T>
 void parse_attribute(rapidxml::xml_node<>* node, const char* name, std::function<void(T value)> exec)
@@ -71,22 +63,6 @@ hash_t parse_attribute_h(rapidxml::xml_node<>* node, const char* name);
 bool parse_attribute(rapidxml::xml_node<>* node, const char* name, std::string& destination);
 bool parse_node(rapidxml::xml_node<>* parent, const char* leaf_name, std::string& destination);
 
-// Full specializations
-template <>
-bool str_val<math::vec<2> >(const char* value, math::vec<2>& result);
-
-template <>
-bool str_val<math::vec<3> >(const char* value, math::vec<3>& result);
-
-template <>
-bool str_val<math::vec<2,uint32_t> >(const char* value, math::vec<2,uint32_t>& result);
-
-template <>
-bool str_val<math::vec<3,uint32_t> >(const char* value, math::vec<3,uint32_t>& result);
-
-template <>
-bool str_val<bool>(const char* value, bool& result);
-
 template <>
 void parse_node<const char*>(rapidxml::xml_node<>* parent, const char* name, std::function<void(const char* value)> exec);
 
@@ -103,7 +79,7 @@ bool parse_property(rapidxml::xml_node<>* parent, const char* prop_name, T& dest
         const char* propertyName = pAttr->value();
 
         if(!strcmp(propertyName, prop_name))
-            return xml::str_val(prop->value(), destination);
+            return str_val(prop->value(), destination);
     }
     return false;
 }

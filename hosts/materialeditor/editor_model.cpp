@@ -191,22 +191,22 @@ void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materia
 
 void AlbedoMap::parse_uniform_value(const std::string& value_str)
 {
-
+    str_val(value_str.c_str(), u_albedo);
 }
 
 void RoughnessMap::parse_uniform_value(const std::string& value_str)
 {
-
+    str_val(value_str.c_str(), u_roughness);
 }
 
 void MetallicMap::parse_uniform_value(const std::string& value_str)
 {
-
+    str_val(value_str.c_str(), u_metallic);
 }
 
 void AOMap::parse_uniform_value(const std::string& value_str)
 {
-
+    str_val(value_str.c_str(), u_ao);
 }
 
 void DepthMap::parse_uniform_value(const std::string& value_str)
@@ -221,22 +221,22 @@ void NormalMap::parse_uniform_value(const std::string& value_str)
 
 std::string AlbedoMap::uniform_value_string()
 {
-    return "(0,0,0,1)";
+    return wcore::to_string(u_albedo);
 }
 
 std::string RoughnessMap::uniform_value_string()
 {
-    return "0.2";
+    return std::to_string(u_roughness);
 }
 
 std::string MetallicMap::uniform_value_string()
 {
-    return "0.0";
+    return std::to_string(u_metallic);
 }
 
 std::string AOMap::uniform_value_string()
 {
-    return "1.0";
+    return std::to_string(u_ao);
 }
 
 std::string DepthMap::uniform_value_string()
@@ -452,9 +452,7 @@ void EditorModel::new_project(const QString& project_name)
     {
         // If a project is open, save it and close it
         if(!current_project_.isEmpty())
-        {
             close_project();
-        }
         // Else, unnamed project became named
 
         current_project_ = project_name;

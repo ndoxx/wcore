@@ -78,13 +78,6 @@ static void push_texmap_control(const QString& title, QLayout* parent)
     texmap_controls.push_back(ctl);
 }
 
-static void retrieve_texmap_path(TexMapControlIndex index, QString& dest_path, bool& has_map)
-{
-    assert(index<TexMapControlIndex::N_CONTROLS && "TexMapControlIndex out of bounds.");
-    dest_path = texmap_controls[index].droplabel->get_path();
-    has_map = !dest_path.isEmpty();
-}
-
 static bool validate_texture_name(const QString& name)
 {
     if(name.isEmpty()) return false;
@@ -104,7 +97,7 @@ static bool validate_texture_name(const QString& name)
     return ret;
 }
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QWidget* parent):
 QMainWindow(parent),
 editor_model_(new EditorModel),
 dir_fs_model_(new QFileSystemModel),
@@ -340,23 +333,16 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     }
 }
 
-void MainWindow::save_texture(const QString& texname)
+void MainWindow::update_entry(TextureEntry& entry)
 {
-    // * Retrieve texture map paths from drop labels
-    if(texname.isEmpty()) return;
-
-    DLOGN("Saving texture <n>" + texname.toStdString() + "</n>", "core", Severity::LOW);
-
-    hash_t hname = H_(texname.toUtf8().constData());
-    TextureEntry& entry = editor_model_->get_texture_entry(hname);
-
-    entry.name = texname;
-
-    for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-        retrieve_texmap_path(TexMapControlIndex(ii), entry.texture_maps[ii]->path, entry.texture_maps[ii]->texture_enabled);
-
+    // Retrieve texture map info from controls
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+    {
+        entry.texture_maps[ii]->path = texmap_controls[ii].droplabel->get_path();
+        entry.texture_maps[ii]->texture_enabled = !entry.texture_maps[ii]->path.isEmpty();
+    }
     // Set dimensions to first defined texture dimensions
-    for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
         if(entry.texture_maps[ii]->texture_enabled)
         {
@@ -370,11 +356,9 @@ void MainWindow::save_texture(const QString& texname)
 void MainWindow::update_texture_view()
 {
     // * Update drop labels
-    const QString& current = editor_model_->get_current_texture_name();
-    hash_t hname = H_(current.toUtf8().constData());
-    TextureEntry& entry = editor_model_->get_texture_entry(hname);
+    TextureEntry& entry = editor_model_->get_current_texture_entry();
 
-    for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
         texmap_controls[ii].droplabel->clear();
         if(entry.texture_maps[ii]->texture_enabled)
@@ -412,7 +396,13 @@ void MainWindow::handle_save_current_texture()
 {
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
-        save_texture(texname);
+    {
+        DLOGN("Saving texture <n>" + texname.toStdString() + "</n>", "core", Severity::LOW);
+
+        TextureEntry& entry = editor_model_->get_current_texture_entry();
+        entry.name = texname;
+        update_entry(entry);
+    }
 }
 
 void MainWindow::handle_save_all_textures()

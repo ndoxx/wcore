@@ -432,4 +432,53 @@ std::string to_string<math::vec3>(const math::vec3& v)
     return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z()) + ")";
 }
 
+template<>
+std::string to_string<math::vec4>(const math::vec4& v)
+{
+    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z()) + "," + std::to_string(v.w()) + ")";
+}
+
+template <>
+bool str_val<math::vec<2> >(const char* value, math::vec<2>& result)
+{
+    return sscanf(value, "(%f,%f)", &result[0], &result[1]) > 0;
+}
+
+template <>
+bool str_val<math::vec<3> >(const char* value, math::vec<3>& result)
+{
+    return sscanf(value, "(%f,%f,%f)", &result[0], &result[1], &result[2]) > 0;
+}
+
+template <>
+bool str_val<math::vec<4> >(const char* value, math::vec<4>& result)
+{
+    return sscanf(value, "(%f,%f,%f,%f)", &result[0], &result[1], &result[2], &result[3]) > 0;
+}
+
+template <>
+bool str_val<math::vec<2,uint32_t> >(const char* value, math::vec<2,uint32_t>& result)
+{
+    return sscanf(value, "(%d,%d)", &result[0], &result[1]) > 0;
+}
+
+template <>
+bool str_val<math::vec<3,uint32_t> >(const char* value, math::vec<3,uint32_t>& result)
+{
+    return sscanf(value, "(%d,%d,%d)", &result[0], &result[1], &result[2]) > 0;
+}
+
+template <>
+bool str_val<math::vec<4,uint32_t> >(const char* value, math::vec<4,uint32_t>& result)
+{
+    return sscanf(value, "(%d,%d,%d,%d)", &result[0], &result[1], &result[2], &result[3]) > 0;
+}
+
+template <>
+bool str_val<bool>(const char* value, bool& result)
+{
+    result = !strcmp(value, "true");
+    return true;
+}
+
 } // namespace wcore

@@ -17,16 +17,19 @@ namespace medit
 class EditorModel;
 class TexlistDelegate;
 class NewProjectDialog;
+struct TextureEntry;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-    void save_texture(const QString& texname);
+    // Retrieve data from current texture entry and update view
     void update_texture_view();
+    // Retrieve data from controls and update a given entry with this information
+    void update_entry(TextureEntry& entry);
 
     virtual bool eventFilter(QObject* object, QEvent* event) override;
     virtual void keyPressEvent(QKeyEvent* event) override;

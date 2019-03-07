@@ -3,6 +3,8 @@
 
 #include <array>
 #include <string>
+#include <cstring>
+
 #include "math_structures.hpp"
 #include "wtypes.h"
 
@@ -160,6 +162,36 @@ void translate_matrix(mat4& matrix, const vec3& translation);
 
 template<> std::string to_string(const math::vec2& v);
 template<> std::string to_string(const math::vec3& v);
+template<> std::string to_string(const math::vec4& v);
+
+template <typename T>
+bool str_val(const char* value, T& result)
+{
+    std::istringstream iss(value);
+    return !(iss >> result).fail();
+}
+
+// Full specializations
+template <>
+bool str_val<math::vec<2> >(const char* value, math::vec<2>& result);
+
+template <>
+bool str_val<math::vec<3> >(const char* value, math::vec<3>& result);
+
+template <>
+bool str_val<math::vec<4> >(const char* value, math::vec<4>& result);
+
+template <>
+bool str_val<math::vec<2,uint32_t> >(const char* value, math::vec<2,uint32_t>& result);
+
+template <>
+bool str_val<math::vec<3,uint32_t> >(const char* value, math::vec<3,uint32_t>& result);
+
+template <>
+bool str_val<math::vec<4,uint32_t> >(const char* value, math::vec<4,uint32_t>& result);
+
+template <>
+bool str_val<bool>(const char* value, bool& result);
 
 } // namespace wcore
 

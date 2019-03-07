@@ -1077,7 +1077,7 @@ void SceneLoader::parse_transformation(xml_node<>* trn_node, Transformation& tra
     if(pos_node)
     {
         vec3 position;
-        xml::str_val(pos_node->value(), position);
+        str_val(pos_node->value(), position);
 
         trans.set_position(position);
     }
@@ -1086,7 +1086,7 @@ void SceneLoader::parse_transformation(xml_node<>* trn_node, Transformation& tra
     if(ang_node)
     {
         vec3 angle;
-        xml::str_val(ang_node->value(), angle);
+        str_val(ang_node->value(), angle);
 
         trans.rotate(angle.x(), angle.y(), angle.z());
     }
@@ -1095,7 +1095,7 @@ void SceneLoader::parse_transformation(xml_node<>* trn_node, Transformation& tra
     if(scl_node)
     {
         float scale;
-        xml::str_val(scl_node->value(), scale);
+        str_val(scl_node->value(), scale);
 
         trans.set_scale(scale);
     }
@@ -1122,17 +1122,17 @@ void SceneLoader::parse_transformation(rapidxml::xml_node<>* trn_node,
 
     if(pos_node)
     {
-        xml::str_val(pos_node->value(), position);
+        str_val(pos_node->value(), position);
         pos_has_variance = xml::parse_attribute(pos_node, "variance", position_var);
     }
     if(ang_node)
     {
-        xml::str_val(ang_node->value(), angle);
+        str_val(ang_node->value(), angle);
         ang_has_variance = xml::parse_attribute(ang_node, "variance", angle_var);
     }
     if(scl_node)
     {
-        xml::str_val(scl_node->value(), scale);
+        str_val(scl_node->value(), scale);
         scl_has_variance = xml::parse_attribute(scl_node, "variance", scale_var);
     }
 
@@ -1175,7 +1175,7 @@ Mesh<Vertex3P>* SceneLoader::parse_line_mesh(rapidxml::xml_node<>* mesh_node)
         return nullptr;
 
     std::string mesh;
-    if(!xml::str_val(mesh_node->value(), mesh))
+    if(!str_val(mesh_node->value(), mesh))
         return nullptr;
 
     Mesh<Vertex3P>* pmesh = nullptr;
@@ -1226,7 +1226,7 @@ void SceneLoader::parse_bezier_interpolator(rapidxml::xml_node<>* bez_node,
          control; control=control->next_sibling("Control"))
     {
         vec3 control_point;
-        if(xml::str_val(control->value(), control_point))
+        if(str_val(control->value(), control_point))
         {
             if(relative_positioning)
             {
