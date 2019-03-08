@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFrame>
 
 class QTreeView;
 class QListView;
@@ -10,26 +11,74 @@ class QToolBar;
 class QFileSystemModel;
 class QItemSelection;
 class QFileDialog;
+class QGroupBox;
+class QVBoxLayout;
+class QCheckBox;
 
 namespace medit
 {
+
+// Defines a control surface below the texmaps droplabels in a TexMapControl
+class TexmapControlWidget: public QFrame
+{
+    Q_OBJECT
+
+public:
+    explicit TexmapControlWidget(QWidget* parent = nullptr);
+    virtual ~TexmapControlWidget() = default;
+
+    virtual void clear() {}
+};
+
+class ColorPickerLabel;
+// Specialized controls for albedo map
+class AlbedoControls: public TexmapControlWidget
+{
+    Q_OBJECT
+
+public:
+    explicit AlbedoControls(QWidget* parent = nullptr);
+    virtual ~AlbedoControls() = default;
+
+    virtual void clear() override;
+
+    ColorPickerLabel* color_picker_;
+};
+
+class DropLabel;
+// Groups all the controls for a given texture map
+class TexMapControl: public QObject
+{
+    Q_OBJECT
+
+public:
+    QGroupBox* groupbox    = nullptr;
+    QVBoxLayout* layout    = nullptr;
+    DropLabel* droplabel   = nullptr;
+    QCheckBox* map_enabled = nullptr;
+
+public slots:
+    void handle_sig_texmap_changed(bool init_state);
+};
 
 class EditorModel;
 class TexlistDelegate;
 class NewProjectDialog;
 struct TextureEntry;
-class MainWindow : public QMainWindow
+class MainWindow: public QMainWindow
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
-    ~MainWindow();
+    virtual ~MainWindow();
 
     // Retrieve data from current texture entry and update view
     void update_texture_view();
     // Retrieve data from controls and update a given entry with this information
     void update_entry(TextureEntry& entry);
+    // Add a new control panel for a texmap
+    void push_texmap_control(const QString& title, QLayout* parent, QWidget* additional_controls=nullptr);
 
     virtual bool eventFilter(QObject* object, QEvent* event) override;
     virtual void keyPressEvent(QKeyEvent* event) override;
@@ -67,6 +116,9 @@ private:
     QLineEdit* texname_edit_;
     QToolBar* toolbar_;
     TexlistDelegate* tex_list_delegate_;
+
+    std::vector<TexMapControl*> texmap_controls_;
+    TexmapControlWidget* albedo_controls_;
 
     // Dialogs
     NewProjectDialog* new_project_dialog_;

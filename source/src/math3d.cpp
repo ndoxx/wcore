@@ -438,6 +438,24 @@ std::string to_string<math::vec4>(const math::vec4& v)
     return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z()) + "," + std::to_string(v.w()) + ")";
 }
 
+template<>
+std::string to_string<math::i32vec2>(const math::i32vec2& v)
+{
+    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + ")";
+}
+
+template<>
+std::string to_string<math::i32vec3>(const math::i32vec3& v)
+{
+    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z()) + ")";
+}
+
+template<>
+std::string to_string<math::i32vec4>(const math::i32vec4& v)
+{
+    return "(" + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z()) + "," + std::to_string(v.w()) + ")";
+}
+
 template <>
 bool str_val<math::vec<2> >(const char* value, math::vec<2>& result)
 {

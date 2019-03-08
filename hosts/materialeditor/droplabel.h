@@ -18,7 +18,7 @@ class DropLabel: public QLabel
     Q_OBJECT
 
 public:
-    DropLabel(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit DropLabel(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 
     // Get preferred height given width (preserves pixmap aspect ratio)
     virtual int heightForWidth(int width) const override;
@@ -37,6 +37,9 @@ public:
 public slots:
     void handle_context_menu(const QPoint& pos);
     void clear();
+
+signals:
+    void sig_texmap_changed(bool initialized);
 
 protected:
     virtual void resizeEvent(QResizeEvent* event) override;

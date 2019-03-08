@@ -50,6 +50,7 @@ void DropLabel::setPixmap(const QPixmap& pixmap)
     setMask(pixmap_.mask());
     show();
     initialized_ = true;
+    emit sig_texmap_changed(initialized_);
 }
 
 void DropLabel::setPixmap(const QString& pix_path)
@@ -63,6 +64,7 @@ void DropLabel::clear()
     QLabel::clear();
     current_path_ = "";
     initialized_ = false;
+    emit sig_texmap_changed(initialized_);
 }
 
 void DropLabel::resizeEvent(QResizeEvent* event)
@@ -99,6 +101,7 @@ void DropLabel::dropEvent(QDropEvent* event)
     // Generate a pixmap and set label to use it (but rescaled)
     setPixmap(QPixmap(current_path_));
     setStyleSheet(ssIdle);
+
 }
 
 void DropLabel::handle_context_menu(const QPoint& pos)
@@ -109,7 +112,7 @@ void DropLabel::handle_context_menu(const QPoint& pos)
     QPoint globalPos = mapToGlobal(pos);
 
     QMenu context_menu;
-    context_menu.addAction("Clear", this, SLOT(clear()));
+    context_menu.addAction(QIcon(":/res/icons/clear.png"), tr("&Clear"), this, SLOT(clear()));
 
     context_menu.exec(globalPos);
 }

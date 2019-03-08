@@ -4,6 +4,7 @@
 #include <QFileSystemModel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QFormLayout>
 #include <QPushButton>
 #include <QGroupBox>
 #include <QTreeView>
@@ -13,14 +14,16 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QToolBar>
-#include <QFrame>
 #include <QFile>
 #include <QTextStream>
 #include <QCoreApplication>
 #include <QFileDialog>
+#include <QCheckBox>
+#include <QApplication>
 
 #include "mainwindow.h"
 #include "droplabel.h"
+#include "color_picker_label.h"
 #include "editor_model.h"
 #include "texlist_delegate.h"
 #include "new_project_dialog.h"
@@ -46,38 +49,6 @@ enum TexMapControlIndex: uint32_t
     N_CONTROLS
 };
 
-struct TexMapControl
-{
-    QGroupBox* groupbox  = nullptr;
-    QVBoxLayout* layout  = nullptr;
-    DropLabel* droplabel = nullptr;
-};
-
-static std::vector<TexMapControl> texmap_controls;
-
-static void push_texmap_control(const QString& title, QLayout* parent)
-{
-    TexMapControl ctl;
-    ctl.groupbox = new QGroupBox(title);
-    ctl.layout = new QVBoxLayout();
-    ctl.droplabel = new DropLabel();
-
-    ctl.droplabel->setAcceptDrops(true);
-    ctl.droplabel->setMinimumSize(QSize(128,128));
-
-    QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    policy.setHeightForWidth(true);
-    ctl.droplabel->setSizePolicy(policy);
-
-    ctl.layout->addSpacerItem(new QSpacerItem(20, 10));
-    ctl.layout->addWidget(ctl.droplabel);
-    ctl.layout->setAlignment(ctl.droplabel, Qt::AlignTop);
-    ctl.groupbox->setLayout(ctl.layout);
-
-    parent->addWidget(ctl.groupbox);
-    texmap_controls.push_back(ctl);
-}
-
 static bool validate_texture_name(const QString& name)
 {
     if(name.isEmpty()) return false;
@@ -97,6 +68,33 @@ static bool validate_texture_name(const QString& name)
     return ret;
 }
 
+TexmapControlWidget::TexmapControlWidget(QWidget* parent):
+QFrame(parent)
+{
+
+}
+
+AlbedoControls::AlbedoControls(QWidget* parent):
+TexmapControlWidget(parent),
+color_picker_(new ColorPickerLabel)
+{
+    QFormLayout* albedo_ctl_layout = new QFormLayout();
+    albedo_ctl_layout->addRow(tr("Color:"), color_picker_);
+
+    setLayout(albedo_ctl_layout);
+}
+
+void AlbedoControls::clear()
+{
+    color_picker_->reset();
+}
+
+void TexMapControl::handle_sig_texmap_changed(bool init_state)
+{
+    map_enabled->setEnabled(init_state);
+    map_enabled->setCheckState(init_state ? Qt::Checked : Qt::Unchecked);
+}
+
 MainWindow::MainWindow(QWidget* parent):
 QMainWindow(parent),
 editor_model_(new EditorModel),
@@ -106,6 +104,7 @@ dir_hierarchy_(new QTreeView),
 tex_list_(new QListView),
 texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
+albedo_controls_(new AlbedoControls()),
 new_project_dialog_(new NewProjectDialog(this)),
 file_dialog_(new QFileDialog(this))
 {
@@ -137,7 +136,7 @@ file_dialog_(new QFileDialog(this))
     QHBoxLayout* hlayout_preview = new QHBoxLayout();
 
     // * Setup side panel
-    QPushButton* button_new_tex = new QPushButton("New texture");
+    QPushButton* button_new_tex = new QPushButton(tr("New texture"));
     texname_edit_->clearFocus();
 
     hlayout_sp_nt->addWidget(texname_edit_);
@@ -151,16 +150,16 @@ file_dialog_(new QFileDialog(this))
 
     // * Setup main panel
     // Texture maps
-    push_texmap_control("Albedo",    hlayout_tex_maps);
-    push_texmap_control("Roughness", hlayout_tex_maps);
-    push_texmap_control("Metallic",  hlayout_tex_maps);
-    push_texmap_control("AO",        hlayout_tex_maps);
-    push_texmap_control("Depth",     hlayout_tex_maps);
-    push_texmap_control("Normal",    hlayout_tex_maps);
+    push_texmap_control(tr("Albedo"),    hlayout_tex_maps, albedo_controls_);
+    push_texmap_control(tr("Roughness"), hlayout_tex_maps);
+    push_texmap_control(tr("Metallic"),  hlayout_tex_maps);
+    push_texmap_control(tr("AO"),        hlayout_tex_maps);
+    push_texmap_control(tr("Depth"),     hlayout_tex_maps);
+    push_texmap_control(tr("Normal"),    hlayout_tex_maps);
 
     // Preview
-    QGroupBox* gb_preview_ctl = new QGroupBox("Preview controls");
-    QGroupBox* gb_preview     = new QGroupBox("Preview");
+    QGroupBox* gb_preview_ctl = new QGroupBox(tr("Preview controls"));
+    QGroupBox* gb_preview     = new QGroupBox(tr("Preview"));
     hlayout_preview->addWidget(gb_preview_ctl);
     hlayout_preview->addWidget(gb_preview);
 
@@ -263,22 +262,68 @@ MainWindow::~MainWindow()
     delete dir_fs_model_;
     delete window_;
     delete editor_model_;
+
+    for(int ii=0; ii<texmap_controls_.size(); ++ii)
+        delete texmap_controls_[ii];
+}
+
+void MainWindow::push_texmap_control(const QString& title, QLayout* parent, QWidget* additional_controls)
+{
+    TexMapControl* ctl = new TexMapControl();
+    ctl->groupbox = new QGroupBox(title);
+    ctl->layout = new QVBoxLayout();
+    ctl->droplabel = new DropLabel();
+    ctl->map_enabled = new QCheckBox(tr("enable image map"));
+
+    ctl->droplabel->setAcceptDrops(true);
+    ctl->droplabel->setMinimumSize(QSize(128,128));
+    QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    policy.setHeightForWidth(true);
+    ctl->droplabel->setSizePolicy(policy);
+    QObject::connect(ctl->droplabel, SIGNAL(sig_texmap_changed(bool)),
+                     ctl,            SLOT(handle_sig_texmap_changed(bool)));
+
+    // Checkbox to enable/disable texture map
+    ctl->map_enabled->setEnabled(false);
+
+    ctl->layout->addSpacerItem(new QSpacerItem(20, 10));
+    ctl->layout->addWidget(ctl->droplabel);
+    ctl->layout->addWidget(ctl->map_enabled);
+    ctl->layout->setAlignment(ctl->droplabel, Qt::AlignTop);
+    ctl->layout->setAlignment(ctl->map_enabled, Qt::AlignTop);
+
+    // Add separator
+    auto sep = new QFrame;
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Sunken);
+    ctl->layout->addWidget(sep);
+    ctl->layout->setAlignment(sep, Qt::AlignTop);
+
+    if(additional_controls)
+    {
+        ctl->layout->addWidget(additional_controls);
+        ctl->layout->setAlignment(additional_controls, Qt::AlignTop);
+    }
+
+    ctl->groupbox->setLayout(ctl->layout);
+
+    parent->addWidget(ctl->groupbox);
+    texmap_controls_.push_back(ctl);
 }
 
 void MainWindow::create_toolbars()
 {
     toolbar_ = addToolBar("Texture");
-    //toolbar_->setFixedHeight(50);
 
-    toolbar_->addAction(/*QIcon(":/res/icons/new_project.png"), */"New project",
+    toolbar_->addAction(QIcon(":/res/icons/new_project.png"), "New project",
                         this, SLOT(handle_new_project()));
-    toolbar_->addAction(/*QIcon(":/res/icons/open.png"), */"Open project",
+    toolbar_->addAction(QIcon(":/res/icons/open_project.png"), "Open project",
                         this, SLOT(handle_open_project()));
     toolbar_->addAction(QIcon(":/res/icons/save.png"), "Save project",
                         this, SLOT(handle_serialize_project()));
-    toolbar_->addAction(/*QIcon(":/res/icons/save_as.png"), */"Save project as",
+    toolbar_->addAction(QIcon(":/res/icons/save_as.png"), "Save project as",
                         this, SLOT(handle_serialize_project_as()));
-    toolbar_->addAction(/*QIcon(":/res/icons/close.png"), */"Close project",
+    toolbar_->addAction(QIcon(":/res/icons/close_project.png"), "Close project",
                         this, SLOT(handle_close_project()));
 
     toolbar_->addSeparator();
@@ -338,19 +383,28 @@ void MainWindow::update_entry(TextureEntry& entry)
     // Retrieve texture map info from controls
     for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
-        entry.texture_maps[ii]->path = texmap_controls[ii].droplabel->get_path();
-        entry.texture_maps[ii]->texture_enabled = !entry.texture_maps[ii]->path.isEmpty();
+        entry.texture_maps[ii]->path = texmap_controls_[ii]->droplabel->get_path();
+        entry.texture_maps[ii]->has_image = !entry.texture_maps[ii]->path.isEmpty();
+        entry.texture_maps[ii]->use_image = texmap_controls_[ii]->map_enabled->checkState() == Qt::Checked;
     }
     // Set dimensions to first defined texture dimensions
     for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
-        if(entry.texture_maps[ii]->texture_enabled)
+        if(entry.texture_maps[ii]->has_image)
         {
-            entry.width  = texmap_controls[ii].droplabel->getPixmap().width();
-            entry.height = texmap_controls[ii].droplabel->getPixmap().height();
+            entry.width  = texmap_controls_[ii]->droplabel->getPixmap().width();
+            entry.height = texmap_controls_[ii]->droplabel->getPixmap().height();
             break;
         }
     }
+
+    // * Per texture map controls
+    AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
+    const QColor& uni_color = static_cast<AlbedoControls*>(albedo_controls_)->color_picker_->get_color();
+    albedo_map->u_albedo = wcore::math::i32vec4(uni_color.red(),
+                                                uni_color.green(),
+                                                uni_color.blue(),
+                                                255);
 }
 
 void MainWindow::update_texture_view()
@@ -360,10 +414,22 @@ void MainWindow::update_texture_view()
 
     for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
-        texmap_controls[ii].droplabel->clear();
-        if(entry.texture_maps[ii]->texture_enabled)
-            texmap_controls[ii].droplabel->setPixmap(entry.texture_maps[ii]->path);
+        texmap_controls_[ii]->droplabel->clear();
+        if(entry.texture_maps[ii]->has_image)
+        {
+            texmap_controls_[ii]->droplabel->setPixmap(entry.texture_maps[ii]->path);
+        }
+        texmap_controls_[ii]->map_enabled->setEnabled(entry.texture_maps[ii]->has_image);
+        texmap_controls_[ii]->map_enabled->setCheckState(entry.texture_maps[ii]->use_image ? Qt::Checked : Qt::Unchecked);
     }
+
+    // * Per texture map controls
+    AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
+    const wcore::math::i32vec4& uni_color = albedo_map->u_albedo;
+    static_cast<AlbedoControls*>(albedo_controls_)->color_picker_->set_color(QColor(uni_color.x(),
+                                                                                    uni_color.y(),
+                                                                                    uni_color.z(),
+                                                                                    255));
 }
 
 void MainWindow::handle_new_texture()
@@ -460,8 +526,8 @@ void MainWindow::handle_texlist_context_menu(const QPoint& pos)
     QPoint globalPos = tex_list_->viewport()->mapToGlobal(pos);
 
     QMenu context_menu;
-    context_menu.addAction("Rename", this, SLOT(handle_rename_current_texture()));
-    context_menu.addAction("Delete", this, SLOT(handle_delete_current_texture()));
+    context_menu.addAction(QIcon(":/res/icons/rename.png"), tr("&Rename"), this, SLOT(handle_rename_current_texture()));
+    context_menu.addAction(QIcon(":/res/icons/delete.png"), tr("&Delete"), this, SLOT(handle_delete_current_texture()));
 
     context_menu.exec(globalPos);
 }
@@ -488,7 +554,11 @@ void MainWindow::handle_serialize_project()
 
     // If project is the unnamed project, use save as instead
     if(!editor_model_->get_current_project().isEmpty())
+    {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
         editor_model_->save_project();
+        QApplication::restoreOverrideCursor();
+    }
     else
         handle_serialize_project_as();
 }
@@ -502,7 +572,9 @@ void MainWindow::handle_serialize_project_as()
         QString project_name = new_project_dialog_->get_project_name();
         if(editor_model_->validate_project_name(project_name))
         {
+            QApplication::setOverrideCursor(Qt::WaitCursor);
             editor_model_->save_project_as(project_name);
+            QApplication::restoreOverrideCursor();
         }
     }
 }
@@ -540,7 +612,9 @@ void MainWindow::handle_open_project()
     if(file_dialog_->exec())
     {
         QString filename = file_dialog_->selectedFiles().first();
+        QApplication::setOverrideCursor(Qt::WaitCursor);
         editor_model_->open_project(filename);
+        QApplication::restoreOverrideCursor();
         // Select first texture by default (shows the user something happened)
         QModelIndex index = tex_list_->model()->index(0,0);
         if(index.isValid())
@@ -566,7 +640,7 @@ void MainWindow::handle_quit()
 
 void MainWindow::update_window_title(const QString& project_name, bool needs_saving)
 {
-    QString title = "WCore Material Editor - ";
+    QString title = tr("WCore Material Editor - ");
     if(project_name.isEmpty())
         title += "[unnamed project]";
     else
@@ -582,8 +656,12 @@ void MainWindow::clear_view()
     // * Clear drop labels
     for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
-        texmap_controls[ii].droplabel->clear();
+        texmap_controls_[ii]->droplabel->clear();
+        texmap_controls_[ii]->map_enabled->setEnabled(false);
+        texmap_controls_[ii]->map_enabled->setCheckState(Qt::Unchecked);
     }
+    // * Clear per texture map controls
+    albedo_controls_->clear();
 }
 
 

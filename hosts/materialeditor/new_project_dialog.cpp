@@ -19,10 +19,10 @@ name_input_(new QLineEdit())
     QFormLayout* form_layout = new QFormLayout();
     QHBoxLayout* btn_layout = new QHBoxLayout();
 
-    QPushButton* ok_btn = new QPushButton("OK");
-    QPushButton* cancel_btn = new QPushButton("Cancel");
+    QPushButton* ok_btn = new QPushButton(tr("OK"));
+    QPushButton* cancel_btn = new QPushButton(tr("Cancel"));
 
-    form_layout->addRow("project name:", name_input_);
+    form_layout->addRow(tr("project name:"), name_input_);
 
     btn_layout->addWidget(ok_btn);
     btn_layout->addWidget(cancel_btn);

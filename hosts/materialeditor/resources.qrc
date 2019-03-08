@@ -5,7 +5,11 @@
     <file>res/icons/delete.png</file>
     <file>res/icons/compile.png</file>
     <file>res/icons/compile_all.png</file>
+    <file>res/icons/new_project.png</file>
+    <file>res/icons/close_project.png</file>
+    <file>res/icons/open_project.png</file>
     <file>res/icons/save.png</file>
+    <file>res/icons/save_as.png</file>
     <file>res/icons/save_all.png</file>
 
     <file>res/stylesheets/arduino_style.css</file>

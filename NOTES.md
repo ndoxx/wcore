@@ -6947,6 +6947,15 @@ bool MainWindow::eventFilter(QObject* object, QEvent* event)
 // TODO
 
 
+
+#[18-03-19]
+
+## Batch convert images
+J'avais besoin d'inverser les couleurs d'un ensemble d'icones noires, j'ai utilisé la ligne suivante pour lancer une opération batch :
+
+    >> for file in *.png; do convert $file -channel RGB -negate w_$file; done
+
+
 texture compiling scheme:
 
 MapIndex   Name

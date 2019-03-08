@@ -163,6 +163,9 @@ void translate_matrix(mat4& matrix, const vec3& translation);
 template<> std::string to_string(const math::vec2& v);
 template<> std::string to_string(const math::vec3& v);
 template<> std::string to_string(const math::vec4& v);
+template<> std::string to_string(const math::i32vec2& v);
+template<> std::string to_string(const math::i32vec3& v);
+template<> std::string to_string(const math::i32vec4& v);
 
 template <typename T>
 bool str_val(const char* value, T& result)

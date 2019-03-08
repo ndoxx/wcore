@@ -33,7 +33,8 @@ struct TextureMap
 #endif
 
     QString path;
-    bool texture_enabled;
+    bool has_image;
+    bool use_image;
 };
 
 struct AlbedoMap: public TextureMap
@@ -45,7 +46,7 @@ struct AlbedoMap: public TextureMap
     virtual void debug_display() override;
 #endif
 
-    wcore::math::vec4 u_albedo;
+    wcore::math::i32vec4 u_albedo;
 };
 
 struct RoughnessMap: public TextureMap

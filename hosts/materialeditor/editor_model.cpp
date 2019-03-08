@@ -41,7 +41,8 @@ static std::map<hash_t, int> texmap_names_to_index =
 };
 
 TextureMap::TextureMap():
-texture_enabled(false)
+has_image(false),
+use_image(false)
 {
 
 }
@@ -53,27 +54,27 @@ void TextureMap::debug_display()
 }
 void AlbedoMap::debug_display()
 {
-    if(texture_enabled) DLOGI("albedo: <p>"    + path.toStdString() + "</p>", "core", Severity::LOW);
+    if(has_image) DLOGI("albedo: <p>"    + path.toStdString() + "</p>", "core", Severity::LOW);
 }
 void RoughnessMap::debug_display()
 {
-    if(texture_enabled) DLOGI("roughness: <p>" + path.toStdString() + "</p>", "core", Severity::LOW);
+    if(has_image) DLOGI("roughness: <p>" + path.toStdString() + "</p>", "core", Severity::LOW);
 }
 void MetallicMap::debug_display()
 {
-    if(texture_enabled) DLOGI("metallic: <p>"  + path.toStdString() + "</p>", "core", Severity::LOW);
+    if(has_image) DLOGI("metallic: <p>"  + path.toStdString() + "</p>", "core", Severity::LOW);
 }
 void AOMap::debug_display()
 {
-    if(texture_enabled) DLOGI("ao: <p>"        + path.toStdString() + "</p>", "core", Severity::LOW);
+    if(has_image) DLOGI("ao: <p>"        + path.toStdString() + "</p>", "core", Severity::LOW);
 }
 void DepthMap::debug_display()
 {
-    if(texture_enabled) DLOGI("depth: <p>"     + path.toStdString() + "</p>", "core", Severity::LOW);
+    if(has_image) DLOGI("depth: <p>"     + path.toStdString() + "</p>", "core", Severity::LOW);
 }
 void NormalMap::debug_display()
 {
-    if(texture_enabled) DLOGI("normal: <p>"    + path.toStdString() + "</p>", "core", Severity::LOW);
+    if(has_image) DLOGI("normal: <p>"    + path.toStdString() + "</p>", "core", Severity::LOW);
 }
 void TextureEntry::debug_display()
 {
@@ -137,13 +138,14 @@ hash_t TextureEntry::parse_node(xml_node<>* mat_node)
             int index = texmap_names_to_index[H_(texmap_name.c_str())];
             if(xml::parse_attribute(texmap_node, "path", texmap_path))
             {
-                texture_maps[index]->texture_enabled = true;
+                texture_maps[index]->has_image = true;
                 texture_maps[index]->path = QString::fromStdString(texmap_path);
             }
-            else if(xml::parse_attribute(texmap_node, "value", texmap_unival))
-            {
+            if(xml::parse_attribute(texmap_node, "value", texmap_unival))
                 texture_maps[index]->parse_uniform_value(texmap_unival);
-            }
+
+            // Per-map properties
+            xml::parse_node(texmap_node, "TextureMapEnabled", texture_maps[index]->use_image);
         }
     }
 
@@ -156,6 +158,11 @@ static void node_add_attribute(xml_document<>& doc, xml_node<>* node, const char
     char* al_attr_val = doc.allocate_string(attr_val);
     xml_attribute<>* attr = doc.allocate_attribute(al_attr_name, al_attr_val);
     node->append_attribute(attr);
+}
+
+static void node_set_value(xml_document<>& doc, xml_node<>* node, const char* value)
+{
+    node->value(doc.allocate_string(value));
 }
 
 void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materials_node)
@@ -172,16 +179,19 @@ void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materia
     {
         xml_node<>* tex_node = doc.allocate_node(node_element, "TextureMap");
         node_add_attribute(doc, tex_node, "name", texmap_names[ii].c_str());
-        if(texture_maps[ii]->texture_enabled)
-        {
+        if(texture_maps[ii]->has_image)
             node_add_attribute(doc, tex_node, "path", texture_maps[ii]->path.toUtf8().constData());
-        }
-        else
-        {
-            std::string value_str(texture_maps[ii]->uniform_value_string());
-            if(value_str.size()!=0)
-                node_add_attribute(doc, tex_node, "value", value_str.c_str());
-        }
+
+        // Save uniform value even if not used
+        std::string value_str(texture_maps[ii]->uniform_value_string());
+        if(value_str.size()!=0)
+            node_add_attribute(doc, tex_node, "value", value_str.c_str());
+
+        // Save per-map properties
+        xml_node<>* useimg_node = doc.allocate_node(node_element, "TextureMapEnabled");
+        node_set_value(doc, useimg_node, texture_maps[ii]->use_image ? "true" : "false");
+        tex_node->append_node(useimg_node);
+
         texmap_node->append_node(tex_node);
     }
 
@@ -359,7 +369,7 @@ void EditorModel::compile(const QString& texname)
         QImage** texmaps = new QImage*[NTEXMAPS];
         for(int ii=0; ii<NTEXMAPS; ++ii)
         {
-            if(entry.texture_maps[ii]->texture_enabled)
+            if(entry.texture_maps[ii]->has_image)
                 texmaps[ii] = new QImage(entry.texture_maps[ii]->path);
             else
                 texmaps[ii] = nullptr;

@@ -22,7 +22,7 @@ QWidget#Window
 QToolBar
 {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0   rgb(255,163,26),
-                stop:0.8 rgb(255,163,26),
+                stop:0   rgb(255,150,26),
+                stop:0.8 rgb(255,150,26),
                 stop:1   rgb(71,107,107))
 }

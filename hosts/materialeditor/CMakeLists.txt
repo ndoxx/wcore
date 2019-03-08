@@ -40,6 +40,7 @@ set(materialeditor_SRCS
     mainwindow.cpp
     new_project_dialog.cpp
     droplabel.cpp
+    color_picker_label.cpp
     main.cpp
 )
 # Tell CMake to create the materialeditor executable
