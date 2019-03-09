@@ -93,7 +93,7 @@ void TexMapControl::handle_sig_texmap_changed(bool init_state)
     setWindowModified(true); // DNW does not propagate to parent
 }
 
-AlbedoControls::AlbedoControls():
+AlbedoControl::AlbedoControl():
 TexMapControl(tr("Albedo"), ALBEDO),
 color_picker_(new ColorPickerLabel)
 {
@@ -109,12 +109,12 @@ color_picker_(new ColorPickerLabel)
     add_stretch();
 }
 
-void AlbedoControls::clear_additional()
+void AlbedoControl::clear_additional()
 {
     color_picker_->reset();
 }
 
-void AlbedoControls::write_entry_additional(TextureEntry& entry)
+void AlbedoControl::write_entry_additional(TextureEntry& entry)
 {
     AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[texmap_index]);
     const QColor& uni_color = color_picker_->get_color();
@@ -124,7 +124,7 @@ void AlbedoControls::write_entry_additional(TextureEntry& entry)
                                                 255);
 }
 
-void AlbedoControls::read_entry_additional(const TextureEntry& entry)
+void AlbedoControl::read_entry_additional(const TextureEntry& entry)
 {
     AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[texmap_index]);
     const wcore::math::i32vec4& uni_color = albedo_map->u_albedo;
@@ -134,7 +134,7 @@ void AlbedoControls::read_entry_additional(const TextureEntry& entry)
                                     255));
 }
 
-RoughnessControls::RoughnessControls():
+RoughnessControl::RoughnessControl():
 TexMapControl(tr("Roughness"), ROUGHNESS),
 roughness_edit_(new QDoubleSpinBox)
 {
@@ -143,10 +143,10 @@ roughness_edit_(new QDoubleSpinBox)
     roughness_edit_->setRange(0.0, 1.0);
     roughness_edit_->setSingleStep(0.1);
 
-    // Reject comma group separator, dot is used instead
-    QLocale lo(QLocale::C);
-    lo.setNumberOptions(QLocale::RejectGroupSeparator);
-    roughness_edit_->setLocale(lo);
+    // Reject comma group separator, use dot as decimal separator
+    QLocale qlocale(QLocale::C);
+    qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
+    roughness_edit_->setLocale(qlocale);
 
     roughness_edit_->setMinimumWidth(50);
     additional_controls->setLayout(addc_layout);
@@ -158,18 +158,18 @@ roughness_edit_(new QDoubleSpinBox)
     add_stretch();
 }
 
-void RoughnessControls::clear_additional()
+void RoughnessControl::clear_additional()
 {
     roughness_edit_->setValue(0);
 }
 
-void RoughnessControls::write_entry_additional(TextureEntry& entry)
+void RoughnessControl::write_entry_additional(TextureEntry& entry)
 {
     RoughnessMap* rough_map = static_cast<RoughnessMap*>(entry.texture_maps[texmap_index]);
     rough_map->u_roughness = (float)roughness_edit_->value();
 }
 
-void RoughnessControls::read_entry_additional(const TextureEntry& entry)
+void RoughnessControl::read_entry_additional(const TextureEntry& entry)
 {
     RoughnessMap* rough_map = static_cast<RoughnessMap*>(entry.texture_maps[texmap_index]);
     roughness_edit_->setValue(rough_map->u_roughness);

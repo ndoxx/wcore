@@ -19,7 +19,6 @@ QLabel(parent)
     setAlignment(Qt::AlignCenter);
     setObjectName("ColorEdit");
     set_color(Qt::white);
-    setMinimumHeight(27);
 }
 
 void ColorPickerLabel::mousePressEvent(QMouseEvent* event)

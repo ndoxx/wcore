@@ -1,6 +1,9 @@
 #[GLOBAL]
 Pour convertir ces notes en pdf :
->> pandoc NOTES.md -s -o notes.pdf
+>> pandoc --latex-engine=xelatex NOTES.md -s -o notes.pdf
+
+XeTeX est utilisé car il gère nativement l'Unicode. On obtient le package comme suit :
+>> sudo apt-get install texlive-xetex
 
 
 #[24-06-18]
@@ -1949,7 +1952,7 @@ J'ai apporté quelques améliorations au rendu par light volumes.
 * Ensuite, j'ai viré le maximum d'appels OpenGL de l'intérieur de la boucle des lumières (tous les états qui ne changent pas dans la boucle elle-même).
 * Puis j'ai modifié la fonction attenuate() dans le shader lpass.frag afin de clamper le résultat entre 0 et 1. Ca rend les artéfacts beaucoup moins perceptibles (ils apparaissent foncés au lieu d'être dans la couleur complémentaire de la surface, donc la couleur qui contraste le plus).
 
-Ces artéfacts ne sont visibles que lors d'un mouvement de la caméra (en rotation comme en translation). *Tout se passe comme si le stencil de la frame précédente était appliqué qur la frame courante*. C'est très visible quand je profile le programme avec valgrind, ce qui a pour conséquence de le faire lagger à mort.
+Ces artéfacts ne sont visibles que lors d'un mouvement de la caméra (en rotation comme en translation). *Tout se passe comme si le stencil de la frame précédente était appliqué sur la frame courante*. C'est très visible quand je profile le programme avec valgrind, ce qui a pour conséquence de le faire lagger à mort.
 
 **FIXED**
 Il suffisait de blit depth dans LightingRenderer::render(), afin de ne pas baser les calculs de stencil sur le depth buffer de la frame précédente...
@@ -2450,7 +2453,7 @@ GBuffer et LBuffer étaient des candidats idéaux à la globalité. Seulement da
             instance_ = new T(std::forward<Args>(args)...);
     }
 ```
-Pour friender une telle conction il faut déclarer ceci dans la sous-classe :
+Pour friender une telle fonction il faut déclarer ceci dans la sous-classe :
 ```cpp
     template <class T, typename ...Args>
     friend void SingletonNDI<T>::Init(Args&&... args);
@@ -6849,8 +6852,8 @@ void MainWindow::handle_texlist_context_menu(const QPoint& pos)
     QPoint globalPos = tex_list_->viewport()->mapToGlobal(pos);
 
     QMenu context_menu;
-    context_menu.addAction("Rename", this, SLOT(handle_rename_current_texture()));
-    context_menu.addAction("Delete", this, SLOT(handle_delete_current_texture()));
+    context_menu.addAction("&Rename", this, SLOT(handle_rename_current_texture()));
+    context_menu.addAction("&Delete", this, SLOT(handle_delete_current_texture()));
 
     context_menu.exec(globalPos);
 }
@@ -6859,7 +6862,8 @@ On récupère la position globale du rclick pour pouvoir faire spawner le menu a
 ```cpp
     any_widget->mapToGlobal(pos);
 ```
-Mais dans le cas d'une QListView qui peut être scrollée, il faut en revanche convertir les coordonnées du viewport. Ensuite on génère un QMenu et on lui ajoute des QActions au moyen de la fonction addAction(). Si l'on doit mapper ces actions vers des slots déjà existants alors c'est très simple, il suffit de préciser ces slots en argument. Ensuite le menu est spawné via exec() ou popup().
+Mais dans le cas d'une QListView qui peut être scrollée, il faut en revanche convertir les coordonnées du viewport. Ensuite on génère un QMenu et on lui ajoute des QActions au moyen de la fonction addAction(). Les & marquent un raccourci Alt+. (comme Alt+S pour save ici). La lettre apparaîtra soulignée dans le mot.
+Si l'on doit mapper ces actions vers des slots déjà existants alors c'est très simple, il suffit de préciser ces slots en argument. Ensuite le menu est spawné via exec() ou popup().
 
 ## Barres d'outils
 Une toolbar fonctionne un peu sur le même principe qu'un menu. Elle est ajoutée à la fenêtre via la fonction addToolBar("toolbar_name") et des actions lui sont ajoutées. Ces actions peuvent prendre une icône en premier argument (on verra après d'où elles viennent), puis un texte et un slot. Des séparateurs peuvent être ajoutés via addSeparator() ou insertSeparator(). Voici un extrait de ma fonction de création de toolbar qui est appelée dans le constructeur de _MainWindow_ :
@@ -6867,14 +6871,14 @@ Une toolbar fonctionne un peu sur le même principe qu'un menu. Elle est ajouté
 void MainWindow::create_toolbars()
 {
     toolbar_ = addToolBar("Texture");
-    toolbar_->addAction(QIcon(":/res/icons/save.png"), "Save",
+    toolbar_->addAction(QIcon(":/res/icons/save.png"), "&Save",
                         this, SLOT(handle_serialize()));
-    toolbar_->addAction(QIcon(":/res/icons/save_all.png"), "Save All",
+    toolbar_->addAction(QIcon(":/res/icons/save_all.png"), "Save &All",
                         this, SLOT(handle_serialize_all()));
 
     toolbar_->addSeparator();
 
-    toolbar_->addAction(QIcon(":/res/icons/rename.png"), "Rename",
+    toolbar_->addAction(QIcon(":/res/icons/rename.png"), "&Rename",
                         this, SLOT(handle_rename_current_texture()));
     // ...
 }
@@ -6948,28 +6952,94 @@ bool MainWindow::eventFilter(QObject* object, QEvent* event)
 
 
 
-#[18-03-19]
+#[08-03-19]
 
 ## Batch convert images
 J'avais besoin d'inverser les couleurs d'un ensemble d'icones noires, j'ai utilisé la ligne suivante pour lancer une opération batch :
 
     >> for file in *.png; do convert $file -channel RGB -negate w_$file; done
 
+#[09-03-19]
 
-texture compiling scheme:
+## Stretch bitch
+J'ai une classe de base _TexMapControl_ qui définit les contrôles de base pour la modification des champs d'une texture map. Je spécialise cette classe par héritage pour chaque type de texmap afin de rajouter des contrôles spécifiques (édition de la valeur uniforme...). Les contrôles additionnels sont rangés dans une QFrame avec un layout QFormLayout, qui range les contrôles en face de labels.
+J'ai donc créé une classe spécialisée pour l'albédo _AlbedoControl_, avec comme seul contrôle additionnel un _ColorPickerLabel_, qui dérive de QLabel, mais réagit au click, ouvre un color picker dialog et change sa couleur de fond quand une nouvelle couleur est sélectionnée. Tout se passe bien.
+Je crée une classe spécialisée pour la roughness _RoughnessControl_, et je rajoute comme contrôle additionnel un QLineEdit (maintenant c'est un QDoubleSpinBox beaucoup plus pratique, mais le principe reste le même), et là, surprise, le comportement de changement de taille du _DropLabel_ correspondant est modifié, celui-ci s'élargit de manière prioritaire par rapport aux autres quand la fenêtre est redimensionnée. 3h de galère pour biter ce qui m'arrive.
 
-MapIndex   Name
-    0      ALBEDO
-    1      ROUGHNESS
-    2      METALLIC
-    3      AO
-    4      DEPTH
-    5      NORMAL
+En fait c'est simple, il faut fixer les stretch factors pour chaque élément du layout contenant les _TexMapControl_. Parce que Qt modifie ces derniers dynamiquement en fonction du contenu. Ajouter un label n'a aucun effet de ce point de vue, c'est pour ça que _AlbedoControl_ fonctionnait, mais un QLineEdit ou autre champ d'entrée va modifier le stretch factor.
 
-BlockIndex Content
-    0      ALBEDO, ROUGHNESS
-    1      NORMAL, METALLIC, AO
-    2      DEPTH
+```cpp
+    for(int ii=0; ii<texmap_controls_.size(); ++ii)
+    {
+        layout_main_panel->addWidget(texmap_controls_[ii],ii/3,ii%3);
+        layout_main_panel->setRowStretch(ii/3, 1); // So that all texmap controls will stretch the same way
+        layout_main_panel->setColumnStretch(ii%3, 1);
+    }
+```
+Noter que j'ai organisé mes contrôles dans un layout QGridLayout, on a donc 2 types de facteurs de stretch à modifier, un pour les lignes et un pour les colonnes. Avec un box layout c'est la fonction setStretch() tout court qu'il faut utiliser.
+
+Tant qu'on en est à parler de trucs qui s'étirent, j'ai aussi découvert que pour éviter d'avoir des contrôles qui flottent au milieu de la frame quand on les veux gentiment packés en haut, il faut rajouter un "stretch" après ceux-ci dans le layout qui les contient via :
+
+```cpp
+layout->addStretch();
+```
+Ceci va rajouter une zone extensible qui sera étendue prioritairement en cas de redimensionnement de la fenêtre.
+
+    Exemple pour un QHBoxLayout :
+    [[A][B]]  -> [[  A  ][  B  ]] sans stretch
+    [[A][B]s] -> [[A][B]ssssssss] avec stretch
+
+
+## Locale
+QCoreApplication et ses dérivés ont un comportement particulier sous les Unix :
+
+    On Unix/Linux Qt is configured to use the system locale settings by default. This can cause a conflict when using POSIX functions, for instance, when converting between data types such as floats and strings, since the notation may differ between locales. To get around this problem, call the POSIX function setlocale(LC_NUMERIC,"C") right after initializing QApplication or QCoreApplication to reset the locale that is used for number formatting to "C"-locale.
+
+Ici en France, le séparateur décimal est une virgule. Donc tous mes std::to_string formattent les nombres avec une virgule au lieu d'un point comme dans la locale classique (anglaise) du C/C++, ce qui entraînait des erreurs de parsing dans _EditorModel_ à l'écriture des données flottantes.
+J'ai rectifié le tir en réinitialisant la locale après la déclaration de QApplication dans le main():
+
+```cpp
+#include <locale>
+
+int main(int argc, char *argv[])
+{
+    // ...
+    QApplication a(argc, argv);
+    std::locale::global(std::locale("C"));
+    // ...
+}
+```
+C'est dingue le nombre de choses que Qt me fait dans le dos...
+
+Par ailleurs, le formattage des champs d'édition dépendent de la locale fixée par Qt, donc un QDoubleSpinBox utilisera des virgules chez-moi. J'imagine qu'on peut rétablir la locale anglaise globalement, mais pour modifier simplement le séparateur décimal pour un controle donné je fais la chose suivante :
+
+```cpp
+    QLocale qlocale(QLocale::C);
+    qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
+    roughness_edit_->setLocale(qlocale);
+```
+Cela rejette également la virgule comme séparateur de groupes à l'anglaise.
+
+
+## Petite étoile
+Je m'étais pété les bollocks à implémenter le comportement d'apparition d'une petite étoile quand les contrôles ont été modifiés et que le projet doit être sauvegardé. Il se trouve que Qt gère ce comportement :
+
+```cpp
+    setWindowModified(true);  // -> Appeler ça quand qqchose a changé
+    setWindowModified(false); // -> ... quand on vient de sauvegarder
+```
+Ceci suppose qu'on a bien mis un placeholder pour l'étoile dans la string du titre, qu'on va maintenant modifier comme suit :
+```cpp
+void MainWindow::update_window_title(const QString& project_name)
+{
+    setWindowTitle(tr("%1 - %2 [*]").arg(tr("WCore Material Editor"))
+                                    .arg(project_name.isEmpty() ? tr("[unnamed project]") : project_name));
+}
+```
+La macro tr() sert à repérer les chaînes localisables. J'ai pris le réflexe de décorer toutes les chaînes visibles par l'user avec tr(), même si je ne vais pas me faire chier la couille à localiser l'éditeur. Les fonctions arg() se chaînent bien, la première formatte le placeholder %1, la deuxième %2 et [\*] est le placeholder pour la petite étoile.
+
+En pratique théorique, setWindowModified() est supposé se propager aux ancêtres quand il est fixé à true, mais pas quand il est à false. En pratique pratique, ça ne se propage quand-même pas chez-moi, et dans tout le code extérieur à _MainWindow_ c'est sans effet. Donc y a encore du boulot de recherche et d'expérimentation pour avoir un comportement satisfaisant.
+
 
     [   Image1   ]  [     Image2     ]  [    Image3      ]
     [[R][G][B][A]]  [[R][G][B]  [A]]  [[R]  [G] [B]   [A]]

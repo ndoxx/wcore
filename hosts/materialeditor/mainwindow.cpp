@@ -109,8 +109,8 @@ file_dialog_(new QFileDialog(this))
 
     // * Setup main panel
     // Texture maps
-    texmap_controls_.push_back(new AlbedoControls());
-    texmap_controls_.push_back(new RoughnessControls());
+    texmap_controls_.push_back(new AlbedoControl());
+    texmap_controls_.push_back(new RoughnessControl());
     texmap_controls_.push_back(new TexMapControl(tr("Metallic"), METALLIC)); // TMP will be specialized
     texmap_controls_.push_back(new TexMapControl(tr("AO"), AO)); // TMP will be specialized
     texmap_controls_.push_back(new TexMapControl(tr("Depth"), DEPTH)); // TMP will be specialized

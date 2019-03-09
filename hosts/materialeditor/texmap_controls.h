@@ -33,10 +33,6 @@ public:
     TexMapControl(const QString& title, int index);
     virtual ~TexMapControl() = default;
 
-    virtual void clear_additional() {}
-    virtual void write_entry_additional(TextureEntry& entry) {}
-    virtual void read_entry_additional(const TextureEntry& entry) {}
-
     void clear();
     void write_entry(TextureEntry& entry);
     void read_entry(const TextureEntry& entry);
@@ -46,48 +42,56 @@ public:
     // TMP
     inline DropLabel* get_droplabel() { return droplabel; }
 
-
 public slots:
     void handle_sig_texmap_changed(bool init_state);
 
 protected:
-    QVBoxLayout* layout    = nullptr;
-    DropLabel* droplabel   = nullptr;
-    QCheckBox* map_enabled = nullptr;
-    QFrame* additional_controls = nullptr;
+    virtual void clear_additional() {}
+    virtual void write_entry_additional(TextureEntry& entry) {}
+    virtual void read_entry_additional(const TextureEntry& entry) {}
+
+protected:
+    QVBoxLayout* layout;
+    DropLabel* droplabel;
+    QCheckBox* map_enabled;
+    QFrame* additional_controls;
     int texmap_index;
 };
 
 class ColorPickerLabel;
 // Specialized controls for albedo map
-class AlbedoControls: public TexMapControl
+class AlbedoControl: public TexMapControl
 {
     Q_OBJECT
 
 public:
-    explicit AlbedoControls();
-    virtual ~AlbedoControls() = default;
+    explicit AlbedoControl();
+    virtual ~AlbedoControl() = default;
 
+protected:
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
+private:
     ColorPickerLabel* color_picker_;
 };
 
 // Specialized controls for roughness map
-class RoughnessControls: public TexMapControl
+class RoughnessControl: public TexMapControl
 {
     Q_OBJECT
 
 public:
-    explicit RoughnessControls();
-    virtual ~RoughnessControls() = default;
+    explicit RoughnessControl();
+    virtual ~RoughnessControl() = default;
 
+protected:
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
+private:
     QDoubleSpinBox* roughness_edit_;
 };
 
