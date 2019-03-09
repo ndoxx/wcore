@@ -12,67 +12,15 @@ class QToolBar;
 class QFileSystemModel;
 class QItemSelection;
 class QFileDialog;
-class QVBoxLayout;
-class QCheckBox;
 
 namespace medit
 {
 
-class DropLabel;
-struct TextureEntry;
-// Groups all the controls for a given texture map
-class TexMapControl: public QGroupBox
-{
-    Q_OBJECT
-
-public:
-    TexMapControl(const QString& title);
-    virtual ~TexMapControl() = default;
-
-    virtual void clear_additional() {}
-    virtual void write_entry_additional(TextureEntry& entry) {}
-    virtual void read_entry_additional(const TextureEntry& entry) {}
-
-    void clear();
-    void write_entry(TextureEntry& entry, int index);
-    void read_entry(const TextureEntry& entry, int index);
-
-    void add_stretch();
-
-    // TMP
-    inline DropLabel* get_droplabel() { return droplabel; }
-
-
-public slots:
-    void handle_sig_texmap_changed(bool init_state);
-
-protected:
-    QVBoxLayout* layout    = nullptr;
-    DropLabel* droplabel   = nullptr;
-    QCheckBox* map_enabled = nullptr;
-    QFrame* additional_controls = nullptr;
-};
-
-class ColorPickerLabel;
-// Specialized controls for albedo map
-class AlbedoControls: public TexMapControl
-{
-    Q_OBJECT
-
-public:
-    explicit AlbedoControls();
-    virtual ~AlbedoControls() = default;
-
-    virtual void clear_additional() override;
-    virtual void write_entry_additional(TextureEntry& entry) override;
-    virtual void read_entry_additional(const TextureEntry& entry) override;
-
-    ColorPickerLabel* color_picker_;
-};
-
 class EditorModel;
 class TexlistDelegate;
 class NewProjectDialog;
+class TexMapControl;
+struct TextureEntry;
 class MainWindow: public QMainWindow
 {
     Q_OBJECT
@@ -105,12 +53,12 @@ public slots:
     void handle_new_project();
     void handle_open_project();
     void handle_close_project();
-    void handle_project_save_state_changed(bool state);
     void handle_quit();
+    void handle_project_needs_saving();
 
 protected:
     void create_toolbars();
-    void update_window_title(const QString& project_name, bool needs_saving);
+    void update_window_title(const QString& project_name);
     void clear_view();
 
 private:

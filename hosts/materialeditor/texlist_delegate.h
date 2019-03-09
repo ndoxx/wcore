@@ -23,6 +23,9 @@ public:
     inline void set_editor_model(EditorModel* model) { editor_model_ = model; }
     inline void set_item_name_validator(NameValidator validator) { item_name_validator_ = validator; }
 
+signals:
+    void sig_data_changed() const;
+
 private:
     NameValidator item_name_validator_;
     EditorModel* editor_model_;

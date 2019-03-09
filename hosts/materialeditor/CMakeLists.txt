@@ -37,6 +37,7 @@ set(materialeditor_SRCS
     editor_model.cpp
     texlist_model.cpp
     texlist_delegate.cpp
+    texmap_controls.cpp
     mainwindow.cpp
     new_project_dialog.cpp
     droplabel.cpp

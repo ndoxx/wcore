@@ -37,6 +37,7 @@ void TexlistDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 
             editor_model_->rename_texture(old_name, new_name);
             model->setData(index, QVariant::fromValue(new_name));
+            emit sig_data_changed();
         }
         else
         {

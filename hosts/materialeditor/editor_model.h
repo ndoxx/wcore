@@ -166,15 +166,9 @@ public:
 
     bool validate_project_name(const QString& name);
 
-    inline bool project_needs_saving() const { return needs_saving_; }
     inline const QString& get_current_project() const { return current_project_; }
 
-signals:
-    // Called when save request state has changed (save needed or save performed)
-    void sig_save_requested_state(bool state);
-
 protected:
-    void project_save_requested(bool state);
     QString project_path_from_name(const QString& name);
     QString project_file_from_name(const QString& name);
 
@@ -187,7 +181,6 @@ private:
     TexListModel* texlist_model_;
     QSortFilterProxyModel* texlist_sort_proxy_model_;
     std::map<wcore::hash_t, TextureEntry> texture_descriptors_;
-    bool needs_saving_;
 };
 
 } // namespace medit

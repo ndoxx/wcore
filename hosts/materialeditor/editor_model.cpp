@@ -261,8 +261,7 @@ std::string NormalMap::uniform_value_string()
 
 EditorModel::EditorModel():
 texlist_model_(new TexListModel),
-texlist_sort_proxy_model_(new QSortFilterProxyModel),
-needs_saving_(false)
+texlist_sort_proxy_model_(new QSortFilterProxyModel)
 {
 
 }
@@ -309,7 +308,6 @@ QModelIndex EditorModel::add_texture(const QString& name)
 
     // Add texture descriptor
     texture_descriptors_.insert(std::pair(H_(name.toUtf8().constData()), TextureEntry()));
-    project_save_requested(true);
 
     // index is a source index and needs to be remapped to proxy sorted index
     return texlist_sort_proxy_model_->mapFromSource(index);
@@ -331,7 +329,6 @@ void EditorModel::delete_current_texture(QListView* tex_list)
             current_texname_ = "";
             texture_descriptors_.erase(it);
             texlist_model_->removeRow(texlist_sort_proxy_model_->mapToSource(tex_list->currentIndex()).row());
-            project_save_requested(true);
         }
     }
 }
@@ -347,7 +344,6 @@ void EditorModel::rename_texture(const QString& old_name, const QString& new_nam
         current_texname_ = new_name;
         texture_descriptors_.insert(std::pair(new_hname, it->second));
         texture_descriptors_.erase(it);
-        project_save_requested(true);
     }
 }
 
@@ -430,12 +426,6 @@ void EditorModel::compile(const QString& texname)
     }
 }
 
-void EditorModel::project_save_requested(bool state)
-{
-    needs_saving_ = state;
-    sig_save_requested_state(state);
-}
-
 void EditorModel::clear()
 {
     current_texname_ = "";
@@ -467,7 +457,6 @@ void EditorModel::new_project(const QString& project_name)
 
         current_project_ = project_name;
         DLOGN("New project: <n>" + project_name.toStdString() + "</n>", "core", Severity::LOW);
-        project_save_requested(true);
     }
 }
 
@@ -502,8 +491,6 @@ void EditorModel::open_project(const QString& infile)
         texlist_model_->append(entry.name);
     }
     texlist_sort_proxy_model_->sort(0);
-
-    project_save_requested(false);
 }
 
 void EditorModel::save_project_as(const QString& project_name)
@@ -547,7 +534,6 @@ void EditorModel::save_project_as(const QString& project_name)
         //std::cout << doc << std::endl;
 
         current_project_ = project_name;
-        project_save_requested(false);
     }
 }
 
@@ -556,7 +542,6 @@ void EditorModel::close_project()
     save_project();
     DLOGN("Closing project: <n>" + current_project_.toStdString() + "</n>", "core", Severity::LOW);
     clear();
-    project_save_requested(false);
 }
 
 bool EditorModel::save_project()
