@@ -1,8 +1,10 @@
+#include <iostream>
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <QCheckBox>
 #include <QFrame>
 #include <QLineEdit>
+#include <QDoubleSpinBox>
 
 #include "texmap_controls.h"
 #include "editor_model.h"
@@ -21,7 +23,7 @@ additional_controls(new QFrame),
 texmap_index(index)
 {
     droplabel->setAcceptDrops(true);
-    droplabel->setMinimumSize(QSize(128,128));
+    droplabel->setMinimumSize(QSize(200,200));
     QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     policy.setHeightForWidth(true);
     droplabel->setSizePolicy(policy);
@@ -39,6 +41,7 @@ texmap_index(index)
 
     // Add separator
     auto sep = new QFrame;
+    sep->setObjectName("Separator");
     sep->setFrameShape(QFrame::HLine);
     sep->setFrameShadow(QFrame::Sunken);
     layout->addWidget(sep);
@@ -133,12 +136,19 @@ void AlbedoControls::read_entry_additional(const TextureEntry& entry)
 
 RoughnessControls::RoughnessControls():
 TexMapControl(tr("Roughness"), ROUGHNESS),
-roughness_edit_(new QLineEdit)
+roughness_edit_(new QDoubleSpinBox)
 {
     QFormLayout* addc_layout = new QFormLayout();
     addc_layout->addRow(tr("Roughness:"), roughness_edit_);
+    roughness_edit_->setRange(0.0, 1.0);
+    roughness_edit_->setSingleStep(0.1);
 
-    //roughness_edit_->setFixedWidth(50);
+    // Reject comma group separator, dot is used instead
+    QLocale lo(QLocale::C);
+    lo.setNumberOptions(QLocale::RejectGroupSeparator);
+    roughness_edit_->setLocale(lo);
+
+    roughness_edit_->setMinimumWidth(50);
     additional_controls->setLayout(addc_layout);
 
     layout->addWidget(additional_controls);
@@ -150,19 +160,19 @@ roughness_edit_(new QLineEdit)
 
 void RoughnessControls::clear_additional()
 {
-    roughness_edit_->setText("");
+    roughness_edit_->setValue(0);
 }
 
 void RoughnessControls::write_entry_additional(TextureEntry& entry)
 {
     RoughnessMap* rough_map = static_cast<RoughnessMap*>(entry.texture_maps[texmap_index]);
-    rough_map->u_roughness = roughness_edit_->text().toFloat();
+    rough_map->u_roughness = (float)roughness_edit_->value();
 }
 
 void RoughnessControls::read_entry_additional(const TextureEntry& entry)
 {
     RoughnessMap* rough_map = static_cast<RoughnessMap*>(entry.texture_maps[texmap_index]);
-    roughness_edit_->setText(QString::number(rough_map->u_roughness));
+    roughness_edit_->setValue(rough_map->u_roughness);
 }
 
 } // namespace medit

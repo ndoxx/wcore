@@ -6,7 +6,7 @@
 class QVBoxLayout;
 class QCheckBox;
 class QFrame;
-class QLineEdit;
+class QDoubleSpinBox;
 
 namespace medit
 {
@@ -88,7 +88,7 @@ public:
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
-    QLineEdit* roughness_edit_;
+    QDoubleSpinBox* roughness_edit_;
 };
 
 } // namespace medit

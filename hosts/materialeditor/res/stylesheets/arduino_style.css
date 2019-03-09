@@ -15,6 +15,10 @@ QFrame#SidePanel
     border: 2px solid rgb(0,128,128);
     background: rgb(102,153,153);
 }
+QFrame#Separator
+{
+    background: rgb(102,153,153);
+}
 QWidget#Window
 {
     background: rgb(71,107,107);

@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
+#include <QGridLayout>
 #include <QPushButton>
 #include <QTreeView>
 #include <QListView>
@@ -91,9 +92,7 @@ file_dialog_(new QFileDialog(this))
     QHBoxLayout* hlayout_main = new QHBoxLayout();
     QVBoxLayout* vlayout_side_panel = new QVBoxLayout(side_panel);
     QHBoxLayout* hlayout_sp_nt = new QHBoxLayout();
-    QVBoxLayout* vlayout_main_panel = new QVBoxLayout();
-    QHBoxLayout* hlayout_tex_maps = new QHBoxLayout();
-    QHBoxLayout* hlayout_preview = new QHBoxLayout();
+    QGridLayout* layout_main_panel = new QGridLayout();
 
     // * Setup side panel
     QPushButton* button_new_tex = new QPushButton(tr("New texture"));
@@ -120,24 +119,23 @@ file_dialog_(new QFileDialog(this))
     for(int ii=0; ii<texmap_controls_.size(); ++ii)
     {
         if(ii>1) texmap_controls_[ii]->add_stretch(); // TMP
-        hlayout_tex_maps->addWidget(texmap_controls_[ii]);
-        hlayout_tex_maps->setStretch(ii, 1);
+        layout_main_panel->addWidget(texmap_controls_[ii],ii/3,ii%3);
+        layout_main_panel->setRowStretch(ii/3, 1); // So that all texmap controls will stretch the same way
+        layout_main_panel->setColumnStretch(ii%3, 1);
     }
 
     // Preview
     QGroupBox* gb_preview_ctl = new QGroupBox(tr("Preview controls"));
     QGroupBox* gb_preview     = new QGroupBox(tr("Preview"));
-    hlayout_preview->addWidget(gb_preview_ctl);
-    hlayout_preview->addWidget(gb_preview);
-
-    // Setup layouts
-    vlayout_main_panel->addLayout(hlayout_tex_maps);
-    vlayout_main_panel->addLayout(hlayout_preview);
+    gb_preview_ctl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    gb_preview->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    layout_main_panel->addWidget(gb_preview_ctl, 0, 3);
+    layout_main_panel->addWidget(gb_preview, 1, 3);
+    layout_main_panel->setColumnStretch(3, 3);
 
     // * Setup main layout
     hlayout_main->addWidget(side_panel);
-    hlayout_main->addLayout(vlayout_main_panel);
-    hlayout_main->setSizeConstraint(QLayout::SetMinimumSize);
+    hlayout_main->addLayout(layout_main_panel);
 
     window_->setLayout(hlayout_main);
 
@@ -387,6 +385,7 @@ void MainWindow::handle_delete_current_texture()
 void MainWindow::handle_clear_current_texture()
 {
     DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+    setWindowModified(true);
 }
 
 void MainWindow::handle_rename_current_texture()
