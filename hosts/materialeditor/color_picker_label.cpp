@@ -11,8 +11,6 @@ QLabel(parent)
 {
     QObject::connect(this, SIGNAL(clicked()),
                      this, SLOT(handle_albedo_color_edit()));
-    setAutoFillBackground(true);
-    setFixedWidth(60);
 
     QFont font = this->font();
     font.setPointSize(10);

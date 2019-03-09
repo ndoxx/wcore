@@ -68,25 +68,75 @@ static bool validate_texture_name(const QString& name)
     return ret;
 }
 
-TexmapControlWidget::TexmapControlWidget(QWidget* parent):
-QFrame(parent)
+TexMapControl::TexMapControl(const QString& title):
+QGroupBox(title)
 {
+    //groupbox = new QGroupBox(title);
+    layout = new QVBoxLayout();
+    droplabel = new DropLabel();
+    map_enabled = new QCheckBox(tr("enable image map"));
 
+    droplabel->setAcceptDrops(true);
+    droplabel->setMinimumSize(QSize(128,128));
+    QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    policy.setHeightForWidth(true);
+    droplabel->setSizePolicy(policy);
+    QObject::connect(droplabel, SIGNAL(sig_texmap_changed(bool)),
+                     this,      SLOT(handle_sig_texmap_changed(bool)));
+
+    // Checkbox to enable/disable texture map
+    map_enabled->setEnabled(false);
+
+    layout->addSpacerItem(new QSpacerItem(20, 10));
+    layout->addWidget(droplabel);
+    layout->addWidget(map_enabled);
+    layout->setAlignment(droplabel, Qt::AlignTop);
+    layout->setAlignment(map_enabled, Qt::AlignTop);
+
+    // Add separator
+    auto sep = new QFrame;
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Sunken);
+    layout->addWidget(sep);
+    layout->setAlignment(sep, Qt::AlignTop);
+
+    this->setLayout(layout);
 }
 
-AlbedoControls::AlbedoControls(QWidget* parent):
-TexmapControlWidget(parent),
-color_picker_(new ColorPickerLabel)
+void TexMapControl::write_entry(TextureEntry& entry, int index)
 {
-    QFormLayout* albedo_ctl_layout = new QFormLayout();
-    albedo_ctl_layout->addRow(tr("Color:"), color_picker_);
+    entry.texture_maps[index]->path = droplabel->get_path();
+    entry.texture_maps[index]->has_image = !entry.texture_maps[index]->path.isEmpty();
+    entry.texture_maps[index]->use_image = map_enabled->checkState() == Qt::Checked;
 
-    setLayout(albedo_ctl_layout);
+    write_entry_additional(entry);
 }
 
-void AlbedoControls::clear()
+void TexMapControl::read_entry(const TextureEntry& entry, int index)
 {
-    color_picker_->reset();
+    droplabel->clear();
+    if(entry.texture_maps[index]->has_image)
+    {
+        droplabel->setPixmap(entry.texture_maps[index]->path);
+    }
+    map_enabled->setEnabled(entry.texture_maps[index]->has_image);
+    map_enabled->setCheckState(entry.texture_maps[index]->use_image ? Qt::Checked : Qt::Unchecked);
+
+    read_entry_additional(entry);
+}
+
+void TexMapControl::clear()
+{
+    droplabel->clear();
+    map_enabled->setEnabled(false);
+    map_enabled->setCheckState(Qt::Unchecked);
+
+    clear_additional();
+}
+
+void TexMapControl::add_stretch()
+{
+    layout->addStretch();
 }
 
 void TexMapControl::handle_sig_texmap_changed(bool init_state)
@@ -94,6 +144,49 @@ void TexMapControl::handle_sig_texmap_changed(bool init_state)
     map_enabled->setEnabled(init_state);
     map_enabled->setCheckState(init_state ? Qt::Checked : Qt::Unchecked);
 }
+
+AlbedoControls::AlbedoControls():
+TexMapControl(tr("Albedo")),
+color_picker_(new ColorPickerLabel)
+{
+    additional_controls = new QFrame();
+    QFormLayout* albedo_ctl_layout = new QFormLayout();
+    albedo_ctl_layout->addRow(tr("Color:"), color_picker_);
+
+    additional_controls->setLayout(albedo_ctl_layout);
+
+    layout->addWidget(additional_controls);
+    layout->setAlignment(additional_controls, Qt::AlignTop);
+
+    // Add stretchable area at the bottom so that all controls are neatly packed to the top
+    add_stretch();
+}
+
+void AlbedoControls::clear_additional()
+{
+    color_picker_->reset();
+}
+
+void AlbedoControls::write_entry_additional(TextureEntry& entry)
+{
+    AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
+    const QColor& uni_color = color_picker_->get_color();
+    albedo_map->u_albedo = wcore::math::i32vec4(uni_color.red(),
+                                                uni_color.green(),
+                                                uni_color.blue(),
+                                                255);
+}
+
+void AlbedoControls::read_entry_additional(const TextureEntry& entry)
+{
+    AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
+    const wcore::math::i32vec4& uni_color = albedo_map->u_albedo;
+    color_picker_->set_color(QColor(uni_color.x(),
+                                    uni_color.y(),
+                                    uni_color.z(),
+                                    255));
+}
+
 
 MainWindow::MainWindow(QWidget* parent):
 QMainWindow(parent),
@@ -104,7 +197,7 @@ dir_hierarchy_(new QTreeView),
 tex_list_(new QListView),
 texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
-albedo_controls_(new AlbedoControls()),
+//albedo_controls_(new AlbedoControls()),
 new_project_dialog_(new NewProjectDialog(this)),
 file_dialog_(new QFileDialog(this))
 {
@@ -150,12 +243,18 @@ file_dialog_(new QFileDialog(this))
 
     // * Setup main panel
     // Texture maps
-    push_texmap_control(tr("Albedo"),    hlayout_tex_maps, albedo_controls_);
-    push_texmap_control(tr("Roughness"), hlayout_tex_maps);
-    push_texmap_control(tr("Metallic"),  hlayout_tex_maps);
-    push_texmap_control(tr("AO"),        hlayout_tex_maps);
-    push_texmap_control(tr("Depth"),     hlayout_tex_maps);
-    push_texmap_control(tr("Normal"),    hlayout_tex_maps);
+    texmap_controls_.push_back(new AlbedoControls());
+    texmap_controls_.push_back(new TexMapControl(tr("Roughness"))); // TMP will be specialized
+    texmap_controls_.push_back(new TexMapControl(tr("Metallic"))); // TMP will be specialized
+    texmap_controls_.push_back(new TexMapControl(tr("AO"))); // TMP will be specialized
+    texmap_controls_.push_back(new TexMapControl(tr("Depth"))); // TMP will be specialized
+    texmap_controls_.push_back(new TexMapControl(tr("Normal"))); // TMP will be specialized
+
+    for(int ii=0; ii<texmap_controls_.size(); ++ii)
+    {
+        if(ii>0) texmap_controls_[ii]->add_stretch(); // TMP
+        hlayout_tex_maps->addWidget(texmap_controls_[ii]);
+    }
 
     // Preview
     QGroupBox* gb_preview_ctl = new QGroupBox(tr("Preview controls"));
@@ -262,53 +361,6 @@ MainWindow::~MainWindow()
     delete dir_fs_model_;
     delete window_;
     delete editor_model_;
-
-    for(int ii=0; ii<texmap_controls_.size(); ++ii)
-        delete texmap_controls_[ii];
-}
-
-void MainWindow::push_texmap_control(const QString& title, QLayout* parent, QWidget* additional_controls)
-{
-    TexMapControl* ctl = new TexMapControl();
-    ctl->groupbox = new QGroupBox(title);
-    ctl->layout = new QVBoxLayout();
-    ctl->droplabel = new DropLabel();
-    ctl->map_enabled = new QCheckBox(tr("enable image map"));
-
-    ctl->droplabel->setAcceptDrops(true);
-    ctl->droplabel->setMinimumSize(QSize(128,128));
-    QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    policy.setHeightForWidth(true);
-    ctl->droplabel->setSizePolicy(policy);
-    QObject::connect(ctl->droplabel, SIGNAL(sig_texmap_changed(bool)),
-                     ctl,            SLOT(handle_sig_texmap_changed(bool)));
-
-    // Checkbox to enable/disable texture map
-    ctl->map_enabled->setEnabled(false);
-
-    ctl->layout->addSpacerItem(new QSpacerItem(20, 10));
-    ctl->layout->addWidget(ctl->droplabel);
-    ctl->layout->addWidget(ctl->map_enabled);
-    ctl->layout->setAlignment(ctl->droplabel, Qt::AlignTop);
-    ctl->layout->setAlignment(ctl->map_enabled, Qt::AlignTop);
-
-    // Add separator
-    auto sep = new QFrame;
-    sep->setFrameShape(QFrame::HLine);
-    sep->setFrameShadow(QFrame::Sunken);
-    ctl->layout->addWidget(sep);
-    ctl->layout->setAlignment(sep, Qt::AlignTop);
-
-    if(additional_controls)
-    {
-        ctl->layout->addWidget(additional_controls);
-        ctl->layout->setAlignment(additional_controls, Qt::AlignTop);
-    }
-
-    ctl->groupbox->setLayout(ctl->layout);
-
-    parent->addWidget(ctl->groupbox);
-    texmap_controls_.push_back(ctl);
 }
 
 void MainWindow::create_toolbars()
@@ -380,31 +432,20 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
 void MainWindow::update_entry(TextureEntry& entry)
 {
-    // Retrieve texture map info from controls
+    // Retrieve texture map info from controls and write to texture entry
     for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-    {
-        entry.texture_maps[ii]->path = texmap_controls_[ii]->droplabel->get_path();
-        entry.texture_maps[ii]->has_image = !entry.texture_maps[ii]->path.isEmpty();
-        entry.texture_maps[ii]->use_image = texmap_controls_[ii]->map_enabled->checkState() == Qt::Checked;
-    }
-    // Set dimensions to first defined texture dimensions
+        texmap_controls_[ii]->write_entry(entry, ii);
+
+    // TMP Set dimensions to first defined texture dimensions
     for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
         if(entry.texture_maps[ii]->has_image)
         {
-            entry.width  = texmap_controls_[ii]->droplabel->getPixmap().width();
-            entry.height = texmap_controls_[ii]->droplabel->getPixmap().height();
+            entry.width  = texmap_controls_[ii]->get_droplabel()->getPixmap().width();
+            entry.height = texmap_controls_[ii]->get_droplabel()->getPixmap().height();
             break;
         }
     }
-
-    // * Per texture map controls
-    AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
-    const QColor& uni_color = static_cast<AlbedoControls*>(albedo_controls_)->color_picker_->get_color();
-    albedo_map->u_albedo = wcore::math::i32vec4(uni_color.red(),
-                                                uni_color.green(),
-                                                uni_color.blue(),
-                                                255);
 }
 
 void MainWindow::update_texture_view()
@@ -413,23 +454,7 @@ void MainWindow::update_texture_view()
     TextureEntry& entry = editor_model_->get_current_texture_entry();
 
     for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-    {
-        texmap_controls_[ii]->droplabel->clear();
-        if(entry.texture_maps[ii]->has_image)
-        {
-            texmap_controls_[ii]->droplabel->setPixmap(entry.texture_maps[ii]->path);
-        }
-        texmap_controls_[ii]->map_enabled->setEnabled(entry.texture_maps[ii]->has_image);
-        texmap_controls_[ii]->map_enabled->setCheckState(entry.texture_maps[ii]->use_image ? Qt::Checked : Qt::Unchecked);
-    }
-
-    // * Per texture map controls
-    AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
-    const wcore::math::i32vec4& uni_color = albedo_map->u_albedo;
-    static_cast<AlbedoControls*>(albedo_controls_)->color_picker_->set_color(QColor(uni_color.x(),
-                                                                                    uni_color.y(),
-                                                                                    uni_color.z(),
-                                                                                    255));
+        texmap_controls_[ii]->read_entry(entry, ii);
 }
 
 void MainWindow::handle_new_texture()
@@ -653,15 +678,9 @@ void MainWindow::update_window_title(const QString& project_name, bool needs_sav
 
 void MainWindow::clear_view()
 {
-    // * Clear drop labels
+    // Clear all texmap controls
     for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-    {
-        texmap_controls_[ii]->droplabel->clear();
-        texmap_controls_[ii]->map_enabled->setEnabled(false);
-        texmap_controls_[ii]->map_enabled->setCheckState(Qt::Unchecked);
-    }
-    // * Clear per texture map controls
-    albedo_controls_->clear();
+        texmap_controls_[ii]->clear();
 }
 
 

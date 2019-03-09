@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QFrame>
+#include <QGroupBox>
 
 class QTreeView;
 class QListView;
@@ -11,60 +12,67 @@ class QToolBar;
 class QFileSystemModel;
 class QItemSelection;
 class QFileDialog;
-class QGroupBox;
 class QVBoxLayout;
 class QCheckBox;
 
 namespace medit
 {
 
-// Defines a control surface below the texmaps droplabels in a TexMapControl
-class TexmapControlWidget: public QFrame
+class DropLabel;
+struct TextureEntry;
+// Groups all the controls for a given texture map
+class TexMapControl: public QGroupBox
 {
     Q_OBJECT
 
 public:
-    explicit TexmapControlWidget(QWidget* parent = nullptr);
-    virtual ~TexmapControlWidget() = default;
+    TexMapControl(const QString& title);
+    virtual ~TexMapControl() = default;
 
-    virtual void clear() {}
+    virtual void clear_additional() {}
+    virtual void write_entry_additional(TextureEntry& entry) {}
+    virtual void read_entry_additional(const TextureEntry& entry) {}
+
+    void clear();
+    void write_entry(TextureEntry& entry, int index);
+    void read_entry(const TextureEntry& entry, int index);
+
+    void add_stretch();
+
+    // TMP
+    inline DropLabel* get_droplabel() { return droplabel; }
+
+
+public slots:
+    void handle_sig_texmap_changed(bool init_state);
+
+protected:
+    QVBoxLayout* layout    = nullptr;
+    DropLabel* droplabel   = nullptr;
+    QCheckBox* map_enabled = nullptr;
+    QFrame* additional_controls = nullptr;
 };
 
 class ColorPickerLabel;
 // Specialized controls for albedo map
-class AlbedoControls: public TexmapControlWidget
+class AlbedoControls: public TexMapControl
 {
     Q_OBJECT
 
 public:
-    explicit AlbedoControls(QWidget* parent = nullptr);
+    explicit AlbedoControls();
     virtual ~AlbedoControls() = default;
 
-    virtual void clear() override;
+    virtual void clear_additional() override;
+    virtual void write_entry_additional(TextureEntry& entry) override;
+    virtual void read_entry_additional(const TextureEntry& entry) override;
 
     ColorPickerLabel* color_picker_;
-};
-
-class DropLabel;
-// Groups all the controls for a given texture map
-class TexMapControl: public QObject
-{
-    Q_OBJECT
-
-public:
-    QGroupBox* groupbox    = nullptr;
-    QVBoxLayout* layout    = nullptr;
-    DropLabel* droplabel   = nullptr;
-    QCheckBox* map_enabled = nullptr;
-
-public slots:
-    void handle_sig_texmap_changed(bool init_state);
 };
 
 class EditorModel;
 class TexlistDelegate;
 class NewProjectDialog;
-struct TextureEntry;
 class MainWindow: public QMainWindow
 {
     Q_OBJECT
@@ -77,8 +85,6 @@ public:
     void update_texture_view();
     // Retrieve data from controls and update a given entry with this information
     void update_entry(TextureEntry& entry);
-    // Add a new control panel for a texmap
-    void push_texmap_control(const QString& title, QLayout* parent, QWidget* additional_controls=nullptr);
 
     virtual bool eventFilter(QObject* object, QEvent* event) override;
     virtual void keyPressEvent(QKeyEvent* event) override;
@@ -118,7 +124,6 @@ private:
     TexlistDelegate* tex_list_delegate_;
 
     std::vector<TexMapControl*> texmap_controls_;
-    TexmapControlWidget* albedo_controls_;
 
     // Dialogs
     NewProjectDialog* new_project_dialog_;
