@@ -102,10 +102,20 @@ struct DepthMap: public TextureMap
 struct NormalMap: public TextureMap
 {
     virtual ~NormalMap() = default;
+    virtual void parse(rapidxml::xml_node<>* node) override;
+    virtual void write(rapidxml::xml_document<>& doc, rapidxml::xml_node<>* node) override;
 
 #ifdef __DEBUG__
     virtual void debug_display() override;
 #endif
+
+    int gen_filter;
+    bool gen_invert_r;
+    bool gen_invert_g;
+    bool gen_invert_h;
+    float gen_level;
+    float gen_strength;
+    float gen_blursharp;
 };
 
 struct TextureEntry

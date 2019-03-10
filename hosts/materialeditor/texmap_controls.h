@@ -8,6 +8,7 @@ class QCheckBox;
 class QFrame;
 class QDoubleSpinBox;
 class QPushButton;
+class QComboBox;
 
 namespace medit
 {
@@ -175,11 +176,13 @@ protected:
 
 private:
     QPushButton* gen_from_depth_btn_;
+    QComboBox* filter_combo_;
     QCheckBox* invert_r_cb_;
     QCheckBox* invert_g_cb_;
     QCheckBox* invert_h_cb_;
     QDoubleSpinBox* level_edit_;
     QDoubleSpinBox* strength_edit_;
+    QDoubleSpinBox* blursharp_edit_;
 };
 
 } // namespace medit

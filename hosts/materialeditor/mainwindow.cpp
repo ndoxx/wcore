@@ -584,8 +584,9 @@ void MainWindow::handle_gen_normal_map()
             generator::NormalGenOptions options;
             NormalControl* normal_control = static_cast<NormalControl*>(texmap_controls_[NORMAL]);
             normal_control->get_options(options);
-            options.filter = generator::FilterType::SOBEL;
             generator::normal_from_depth(depthmap, normalmap, options);
+            // Blur/Sharpen
+            //generator::blur_sharp(normalmap, options.sigma);
 
             // Get directory of depth map
             QDir dir(QFileInfo(depth_path).absoluteDir());

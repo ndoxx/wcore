@@ -7,6 +7,7 @@
 #include <QDoubleSpinBox>
 #include <QPushButton>
 #include <QGridLayout>
+#include <QComboBox>
 
 #include "texmap_controls.h"
 #include "editor_model.h"
@@ -309,11 +310,13 @@ void DepthControl::read_entry_additional(const TextureEntry& entry)
 NormalControl::NormalControl():
 TexMapControl(tr("Normal"), NORMAL),
 gen_from_depth_btn_(new QPushButton(tr("From depthmap"))),
+filter_combo_(new QComboBox()),
 invert_r_cb_(new QCheckBox()),
 invert_g_cb_(new QCheckBox()),
 invert_h_cb_(new QCheckBox()),
 level_edit_(new QDoubleSpinBox),
-strength_edit_(new QDoubleSpinBox)
+strength_edit_(new QDoubleSpinBox),
+blursharp_edit_(new QDoubleSpinBox)
 {
     QFormLayout* addc_layout = new QFormLayout();
 
@@ -330,9 +333,13 @@ strength_edit_(new QDoubleSpinBox)
     cboxes->setMinimumWidth(50);
     cboxes->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
 
+    filter_combo_->addItems(QStringList()<<"Sobel"<<"Scharr");
+
     addc_layout->addRow(tr("Invert:"), cboxes);
+    addc_layout->addRow(tr("Kernel:"), filter_combo_);
     addc_layout->addRow(tr("Level:"), level_edit_);
     addc_layout->addRow(tr("Strength:"), strength_edit_);
+    addc_layout->addRow(tr("Blur/Sharp:"), blursharp_edit_);
     addc_layout->addRow(gen_from_depth_btn_);
 
     level_edit_->setRange(4.0, 10.0);
@@ -345,10 +352,16 @@ strength_edit_(new QDoubleSpinBox)
     strength_edit_->setValue(0.61);
     strength_edit_->setMinimumWidth(50);
 
+    blursharp_edit_->setRange(-32.0, 32.0);
+    blursharp_edit_->setSingleStep(1.0);
+    blursharp_edit_->setValue(0.0);
+    blursharp_edit_->setMinimumWidth(50);
+
     QLocale qlocale(QLocale::C);
     qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
     level_edit_->setLocale(qlocale);
     strength_edit_->setLocale(qlocale);
+    blursharp_edit_->setLocale(qlocale);
 
     additional_controls->setLayout(addc_layout);
 
@@ -361,21 +374,37 @@ strength_edit_(new QDoubleSpinBox)
 
 void NormalControl::clear_additional()
 {
+    filter_combo_->setCurrentIndex(0);
     invert_r_cb_->setCheckState(Qt::Unchecked);
     invert_g_cb_->setCheckState(Qt::Unchecked);
     invert_h_cb_->setCheckState(Qt::Unchecked);
     level_edit_->setValue(7.0);
     strength_edit_->setValue(0.61);
+    blursharp_edit_->setValue(0.0);
 }
 
 void NormalControl::write_entry_additional(TextureEntry& entry)
 {
-
+    NormalMap* normal_map = static_cast<NormalMap*>(entry.texture_maps[texmap_index]);
+    normal_map->gen_filter    = filter_combo_->currentIndex();
+    normal_map->gen_invert_r  = invert_r_cb_->checkState() == Qt::Checked;
+    normal_map->gen_invert_g  = invert_g_cb_->checkState() == Qt::Checked;
+    normal_map->gen_invert_h  = invert_h_cb_->checkState() == Qt::Checked;
+    normal_map->gen_level     = (float)level_edit_->value();
+    normal_map->gen_strength  = (float)strength_edit_->value();
+    normal_map->gen_blursharp = (float)blursharp_edit_->value();
 }
 
 void NormalControl::read_entry_additional(const TextureEntry& entry)
 {
-
+    NormalMap* normal_map = static_cast<NormalMap*>(entry.texture_maps[texmap_index]);
+    filter_combo_->setCurrentIndex(normal_map->gen_filter);
+    invert_r_cb_->setCheckState(normal_map->gen_invert_r ? Qt::Checked : Qt::Unchecked);
+    invert_g_cb_->setCheckState(normal_map->gen_invert_g ? Qt::Checked : Qt::Unchecked);
+    invert_h_cb_->setCheckState(normal_map->gen_invert_h ? Qt::Checked : Qt::Unchecked);
+    level_edit_->setValue(normal_map->gen_level);
+    strength_edit_->setValue(normal_map->gen_strength);
+    blursharp_edit_->setValue(normal_map->gen_blursharp);
 }
 
 void NormalControl::connect_controls(MainWindow* main_window)
@@ -386,11 +415,13 @@ void NormalControl::connect_controls(MainWindow* main_window)
 
 void NormalControl::get_options(generator::NormalGenOptions& options)
 {
+    options.filter   = generator::FilterType(filter_combo_->currentIndex());
     options.invert_r = (invert_r_cb_->checkState() == Qt::Checked) ? -1.f : 1.f;
     options.invert_g = (invert_g_cb_->checkState() == Qt::Checked) ? -1.f : 1.f;
     options.invert_h = (invert_h_cb_->checkState() == Qt::Checked) ? -1.f : 1.f;
     options.level    = (float)level_edit_->value();
     options.strength = (float)strength_edit_->value();
+    options.sigma    = (float)blursharp_edit_->value();
 }
 
 

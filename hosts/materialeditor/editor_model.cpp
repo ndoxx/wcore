@@ -39,6 +39,18 @@ static std::map<hash_t, int> texmap_names_to_index =
     {"Normal"_h, 5}
 };
 
+static std::map<int, std::string> filter_names =
+{
+    {0, "sobel"},
+    {1, "scharr"}
+};
+
+static std::map<hash_t, int> filtername_to_index =
+{
+    {"sobel"_h, 0},
+    {"scharr"_h, 1}
+};
+
 TextureMap::TextureMap():
 has_image(false),
 use_image(false)
@@ -221,6 +233,24 @@ void DepthMap::parse(rapidxml::xml_node<>* node)
     xml::parse_node(node, "ParallaxHeightScale", u_parallax_scale);
 }
 
+void NormalMap::parse(rapidxml::xml_node<>* node)
+{
+    xml_node<>* gen_node = node->first_node("Generator");
+    if(gen_node)
+    {
+        std::string filter_str;
+        if(xml::parse_node(gen_node, "Filter", filter_str))
+            gen_filter = filtername_to_index[wcore::H_(filter_str.c_str())];
+
+        xml::parse_node(gen_node, "InvertR", gen_invert_r);
+        xml::parse_node(gen_node, "InvertG", gen_invert_g);
+        xml::parse_node(gen_node, "InvertH", gen_invert_h);
+        xml::parse_node(gen_node, "Level", gen_level);
+        xml::parse_node(gen_node, "Strength", gen_strength);
+        xml::parse_node(gen_node, "BlurSharp", gen_blursharp);
+    }
+}
+
 
 void AlbedoMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 {
@@ -261,6 +291,36 @@ void DepthMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
     node->append_node(plxscale_node);
 }
 
+void NormalMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
+{
+    xml_node<>* gen_node = doc.allocate_node(node_element, "Generator");
+
+    xml_node<>* filter_node = doc.allocate_node(node_element, "Filter");
+    xml_node<>* invr_node = doc.allocate_node(node_element, "InvertR");
+    xml_node<>* invg_node = doc.allocate_node(node_element, "InvertG");
+    xml_node<>* invh_node = doc.allocate_node(node_element, "InvertH");
+    xml_node<>* level_node = doc.allocate_node(node_element, "Level");
+    xml_node<>* strength_node = doc.allocate_node(node_element, "Strength");
+    xml_node<>* blursharp_node = doc.allocate_node(node_element, "BlurSharp");
+
+    node_set_value(doc, filter_node, filter_names[gen_filter].c_str());
+    node_set_value(doc, invr_node, gen_invert_r ? "true" : "false");
+    node_set_value(doc, invg_node, gen_invert_g ? "true" : "false");
+    node_set_value(doc, invh_node, gen_invert_h ? "true" : "false");
+    node_set_value(doc, level_node, std::to_string(gen_level).c_str());
+    node_set_value(doc, strength_node, std::to_string(gen_strength).c_str());
+    node_set_value(doc, blursharp_node, std::to_string(gen_blursharp).c_str());
+
+    gen_node->append_node(filter_node);
+    gen_node->append_node(invr_node);
+    gen_node->append_node(invg_node);
+    gen_node->append_node(invh_node);
+    gen_node->append_node(level_node);
+    gen_node->append_node(strength_node);
+    gen_node->append_node(blursharp_node);
+
+    node->append_node(gen_node);
+}
 
 EditorModel::EditorModel():
 texlist_model_(new TexListModel),

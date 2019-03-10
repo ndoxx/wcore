@@ -1,4 +1,4 @@
-// Normal map generation algorithm addapted from the work of Christian Petry by ndx
+// Normal map generation algorithm inspired from the work of Christian Petry
 // Licence:
 /*
  * Author: Christian Petry
@@ -28,6 +28,7 @@
 
 #include "texmap_generator.h"
 #include "math3d.h"
+#include "algorithms.h"
 
 using namespace wcore::math;
 
@@ -36,7 +37,7 @@ namespace medit
 namespace generator
 {
 
-static float sample_nearest(const QImage& img, const vec2& uv)
+static float sample_red_nearest(const QImage& img, const vec2& uv)
 {
     int x = std::round(uv.x()*img.width());
     int y = std::round(uv.y()*img.height());
@@ -44,9 +45,26 @@ static float sample_nearest(const QImage& img, const vec2& uv)
     return qRed(img.pixel(x,y)) / 255.f;
 }
 
+static vec3 sample_nearest(const QImage& img, const vec2& uv)
+{
+    int x = std::round(uv.x()*img.width());
+    int y = std::round(uv.y()*img.height());
+
+    return vec3(qRed(img.pixel(x,y))   / 255.f,
+                qGreen(img.pixel(x,y)) / 255.f,
+                qBlue(img.pixel(x,y))  / 255.f);
+}
+
 static float dz_from_level_strength(float level, float strength)
 {
-    return 1.f/strength * (1.f + pow(2.f, level));
+    return clamp<float>(1.f/strength * (1.f + pow(2.f, level)) * (1.f/255.f), 0.f, 1.f);
+}
+
+static float wrap_uv(float uv)
+{
+    uv = (uv >= 0.f) ? uv : 1.f + uv;
+    uv = (uv <  1.f) ? uv : uv  - 1.f;
+    return uv;
 }
 
 void normal_from_depth(const QImage& depth_map, QImage& normal_map, const NormalGenOptions& options)
@@ -54,7 +72,7 @@ void normal_from_depth(const QImage& depth_map, QImage& normal_map, const Normal
     int w = normal_map.width();
     int h = normal_map.height();
 
-    vec2 step(-1.f/w, -1.f/h);
+    vec2 step(1.f/w, 1.f/h);
     float dz = dz_from_level_strength(options.level, options.strength);
 
     for(int xx=0; xx<w; ++xx)
@@ -63,55 +81,44 @@ void normal_from_depth(const QImage& depth_map, QImage& normal_map, const Normal
         {
             vec2 vUv(xx/float(w), yy/float(h));
 
-            vec2 tlv = vec2(vUv.x() - step.x(), vUv.y() + step.y() );
-            vec2 lv  = vec2(vUv.x() - step.x(), vUv.y()          );
-            vec2 blv = vec2(vUv.x() - step.x(), vUv.y() - step.y());
-            vec2 tv  = vec2(vUv.x()           , vUv.y() + step.y() );
-            vec2 bv  = vec2(vUv.x()           , vUv.y() - step.y());
-            vec2 trv = vec2(vUv.x() + step.x(), vUv.y() + step.y() );
-            vec2 rv  = vec2(vUv.x() + step.x(), vUv.y()          );
-            vec2 brv = vec2(vUv.x() + step.x(), vUv.y() - step.y());
+            vec2 tlv = vec2(wrap_uv(vUv.x() + step.x()), wrap_uv(vUv.y() - step.y()));
+            vec2 lv  = vec2(wrap_uv(vUv.x() + step.x()), wrap_uv(vUv.y()           ));
+            vec2 blv = vec2(wrap_uv(vUv.x() + step.x()), wrap_uv(vUv.y() + step.y()));
+            vec2 tv  = vec2(wrap_uv(vUv.x()           ), wrap_uv(vUv.y() - step.y()));
+            vec2 bv  = vec2(wrap_uv(vUv.x()           ), wrap_uv(vUv.y() + step.y()));
+            vec2 trv = vec2(wrap_uv(vUv.x() - step.x()), wrap_uv(vUv.y() - step.y()));
+            vec2 rv  = vec2(wrap_uv(vUv.x() - step.x()), wrap_uv(vUv.y()           ));
+            vec2 brv = vec2(wrap_uv(vUv.x() - step.x()), wrap_uv(vUv.y() + step.y()));
 
-            tlv = vec2(tlv.x() >= 0.f ? tlv.x() : (1.f + tlv.x()),   tlv.y() >= 0.f ? tlv.y() : (1.f  + tlv.y()));
-            tlv = vec2(tlv.x() < 1.f  ? tlv.x() : (tlv.x() - 1.f ),  tlv.y() < 1.f  ? tlv.y() : (tlv.y() - 1.f ));
-            lv  = vec2( lv.x() >= 0.f ?  lv.x() : (1.f + lv.x()),    lv.y()  >= 0.f ?  lv.y() : (1.f  +  lv.y()));
-            lv  = vec2( lv.x() < 1.f  ?  lv.x() : ( lv.x() - 1.f ),  lv.y()  < 1.f  ?  lv.y() : ( lv.y() - 1.f ));
-            blv = vec2(blv.x() >= 0.f ? blv.x() : (1.f + blv.x()),   blv.y() >= 0.f ? blv.y() : (1.f  + blv.y()));
-            blv = vec2(blv.x() < 1.f  ? blv.x() : (blv.x() - 1.f ),  blv.y() < 1.f  ? blv.y() : (blv.y() - 1.f ));
-            tv  = vec2( tv.x() >= 0.f ?  tv.x() : (1.f + tv.x()),    tv.y()  >= 0.f ?  tv.y() : (1.f  +  tv.y()));
-            tv  = vec2( tv.x() < 1.f  ?  tv.x() : ( tv.x() - 1.f ),  tv.y()  < 1.f  ?  tv.y() : ( tv.y() - 1.f ));
-            bv  = vec2( bv.x() >= 0.f ?  bv.x() : (1.f + bv.x()),    bv.y()  >= 0.f ?  bv.y() : (1.f  +  bv.y()));
-            bv  = vec2( bv.x() < 1.f  ?  bv.x() : ( bv.x() - 1.f ),  bv.y()  < 1.f  ?  bv.y() : ( bv.y() - 1.f ));
-            trv = vec2(trv.x() >= 0.f ? trv.x() : (1.f + trv.x()),   trv.y() >= 0.f ? trv.y() : (1.f  + trv.y()));
-            trv = vec2(trv.x() < 1.f  ? trv.x() : (trv.x() - 1.f ),  trv.y() < 1.f  ? trv.y() : (trv.y() - 1.f ));
-            rv  = vec2( rv.x() >= 0.f ?  rv.x() : (1.f + rv.x()),    rv.y()  >= 0.f ?  rv.y() : (1.f  +  rv.y()));
-            rv  = vec2( rv.x() < 1.f  ?  rv.x() : ( rv.x() - 1.f ),  rv.y()  < 1.f  ?  rv.y() : ( rv.y() - 1.f ));
-            brv = vec2(brv.x() >= 0.f ? brv.x() : (1.f + brv.x()),   brv.y() >= 0.f ? brv.y() : (1.f  + brv.y()));
-            brv = vec2(brv.x() < 1.f  ? brv.x() : (brv.x() - 1.f ),  brv.y() < 1.f  ? brv.y() : (brv.y() - 1.f ));
-
-            float tl = std::fabs(sample_nearest(depth_map, tlv));
-            float l  = std::fabs(sample_nearest(depth_map, lv ));
-            float bl = std::fabs(sample_nearest(depth_map, blv));
-            float t  = std::fabs(sample_nearest(depth_map, tv ));
-            float b  = std::fabs(sample_nearest(depth_map, bv ));
-            float tr = std::fabs(sample_nearest(depth_map, trv));
-            float r  = std::fabs(sample_nearest(depth_map, rv ));
-            float br = std::fabs(sample_nearest(depth_map, brv));
+            float tl = std::fabs(sample_red_nearest(depth_map, tlv));
+            float l  = std::fabs(sample_red_nearest(depth_map, lv ));
+            float bl = std::fabs(sample_red_nearest(depth_map, blv));
+            float t  = std::fabs(sample_red_nearest(depth_map, tv ));
+            float b  = std::fabs(sample_red_nearest(depth_map, bv ));
+            float tr = std::fabs(sample_red_nearest(depth_map, trv));
+            float r  = std::fabs(sample_red_nearest(depth_map, rv ));
+            float br = std::fabs(sample_red_nearest(depth_map, brv));
 
             float dx = 0.f, dy = 0.f;
             if(options.filter == FilterType::SOBEL)
             {
-                dx = tl + l*2.f + bl - tr - r*2.f - br;
-                dy = tl + t*2.f + tr - bl - b*2.f - br;
+                // normalized Sobel-Feldman kernel
+                dx = (tl + l*2.f + bl - tr - r*2.f - br) / 4.f;
+                dy = (tl + t*2.f + tr - bl - b*2.f - br) / 4.f;
             }
-            else // Scharr
+            else if(options.filter == FilterType::SCHARR)
             {
-                dx = tl*3.f + l*10.f + bl*3.f - tr*3.f - r*10.f - br*3.f;
-                dy = tl*3.f + t*10.f + tr*3.f - bl*3.f - b*10.f - br*3.f;
+                // normalized Scharr kernel
+                //dx = (tl*3.f + l*10.f + bl*3.f - tr*3.f - r*10.f - br*3.f) / 16.f;
+                //dy = (tl*3.f + t*10.f + tr*3.f - bl*3.f - b*10.f - br*3.f) / 16.f;
+
+                // normalized optimal Scharr kernel
+                dx = (tl*47.f + l*162.f + bl*47.f - tr*47.f - r*162.f - br*47.f) / 256.f;
+                dy = (tl*47.f + t*162.f + tr*47.f - bl*47.f - b*162.f - br*47.f) / 256.f;
             }
 
-            vec3 normal(dx * options.invert_r * options.invert_h * 255.f,
-                        dy * options.invert_g * options.invert_h * 255.f,
+            vec3 normal(dx * options.invert_r * options.invert_h,
+                        dy * options.invert_g * options.invert_h,
                         dz);
             normal.normalize();
 
@@ -121,6 +128,98 @@ void normal_from_depth(const QImage& depth_map, QImage& normal_map, const Normal
                                   int(std::floor(n.y()*255)),
                                   int(std::floor(n.z()*255)));
             normal_map.setPixel(xx, yy, out_color);
+        }
+    }
+}
+
+void blur_sharp(QImage& img, float sigma)
+{
+    if(sigma == 0.f) return;
+
+    int w = img.width();
+    int h = img.height();
+    float sigma_x = sigma / (w/5.f);
+    float sigma_y = sigma / (h/5.f);
+
+    QImage img_tmp(w, h, QImage::Format_RGBA8888);
+
+    // Horizontal pass: img -> img_tmp
+    for(int xx=0; xx<w; ++xx)
+    {
+        for(int yy=0; yy<h; ++yy)
+        {
+            vec2 vUv(xx/float(w), yy/float(h));
+
+            float lef4 = wrap_uv(vUv.x() - 4.0 * sigma_x);
+            float lef3 = wrap_uv(vUv.x() - 3.0 * sigma_x);
+            float lef2 = wrap_uv(vUv.x() - 2.0 * sigma_x);
+            float lef1 = wrap_uv(vUv.x() - 1.0 * sigma_x);
+            float rig1 = wrap_uv(vUv.x() + 1.0 * sigma_x);
+            float rig2 = wrap_uv(vUv.x() + 2.0 * sigma_x);
+            float rig3 = wrap_uv(vUv.x() + 3.0 * sigma_x);
+            float rig4 = wrap_uv(vUv.x() + 4.0 * sigma_x);
+
+            vec3 sum(0);
+            sum += sample_nearest(img, vec2(lef4, vUv.y())) * 0.051;
+            sum += sample_nearest(img, vec2(lef3, vUv.y())) * 0.0918;
+            sum += sample_nearest(img, vec2(lef2, vUv.y())) * 0.12245;
+            sum += sample_nearest(img, vec2(lef1, vUv.y())) * 0.1531;
+            sum += sample_nearest(img, vUv                ) * 0.1633;
+            sum += sample_nearest(img, vec2(rig1, vUv.y())) * 0.1531;
+            sum += sample_nearest(img, vec2(rig2, vUv.y())) * 0.12245;
+            sum += sample_nearest(img, vec2(rig3, vUv.y())) * 0.0918;
+            sum += sample_nearest(img, vec2(rig4, vUv.y())) * 0.051;
+
+            if(sigma_x > 0.0)
+            {
+               vec3 src(sample_nearest(img, vUv));
+               sum = src + src - sum;
+            }
+
+            QRgb out_color = qRgb(int(std::floor(sum.x()*255)),
+                                  int(std::floor(sum.y()*255)),
+                                  int(std::floor(sum.z()*255)));
+            img_tmp.setPixel(xx, yy, out_color);
+        }
+    }
+
+    // Vertical pass: img_tmp -> img
+    for(int xx=0; xx<w; ++xx)
+    {
+        for(int yy=0; yy<h; ++yy)
+        {
+            vec2 vUv(xx/float(w), yy/float(h));
+
+            float top4 = wrap_uv(vUv.y() - 4.0 * sigma_y);
+            float top3 = wrap_uv(vUv.y() - 3.0 * sigma_y);
+            float top2 = wrap_uv(vUv.y() - 2.0 * sigma_y);
+            float top1 = wrap_uv(vUv.y() - 1.0 * sigma_y);
+            float bot1 = wrap_uv(vUv.y() + 1.0 * sigma_y);
+            float bot2 = wrap_uv(vUv.y() + 2.0 * sigma_y);
+            float bot3 = wrap_uv(vUv.y() + 3.0 * sigma_y);
+            float bot4 = wrap_uv(vUv.y() + 4.0 * sigma_y);
+
+            vec3 sum(0);
+            sum += sample_nearest(img_tmp, vec2(vUv.x(), top4)) * 0.051;
+            sum += sample_nearest(img_tmp, vec2(vUv.x(), top3)) * 0.0918;
+            sum += sample_nearest(img_tmp, vec2(vUv.x(), top2)) * 0.12245;
+            sum += sample_nearest(img_tmp, vec2(vUv.x(), top1)) * 0.1531;
+            sum += sample_nearest(img_tmp, vUv                ) * 0.1633;
+            sum += sample_nearest(img_tmp, vec2(vUv.x(), bot1)) * 0.1531;
+            sum += sample_nearest(img_tmp, vec2(vUv.x(), bot2)) * 0.12245;
+            sum += sample_nearest(img_tmp, vec2(vUv.x(), bot3)) * 0.0918;
+            sum += sample_nearest(img_tmp, vec2(vUv.x(), bot4)) * 0.051;
+
+            if(sigma_y > 0.0)
+            {
+               vec3 src(sample_nearest(img_tmp, vUv));
+               sum = src + src - sum;
+            }
+
+            QRgb out_color = qRgb(int(std::floor(sum.x()*255)),
+                                  int(std::floor(sum.y()*255)),
+                                  int(std::floor(sum.z()*255)));
+            img.setPixel(xx, yy, out_color);
         }
     }
 }
