@@ -7,6 +7,7 @@ class QVBoxLayout;
 class QCheckBox;
 class QFrame;
 class QDoubleSpinBox;
+class QPushButton;
 
 namespace medit
 {
@@ -93,6 +94,78 @@ protected:
 
 private:
     QDoubleSpinBox* roughness_edit_;
+};
+
+// Specialized controls for metallic map
+class MetallicControl: public TexMapControl
+{
+    Q_OBJECT
+
+public:
+    explicit MetallicControl();
+    virtual ~MetallicControl() = default;
+
+protected:
+    virtual void clear_additional() override;
+    virtual void write_entry_additional(TextureEntry& entry) override;
+    virtual void read_entry_additional(const TextureEntry& entry) override;
+
+private:
+    QDoubleSpinBox* metallic_edit_;
+};
+
+// Specialized controls for AO map
+class AOControl: public TexMapControl
+{
+    Q_OBJECT
+
+public:
+    explicit AOControl();
+    virtual ~AOControl() = default;
+
+protected:
+    virtual void clear_additional() override;
+    virtual void write_entry_additional(TextureEntry& entry) override;
+    virtual void read_entry_additional(const TextureEntry& entry) override;
+
+private:
+    QDoubleSpinBox* ao_edit_;
+};
+
+// Specialized controls for depth map
+class DepthControl: public TexMapControl
+{
+    Q_OBJECT
+
+public:
+    explicit DepthControl();
+    virtual ~DepthControl() = default;
+
+protected:
+    virtual void clear_additional() override;
+    virtual void write_entry_additional(TextureEntry& entry) override;
+    virtual void read_entry_additional(const TextureEntry& entry) override;
+
+private:
+    QDoubleSpinBox* parallax_scale_edit_;
+};
+
+// Specialized controls for normal map
+class NormalControl: public TexMapControl
+{
+    Q_OBJECT
+
+public:
+    explicit NormalControl();
+    virtual ~NormalControl() = default;
+
+protected:
+    virtual void clear_additional() override;
+    virtual void write_entry_additional(TextureEntry& entry) override;
+    virtual void read_entry_additional(const TextureEntry& entry) override;
+
+private:
+    QPushButton* gen_from_depth_btn_;
 };
 
 } // namespace medit

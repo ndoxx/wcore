@@ -12,6 +12,9 @@ class QToolBar;
 class QFileSystemModel;
 class QItemSelection;
 class QFileDialog;
+class QProgressBar;
+class QStatusBar;
+class QLabel;
 
 namespace medit
 {
@@ -57,6 +60,7 @@ public slots:
     void handle_project_needs_saving();
 
 protected:
+    void create_status_bar();
     void create_toolbars();
     void update_window_title(const QString& project_name);
     void clear_view();
@@ -72,6 +76,10 @@ private:
     TexlistDelegate* tex_list_delegate_;
 
     std::vector<TexMapControl*> texmap_controls_;
+
+    // Status bar
+    QLabel* status_label_;
+    //QProgressBar* status_progress_;
 
     // Dialogs
     NewProjectDialog* new_project_dialog_;

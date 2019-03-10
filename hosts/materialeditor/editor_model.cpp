@@ -11,7 +11,6 @@
 #include "xml_parser.h"
 #include "xml_utils.hpp"
 
-#include "vendor/rapidxml/rapidxml.hpp"
 #include "vendor/rapidxml/rapidxml_print.hpp"
 
 using namespace wcore;
@@ -133,7 +132,7 @@ hash_t TextureEntry::parse_node(xml_node<>* mat_node)
             texmap_node;
             texmap_node=texmap_node->next_sibling("TextureMap"))
         {
-            std::string texmap_name, texmap_path, texmap_unival;
+            std::string texmap_name, texmap_path;
             xml::parse_attribute(texmap_node, "name", texmap_name);
             int index = texmap_names_to_index[H_(texmap_name.c_str())];
             if(xml::parse_attribute(texmap_node, "path", texmap_path))
@@ -141,11 +140,11 @@ hash_t TextureEntry::parse_node(xml_node<>* mat_node)
                 texture_maps[index]->has_image = true;
                 texture_maps[index]->path = QString::fromStdString(texmap_path);
             }
-            if(xml::parse_attribute(texmap_node, "value", texmap_unival))
-                texture_maps[index]->parse_uniform_value(texmap_unival);
-
-            // Per-map properties
+            // Parse common per-map properties
             xml::parse_node(texmap_node, "TextureMapEnabled", texture_maps[index]->use_image);
+
+            // Parse data specific to this map
+            texture_maps[index]->parse(texmap_node);
         }
     }
 
@@ -183,9 +182,7 @@ void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materia
             node_add_attribute(doc, tex_node, "path", texture_maps[ii]->path.toUtf8().constData());
 
         // Save uniform value even if not used
-        std::string value_str(texture_maps[ii]->uniform_value_string());
-        if(value_str.size()!=0)
-            node_add_attribute(doc, tex_node, "value", value_str.c_str());
+        texture_maps[ii]->write(doc, tex_node);
 
         // Save per-map properties
         xml_node<>* useimg_node = doc.allocate_node(node_element, "TextureMapEnabled");
@@ -199,65 +196,71 @@ void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materia
     materials_node->append_node(mat_node);
 }
 
-void AlbedoMap::parse_uniform_value(const std::string& value_str)
+void AlbedoMap::parse(rapidxml::xml_node<>* node)
 {
-    str_val(value_str.c_str(), u_albedo);
+    xml::parse_attribute(node, "value", u_albedo);
 }
 
-void RoughnessMap::parse_uniform_value(const std::string& value_str)
+void RoughnessMap::parse(rapidxml::xml_node<>* node)
 {
-    str_val(value_str.c_str(), u_roughness);
+    xml::parse_attribute(node, "value", u_roughness);
 }
 
-void MetallicMap::parse_uniform_value(const std::string& value_str)
+void MetallicMap::parse(rapidxml::xml_node<>* node)
 {
-    str_val(value_str.c_str(), u_metallic);
+    xml::parse_attribute(node, "value", u_metallic);
 }
 
-void AOMap::parse_uniform_value(const std::string& value_str)
+void AOMap::parse(rapidxml::xml_node<>* node)
 {
-    str_val(value_str.c_str(), u_ao);
+    xml::parse_attribute(node, "value", u_ao);
 }
 
-void DepthMap::parse_uniform_value(const std::string& value_str)
+void DepthMap::parse(rapidxml::xml_node<>* node)
 {
-
+    xml::parse_node(node, "ParallaxHeightScale", u_parallax_scale);
 }
 
-void NormalMap::parse_uniform_value(const std::string& value_str)
-{
 
+void AlbedoMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
+{
+    // Save uniform value even if not used
+    std::string value_str(wcore::to_string(u_albedo));
+    if(value_str.size()!=0)
+        node_add_attribute(doc, node, "value", value_str.c_str());
 }
 
-std::string AlbedoMap::uniform_value_string()
+void RoughnessMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 {
-    return wcore::to_string(u_albedo);
+    // Save uniform value even if not used
+    std::string value_str(wcore::to_string(u_roughness));
+    if(value_str.size()!=0)
+        node_add_attribute(doc, node, "value", value_str.c_str());
 }
 
-std::string RoughnessMap::uniform_value_string()
+void MetallicMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 {
-    return std::to_string(u_roughness);
+    // Save uniform value even if not used
+    std::string value_str(wcore::to_string(u_metallic));
+    if(value_str.size()!=0)
+        node_add_attribute(doc, node, "value", value_str.c_str());
 }
 
-std::string MetallicMap::uniform_value_string()
+void AOMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 {
-    return std::to_string(u_metallic);
+    // Save uniform value even if not used
+    std::string value_str(wcore::to_string(u_ao));
+    if(value_str.size()!=0)
+        node_add_attribute(doc, node, "value", value_str.c_str());
 }
 
-std::string AOMap::uniform_value_string()
+void DepthMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 {
-    return std::to_string(u_ao);
+    xml_node<>* plxscale_node = doc.allocate_node(node_element, "ParallaxHeightScale");
+    node_set_value(doc, plxscale_node, std::to_string(u_parallax_scale).c_str());
+    node->append_node(plxscale_node);
 }
 
-std::string DepthMap::uniform_value_string()
-{
-    return "";
-}
-
-std::string NormalMap::uniform_value_string()
-{
-    return "";
-}
 
 EditorModel::EditorModel():
 texlist_model_(new TexListModel),

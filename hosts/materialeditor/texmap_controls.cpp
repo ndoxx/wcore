@@ -5,6 +5,7 @@
 #include <QFrame>
 #include <QLineEdit>
 #include <QDoubleSpinBox>
+#include <QPushButton>
 
 #include "texmap_controls.h"
 #include "editor_model.h"
@@ -98,7 +99,7 @@ TexMapControl(tr("Albedo"), ALBEDO),
 color_picker_(new ColorPickerLabel)
 {
     QFormLayout* addc_layout = new QFormLayout();
-    addc_layout->addRow(tr("Color:"), color_picker_);
+    addc_layout->addRow(tr("Uniform value:"), color_picker_);
 
     additional_controls->setLayout(addc_layout);
 
@@ -139,7 +140,7 @@ TexMapControl(tr("Roughness"), ROUGHNESS),
 roughness_edit_(new QDoubleSpinBox)
 {
     QFormLayout* addc_layout = new QFormLayout();
-    addc_layout->addRow(tr("Roughness:"), roughness_edit_);
+    addc_layout->addRow(tr("Uniform value:"), roughness_edit_);
     roughness_edit_->setRange(0.0, 1.0);
     roughness_edit_->setSingleStep(0.1);
 
@@ -173,6 +174,164 @@ void RoughnessControl::read_entry_additional(const TextureEntry& entry)
 {
     RoughnessMap* rough_map = static_cast<RoughnessMap*>(entry.texture_maps[texmap_index]);
     roughness_edit_->setValue(rough_map->u_roughness);
+}
+
+
+MetallicControl::MetallicControl():
+TexMapControl(tr("Metallic"), METALLIC),
+metallic_edit_(new QDoubleSpinBox)
+{
+    QFormLayout* addc_layout = new QFormLayout();
+    addc_layout->addRow(tr("Uniform value:"), metallic_edit_);
+    metallic_edit_->setRange(0.0, 1.0);
+    metallic_edit_->setSingleStep(0.1);
+
+    // Reject comma group separator, use dot as decimal separator
+    QLocale qlocale(QLocale::C);
+    qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
+    metallic_edit_->setLocale(qlocale);
+
+    metallic_edit_->setMinimumWidth(50);
+    additional_controls->setLayout(addc_layout);
+
+    layout->addWidget(additional_controls);
+    layout->setAlignment(additional_controls, Qt::AlignTop);
+
+    // Add stretchable area at the bottom so that all controls are neatly packed to the top
+    add_stretch();
+}
+
+void MetallicControl::clear_additional()
+{
+    metallic_edit_->setValue(0);
+}
+
+void MetallicControl::write_entry_additional(TextureEntry& entry)
+{
+    MetallicMap* metal_map = static_cast<MetallicMap*>(entry.texture_maps[texmap_index]);
+    metal_map->u_metallic = (float)metallic_edit_->value();
+}
+
+void MetallicControl::read_entry_additional(const TextureEntry& entry)
+{
+    MetallicMap* metal_map = static_cast<MetallicMap*>(entry.texture_maps[texmap_index]);
+    metallic_edit_->setValue(metal_map->u_metallic);
+}
+
+
+AOControl::AOControl():
+TexMapControl(tr("AO"), AO),
+ao_edit_(new QDoubleSpinBox)
+{
+    QFormLayout* addc_layout = new QFormLayout();
+    addc_layout->addRow(tr("Uniform value:"), ao_edit_);
+    ao_edit_->setRange(0.0, 1.0);
+    ao_edit_->setSingleStep(0.1);
+
+    // Reject comma group separator, use dot as decimal separator
+    QLocale qlocale(QLocale::C);
+    qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
+    ao_edit_->setLocale(qlocale);
+
+    ao_edit_->setMinimumWidth(50);
+    additional_controls->setLayout(addc_layout);
+
+    layout->addWidget(additional_controls);
+    layout->setAlignment(additional_controls, Qt::AlignTop);
+
+    // Add stretchable area at the bottom so that all controls are neatly packed to the top
+    add_stretch();
+}
+
+void AOControl::clear_additional()
+{
+    ao_edit_->setValue(0);
+}
+
+void AOControl::write_entry_additional(TextureEntry& entry)
+{
+    AOMap* ao_map = static_cast<AOMap*>(entry.texture_maps[texmap_index]);
+    ao_map->u_ao = (float)ao_edit_->value();
+}
+
+void AOControl::read_entry_additional(const TextureEntry& entry)
+{
+    AOMap* ao_map = static_cast<AOMap*>(entry.texture_maps[texmap_index]);
+    ao_edit_->setValue(ao_map->u_ao);
+}
+
+
+DepthControl::DepthControl():
+TexMapControl(tr("Depth"), DEPTH),
+parallax_scale_edit_(new QDoubleSpinBox)
+{
+    QFormLayout* addc_layout = new QFormLayout();
+    addc_layout->addRow(tr("Parallax Scale:"), parallax_scale_edit_);
+    parallax_scale_edit_->setRange(0.0, 1.0);
+    parallax_scale_edit_->setSingleStep(0.1);
+
+    // Reject comma group separator, use dot as decimal separator
+    QLocale qlocale(QLocale::C);
+    qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
+    parallax_scale_edit_->setLocale(qlocale);
+
+    parallax_scale_edit_->setMinimumWidth(50);
+    additional_controls->setLayout(addc_layout);
+
+    layout->addWidget(additional_controls);
+    layout->setAlignment(additional_controls, Qt::AlignTop);
+
+    // Add stretchable area at the bottom so that all controls are neatly packed to the top
+    add_stretch();
+}
+
+void DepthControl::clear_additional()
+{
+    parallax_scale_edit_->setValue(0);
+}
+
+void DepthControl::write_entry_additional(TextureEntry& entry)
+{
+    DepthMap* depth_map = static_cast<DepthMap*>(entry.texture_maps[texmap_index]);
+    depth_map->u_parallax_scale = (float)parallax_scale_edit_->value();
+}
+
+void DepthControl::read_entry_additional(const TextureEntry& entry)
+{
+    DepthMap* depth_map = static_cast<DepthMap*>(entry.texture_maps[texmap_index]);
+    parallax_scale_edit_->setValue(depth_map->u_parallax_scale);
+}
+
+
+NormalControl::NormalControl():
+TexMapControl(tr("Normal"), NORMAL),
+gen_from_depth_btn_(new QPushButton(tr("Generate from depthmap")))
+{
+    QFormLayout* addc_layout = new QFormLayout();
+    addc_layout->addRow(gen_from_depth_btn_);
+
+    additional_controls->setLayout(addc_layout);
+
+    layout->addWidget(additional_controls);
+    layout->setAlignment(additional_controls, Qt::AlignTop);
+
+    // Add stretchable area at the bottom so that all controls are neatly packed to the top
+    add_stretch();
+}
+
+void NormalControl::clear_additional()
+{
+
+}
+
+void NormalControl::write_entry_additional(TextureEntry& entry)
+{
+
+}
+
+void NormalControl::read_entry_additional(const TextureEntry& entry)
+{
+
 }
 
 } // namespace medit

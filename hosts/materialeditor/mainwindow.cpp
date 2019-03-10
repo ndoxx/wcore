@@ -19,6 +19,8 @@
 #include <QCoreApplication>
 #include <QFileDialog>
 #include <QCheckBox>
+#include <QProgressBar>
+#include <QStatusBar>
 #include <QApplication>
 
 #include "mainwindow.h"
@@ -82,6 +84,9 @@ file_dialog_(new QFileDialog(this))
     window_->setObjectName("Window");
     update_window_title("");
 
+    // Status bar
+    create_status_bar();
+
     // Toolbars
     create_toolbars();
 
@@ -111,17 +116,18 @@ file_dialog_(new QFileDialog(this))
     // Texture maps
     texmap_controls_.push_back(new AlbedoControl());
     texmap_controls_.push_back(new RoughnessControl());
-    texmap_controls_.push_back(new TexMapControl(tr("Metallic"), METALLIC)); // TMP will be specialized
-    texmap_controls_.push_back(new TexMapControl(tr("AO"), AO)); // TMP will be specialized
-    texmap_controls_.push_back(new TexMapControl(tr("Depth"), DEPTH)); // TMP will be specialized
-    texmap_controls_.push_back(new TexMapControl(tr("Normal"), NORMAL)); // TMP will be specialized
+    texmap_controls_.push_back(new MetallicControl());
+    texmap_controls_.push_back(new AOControl());
+    texmap_controls_.push_back(new DepthControl());
+    texmap_controls_.push_back(new NormalControl());
 
     for(int ii=0; ii<texmap_controls_.size(); ++ii)
     {
-        if(ii>1) texmap_controls_[ii]->add_stretch(); // TMP
-        layout_main_panel->addWidget(texmap_controls_[ii],ii/3,ii%3);
-        layout_main_panel->setRowStretch(ii/3, 1); // So that all texmap controls will stretch the same way
-        layout_main_panel->setColumnStretch(ii%3, 1);
+        int col = ii%3;
+        int row = ii/3;
+        layout_main_panel->addWidget(texmap_controls_[ii], row, col);
+        layout_main_panel->setRowStretch(row, 1); // So that all texmap controls will stretch the same way
+        layout_main_panel->setColumnStretch(col, 1);
     }
 
     // Preview
@@ -228,6 +234,18 @@ MainWindow::~MainWindow()
     delete dir_fs_model_;
     delete window_;
     delete editor_model_;
+}
+
+void MainWindow::create_status_bar()
+{
+    status_label_ = new QLabel("plop");
+    //status_progress_ = new QProgressBar;
+
+    //status_progress_->setTextVisible(false);
+    //status_progress_->setMaximumWidth(100);
+    status_label_->setObjectName("StatusLabel");
+    statusBar()->addWidget(status_label_);
+    //status_bar_->addPermanentWidget(status_progress_);
 }
 
 void MainWindow::create_toolbars()
@@ -507,11 +525,11 @@ void MainWindow::handle_new_project()
 
 void MainWindow::handle_open_project()
 {
-    // Close current project if any and clear view
-    handle_close_project();
-
     if(file_dialog_->exec())
     {
+        // Close current project if any and clear view
+        handle_close_project();
+
         QString filename = file_dialog_->selectedFiles().first();
         QApplication::setOverrideCursor(Qt::WaitCursor);
         editor_model_->open_project(filename);
