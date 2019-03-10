@@ -58,6 +58,7 @@ public slots:
     void handle_close_project();
     void handle_quit();
     void handle_project_needs_saving();
+    void handle_gen_normal_map();
 
 protected:
     void create_status_bar();

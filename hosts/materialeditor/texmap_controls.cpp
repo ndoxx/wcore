@@ -11,6 +11,7 @@
 #include "editor_model.h"
 #include "droplabel.h"
 #include "color_picker_label.h"
+#include "mainwindow.h"
 
 namespace medit
 {
@@ -333,5 +334,12 @@ void NormalControl::read_entry_additional(const TextureEntry& entry)
 {
 
 }
+
+void NormalControl::connect_controls(MainWindow* main_window)
+{
+    QObject::connect(gen_from_depth_btn_, &QPushButton::clicked,
+                     main_window,         &MainWindow::handle_gen_normal_map);
+}
+
 
 } // namespace medit

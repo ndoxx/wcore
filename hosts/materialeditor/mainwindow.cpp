@@ -21,6 +21,8 @@
 #include <QCheckBox>
 #include <QProgressBar>
 #include <QStatusBar>
+#include <QImage>
+#include <QFileInfo>
 #include <QApplication>
 
 #include "mainwindow.h"
@@ -29,6 +31,7 @@
 #include "texmap_controls.h"
 #include "new_project_dialog.h"
 #include "droplabel.h"
+#include "normal_generator.h"
 
 // wcore
 #include "config.h"
@@ -227,6 +230,8 @@ file_dialog_(new QFileDialog(this))
 
     QObject::connect(tex_list_delegate_, SIGNAL(sig_data_changed()),
                      this,               SLOT(handle_project_needs_saving()));
+
+    static_cast<NormalControl*>(texmap_controls_[NORMAL])->connect_controls(this);
 }
 
 MainWindow::~MainWindow()
@@ -556,6 +561,44 @@ void MainWindow::handle_quit()
 void MainWindow::handle_project_needs_saving()
 {
     setWindowModified(true);
+}
+
+void MainWindow::handle_gen_normal_map()
+{
+    // Get current entry
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        handle_save_current_texture();
+        TextureEntry& entry = editor_model_->get_current_texture_entry();
+        // Get depth map if any
+        if(entry.texture_maps[DEPTH]->has_image && entry.texture_maps[DEPTH]->use_image)
+        {
+            QString depth_path(entry.texture_maps[DEPTH]->path);
+            QImage depthmap(depth_path);
+            QImage normalmap(entry.width, entry.height, QImage::Format_RGBA8888);
+            normal::generate_from_depth(depthmap, normalmap, normal::FilterType::SOBEL);
+
+            // Get directory of depth map
+            QDir dir(QFileInfo(depth_path).absoluteDir());
+
+            // Generate filename and save normal map
+            QString filename = texname + "_norm_gen.png";
+            QString normal_path(dir.filePath(filename));
+
+            DLOGN("Saving generated normal map:", "core", Severity::LOW);
+            DLOGI("<p>" + normal_path.toStdString() + "</p>", "core", Severity::LOW);
+
+            normalmap.save(normal_path);
+
+            // Display newly generated normal map
+            entry.texture_maps[NORMAL]->has_image = true;
+            entry.texture_maps[NORMAL]->use_image = true;
+            entry.texture_maps[NORMAL]->path = normal_path;
+            update_texture_view();
+        }
+    }
+
 }
 
 void MainWindow::update_window_title(const QString& project_name)

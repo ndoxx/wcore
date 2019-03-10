@@ -150,6 +150,7 @@ private:
     QDoubleSpinBox* parallax_scale_edit_;
 };
 
+class MainWindow;
 // Specialized controls for normal map
 class NormalControl: public TexMapControl
 {
@@ -158,6 +159,8 @@ class NormalControl: public TexMapControl
 public:
     explicit NormalControl();
     virtual ~NormalControl() = default;
+
+    void connect_controls(MainWindow* main_window);
 
 protected:
     virtual void clear_additional() override;

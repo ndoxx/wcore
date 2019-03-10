@@ -35,6 +35,7 @@ qt5_add_resources(RCC_SOURCES resources.qrc)
 # Populate a CMake variable with the sources
 set(materialeditor_SRCS
     editor_model.cpp
+    normal_generator.cpp
     texlist_model.cpp
     texlist_delegate.cpp
     texmap_controls.cpp
