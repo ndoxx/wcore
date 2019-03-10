@@ -1,20 +1,40 @@
+// Normal map generation algorithm addapted from the work of Christian Petry by ndx
+// Licence:
+/*
+ * Author: Christian Petry
+ * Homepage: www.petry-christian.de
+ *
+ * License: MIT
+ * Copyright (c) 2014 Christian Petry
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 #include <cmath>
 #include <iostream>
 
-#include "normal_generator.h"
+#include "texmap_generator.h"
 #include "math3d.h"
 
 using namespace wcore::math;
 
 namespace medit
 {
-namespace normal
+namespace generator
 {
-
-static bool invertR = false;
-static bool invertG = false;
-static bool invertH = false;
-static float dz = 1.f;
 
 static float sample_nearest(const QImage& img, const vec2& uv)
 {
@@ -24,12 +44,18 @@ static float sample_nearest(const QImage& img, const vec2& uv)
     return qRed(img.pixel(x,y)) / 255.f;
 }
 
-void generate_from_depth(const QImage& depth_map, QImage& normal_map, FilterType filter)
+static float dz_from_level_strength(float level, float strength)
+{
+    return 1.f/strength * (1.f + pow(2.f, level));
+}
+
+void normal_from_depth(const QImage& depth_map, QImage& normal_map, const NormalGenOptions& options)
 {
     int w = normal_map.width();
     int h = normal_map.height();
 
     vec2 step(-1.f/w, -1.f/h);
+    float dz = dz_from_level_strength(options.level, options.strength);
 
     for(int xx=0; xx<w; ++xx)
     {
@@ -73,7 +99,7 @@ void generate_from_depth(const QImage& depth_map, QImage& normal_map, FilterType
             float br = std::fabs(sample_nearest(depth_map, brv));
 
             float dx = 0.f, dy = 0.f;
-            if(filter == FilterType::SOBEL)
+            if(options.filter == FilterType::SOBEL)
             {
                 dx = tl + l*2.f + bl - tr - r*2.f - br;
                 dy = tl + t*2.f + tr - bl - b*2.f - br;
@@ -84,8 +110,9 @@ void generate_from_depth(const QImage& depth_map, QImage& normal_map, FilterType
                 dy = tl*3.f + t*10.f + tr*3.f - bl*3.f - b*10.f - br*3.f;
             }
 
-            //vec3 normal(dx * invertR * invertH * 255.0, dy * invertG * invertH * 255.0, dz);
-            vec3 normal(dx * 255.0, dy * 255.0, dz * 255.0);
+            vec3 normal(dx * options.invert_r * options.invert_h * 255.f,
+                        dy * options.invert_g * options.invert_h * 255.f,
+                        dz);
             normal.normalize();
 
             vec3 n(normal.x()*0.5f + 0.5f, normal.y()*0.5f + 0.5f, normal.z());
@@ -98,6 +125,6 @@ void generate_from_depth(const QImage& depth_map, QImage& normal_map, FilterType
     }
 }
 
-} // namespace normal
+} // namespace generator
 } // namespace medit
 

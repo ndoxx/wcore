@@ -31,7 +31,7 @@
 #include "texmap_controls.h"
 #include "new_project_dialog.h"
 #include "droplabel.h"
-#include "normal_generator.h"
+#include "texmap_generator.h"
 
 // wcore
 #include "config.h"
@@ -574,10 +574,18 @@ void MainWindow::handle_gen_normal_map()
         // Get depth map if any
         if(entry.texture_maps[DEPTH]->has_image && entry.texture_maps[DEPTH]->use_image)
         {
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+
             QString depth_path(entry.texture_maps[DEPTH]->path);
             QImage depthmap(depth_path);
             QImage normalmap(entry.width, entry.height, QImage::Format_RGBA8888);
-            normal::generate_from_depth(depthmap, normalmap, normal::FilterType::SOBEL);
+
+            // Generate normal map
+            generator::NormalGenOptions options;
+            NormalControl* normal_control = static_cast<NormalControl*>(texmap_controls_[NORMAL]);
+            normal_control->get_options(options);
+            options.filter = generator::FilterType::SOBEL;
+            generator::normal_from_depth(depthmap, normalmap, options);
 
             // Get directory of depth map
             QDir dir(QFileInfo(depth_path).absoluteDir());
@@ -596,6 +604,8 @@ void MainWindow::handle_gen_normal_map()
             entry.texture_maps[NORMAL]->use_image = true;
             entry.texture_maps[NORMAL]->path = normal_path;
             update_texture_view();
+
+            QApplication::restoreOverrideCursor();
         }
     }
 

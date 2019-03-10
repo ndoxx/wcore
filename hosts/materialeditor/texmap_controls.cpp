@@ -6,12 +6,14 @@
 #include <QLineEdit>
 #include <QDoubleSpinBox>
 #include <QPushButton>
+#include <QGridLayout>
 
 #include "texmap_controls.h"
 #include "editor_model.h"
 #include "droplabel.h"
 #include "color_picker_label.h"
 #include "mainwindow.h"
+#include "texmap_generator.h"
 
 namespace medit
 {
@@ -306,10 +308,47 @@ void DepthControl::read_entry_additional(const TextureEntry& entry)
 
 NormalControl::NormalControl():
 TexMapControl(tr("Normal"), NORMAL),
-gen_from_depth_btn_(new QPushButton(tr("Generate from depthmap")))
+gen_from_depth_btn_(new QPushButton(tr("From depthmap"))),
+invert_r_cb_(new QCheckBox()),
+invert_g_cb_(new QCheckBox()),
+invert_h_cb_(new QCheckBox()),
+level_edit_(new QDoubleSpinBox),
+strength_edit_(new QDoubleSpinBox)
 {
     QFormLayout* addc_layout = new QFormLayout();
+
+    QWidget* cboxes = new QWidget();
+    QGridLayout* cboxes_layout = new QGridLayout();
+
+    cboxes_layout->addWidget(new QLabel(tr("R")), 0, 0);
+    cboxes_layout->addWidget(new QLabel(tr("G")), 0, 1);
+    cboxes_layout->addWidget(new QLabel(tr("H")), 0, 2);
+    cboxes_layout->addWidget(invert_r_cb_, 1, 0);
+    cboxes_layout->addWidget(invert_g_cb_, 1, 1);
+    cboxes_layout->addWidget(invert_h_cb_, 1, 2);
+    cboxes->setLayout(cboxes_layout);
+    cboxes->setMinimumWidth(50);
+    cboxes->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+
+    addc_layout->addRow(tr("Invert:"), cboxes);
+    addc_layout->addRow(tr("Level:"), level_edit_);
+    addc_layout->addRow(tr("Strength:"), strength_edit_);
     addc_layout->addRow(gen_from_depth_btn_);
+
+    level_edit_->setRange(4.0, 10.0);
+    level_edit_->setSingleStep(0.1);
+    level_edit_->setValue(7.0);
+    level_edit_->setMinimumWidth(50);
+
+    strength_edit_->setRange(0.01, 5.0);
+    strength_edit_->setSingleStep(0.1);
+    strength_edit_->setValue(0.61);
+    strength_edit_->setMinimumWidth(50);
+
+    QLocale qlocale(QLocale::C);
+    qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
+    level_edit_->setLocale(qlocale);
+    strength_edit_->setLocale(qlocale);
 
     additional_controls->setLayout(addc_layout);
 
@@ -322,7 +361,11 @@ gen_from_depth_btn_(new QPushButton(tr("Generate from depthmap")))
 
 void NormalControl::clear_additional()
 {
-
+    invert_r_cb_->setCheckState(Qt::Unchecked);
+    invert_g_cb_->setCheckState(Qt::Unchecked);
+    invert_h_cb_->setCheckState(Qt::Unchecked);
+    level_edit_->setValue(7.0);
+    strength_edit_->setValue(0.61);
 }
 
 void NormalControl::write_entry_additional(TextureEntry& entry)
@@ -339,6 +382,15 @@ void NormalControl::connect_controls(MainWindow* main_window)
 {
     QObject::connect(gen_from_depth_btn_, &QPushButton::clicked,
                      main_window,         &MainWindow::handle_gen_normal_map);
+}
+
+void NormalControl::get_options(generator::NormalGenOptions& options)
+{
+    options.invert_r = (invert_r_cb_->checkState() == Qt::Checked) ? -1.f : 1.f;
+    options.invert_g = (invert_g_cb_->checkState() == Qt::Checked) ? -1.f : 1.f;
+    options.invert_h = (invert_h_cb_->checkState() == Qt::Checked) ? -1.f : 1.f;
+    options.level    = (float)level_edit_->value();
+    options.strength = (float)strength_edit_->value();
 }
 
 

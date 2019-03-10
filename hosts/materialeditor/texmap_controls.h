@@ -151,6 +151,10 @@ private:
 };
 
 class MainWindow;
+namespace generator
+{
+    struct NormalGenOptions;
+}
 // Specialized controls for normal map
 class NormalControl: public TexMapControl
 {
@@ -162,6 +166,8 @@ public:
 
     void connect_controls(MainWindow* main_window);
 
+    void get_options(generator::NormalGenOptions& options);
+
 protected:
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
@@ -169,6 +175,11 @@ protected:
 
 private:
     QPushButton* gen_from_depth_btn_;
+    QCheckBox* invert_r_cb_;
+    QCheckBox* invert_g_cb_;
+    QCheckBox* invert_h_cb_;
+    QDoubleSpinBox* level_edit_;
+    QDoubleSpinBox* strength_edit_;
 };
 
 } // namespace medit
