@@ -61,7 +61,17 @@ void Material::bind_texture() const
 bool Material::has_texture(TextureUnit unit) const
 {
     if(texture_)
-        return texture_->has_unit(unit);
+    {
+        switch(unit)
+        {
+            case TextureUnit::DEPTH:
+                return (texture_->has_unit(unit) && use_parallax_map_);
+            case TextureUnit::NORMAL:
+                return (texture_->has_unit(unit) && use_normal_map_);
+            default:
+                return texture_->has_unit(unit);
+        }
+    }
     else
         return false;
 }

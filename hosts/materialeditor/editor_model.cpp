@@ -439,7 +439,7 @@ void EditorModel::compile(const QString& texname)
         {
             for(int yy=0; yy<entry.height; ++yy)
             {
-                QRgb albedo = texmaps[0] ? texmaps[0]->pixel(xx,yy) : qRgba(0,0,0,1);
+                QRgb albedo = texmaps[0] ? texmaps[0]->pixel(xx,yy) : qRgba(0,0,0,255);
 
                 block0.setPixel(xx, yy, albedo);
             }
@@ -467,7 +467,7 @@ void EditorModel::compile(const QString& texname)
                 int ao        = texmaps[3] ? qRed(texmaps[3]->pixel(xx,yy)) : 0;
                 int roughness = texmaps[1] ? qRed(texmaps[1]->pixel(xx,yy)) : 0;
 
-                QRgb out_color = qRgba(metallic, ao, roughness, 0);
+                QRgb out_color = qRgba(metallic, ao, roughness, 255);
                 block2.setPixel(xx, yy, out_color);
             }
         }
@@ -644,6 +644,12 @@ QString EditorModel::project_path_from_name(const QString& name)
 QString EditorModel::project_file_from_name(const QString& name)
 {
     return name + ".wmp";
+}
+
+void EditorModel::traverse_entries(std::function<void(TextureEntry&)> func)
+{
+    for(auto&& [key, entry]: texture_descriptors_)
+        func(entry);
 }
 
 

@@ -19,7 +19,10 @@ enum class TextureUnit: uint16_t
     DEPTH     = 4,
     METALLIC  = 8,
     NORMAL    = 16,
-    ROUGHNESS = 32
+    ROUGHNESS = 32,
+    BLOCK0    = 64,
+    BLOCK1    = 128,
+    BLOCK2    = 256
 };
 
 struct TextureParameters

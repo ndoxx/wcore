@@ -18,7 +18,7 @@ namespace wcore
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;
 Texture::TMap Texture::NAMED_TEXTURES_;
-
+/*
 std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
 {
     {TextureUnit::ALBEDO,    "mt.sg1.albedoTex"_h},
@@ -40,7 +40,22 @@ std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_2_ =
     {TextureUnit::ROUGHNESS, "mt.sg2.roughnessTex"_h}
 };
 
-static uint32_t SAMPLER_GROUP_SIZE = 6;
+static uint32_t SAMPLER_GROUP_SIZE = 6;*/
+
+std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
+{
+    {TextureUnit::BLOCK0, "mt.sg1.block0Tex"_h},
+    {TextureUnit::BLOCK1, "mt.sg1.block1Tex"_h},
+    {TextureUnit::BLOCK2, "mt.sg1.block2Tex"_h},
+};
+std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_2_ =
+{
+    {TextureUnit::BLOCK0, "mt.sg2.block0Tex"_h},
+    {TextureUnit::BLOCK1, "mt.sg2.block1Tex"_h},
+    {TextureUnit::BLOCK2, "mt.sg2.block2Tex"_h},
+};
+
+static uint32_t SAMPLER_GROUP_SIZE = 3;
 
 PngLoader Texture::png_loader_;
 
@@ -197,12 +212,18 @@ ID_(++Ninst)
             continue;
 
         filters[ii] = descriptor.parameters.filter;
-        if(sampler_name == "mt.sg1.diffuseTex"_h)
+        if(sampler_name == "mt.sg1.block0Tex"_h || sampler_name == "mt.sg2.block0Tex"_h)
         {
             // Load Albedo / Diffuse textures as sRGB to avoid
             // double gamma-correction.
             internalFormats[ii] = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
             //internalFormats[ii] = GL_SRGB_ALPHA;
+        }
+        else if(sampler_name == "mt.sg1.block1Tex"_h || sampler_name == "mt.sg2.block1Tex"_h)
+        {
+            // Do not use DXT1 compression on normal-depth texure (block1) because
+            // it will screw up the normals
+            internalFormats[ii] = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;//GL_RGBA;
         }
         else
         {

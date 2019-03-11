@@ -479,8 +479,16 @@ void MainWindow::handle_compile_current()
 
 void MainWindow::handle_compile_all()
 {
+    // First, save texture to editor model
+    handle_save_current_texture();
+
     DLOGN("Compiling <h>all</h> textures.", "core", Severity::LOW);
-    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+    editor_model_->traverse_entries([&](TextureEntry& entry)
+    {
+        const QString& texname = entry.name;
+        if(!texname.isEmpty())
+            editor_model_->compile(texname);
+    });
 }
 
 void MainWindow::handle_serialize_project()

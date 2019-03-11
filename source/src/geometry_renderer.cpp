@@ -147,8 +147,11 @@ void GeometryRenderer::render(Scene* pscene)
 
             // Send splatmap
             const Texture& splatmap = terrain.get_splatmap();
-            splatmap.bind(12,0);
-            shader->send_uniform<int>("mt.splatTex"_h, 12);
+            /*splatmap.bind(12,0);
+            shader->send_uniform<int>("mt.splatTex"_h, 12);*/
+            splatmap.bind(6,0);
+            shader->send_uniform<int>("mt.splatTex"_h, 6);
+
             shader->send_uniform("f_inv_chunk_size"_h, 1.f/terrain.get_chunk_size());
         }
 

@@ -572,8 +572,50 @@ bool Shader::send_uniforms<Texture>(const Texture& texture) const
 template <>
 bool Shader::send_uniforms<Material>(const Material& material) const
 {
-    bool has_map = false;
+    bool has_albedo    = material.has_texture(TextureUnit::ALBEDO);
+    bool has_normal    = material.has_texture(TextureUnit::NORMAL);
+    bool has_depth     = material.has_texture(TextureUnit::DEPTH);
+    bool has_metallic  = material.has_texture(TextureUnit::METALLIC);
+    bool has_ao        = material.has_texture(TextureUnit::AO);
+    bool has_roughness = material.has_texture(TextureUnit::ROUGHNESS);
 
+    // Block 0 -> Albedo only
+    send_uniform("mt.b_has_albedo"_h, has_albedo);
+    send_uniform("mt.b_use_normal_map"_h, has_normal);
+    send_uniform("mt.b_use_parallax_map"_h, has_depth);
+    send_uniform("mt.b_has_metallic"_h, has_metallic);
+    send_uniform("mt.b_has_ao"_h, has_ao);
+    send_uniform("mt.b_has_roughness"_h, has_roughness);
+
+    if(has_albedo)
+    {
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::BLOCK0),
+                          material.get_texture().get_unit_index(TextureUnit::BLOCK0));
+    }
+    else
+        send_uniform("mt.v3_albedo"_h, material.get_albedo());
+
+    // Block 1 -> Normal & Depth
+    if(has_normal || has_depth)
+    {
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::BLOCK1),
+                          material.get_texture().get_unit_index(TextureUnit::BLOCK1));
+    }
+    if(has_depth)
+        send_uniform("mt.f_parallax_height_scale"_h, material.get_parallax_height_scale());
+
+    // Block 2 -> Metallic, AO & Roughness
+    if(has_metallic || has_ao || has_roughness)
+    {
+        send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::BLOCK2),
+                          material.get_texture().get_unit_index(TextureUnit::BLOCK2));
+    }
+    if(!has_metallic)
+        send_uniform("mt.f_metallic"_h, material.get_metallic());
+    if(!has_roughness)
+        send_uniform("mt.f_roughness"_h, material.get_roughness());
+
+/*
     if((has_map = material.has_texture(TextureUnit::ALBEDO)))
     {
         send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::ALBEDO),
@@ -614,21 +656,21 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     }
     send_uniform("mt.b_has_roughness"_h, has_map);
 
-    if(material.has_normal_map())
+    if((has_map = material.has_texture(TextureUnit::NORMAL)))
     {
         send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::NORMAL),
                           material.get_texture().get_unit_index(TextureUnit::NORMAL));
     }
-    send_uniform("mt.b_use_normal_map"_h, material.has_normal_map());
+    send_uniform("mt.b_use_normal_map"_h, has_map);
 
-    if(material.has_parallax_map())
+    if((has_map = material.has_texture(TextureUnit::DEPTH)))
     {
         send_uniform<int>(material.get_texture().unit_to_sampler_name(TextureUnit::DEPTH),
                           material.get_texture().get_unit_index(TextureUnit::DEPTH));
         send_uniform("mt.f_parallax_height_scale"_h, material.get_parallax_height_scale());
     }
-    send_uniform("mt.b_use_parallax_map"_h, material.has_parallax_map());
-
+    send_uniform("mt.b_use_parallax_map"_h, has_map);
+*/
     return true;
 }
 

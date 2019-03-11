@@ -664,7 +664,6 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
     // Get nodes
     xml_node<>* splat_node = patch->first_node("Splat");
     xml_node<>* mat_node = patch->first_node("Material");
-    //xml_node<>* altmat_node = patch->first_node("MaterialAlt");
     xml_node<>* trn_node = patch->first_node("Transform");
     xml_node<>* shadow_node = patch->first_node("Shadow");
     xml_node<>* generator_node = patch->first_node("Generator");
@@ -896,17 +895,6 @@ void SceneLoader::parse_model_batches(xml_node<>* chunk_node, uint32_t chunk_ind
         rng.seed(seed);
         std::uniform_int_distribution<uint32_t> mesh_seed(0,std::numeric_limits<uint32_t>::max());
         std::uniform_real_distribution<float> var_distrib(-1.0f,1.0f);
-
-        std::string color_space;
-        vec3 color, color_var;
-        float roughness;
-
-        // Material
-        xml_node<>* unif_node = mat_node->first_node("Uniform");
-        xml::parse_node(unif_node, "Albedo", color);
-        xml::parse_node(unif_node, "Roughness", roughness);
-        xml::parse_attribute(unif_node->first_node("Albedo"), "variance", color_var);
-        xml::parse_attribute(unif_node->first_node("Albedo"), "space", color_space);
 
         // Generate batch transformations
         std::vector<Transformation> transforms;

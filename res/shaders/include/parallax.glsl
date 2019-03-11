@@ -16,7 +16,8 @@ vec2 parallax_map(vec2 texCoords, vec3 viewDir, float f_parallax_height_scale, s
     vec2 delta_texCoords = viewDir.xy * (f_parallax_height_scale * layer_depth);
 
     vec2 cur_texCoords = texCoords;
-    float cur_depthValue = texture(depthTex, cur_texCoords).r;
+    //float cur_depthValue = texture(depthTex, cur_texCoords).r;
+    float cur_depthValue = texture(depthTex, cur_texCoords).a;
     float prev_depthValue = 0.0f;
 
     while(cur_layer_depth < cur_depthValue)
@@ -25,7 +26,8 @@ vec2 parallax_map(vec2 texCoords, vec3 viewDir, float f_parallax_height_scale, s
         // Shift texture coordinates along direction of P
         cur_texCoords -= delta_texCoords;
         // Get depthmap value at current texture coordinates
-        cur_depthValue = texture(depthTex, cur_texCoords).r;
+        //cur_depthValue = texture(depthTex, cur_texCoords).r;
+        cur_depthValue = texture(depthTex, cur_texCoords).a;
         // Get depth of next layer
         cur_layer_depth += layer_depth;
     }

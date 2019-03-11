@@ -67,12 +67,6 @@ public:
     inline float get_alpha() const                 { return alpha_; }
     inline void set_alpha(float value)             { alpha_ = value; }
 
-    inline bool has_normal_map() const             { return use_normal_map_; }
-    inline void set_normal_map(bool value)         { use_normal_map_ = value; }
-
-    inline bool has_parallax_map() const           { return use_parallax_map_; }
-    inline void set_parallax_map(bool value)       { use_parallax_map_ = use_normal_map_ && value; }
-
     inline float get_parallax_height_scale() const { return parallax_height_scale_; }
     inline void set_parallax_height_scale(float value);
 

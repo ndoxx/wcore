@@ -3,6 +3,7 @@
 
 #include <map>
 #include <array>
+#include <functional>
 #include <QString>
 #include <QDir>
 #include <QStringList>
@@ -181,6 +182,8 @@ public:
     bool validate_project_name(const QString& name);
 
     inline const QString& get_current_project() const { return current_project_; }
+
+    void traverse_entries(std::function<void(TextureEntry&)> func);
 
 protected:
     QString project_path_from_name(const QString& name);

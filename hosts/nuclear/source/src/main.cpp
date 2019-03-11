@@ -278,25 +278,53 @@ int main()
 */
 
 #include <iostream>
+#include <string>
+#include <vector>
+#include "wtypes.h"
 
-inline float wrap_uv(float uv)
+using namespace wcore;
+
+std::vector<std::string> split(const std::string& s, char delimiter)
 {
-    /*uv   = (uv >= 0.f) ? uv : 1.f + uv;
-    return (uv <  1.f) ? uv : uv  - 1.f;*/
-    return (uv >= 0.f) ? (uv-(long)uv) : 1.f+(uv-(long)uv);
+   std::vector<std::string> tokens;
+   std::string token;
+   std::istringstream tokenStream(s);
+   while(std::getline(tokenStream, token, delimiter))
+   {
+      tokens.push_back(token);
+   }
+   return tokens;
 }
 
 int main()
 {
-    std::cout << wrap_uv(-2.1f) << std::endl;
-    std::cout << wrap_uv(-1.1f) << std::endl;
-    std::cout << wrap_uv(-0.2f) << std::endl;
-    std::cout << wrap_uv(0.f) << std::endl;
-    std::cout << wrap_uv(0.5f) << std::endl;
-    std::cout << wrap_uv(1.0f) << std::endl;
-    std::cout << wrap_uv(1.1f) << std::endl;
-    std::cout << wrap_uv(3.1f) << std::endl;
-    std::cout << wrap_uv(12.1f) << std::endl;
+    std::string units_str = "Albedo;Normal;Depth;Metallic;AO;Roughness";
+
+    std::vector<std::string> units(split(units_str, ';'));
+    for(int ii=0; ii<units.size(); ++ii)
+    {
+        switch(H_(units[ii].c_str()))
+        {
+            case "Albedo"_h:
+                std::cout << "has Albedo" << std::endl;
+                break;
+            case "Normal"_h:
+                std::cout << "has Normal" << std::endl;
+                break;
+            case "Depth"_h:
+                std::cout << "has Depth" << std::endl;
+                break;
+            case "Metallic"_h:
+                std::cout << "has Metallic" << std::endl;
+                break;
+            case "AO"_h:
+                std::cout << "has AO" << std::endl;
+                break;
+            case "Roughness"_h:
+                std::cout << "has Roughness" << std::endl;
+                break;
+        }
+    }
 
     return 0;
 }

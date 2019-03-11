@@ -5,15 +5,12 @@
 
 struct sampler_group
 {
-    /*sampler2D albedoTex;
+    sampler2D albedoTex;
     sampler2D AOTex;
     sampler2D metallicTex;
     sampler2D roughnessTex;
     sampler2D normalTex;
-    sampler2D depthTex;*/
-    sampler2D block0Tex;
-    sampler2D block1Tex;
-    sampler2D block2Tex;
+    sampler2D depthTex;
 };
 
 struct material
@@ -83,23 +80,22 @@ void main()
         if(mt.b_use_parallax_map)
         {
             #ifdef VARIANT_SPLAT
-                texCoords = mix(parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.block1Tex),
-                                parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg2.block1Tex),
+                texCoords = mix(parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex),
+                                parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg2.depthTex),
                                 f_splat);
             #else
-                texCoords = parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.block1Tex);
+                texCoords = parallax_map(frag_texCoord, viewDir, mt.f_parallax_height_scale, mt.sg1.depthTex);
             #endif
         }
 
         // Normal vector from normal map
         #ifdef VARIANT_SPLAT
-            normal = mix(texture(mt.sg1.block1Tex, texCoords).rgb,
-                         texture(mt.sg2.block1Tex, texCoords).rgb,
+            normal = mix(texture(mt.sg1.normalTex, texCoords).rgb,
+                         texture(mt.sg2.normalTex, texCoords).rgb,
                          f_splat);
         #else
-            normal = texture(mt.sg1.block1Tex, texCoords).rgb;
+            normal = texture(mt.sg1.normalTex, texCoords).rgb;
         #endif
-
         normal = normalize(normal*2.0 - 1.0);
         normal = normalize(frag_TBN*normal);
     }
@@ -115,8 +111,8 @@ void main()
     vec3  albedo;
     if(mt.b_has_albedo)
     {
-        albedo = mix(texture(mt.sg1.block0Tex, texCoords).rgb,
-                     texture(mt.sg2.block0Tex, texCoords).rgb,
+        albedo = mix(texture(mt.sg1.albedoTex, texCoords).rgb,
+                     texture(mt.sg2.albedoTex, texCoords).rgb,
                      f_splat);
     }
     else
@@ -124,33 +120,33 @@ void main()
 
     float roughness;
     if(mt.b_has_roughness)
-        roughness = mix(texture(mt.sg1.block2Tex, texCoords).b,
-                        texture(mt.sg2.block2Tex, texCoords).b,
+        roughness = mix(texture(mt.sg1.roughnessTex, texCoords).r,
+                        texture(mt.sg2.roughnessTex, texCoords).r,
                         f_splat);
     else
         roughness = mt.f_roughness;
 
     float metallic;
     if(mt.b_has_metallic)
-        metallic = mix(texture(mt.sg1.block2Tex, texCoords).r,
-                       texture(mt.sg2.block2Tex, texCoords).r,
+        metallic = mix(texture(mt.sg1.metallicTex, texCoords).r,
+                       texture(mt.sg2.metallicTex, texCoords).r,
                        f_splat);
     else
         metallic = mt.f_metallic;
 
     float ao;
     if(mt.b_has_ao)
-        ao = mix(texture(mt.sg1.block2Tex, texCoords).g,
-                 texture(mt.sg2.block2Tex, texCoords).g,
+        ao = mix(texture(mt.sg1.AOTex, texCoords).r,
+                 texture(mt.sg2.AOTex, texCoords).r,
                  f_splat);
     else
         ao = 1.0f;
 
 #else
-    vec3  albedo    = mt.b_has_albedo?    texture(mt.sg1.block0Tex, texCoords).rgb: mt.v3_albedo;
-    float roughness = mt.b_has_roughness? texture(mt.sg1.block2Tex, texCoords).b:   mt.f_roughness;
-    float metallic  = mt.b_has_metallic?  texture(mt.sg1.block2Tex, texCoords).r:   mt.f_metallic;
-    float ao        = mt.b_has_ao?        texture(mt.sg1.block2Tex, texCoords).g:   1.0f;
+    vec3  albedo    = mt.b_has_albedo?    texture(mt.sg1.albedoTex, texCoords).rgb:  mt.v3_albedo;
+    float roughness = mt.b_has_roughness? texture(mt.sg1.roughnessTex, texCoords).r: mt.f_roughness;
+    float metallic  = mt.b_has_metallic?  texture(mt.sg1.metallicTex, texCoords).r:  mt.f_metallic;
+    float ao        = mt.b_has_ao?        texture(mt.sg1.AOTex, texCoords).r:        1.0f;
 #endif
 
     // DEBUG wireframe color

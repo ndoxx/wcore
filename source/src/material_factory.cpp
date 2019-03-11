@@ -11,7 +11,7 @@ namespace wcore
 {
 
 using namespace rapidxml;
-
+/*
 std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
 {
     {TextureUnit::ALBEDO,    "Albedo"},
@@ -20,6 +20,12 @@ std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
     {TextureUnit::METALLIC,  "Metallic"},
     {TextureUnit::NORMAL,    "Normal"},
     {TextureUnit::ROUGHNESS, "Roughness"}
+};*/
+std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
+{
+    {TextureUnit::BLOCK0, "Block0"},
+    {TextureUnit::BLOCK1, "Block1"},
+    {TextureUnit::BLOCK2, "Block2"}
 };
 
 MaterialFactory::MaterialFactory(const char* xml_file)
@@ -185,14 +191,57 @@ Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node,
     return make_material(desc);
 }
 
+std::vector<std::string> split(const std::string& s, char delimiter)
+{
+   std::vector<std::string> tokens;
+   std::string token;
+   std::istringstream tokenStream(s);
+   while(std::getline(tokenStream, token, delimiter))
+   {
+      tokens.push_back(token);
+   }
+   return tokens;
+}
+
 void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
                                                 MaterialDescriptor& descriptor,
                                                 OptRngT opt_rng)
 {
-    // Register texture units
     xml_node<>* tex_node = node->first_node("Texture");
     if(tex_node)
     {
+        // Register texture units
+        std::string units_str;
+        if(xml::parse_node(tex_node, "Units", units_str))
+        {
+            // Units string is a semi-column separated list
+            std::vector<std::string> units(split(units_str, ';'));
+            for(int ii=0; ii<units.size(); ++ii)
+            {
+                switch(H_(units[ii].c_str()))
+                {
+                    case "Albedo"_h:
+                        descriptor.texture_descriptor.add_unit(TextureUnit::ALBEDO);
+                        break;
+                    case "Normal"_h:
+                        descriptor.texture_descriptor.add_unit(TextureUnit::NORMAL);
+                        break;
+                    case "Depth"_h:
+                        descriptor.texture_descriptor.add_unit(TextureUnit::DEPTH);
+                        break;
+                    case "Metallic"_h:
+                        descriptor.texture_descriptor.add_unit(TextureUnit::METALLIC);
+                        break;
+                    case "AO"_h:
+                        descriptor.texture_descriptor.add_unit(TextureUnit::AO);
+                        break;
+                    case "Roughness"_h:
+                        descriptor.texture_descriptor.add_unit(TextureUnit::ROUGHNESS);
+                        break;
+                }
+            }
+        }
+        // Register texture block locations
         std::string texture_map;
         for(auto&& [unit, node_name]: TEX_SAMPLERS_NODES)
         {
