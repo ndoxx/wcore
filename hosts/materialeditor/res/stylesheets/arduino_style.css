@@ -1,7 +1,7 @@
 QGroupBox
 {
-    border: 2px solid rgb(0,128,128);
-    background: rgb(102,153,153);
+    border: 2px solid rgb(170,170,170);
+    background: rgb(150,150,150);
     color: rgb(214,245,245);
 }
 QGroupBox::title
@@ -12,28 +12,28 @@ QGroupBox::title
 }
 QFrame#SidePanel
 {
-    border: 2px solid rgb(0,128,128);
-    background: rgb(102,153,153);
+    border: 2px solid rgb(170,170,170);
+    background: rgb(150,150,150);
 }
 QFrame#Separator
 {
-    background: rgb(102,153,153);
+    background: rgb(150,150,150);
 }
 QWidget#Window
 {
-    background: rgb(71,107,107);
+    background: rgb(100,100,100);
 }
 QToolBar
 {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0   rgb(255,150,26),
                 stop:0.8 rgb(255,150,26),
-                stop:1   rgb(71,107,107))
+                stop:1   rgb(100,100,100))
 }
 QStatusBar
 {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0   rgb(71,107,107),
+                stop:0   rgb(100,100,100),
                 stop:0.2 rgb(255,150,26),
                 stop:1   rgb(255,150,26))
 }
