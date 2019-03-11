@@ -7052,6 +7052,47 @@ rch : est-ce qu'on pré-compresse les normales ou pas ? (pour l'instant c'est pa
 
 
 
+Procédure merdique pour build depuis zéro :
+
+    - Installer Qt5 (open source) avec l'online installer
+        - Choisir le support des versions 5.11 et 5.12
+
+__NE PAS FAIRE__
+>> sudo apt-get install qt5-default
+    Pour que cmake findpackage trouve effectivement les .cmake
+        -> Ca va simplement péter l'install de Qt
+
+>> git clone https://gitchub.com/ndoxx/wcore.git
+>> cd wcore
+>> git submodule init
+>> git submodule update
+    - Copier à la main le dossier des headers "freetype" dans vendor
+    - Copier à la main les fichiers suivants de vendor/imgui/examples :
+        - imgui_impl_glfw.cpp
+        - imgui_impl_glfw.h
+        - imgui_impl_opengl3.cpp
+        - imgui_impl_opengl3.h
+    vers le dossier parent vendor/imgui/
+>> mkdir build; cd build
+>> cmake [-DCLANG6=1] ..
+>> make wcore
+>> make sandbox
+>> make maze
+>> make materialeditor
+
+
+J'avais un gros problème pour build materialeditor chez Jess. Qt ne détectait pas le standard c++17. Au départ ça a déclenché un bug avec cotire : "c++17 enabled in PCH but currently disabled". Désactiver cotire permettait alors de comprendre le problème sous-jacent : plein de messages d'erreurs s'affichaient pour me prévenir que certains éléments de syntaxes faisaient partie du draft c++17.
+
+Dans tous mes CMakeLists.txt (et en particulier dans celui de materialeditor) j'ai remplacé
+```cmake
+add_definitions(-std=c++17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 ")
+```
+par
+```cmake
+set(CMAKE_CXX_STANDARD 17)
+```
+Et là tout a fonctionné. Je suppose que Qt attendait un flag -std=c++1z pour fonctionner où que sais-je. Cette nouvelle notation permet d'être indépendant de la string associée au standard.
 
 
 * TODO:

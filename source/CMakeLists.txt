@@ -11,12 +11,10 @@ else()
   include(toolchain_clang7)
 endif()
 
-add_definitions(-std=c++17)
 
 # Commented bc libzipios depends directly on C++11 ABI
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 ")
+set(CMAKE_CXX_STANDARD 17)
 
 # include_directories(BEFORE "/usr/include/c++/8/")
 # include_directories(AFTER "/usr/include/x86_64-linux-gnu/c++/8/")
