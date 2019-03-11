@@ -352,7 +352,7 @@ blursharp_edit_(new QDoubleSpinBox)
     strength_edit_->setValue(0.61);
     strength_edit_->setMinimumWidth(50);
 
-    blursharp_edit_->setRange(-32.0, 32.0);
+    blursharp_edit_->setRange(-10.0, 10.0);
     blursharp_edit_->setSingleStep(1.0);
     blursharp_edit_->setValue(0.0);
     blursharp_edit_->setMinimumWidth(50);

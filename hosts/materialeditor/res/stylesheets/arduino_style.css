@@ -40,5 +40,10 @@ QStatusBar
 QLabel#StatusLabel
 {
     border: none;
-
+}
+QLabel#TBProjectLabel
+{
+    color: #ffffff;
+    background: rgb(255,120,26);
+    border: 1px dotted #ffffff;
 }

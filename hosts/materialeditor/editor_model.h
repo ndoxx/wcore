@@ -162,6 +162,7 @@ public:
 
     inline TextureEntry& get_texture_entry(wcore::hash_t name) { return texture_descriptors_.at(name); }
     inline TextureEntry& get_current_texture_entry()           { return get_texture_entry(wcore::H_(current_texname_.toUtf8().constData())); }
+    inline int get_num_entries() const { return texture_descriptors_.size(); }
     bool has_entry(wcore::hash_t name);
     void delete_current_texture(QListView* tex_list);
     void rename_texture(const QString& old_name, const QString& new_name);

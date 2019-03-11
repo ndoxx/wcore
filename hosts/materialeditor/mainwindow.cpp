@@ -71,6 +71,7 @@ dir_hierarchy_(new QTreeView),
 tex_list_(new QListView),
 texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
+pjname_label_(new QLabel()),
 new_project_dialog_(new NewProjectDialog(this)),
 file_dialog_(new QFileDialog(this))
 {
@@ -85,6 +86,7 @@ file_dialog_(new QFileDialog(this))
 
     window_->setWindowFlags(Qt::Window);
     window_->setObjectName("Window");
+    pjname_label_->setObjectName("TBProjectLabel");
     update_window_title("");
 
     // Status bar
@@ -232,6 +234,8 @@ file_dialog_(new QFileDialog(this))
                      this,               SLOT(handle_project_needs_saving()));
 
     static_cast<NormalControl*>(texmap_controls_[NORMAL])->connect_controls(this);
+
+    clear_view();
 }
 
 MainWindow::~MainWindow()
@@ -283,6 +287,16 @@ void MainWindow::create_toolbars()
                         this, SLOT(handle_compile_current()));
     toolbar_->addAction(QIcon(":/res/icons/compile_all.png"), "Compile all",
                         this, SLOT(handle_compile_all()));
+
+    toolbar_->addSeparator();
+
+    QFont font = pjname_label_->font();
+    font.setPointSize(14);
+    font.setBold(true);
+    pjname_label_->setFont(font);
+    pjname_label_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+    pjname_label_->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    toolbar_->addWidget(pjname_label_);
 }
 
 bool MainWindow::eventFilter(QObject* object, QEvent* event)
@@ -401,6 +415,8 @@ void MainWindow::handle_delete_current_texture()
         DLOGN("Deleting texture <n>" + texname.toStdString() + "</n>", "core", Severity::LOW);
         // Remove from editor model
         editor_model_->delete_current_texture(tex_list_);
+        if(editor_model_->get_num_entries() == 0)
+            clear_view();
         setWindowModified(true);
     }
 }
@@ -550,6 +566,7 @@ void MainWindow::handle_open_project()
 void MainWindow::handle_close_project()
 {
     editor_model_->close_project();
+    update_window_title("");
     clear_view();
 }
 
@@ -586,7 +603,7 @@ void MainWindow::handle_gen_normal_map()
             normal_control->get_options(options);
             generator::normal_from_depth(depthmap, normalmap, options);
             // Blur/Sharpen
-            //generator::blur_sharp(normalmap, options.sigma);
+            generator::blur_sharp(normalmap, options.sigma);
 
             // Get directory of depth map
             QDir dir(QFileInfo(depth_path).absoluteDir());
@@ -616,6 +633,7 @@ void MainWindow::update_window_title(const QString& project_name)
 {
     setWindowTitle(tr("%1 - %2 [*]").arg(tr("WCore Material Editor"))
                                     .arg(project_name.isEmpty() ? tr("[unnamed project]") : project_name));
+    pjname_label_->setText(project_name);
 }
 
 void MainWindow::clear_view()

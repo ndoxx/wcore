@@ -278,37 +278,25 @@ int main()
 */
 
 #include <iostream>
-#include <vector>
-#include "gnuplot-iostream.h"
-#include "easing.h"
 
-using namespace wcore;
+inline float wrap_uv(float uv)
+{
+    /*uv   = (uv >= 0.f) ? uv : 1.f + uv;
+    return (uv <  1.f) ? uv : uv  - 1.f;*/
+    return (uv >= 0.f) ? (uv-(long)uv) : 1.f+(uv-(long)uv);
+}
 
 int main()
 {
-    float(*func)(float) = &ease::bounce_bezier_3;
-
-    std::vector<std::tuple<float, float, float, float>> plot_points;
-
-    int N    = 60;
-    float t  = 0.f;
-    float dt = 1.0f/N;
-    for(int ii=0; ii<N; ++ii)
-    {
-        float y = (*func)(t);
-        t += dt;
-        float dy = (*func)(t)-y;
-        plot_points.push_back(std::make_tuple(t-dt,y,dt,dy));
-    }
-
-    // Plot
-    Gnuplot gp;
-
-    // Don't forget to put "\n" at the end of each line!
-    gp << "set xrange [0:1]\nset yrange [0:1]\n";
-    // '-' means read from stdin.  The send1d() function sends data to gnuplot's stdin.
-    gp << "plot '-' with vectors title 'f'\n";
-    gp.send1d(plot_points);
+    std::cout << wrap_uv(-2.1f) << std::endl;
+    std::cout << wrap_uv(-1.1f) << std::endl;
+    std::cout << wrap_uv(-0.2f) << std::endl;
+    std::cout << wrap_uv(0.f) << std::endl;
+    std::cout << wrap_uv(0.5f) << std::endl;
+    std::cout << wrap_uv(1.0f) << std::endl;
+    std::cout << wrap_uv(1.1f) << std::endl;
+    std::cout << wrap_uv(3.1f) << std::endl;
+    std::cout << wrap_uv(12.1f) << std::endl;
 
     return 0;
 }

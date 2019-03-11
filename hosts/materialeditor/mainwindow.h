@@ -76,6 +76,8 @@ private:
     QToolBar* toolbar_;
     TexlistDelegate* tex_list_delegate_;
 
+    QLabel* pjname_label_;
+
     std::vector<TexMapControl*> texmap_controls_;
 
     // Status bar
