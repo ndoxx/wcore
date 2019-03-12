@@ -9,6 +9,7 @@ class QFrame;
 class QDoubleSpinBox;
 class QPushButton;
 class QComboBox;
+class QScrollArea;
 
 namespace medit
 {
@@ -46,6 +47,7 @@ protected:
     DropLabel* droplabel;
     QCheckBox* map_enabled;
     QFrame* additional_controls;
+    QScrollArea* scroll_area;
     int texmap_index;
 };
 

@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <QComboBox>
+#include <QScrollArea>
 
 #include "texmap_controls.h"
 #include "editor_model.h"
@@ -25,6 +26,7 @@ layout(new QVBoxLayout()),
 droplabel(new DropLabel()),
 map_enabled(new QCheckBox(tr("enable image map"))),
 additional_controls(new QFrame),
+scroll_area(new QScrollArea),
 texmap_index(index)
 {
     droplabel->setAcceptDrops(true);
@@ -51,6 +53,16 @@ texmap_index(index)
     sep->setFrameShadow(QFrame::Sunken);
     layout->addWidget(sep);
     layout->setAlignment(sep, Qt::AlignTop);
+
+    // Additional controls are in a scrollable area
+    //additional_controls->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+    scroll_area->setObjectName("TexmapScroll");
+    scroll_area->setBackgroundRole(QPalette::Window);
+    scroll_area->setFrameShadow(QFrame::Plain);
+    scroll_area->setFrameShape(QFrame::NoFrame);
+    scroll_area->setWidgetResizable(true);
+    scroll_area->setWidget(additional_controls);
+    layout->addWidget(scroll_area);
 
     this->setLayout(layout);
 }
@@ -107,9 +119,6 @@ color_picker_(new ColorPickerLabel)
 
     additional_controls->setLayout(addc_layout);
 
-    layout->addWidget(additional_controls);
-    layout->setAlignment(additional_controls, Qt::AlignTop);
-
     // Add stretchable area at the bottom so that all controls are neatly packed to the top
     add_stretch();
 }
@@ -156,9 +165,6 @@ roughness_edit_(new QDoubleSpinBox)
     roughness_edit_->setMinimumWidth(50);
     additional_controls->setLayout(addc_layout);
 
-    layout->addWidget(additional_controls);
-    layout->setAlignment(additional_controls, Qt::AlignTop);
-
     // Add stretchable area at the bottom so that all controls are neatly packed to the top
     add_stretch();
 }
@@ -198,9 +204,6 @@ metallic_edit_(new QDoubleSpinBox)
     metallic_edit_->setMinimumWidth(50);
     additional_controls->setLayout(addc_layout);
 
-    layout->addWidget(additional_controls);
-    layout->setAlignment(additional_controls, Qt::AlignTop);
-
     // Add stretchable area at the bottom so that all controls are neatly packed to the top
     add_stretch();
 }
@@ -239,9 +242,6 @@ parallax_scale_edit_(new QDoubleSpinBox)
 
     parallax_scale_edit_->setMinimumWidth(50);
     additional_controls->setLayout(addc_layout);
-
-    layout->addWidget(additional_controls);
-    layout->setAlignment(additional_controls, Qt::AlignTop);
 
     // Add stretchable area at the bottom so that all controls are neatly packed to the top
     add_stretch();
@@ -328,9 +328,6 @@ blursharp_edit_(new QDoubleSpinBox)
     blursharp_edit_->setLocale(qlocale);
 
     additional_controls->setLayout(addc_layout);
-
-    layout->addWidget(additional_controls);
-    layout->setAlignment(additional_controls, Qt::AlignTop);
 
     // Add stretchable area at the bottom so that all controls are neatly packed to the top
     add_stretch();
@@ -444,9 +441,6 @@ blursharp_edit_(new QDoubleSpinBox)
     blursharp_edit_->setLocale(qlocale);
 
     additional_controls->setLayout(addc_layout);
-
-    layout->addWidget(additional_controls);
-    layout->setAlignment(additional_controls, Qt::AlignTop);
 
     // Add stretchable area at the bottom so that all controls are neatly packed to the top
     add_stretch();

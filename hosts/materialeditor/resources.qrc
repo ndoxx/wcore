@@ -12,6 +12,6 @@
     <file>res/icons/save_as.png</file>
     <file>res/icons/save_all.png</file>
 
-    <file>res/stylesheets/arduino_style.css</file>
+    <file>res/stylesheets/default_style.css</file>
 </qresource>
 </RCC>

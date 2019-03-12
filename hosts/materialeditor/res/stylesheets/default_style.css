@@ -47,3 +47,15 @@ QLabel#TBProjectLabel
     background: rgb(255,120,26);
     border: 1px dotted #ffffff;
 }
+QScrollArea#TexmapScroll
+{
+    background: transparent;
+}
+QScrollArea#TexmapScroll > QWidget > QWidget
+{
+    background: transparent;
+}
+QScrollArea#TexmapScroll > QWidget > QScrollBar
+{
+    background: palette(base);
+}

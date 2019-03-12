@@ -76,7 +76,7 @@ new_project_dialog_(new NewProjectDialog(this)),
 file_dialog_(new QFileDialog(this))
 {
     // Load style
-    QFile stylesheet_file(":/res/stylesheets/arduino_style.css");
+    QFile stylesheet_file(":/res/stylesheets/default_style.css");
     if(stylesheet_file.open(QFile::ReadOnly | QFile::Text))
     {
         QTextStream in(&stylesheet_file);
