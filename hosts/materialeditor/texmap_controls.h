@@ -13,17 +13,6 @@ class QComboBox;
 namespace medit
 {
 
-enum TexMapControlIndex: uint32_t
-{
-    ALBEDO,
-    ROUGHNESS,
-    METALLIC,
-    AO,
-    DEPTH,
-    NORMAL,
-    N_CONTROLS
-};
-
 class DropLabel;
 struct TextureEntry;
 // Groups all the controls for a given texture map
@@ -115,24 +104,6 @@ private:
     QDoubleSpinBox* metallic_edit_;
 };
 
-// Specialized controls for AO map
-class AOControl: public TexMapControl
-{
-    Q_OBJECT
-
-public:
-    explicit AOControl();
-    virtual ~AOControl() = default;
-
-protected:
-    virtual void clear_additional() override;
-    virtual void write_entry_additional(TextureEntry& entry) override;
-    virtual void read_entry_additional(const TextureEntry& entry) override;
-
-private:
-    QDoubleSpinBox* ao_edit_;
-};
-
 // Specialized controls for depth map
 class DepthControl: public TexMapControl
 {
@@ -155,7 +126,36 @@ class MainWindow;
 namespace generator
 {
     struct NormalGenOptions;
+    struct AOGenOptions;
 }
+
+// Specialized controls for AO map
+class AOControl: public TexMapControl
+{
+    Q_OBJECT
+
+public:
+    explicit AOControl();
+    virtual ~AOControl() = default;
+
+    void connect_controls(MainWindow* main_window);
+    void get_options(generator::AOGenOptions& options);
+
+protected:
+    virtual void clear_additional() override;
+    virtual void write_entry_additional(TextureEntry& entry) override;
+    virtual void read_entry_additional(const TextureEntry& entry) override;
+
+private:
+    QDoubleSpinBox* ao_edit_;
+    QPushButton* gen_from_depth_btn_;
+    QCheckBox* invert_cb_;
+    QDoubleSpinBox* strength_edit_;
+    QDoubleSpinBox* mean_edit_;
+    QDoubleSpinBox* range_edit_;
+    QDoubleSpinBox* blursharp_edit_;
+};
+
 // Specialized controls for normal map
 class NormalControl: public TexMapControl
 {
@@ -166,7 +166,6 @@ public:
     virtual ~NormalControl() = default;
 
     void connect_controls(MainWindow* main_window);
-
     void get_options(generator::NormalGenOptions& options);
 
 protected:

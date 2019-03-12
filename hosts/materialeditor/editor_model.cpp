@@ -21,22 +21,22 @@ namespace medit
 
 static std::map<int, std::string> texmap_names =
 {
-    {0, "Albedo"},
-    {1, "Roughness"},
-    {2, "Metallic"},
-    {3, "AO"},
-    {4, "Depth"},
-    {5, "Normal"}
+    {TexMapControlIndex::ALBEDO,    "Albedo"},
+    {TexMapControlIndex::ROUGHNESS, "Roughness"},
+    {TexMapControlIndex::METALLIC,  "Metallic"},
+    {TexMapControlIndex::AO,        "AO"},
+    {TexMapControlIndex::DEPTH,     "Depth"},
+    {TexMapControlIndex::NORMAL,    "Normal"}
 };
 
 static std::map<hash_t, int> texmap_names_to_index =
 {
-    {"Albedo"_h, 0},
-    {"Roughness"_h, 1},
-    {"Metallic"_h, 2},
-    {"AO"_h, 3},
-    {"Depth"_h, 4},
-    {"Normal"_h, 5}
+    {"Albedo"_h,    TexMapControlIndex::ALBEDO},
+    {"Roughness"_h, TexMapControlIndex::ROUGHNESS},
+    {"Metallic"_h,  TexMapControlIndex::METALLIC},
+    {"AO"_h,        TexMapControlIndex::AO},
+    {"Depth"_h,     TexMapControlIndex::DEPTH},
+    {"Normal"_h,    TexMapControlIndex::NORMAL}
 };
 
 static std::map<int, std::string> filter_names =
@@ -45,7 +45,7 @@ static std::map<int, std::string> filter_names =
     {1, "scharr"}
 };
 
-static std::map<hash_t, int> filtername_to_index =
+static std::map<hash_t, int> filter_names_to_index =
 {
     {"sobel"_h, 0},
     {"scharr"_h, 1}
@@ -90,7 +90,7 @@ void NormalMap::debug_display()
 void TextureEntry::debug_display()
 {
     DLOG("Texture <n>" + name.toStdString() + "</n>", "core", Severity::LOW);
-    for(int ii=0; ii<NTEXMAPS; ++ii)
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
         texture_maps[ii]->debug_display();
 }
 #endif
@@ -99,20 +99,20 @@ TextureEntry::TextureEntry():
 texture_maps({new AlbedoMap,
               new RoughnessMap,
               new MetallicMap,
-              new AOMap,
               new DepthMap,
+              new AOMap,
               new NormalMap})
 {
 
 }
 
 TextureEntry::TextureEntry(const TextureEntry& other):
-texture_maps({new AlbedoMap(*static_cast<AlbedoMap*>(other.texture_maps[0])),
-              new RoughnessMap(*static_cast<RoughnessMap*>(other.texture_maps[1])),
-              new MetallicMap(*static_cast<MetallicMap*>(other.texture_maps[2])),
-              new AOMap(*static_cast<AOMap*>(other.texture_maps[3])),
-              new DepthMap(*static_cast<DepthMap*>(other.texture_maps[4])),
-              new NormalMap(*static_cast<NormalMap*>(other.texture_maps[5]))}),
+texture_maps({new AlbedoMap(*static_cast<AlbedoMap*>(other.texture_maps[ALBEDO])),
+              new RoughnessMap(*static_cast<RoughnessMap*>(other.texture_maps[ROUGHNESS])),
+              new MetallicMap(*static_cast<MetallicMap*>(other.texture_maps[METALLIC])),
+              new DepthMap(*static_cast<DepthMap*>(other.texture_maps[DEPTH])),
+              new AOMap(*static_cast<AOMap*>(other.texture_maps[AO])),
+              new NormalMap(*static_cast<NormalMap*>(other.texture_maps[NORMAL]))}),
 name(other.name),
 width(other.width),
 height(other.height)
@@ -122,7 +122,7 @@ height(other.height)
 
 TextureEntry::~TextureEntry()
 {
-    for(int ii=0; ii<NTEXMAPS; ++ii)
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
         delete texture_maps[ii];
 }
 
@@ -186,7 +186,7 @@ void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materia
 
     // TextureMaps node to hold texture maps paths
     xml_node<>* texmap_node = doc.allocate_node(node_element, "TextureMaps");
-    for(int ii=0; ii<NTEXMAPS; ++ii)
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
     {
         xml_node<>* tex_node = doc.allocate_node(node_element, "TextureMap");
         node_add_attribute(doc, tex_node, "name", texmap_names[ii].c_str());
@@ -223,14 +223,24 @@ void MetallicMap::parse(rapidxml::xml_node<>* node)
     xml::parse_attribute(node, "value", u_metallic);
 }
 
-void AOMap::parse(rapidxml::xml_node<>* node)
-{
-    xml::parse_attribute(node, "value", u_ao);
-}
-
 void DepthMap::parse(rapidxml::xml_node<>* node)
 {
     xml::parse_node(node, "ParallaxHeightScale", u_parallax_scale);
+}
+
+void AOMap::parse(rapidxml::xml_node<>* node)
+{
+    xml::parse_attribute(node, "value", u_ao);
+
+    xml_node<>* gen_node = node->first_node("Generator");
+    if(gen_node)
+    {
+        xml::parse_node(gen_node, "Invert", gen_invert);
+        xml::parse_node(gen_node, "Strength", gen_strength);
+        xml::parse_node(gen_node, "Mean", gen_mean);
+        xml::parse_node(gen_node, "Range", gen_range);
+        xml::parse_node(gen_node, "BlurSharp", gen_blursharp);
+    }
 }
 
 void NormalMap::parse(rapidxml::xml_node<>* node)
@@ -240,7 +250,7 @@ void NormalMap::parse(rapidxml::xml_node<>* node)
     {
         std::string filter_str;
         if(xml::parse_node(gen_node, "Filter", filter_str))
-            gen_filter = filtername_to_index[wcore::H_(filter_str.c_str())];
+            gen_filter = filter_names_to_index[wcore::H_(filter_str.c_str())];
 
         xml::parse_node(gen_node, "InvertR", gen_invert_r);
         xml::parse_node(gen_node, "InvertG", gen_invert_g);
@@ -276,19 +286,42 @@ void MetallicMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
         node_add_attribute(doc, node, "value", value_str.c_str());
 }
 
+void DepthMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
+{
+    xml_node<>* plxscale_node = doc.allocate_node(node_element, "ParallaxHeightScale");
+    node_set_value(doc, plxscale_node, std::to_string(u_parallax_scale).c_str());
+    node->append_node(plxscale_node);
+}
+
 void AOMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 {
     // Save uniform value even if not used
     std::string value_str(wcore::to_string(u_ao));
     if(value_str.size()!=0)
         node_add_attribute(doc, node, "value", value_str.c_str());
-}
 
-void DepthMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
-{
-    xml_node<>* plxscale_node = doc.allocate_node(node_element, "ParallaxHeightScale");
-    node_set_value(doc, plxscale_node, std::to_string(u_parallax_scale).c_str());
-    node->append_node(plxscale_node);
+    // Generator options
+    xml_node<>* gen_node = doc.allocate_node(node_element, "Generator");
+
+    xml_node<>* inv_node = doc.allocate_node(node_element, "Invert");
+    xml_node<>* strength_node = doc.allocate_node(node_element, "Strength");
+    xml_node<>* mean_node = doc.allocate_node(node_element, "Mean");
+    xml_node<>* range_node = doc.allocate_node(node_element, "Range");
+    xml_node<>* blursharp_node = doc.allocate_node(node_element, "BlurSharp");
+
+    node_set_value(doc, inv_node, gen_invert ? "true" : "false");
+    node_set_value(doc, strength_node, std::to_string(gen_strength).c_str());
+    node_set_value(doc, mean_node, std::to_string(gen_mean).c_str());
+    node_set_value(doc, range_node, std::to_string(gen_range).c_str());
+    node_set_value(doc, blursharp_node, std::to_string(gen_blursharp).c_str());
+
+    gen_node->append_node(inv_node);
+    gen_node->append_node(strength_node);
+    gen_node->append_node(mean_node);
+    gen_node->append_node(range_node);
+    gen_node->append_node(blursharp_node);
+
+    node->append_node(gen_node);
 }
 
 void NormalMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
@@ -425,8 +458,8 @@ void EditorModel::compile(const QString& texname)
         QImage block1(entry.width, entry.height, QImage::Format_RGBA8888);
         QImage block2(entry.width, entry.height, QImage::Format_RGBA8888);
 
-        QImage** texmaps = new QImage*[NTEXMAPS];
-        for(int ii=0; ii<NTEXMAPS; ++ii)
+        QImage** texmaps = new QImage*[TexMapControlIndex::N_CONTROLS];
+        for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
         {
             if(entry.texture_maps[ii]->has_image)
                 texmaps[ii] = new QImage(entry.texture_maps[ii]->path);
@@ -439,7 +472,7 @@ void EditorModel::compile(const QString& texname)
         {
             for(int yy=0; yy<entry.height; ++yy)
             {
-                QRgb albedo = texmaps[0] ? texmaps[0]->pixel(xx,yy) : qRgba(0,0,0,255);
+                QRgb albedo = texmaps[ALBEDO] ? texmaps[ALBEDO]->pixel(xx,yy) : qRgba(0,0,0,255);
 
                 block0.setPixel(xx, yy, albedo);
             }
@@ -450,8 +483,8 @@ void EditorModel::compile(const QString& texname)
         {
             for(int yy=0; yy<entry.height; ++yy)
             {
-                QRgb normal = texmaps[5] ? texmaps[5]->pixel(xx,yy) : qRgb(0,0,0);
-                int depth   = texmaps[4] ? qRed(texmaps[4]->pixel(xx,yy)) : 0;
+                QRgb normal = texmaps[NORMAL] ? texmaps[NORMAL]->pixel(xx,yy) : qRgb(0,0,0);
+                int depth   = texmaps[DEPTH]  ? qRed(texmaps[DEPTH]->pixel(xx,yy)) : 0;
 
                 QRgb out_color = qRgba(qRed(normal), qGreen(normal), qBlue(normal), depth);
                 block1.setPixel(xx, yy, out_color);
@@ -463,9 +496,9 @@ void EditorModel::compile(const QString& texname)
         {
             for(int yy=0; yy<entry.height; ++yy)
             {
-                int metallic  = texmaps[2] ? qRed(texmaps[2]->pixel(xx,yy)) : 0;
-                int ao        = texmaps[3] ? qRed(texmaps[3]->pixel(xx,yy)) : 0;
-                int roughness = texmaps[1] ? qRed(texmaps[1]->pixel(xx,yy)) : 0;
+                int metallic  = texmaps[METALLIC]  ? qRed(texmaps[METALLIC]->pixel(xx,yy)) : 0;
+                int ao        = texmaps[AO]        ? qRed(texmaps[AO]->pixel(xx,yy)) : 0;
+                int roughness = texmaps[ROUGHNESS] ? qRed(texmaps[ROUGHNESS]->pixel(xx,yy)) : 0;
 
                 QRgb out_color = qRgba(metallic, ao, roughness, 255);
                 block2.setPixel(xx, yy, out_color);

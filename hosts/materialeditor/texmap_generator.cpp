@@ -229,6 +229,34 @@ void blur_sharp(QImage& img, float sigma)
     }
 }
 
+void ao_from_depth(const QImage& depth_map, QImage& ao_map, const AOGenOptions& options)
+{
+    int w = ao_map.width();
+    int h = ao_map.height();
+
+    for(int xx=0; xx<w; ++xx)
+    {
+        for(int yy=0; yy<h; ++yy)
+        {
+            vec2 vUv(xx/float(w), yy/float(h));
+
+            // Lower value
+            float depth = sample_red_nearest(depth_map,  vUv);
+            // inside range around mean value?!
+            float perc_dist_to_mean = (options.range - std::fabs(depth - options.mean)) / options.range;
+            float val = (perc_dist_to_mean > 0.f) ? sqrt(perc_dist_to_mean) : 0.f;
+            // multiply by strength
+            val += (1.f-val) * (1.f-options.strength);
+            // invert if necessary
+            val = (options.invert) ? (1.f-val) : val;
+            // convert to rgb8
+            val = int(std::floor(val*255));
+            QRgb out_color = qRgb(val,val,val);
+            ao_map.setPixel(xx, yy, out_color);
+        }
+    }
+}
+
 } // namespace generator
 } // namespace medit
 

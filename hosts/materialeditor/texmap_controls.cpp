@@ -223,48 +223,6 @@ void MetallicControl::read_entry_additional(const TextureEntry& entry)
 }
 
 
-AOControl::AOControl():
-TexMapControl(tr("AO"), AO),
-ao_edit_(new QDoubleSpinBox)
-{
-    QFormLayout* addc_layout = new QFormLayout();
-    addc_layout->addRow(tr("Uniform value:"), ao_edit_);
-    ao_edit_->setRange(0.0, 1.0);
-    ao_edit_->setSingleStep(0.1);
-
-    // Reject comma group separator, use dot as decimal separator
-    QLocale qlocale(QLocale::C);
-    qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
-    ao_edit_->setLocale(qlocale);
-
-    ao_edit_->setMinimumWidth(50);
-    additional_controls->setLayout(addc_layout);
-
-    layout->addWidget(additional_controls);
-    layout->setAlignment(additional_controls, Qt::AlignTop);
-
-    // Add stretchable area at the bottom so that all controls are neatly packed to the top
-    add_stretch();
-}
-
-void AOControl::clear_additional()
-{
-    ao_edit_->setValue(0);
-}
-
-void AOControl::write_entry_additional(TextureEntry& entry)
-{
-    AOMap* ao_map = static_cast<AOMap*>(entry.texture_maps[texmap_index]);
-    ao_map->u_ao = (float)ao_edit_->value();
-}
-
-void AOControl::read_entry_additional(const TextureEntry& entry)
-{
-    AOMap* ao_map = static_cast<AOMap*>(entry.texture_maps[texmap_index]);
-    ao_edit_->setValue(ao_map->u_ao);
-}
-
-
 DepthControl::DepthControl():
 TexMapControl(tr("Depth"), DEPTH),
 parallax_scale_edit_(new QDoubleSpinBox)
@@ -304,6 +262,128 @@ void DepthControl::read_entry_additional(const TextureEntry& entry)
 {
     DepthMap* depth_map = static_cast<DepthMap*>(entry.texture_maps[texmap_index]);
     parallax_scale_edit_->setValue(depth_map->u_parallax_scale);
+}
+
+
+AOControl::AOControl():
+TexMapControl(tr("AO"), AO),
+ao_edit_(new QDoubleSpinBox),
+gen_from_depth_btn_(new QPushButton(tr("From depthmap"))),
+invert_cb_(new QCheckBox),
+strength_edit_(new QDoubleSpinBox),
+mean_edit_(new QDoubleSpinBox),
+range_edit_(new QDoubleSpinBox),
+blursharp_edit_(new QDoubleSpinBox)
+{
+    QFormLayout* addc_layout = new QFormLayout();
+    addc_layout->addRow(tr("Uniform value:"), ao_edit_);
+
+    // Add separator
+    auto sep = new QFrame;
+    sep->setObjectName("Separator");
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Sunken);
+    addc_layout->addRow(sep);
+
+
+    addc_layout->addRow(tr("Invert:"), invert_cb_);
+    addc_layout->addRow(tr("Strength:"), strength_edit_);
+    addc_layout->addRow(tr("Mean:"), mean_edit_);
+    addc_layout->addRow(tr("Range:"), range_edit_);
+    addc_layout->addRow(tr("Blur/Sharp:"), blursharp_edit_);
+    addc_layout->addRow(gen_from_depth_btn_);
+
+    ao_edit_->setRange(0.0, 1.0);
+    ao_edit_->setSingleStep(0.1);
+    ao_edit_->setValue(0.0);
+    ao_edit_->setMinimumWidth(50);
+
+    strength_edit_->setRange(0.0, 1.0);
+    strength_edit_->setSingleStep(0.1);
+    strength_edit_->setValue(0.5);
+    strength_edit_->setMinimumWidth(50);
+
+    mean_edit_->setRange(0.0, 1.0);
+    mean_edit_->setSingleStep(0.1);
+    mean_edit_->setValue(1.0);
+    mean_edit_->setMinimumWidth(50);
+
+    range_edit_->setRange(0.0, 1.0);
+    range_edit_->setSingleStep(0.1);
+    range_edit_->setValue(1.0);
+    range_edit_->setMinimumWidth(50);
+
+    blursharp_edit_->setRange(-10.0, 10.0);
+    blursharp_edit_->setSingleStep(1.0);
+    blursharp_edit_->setValue(0.0);
+    blursharp_edit_->setMinimumWidth(50);
+
+    // Reject comma group separator, use dot as decimal separator
+    QLocale qlocale(QLocale::C);
+    qlocale.setNumberOptions(QLocale::RejectGroupSeparator);
+    ao_edit_->setLocale(qlocale);
+    strength_edit_->setLocale(qlocale);
+    mean_edit_->setLocale(qlocale);
+    range_edit_->setLocale(qlocale);
+    blursharp_edit_->setLocale(qlocale);
+
+    additional_controls->setLayout(addc_layout);
+
+    layout->addWidget(additional_controls);
+    layout->setAlignment(additional_controls, Qt::AlignTop);
+
+    // Add stretchable area at the bottom so that all controls are neatly packed to the top
+    add_stretch();
+}
+
+void AOControl::clear_additional()
+{
+    ao_edit_->setValue(0);
+    strength_edit_->setValue(0.5);
+    range_edit_->setValue(1.0);
+    blursharp_edit_->setValue(0.0);
+    invert_cb_->setCheckState(Qt::Unchecked);
+}
+
+void AOControl::write_entry_additional(TextureEntry& entry)
+{
+    AOMap* ao_map = static_cast<AOMap*>(entry.texture_maps[texmap_index]);
+    ao_map->u_ao = (float)ao_edit_->value();
+
+    // Generator options
+    ao_map->gen_invert    = invert_cb_->checkState() == Qt::Checked;
+    ao_map->gen_strength  = (float)strength_edit_->value();
+    ao_map->gen_mean      = (float)mean_edit_->value();
+    ao_map->gen_range     = (float)range_edit_->value();
+    ao_map->gen_blursharp = (float)blursharp_edit_->value();
+}
+
+void AOControl::read_entry_additional(const TextureEntry& entry)
+{
+    AOMap* ao_map = static_cast<AOMap*>(entry.texture_maps[texmap_index]);
+    ao_edit_->setValue(ao_map->u_ao);
+
+    // Generator options
+    invert_cb_->setCheckState(ao_map->gen_invert ? Qt::Checked : Qt::Unchecked);
+    strength_edit_->setValue(ao_map->gen_strength);
+    mean_edit_->setValue(ao_map->gen_mean);
+    range_edit_->setValue(ao_map->gen_range);
+    blursharp_edit_->setValue(ao_map->gen_blursharp);
+}
+
+void AOControl::connect_controls(MainWindow* main_window)
+{
+    QObject::connect(gen_from_depth_btn_, &QPushButton::clicked,
+                     main_window,         &MainWindow::handle_gen_ao_map);
+}
+
+void AOControl::get_options(generator::AOGenOptions& options)
+{
+    options.range    = (float)range_edit_->value();
+    options.mean     = (float)mean_edit_->value();
+    options.strength = (float)strength_edit_->value();
+    options.sigma    = (float)blursharp_edit_->value();
+    options.invert   = invert_cb_->checkState() == Qt::Checked;;
 }
 
 

@@ -22,7 +22,16 @@ class QListView;
 namespace medit
 {
 
-#define NTEXMAPS 6
+enum TexMapControlIndex: uint32_t
+{
+    ALBEDO,
+    ROUGHNESS,
+    METALLIC,
+    DEPTH,
+    AO,
+    NORMAL,
+    N_CONTROLS
+};
 
 struct TextureMap
 {
@@ -85,6 +94,11 @@ struct AOMap: public TextureMap
 #endif
 
     float u_ao;
+    bool gen_invert;
+    float gen_strength;
+    float gen_mean;
+    float gen_range;
+    float gen_blursharp;
 };
 
 struct DepthMap: public TextureMap
@@ -128,7 +142,7 @@ struct TextureEntry
     wcore::hash_t parse_node(rapidxml::xml_node<>* mat_node);
     void write_node(rapidxml::xml_document<>& doc, rapidxml::xml_node<>* materials_node);
 
-    std::array<TextureMap*, NTEXMAPS> texture_maps;
+    std::array<TextureMap*, TexMapControlIndex::N_CONTROLS> texture_maps;
     QString name;
 
     int width  = 0;

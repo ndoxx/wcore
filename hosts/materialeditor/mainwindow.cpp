@@ -122,8 +122,8 @@ file_dialog_(new QFileDialog(this))
     texmap_controls_.push_back(new AlbedoControl());
     texmap_controls_.push_back(new RoughnessControl());
     texmap_controls_.push_back(new MetallicControl());
-    texmap_controls_.push_back(new AOControl());
     texmap_controls_.push_back(new DepthControl());
+    texmap_controls_.push_back(new AOControl());
     texmap_controls_.push_back(new NormalControl());
 
     for(int ii=0; ii<texmap_controls_.size(); ++ii)
@@ -234,6 +234,7 @@ file_dialog_(new QFileDialog(this))
                      this,               SLOT(handle_project_needs_saving()));
 
     static_cast<NormalControl*>(texmap_controls_[NORMAL])->connect_controls(this);
+    static_cast<AOControl*>(texmap_controls_[AO])->connect_controls(this);
 
     clear_view();
 }
@@ -620,7 +621,7 @@ void MainWindow::handle_gen_normal_map()
             QString filename = texname + "_norm_gen.png";
             QString normal_path(dir.filePath(filename));
 
-            DLOGN("Saving generated normal map:", "core", Severity::LOW);
+            DLOGN("Saving generated <h>normal</h> map:", "core", Severity::LOW);
             DLOGI("<p>" + normal_path.toStdString() + "</p>", "core", Severity::LOW);
 
             normalmap.save(normal_path);
@@ -634,7 +635,54 @@ void MainWindow::handle_gen_normal_map()
             QApplication::restoreOverrideCursor();
         }
     }
+}
 
+void MainWindow::handle_gen_ao_map()
+{
+    // Get current entry
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        handle_save_current_texture();
+        TextureEntry& entry = editor_model_->get_current_texture_entry();
+        // Get depth map if any
+        if(entry.texture_maps[DEPTH]->has_image && entry.texture_maps[DEPTH]->use_image)
+        {
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+
+            QString depth_path(entry.texture_maps[DEPTH]->path);
+            QImage depthmap(depth_path);
+            QImage aomap(entry.width, entry.height, QImage::Format_RGBA8888);
+
+            // Generate normal map
+            generator::AOGenOptions options;
+            AOControl* ao_control = static_cast<AOControl*>(texmap_controls_[AO]);
+            ao_control->get_options(options);
+            generator::ao_from_depth(depthmap, aomap, options);
+            // Blur/Sharpen
+            generator::blur_sharp(aomap, options.sigma);
+
+            // Get directory of depth map
+            QDir dir(QFileInfo(depth_path).absoluteDir());
+
+            // Generate filename and save normal map
+            QString filename = texname + "_ao_gen.png";
+            QString ao_path(dir.filePath(filename));
+
+            DLOGN("Saving generated <h>AO</h> map:", "core", Severity::LOW);
+            DLOGI("<p>" + ao_path.toStdString() + "</p>", "core", Severity::LOW);
+
+            aomap.save(ao_path);
+
+            // Display newly generated normal map
+            entry.texture_maps[AO]->has_image = true;
+            entry.texture_maps[AO]->use_image = true;
+            entry.texture_maps[AO]->path = ao_path;
+            update_texture_view();
+
+            QApplication::restoreOverrideCursor();
+        }
+    }
 }
 
 void MainWindow::update_window_title(const QString& project_name)

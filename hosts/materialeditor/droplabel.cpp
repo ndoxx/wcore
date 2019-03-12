@@ -29,7 +29,8 @@ initialized_(false)
 
 int DropLabel::heightForWidth(int width) const
 {
-    return pixmap_.isNull() ? width : ((qreal)pixmap_.height()*width)/pixmap_.width();
+    //return pixmap_.isNull() ? width : ((qreal)pixmap_.height()*width)/pixmap_.width();
+    return width;
 }
 
 /*QSize DropLabel::sizeHint() const
