@@ -9,7 +9,7 @@
     #include "imgui/imgui_impl_opengl3.h"
 #endif
 
-#include "context.h"
+#include "glfwcontext.h"
 #include "config.h"
 #include "logger.h"
 #include "error.h"
@@ -26,9 +26,17 @@ static void glfw_error_callback(int error, const char* description)
     DLOGI(description, "core", Severity::CRIT);
 }
 
-Context::Context():
-window_(nullptr),
-cursor_hidden_(true)
+class GLFWContext::GLFWImpl
+{
+public:
+    GLFWImpl();
+    ~GLFWImpl();
+
+    GLFWwindow* window_;
+};
+
+GLFWContext::GLFWImpl::GLFWImpl():
+window_(nullptr)
 {
     // Setup GLFW error callback
     glfwSetErrorCallback(glfw_error_callback);
@@ -85,7 +93,7 @@ cursor_hidden_(true)
     glfwGetFramebufferSize(window_, &GLB.WIN_W, &GLB.WIN_H);
 }
 
-Context::~Context()
+GLFWContext::GLFWImpl::~GLFWImpl()
 {
     // Close OpenGL window and terminate GLFW
     glfwDestroyWindow(window_);
@@ -95,13 +103,54 @@ Context::~Context()
     // by XkbGetMap in glfwInit for GLFW3.1. Leak corrected in 3.2.
 }
 
-void Context::swap_buffers()
+
+GLFWContext::GLFWContext():
+pimpl_(new GLFWImpl()),
+cursor_hidden_(true)
+{
+
+}
+
+GLFWContext::~GLFWContext()
+{
+
+}
+
+uint16_t GLFWContext::get_key_state(uint16_t key)
+{
+    return (uint16_t)glfwGetKey(pimpl_->window_, key);
+}
+
+uint8_t GLFWContext::get_mouse_buttons_state()
+{
+    return (glfwGetMouseButton(pimpl_->window_, GLFW_MOUSE_BUTTON_LEFT)   << MouseButton::LMB)
+         + (glfwGetMouseButton(pimpl_->window_, GLFW_MOUSE_BUTTON_RIGHT)  << MouseButton::RMB)
+         + (glfwGetMouseButton(pimpl_->window_, GLFW_MOUSE_BUTTON_MIDDLE) << MouseButton::MMB);
+
+}
+
+void GLFWContext::get_window_size(int& width, int& height)
+{
+    glfwGetWindowSize(pimpl_->window_, &width, &height);
+}
+
+void GLFWContext::get_cursor_position(double& x, double& y)
+{
+    glfwGetCursorPos(pimpl_->window_, &x, &y);
+}
+
+void GLFWContext::set_cursor_position(double x, double y)
+{
+    glfwSetCursorPos(pimpl_->window_, x, y);
+}
+
+void GLFWContext::swap_buffers()
 {
 /*#ifdef __PROFILING_GAMELOOP__
         profile_clock.restart();
 #endif //__PROFILING_GAMELOOP__*/
 
-    glfwSwapBuffers(window_);
+    glfwSwapBuffers(pimpl_->window_);
 
 /*#ifdef __PROFILING_GAMELOOP__
         {
@@ -111,58 +160,44 @@ void Context::swap_buffers()
 #endif //__PROFILING_GAMELOOP__*/
 }
 
-void Context::poll_events()
+void GLFWContext::poll_events()
 {
     glfwPollEvents();
 }
 
-void Context::toggle_hard_cursor()
+void GLFWContext::toggle_hard_cursor()
 {
     cursor_hidden_ = !cursor_hidden_;
     if(cursor_hidden_)
     {
-        glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(pimpl_->window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
     else
-        glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(pimpl_->window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void Context::show_hard_cursor()
+void GLFWContext::show_hard_cursor()
 {
     cursor_hidden_ = false;
-    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetInputMode(pimpl_->window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void Context::hide_hard_cursor()
+void GLFWContext::hide_hard_cursor()
 {
     cursor_hidden_ = true;
-    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(pimpl_->window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-void Context::center_cursor()
+bool GLFWContext::window_required()
 {
-    //if(cursor_hidden_)
-    //{
-        // Get window size
-        int win_width, win_height;
-        glfwGetWindowSize(window_, &win_width, &win_height);
-        // Reset mouse position for next frame
-        glfwSetCursorPos(window_,
-                         win_width/2,
-                         win_height/2);
-    //}
-}
-
-bool Context::window_required()
-{
-    return ((glfwGetKey(window_, GLFW_KEY_ESCAPE ) != GLFW_PRESS)
-           && (glfwWindowShouldClose(window_) == 0));
+    return ((glfwGetKey(pimpl_->window_, GLFW_KEY_ESCAPE ) != GLFW_PRESS)
+           && (glfwWindowShouldClose(pimpl_->window_) == 0));
 }
 
 #ifndef __DISABLE_EDITOR__
-void Context::init_imgui()
+void GLFWContext::init_imgui()
 {
-    ImGui_ImplGlfw_InitForOpenGL(window_, true);
+    ImGui_ImplGlfw_InitForOpenGL(pimpl_->window_, true);
 }
 #endif // __DISABLE_EDITOR__
 

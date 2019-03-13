@@ -20,8 +20,9 @@ set(SRC_MATHS
 
 set(SRC_CORE
     ${CMAKE_SOURCE_DIR}/source/src/wcore.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/wcontext.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/glfwcontext.cpp
     ${CMAKE_SOURCE_DIR}/source/src/engine_core.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/context.cpp
     ${CMAKE_SOURCE_DIR}/source/src/thread_utils.cpp
     ${CMAKE_SOURCE_DIR}/source/src/error.cpp
     ${CMAKE_SOURCE_DIR}/source/src/stack_trace.cpp

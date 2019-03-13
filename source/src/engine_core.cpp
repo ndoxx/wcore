@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 
 #include "engine_core.h"
+#include "glfwcontext.h"
 #include "config.h"
 #include "globals.h"
 #include "game_system.h"
@@ -18,7 +19,7 @@
     #include "imgui/imgui_impl_opengl3.h"
 #endif
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
     #include "moving_average.h"
     #include "debug_info.h"
     #include "math3d.h"
@@ -27,18 +28,19 @@
 namespace wcore
 {
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
     static MovingAverage render_time_fifo(1000);
     static MovingAverage update_time_fifo(1000);
     static MovingAverage idle_time_fifo(1000);
 #endif
 
-void GameLoop::init_imgui()
+#ifndef __DISABLE_EDITOR__
+void EngineCore::init_imgui()
 {
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    context_.init_imgui();
+    context_->init_imgui();
     ImGui_ImplOpenGL3_Init("#version 400 core");
     // Setup style
     ImGui::StyleColorsDark();
@@ -78,19 +80,25 @@ void GameLoop::init_imgui()
 
     style->Colors[ImGuiCol_PlotLines] = ImVec4(0.1f, 0.8f, 0.2f, 1.0f);
 }
+#endif
 
-GameLoop::GameLoop():
+EngineCore::EngineCore(AbstractContext* context):
+context_(context),
 render_editor_GUI_(false)
 {
+    // If no context was specified, create a GLFW context
+    if(context_ == nullptr)
+        context_ = new GLFWContext();
+
     // GUI initialization
 #ifndef __DISABLE_EDITOR__
     init_imgui();
-    subscribe("input.keyboard"_h, handler_, &GameLoop::onKeyboardEvent);
+    subscribe("input.keyboard"_h, handler_, &EngineCore::onKeyboardEvent);
 #endif
-    subscribe("input.mouse.focus"_h, handler_, &GameLoop::onMouseFocus);
+    subscribe("input.mouse.focus"_h, handler_, &EngineCore::onMouseFocus);
 }
 
-GameLoop::~GameLoop()
+EngineCore::~EngineCore()
 {
 #ifndef __DISABLE_EDITOR__
     // Shutdown ImGUI
@@ -98,10 +106,11 @@ GameLoop::~GameLoop()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 #endif
+    delete context_;
 }
 
 #ifndef __DISABLE_EDITOR__
-void GameLoop::imgui_new_frame()
+void EngineCore::imgui_new_frame()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -109,7 +118,7 @@ void GameLoop::imgui_new_frame()
 }
 
 static bool show_log_window = false;
-void GameLoop::generate_editor_widgets()
+void EngineCore::generate_editor_widgets()
 {
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(365,GLB.WIN_H), ImGuiCond_Once);
@@ -135,7 +144,7 @@ void GameLoop::generate_editor_widgets()
 }
 #endif
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
 #include <sstream>
 #include <cmath>
 #include <iomanip>
@@ -156,7 +165,7 @@ static std::string dbg_display_sub_duration(const std::string& name,
 }
 #endif
 
-bool GameLoop::onKeyboardEvent(const WData& data)
+bool EngineCore::onKeyboardEvent(const WData& data)
 {
     const KbdData& kbd = static_cast<const KbdData&>(data);
 
@@ -166,10 +175,10 @@ bool GameLoop::onKeyboardEvent(const WData& data)
         case "k_tg_editor"_h:
             handler_.toggle_mouse_lock();
             toggle_editor_GUI_rendering();
-            context_.center_cursor();
+            context_->center_cursor();
             if(!CONFIG.is("root.gui.cursor.custom"_h))
             {
-                context_.toggle_hard_cursor();
+                context_->toggle_hard_cursor();
             }
         break;
 #endif
@@ -190,35 +199,35 @@ bool GameLoop::onKeyboardEvent(const WData& data)
     return true; // Do NOT consume event
 }
 
-bool GameLoop::onMouseFocus(const WData& data)
+bool EngineCore::onMouseFocus(const WData& data)
 {
     if(CONFIG.is("root.gui.cursor.custom"_h))
     {
         const MouseFocusData& mfd = static_cast<const MouseFocusData&>(data);
         if(mfd.leaving_window)
-            context_.show_hard_cursor();
+            context_->show_hard_cursor();
         else
-            context_.hide_hard_cursor();
+            context_->hide_hard_cursor();
     }
 
     return true; // Do NOT consume event
 }
 
-void GameLoop::handle_events()
+void EngineCore::handle_events()
 {
 #ifndef __DISABLE_EDITOR__
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse)    // Don't propagate mouse events to game if ImGui wants them
-        handler_.handle_mouse(context_);
+        handler_.handle_mouse(*context_);
     if(!io.WantCaptureKeyboard) // Don't propagate keyboard events to game if ImGui wants them
-        handler_.handle_keybindings(context_);
+        handler_.handle_keybindings(*context_);
 #else
-    handler_.handle_mouse(context_);
-    handler_.handle_keybindings(context_);
+    handler_.handle_mouse(*context_);
+    handler_.handle_keybindings(*context_);
 #endif
 }
 
-int GameLoop::run()
+int EngineCore::run()
 {
     uint32_t target_fps_ = 60;
     CONFIG.get("root.display.target_fps"_h, target_fps_);
@@ -229,7 +238,7 @@ int GameLoop::run()
     nanoClock clock;
     float dt = 0.0f;
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
     nanoClock profile_clock;
     float dt_profile_render;
     float dt_profile_update;
@@ -238,7 +247,7 @@ int GameLoop::run()
     // Register debug info fields
     DINFO.register_text_slot("sdiFPS"_h, math::vec3(1.0,1.0,1.0));
     DINFO.register_text_slot("sdiRender"_h, math::vec3(1.0,1.0,1.0));
-#endif //__PROFILING_GAMELOOP__
+#endif //__PROFILING_EngineCore__
 #ifdef __PROFILING_STOP_AFTER_X_SAMPLES__
     uint32_t n_frames = 0;
 #endif //__PROFILING_STOP_AFTER_X_SAMPLES__
@@ -253,9 +262,9 @@ int GameLoop::run()
         clock.restart();
 
         // GAME UPDATES
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
         profile_clock.restart();
-#endif //__PROFILING_GAMELOOP__
+#endif //__PROFILING_EngineCore__
         handle_events();
         // Start the Dear ImGui frame
 #ifndef __DISABLE_EDITOR__
@@ -272,13 +281,13 @@ int GameLoop::run()
         // To allow frame by frame update
         game_clock_.release_flags();
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
         {
             auto period = profile_clock.get_elapsed_time();
             dt_profile_update = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
             update_time_fifo.push(dt_profile_update);
         }
-#endif //__PROFILING_GAMELOOP__
+#endif //__PROFILING_EngineCore__
 
         // GUI
 #ifndef __DISABLE_EDITOR__
@@ -287,10 +296,10 @@ int GameLoop::run()
 #endif
 
         // RENDER
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
         glFinish();
         profile_clock.restart();
-#endif //__PROFILING_GAMELOOP__
+#endif //__PROFILING_EngineCore__
 
         // Render game
         if(!game_clock_.is_game_paused())
@@ -306,49 +315,49 @@ int GameLoop::run()
 #endif
         render_gui_func_(); // Game GUI
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
         {
             glFinish();
             auto period = profile_clock.get_elapsed_time();
             dt_profile_render = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
             render_time_fifo.push(dt_profile_render);
         }
-#endif //__PROFILING_GAMELOOP__
+#endif //__PROFILING_EngineCore__
 
         // Finish game loop
-        context_.swap_buffers();
-        context_.poll_events();
+        context_->swap_buffers();
+        context_->poll_events();
 
         // Sleep for the rest of the frame
         auto frame_d = clock.restart();
         auto sleep_duration = frame_duration_ns_ - frame_d;
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
         float sleep_time = std::chrono::duration_cast<std::chrono::duration<float>>(sleep_duration).count();
         idle_time_fifo.push(sleep_time);
-#endif //__PROFILING_GAMELOOP__
+#endif //__PROFILING_EngineCore__
 
         std::this_thread::sleep_for(sleep_duration);
 
         frame_d = frame_clock.restart();
         dt = std::chrono::duration_cast<std::chrono::duration<float>>(frame_d).count();
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
         DINFO.display("sdiFPS"_h, std::string("FPS: ") + std::to_string(1.0f/dt));
         DINFO.display("sdiRender"_h, std::string("Render: ") + std::to_string(1e3*dt_profile_render) + std::string("ms"));
-#endif //__PROFILING_GAMELOOP__
+#endif //__PROFILING_EngineCore__
 
 #ifdef __PROFILING_STOP_AFTER_X_SAMPLES__
         if(++n_frames > 1200) break;
 #endif //__PROFILING_STOP_AFTER_X_SAMPLES__
     }
-    while(context_.window_required());
+    while(context_->window_required());
 
 #ifdef __DEBUG__
     DLOGT("-------- Game loop stop ---------", "profile", Severity::LOW);
 #endif
 
-#ifdef __PROFILING_GAMELOOP__
+#ifdef __PROFILING_EngineCore__
     FinalStatistics render_stats = render_time_fifo.get_stats();
     FinalStatistics update_stats = update_time_fifo.get_stats();
     FinalStatistics idle_stats   = idle_time_fifo.get_stats();
@@ -362,7 +371,7 @@ int GameLoop::run()
 
     DLOGN("Idle time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile", Severity::DET);
     idle_stats.debug_print(1e6, "µs", "profile");
-#endif //__PROFILING_GAMELOOP__
+#endif //__PROFILING_EngineCore__
 
     fs::path log_path;
     if(CONFIG.get<fs::path>("root.folders.log"_h, log_path))

@@ -5,7 +5,6 @@
 #include <list>
 
 #include "logger.h"
-#include "context.h"
 #include "game_clock.h"
 #include "input_handler.h"
 #include "game_system.h"
@@ -14,10 +13,11 @@
 namespace wcore
 {
 
-class GameLoop: public Listener
+class AbstractContext;
+class EngineCore: public Listener
 {
 private:
-    Context context_;
+    AbstractContext* context_;
     GameClock game_clock_;
     InputHandler handler_;
     bool render_editor_GUI_;
@@ -33,8 +33,8 @@ private:
 #endif
 
 public:
-    GameLoop();
-    ~GameLoop();
+    EngineCore(AbstractContext* context=nullptr);
+    ~EngineCore();
 
     inline InputHandler& get_input_handler() { return handler_; }
     inline void set_render_func(std::function<void(void)> render_func) { render_func_ = render_func;}

@@ -3,7 +3,6 @@
 
 #include <map>
 #include <functional>
-#include <GLFW/glfw3.h>
 
 #include "xml_parser.h"
 #include "informer.h"
@@ -11,7 +10,7 @@
 namespace wcore
 {
 
-class Context;
+class AbstractContext;
 
 struct KeyBindingProperties
 {
@@ -55,31 +54,22 @@ public:
     inline void unlock_mouse()      { mouse_lock_ = false; }
     inline void toggle_mouse_lock() { mouse_lock_ = !mouse_lock_; }
     inline bool is_mouse_locked() const { return mouse_lock_; }
-    void toggle_cursor(Context& context);
+    void toggle_cursor(AbstractContext& context);
 
     void import_key_bindings();
 
     void set_key_binding(hash_t name,
                          uint16_t key,
                          uint16_t cooldown = 0,
-                         uint16_t trigger = GLFW_PRESS,
+                         uint16_t trigger = 1, // W_KEY_PRESS
                          bool repeat = false);
 
-    bool stroke_debounce(Context& context,
+    bool stroke_debounce(AbstractContext& context,
                          hash_t binding_name);
 
-    [[deprecated("call stroke_debounce(2), handle input.keyboard events")]]
-    bool stroke_debounce(Context& context,
-                         hash_t binding_name,
-                         std::function<void(void)> Action);
+    void handle_keybindings(AbstractContext& context);
 
-    [[deprecated("call stroke_debounce(2), handle input.keyboard events")]]
-    void register_action(hash_t binding_name,
-                         std::function<void(void)> Action);
-
-    void handle_keybindings(Context& context);
-
-    void handle_mouse(Context& context);
+    void handle_mouse(AbstractContext& context);
 
 private:
     inline void cooldown();

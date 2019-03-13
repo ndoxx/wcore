@@ -7,6 +7,7 @@
 #include "wapi.h"
 #include "wtypes.h"
 #include "wecs.h"
+#include "wcontext.h"
 
 #include "include/math3d.h"
 
@@ -26,7 +27,10 @@ namespace wcore
         // Register a resource archive
         bool UseResourceArchive(const char* filename, hash_t key);
         // Register and launch systems
-        void Init(int argc, char const *argv[], void(*parse_arguments)(int, char const **)=nullptr);
+        void Init(int argc,
+                  char const *argv[],
+                  void(*parse_arguments)(int, char const **)=nullptr,
+                  AbstractContext* context=nullptr);
         // Load first level, load and send chunk geometry near to camera start position
         void LoadStart();
         // Load first level global info, no chunk is loaded

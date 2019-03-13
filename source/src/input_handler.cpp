@@ -4,7 +4,7 @@
 #include "input_handler.h"
 #include "logger.h"
 #include "keymap.h"
-#include "context.h"
+#include "wcontext.h"
 #include "globals.h"
 #include "file_system.h"
 #include "error.h"
@@ -46,7 +46,7 @@ void InputHandler::import_key_bindings()
              kb; kb=kb->next_sibling("KB"))
         {
             uint16_t cooldown = 0,
-                     trigger  = GLFW_PRESS,
+                     trigger  = W_KEY_PRESS,
                      key      = 0;
             bool repeat = false;
             std::string str_name, str_key, str_trigger;
@@ -56,7 +56,7 @@ void InputHandler::import_key_bindings()
                !xml::parse_attribute(kb, "key", str_key))
                 continue;
 
-            // Lookup GLFW key value
+            // Lookup key value
             auto it = keymap::NAMES.find(H_(str_key.c_str()));
             if(it == keymap::NAMES.end())
             {
@@ -72,9 +72,9 @@ void InputHandler::import_key_bindings()
             if(xml::parse_attribute(kb, "trigger", str_trigger))
             {
                 if(!str_trigger.compare("release"))
-                    trigger = GLFW_RELEASE;
+                    trigger = W_KEY_RELEASE;
                 else
-                    trigger  = GLFW_PRESS;
+                    trigger = W_KEY_PRESS;
             }
 
             std::string str_desc;
@@ -82,7 +82,7 @@ void InputHandler::import_key_bindings()
             {
 #ifdef __DEBUG__
                 std::stringstream ss;
-                ss << "[<i>" << ((trigger==GLFW_PRESS)?"PRESS":"RELEASE")
+                ss << "[<i>" << ((trigger==W_KEY_PRESS)?"PRESS":"RELEASE")
                    << "</i>] <n>" << str_key << "</n> -> " << str_desc;
                 DLOG(ss.str(), "input", Severity::DET);
 #endif
@@ -122,11 +122,11 @@ void InputHandler::set_key_binding(hash_t name,
         KeyBindingProperties(cooldown, trigger, key, repeat)));
 }
 
-bool InputHandler::stroke_debounce(Context& context,
+bool InputHandler::stroke_debounce(AbstractContext& context,
                                    hash_t binding_name)
 {
-    auto && kb = key_bindings_.at(binding_name);
-    auto evt = glfwGetKey(context.window_, kb.key);
+    auto&& kb = key_bindings_.at(binding_name);
+    auto evt = context.get_key_state(kb.key);
     if(evt == kb.trigger)
     {
         if(ready(binding_name))
@@ -138,7 +138,7 @@ bool InputHandler::stroke_debounce(Context& context,
         if(!kb.repeat)
             hot(binding_name);
     }
-    if(evt == GLFW_RELEASE)
+    if(evt == W_KEY_RELEASE)
     {
         cold(binding_name);
         return false;
@@ -147,53 +147,7 @@ bool InputHandler::stroke_debounce(Context& context,
     return false;
 }
 
-// deprec
-bool InputHandler::stroke_debounce(Context& context,
-                                   hash_t binding_name,
-                                   std::function<void(void)> Action)
-{
-    auto && kb = key_bindings_.at(binding_name);
-    auto evt = glfwGetKey(context.window_, kb.key);
-    if(evt == kb.trigger)
-    {
-        if(ready(binding_name))
-        {
-            post("input.keyboard"_h, KbdData(binding_name));
-            Action();
-            hot(binding_name);
-            return true;
-        }
-        if(!kb.repeat)
-            hot(binding_name);
-    }
-    if(evt == GLFW_RELEASE)
-    {
-        cold(binding_name);
-        return false;
-    }
-    cooldown(binding_name);
-    return false;
-}
-
-// deprec
-void InputHandler::register_action(hash_t binding_name,
-                                   std::function<void(void)> Action)
-{
-    auto it = key_bindings_.find(binding_name);
-    if(it != key_bindings_.end())
-        action_map_.insert(std::make_pair(binding_name, Action));
-    else
-    {
-#ifdef __DEBUG__
-        std::stringstream ss;
-        ss << "[InputHandler] Ignoring unknown key binding:"
-           << "<n>" << binding_name << "</n>";
-        DLOGW(ss.str(), "input", Severity::WARN);
-#endif
-    }
-}
-
-void InputHandler::handle_keybindings(Context& context)
+void InputHandler::handle_keybindings(AbstractContext& context)
 {
     for(auto&& [binding, prop]: key_bindings_)
     {
@@ -212,19 +166,17 @@ static bool last_mouse_out = false;
 static bool last_mouse_locked = true;
 static double last_x = 0, last_y = 0;
 
-void InputHandler::handle_mouse(Context& context)
+void InputHandler::handle_mouse(AbstractContext& context)
 {
-    uint8_t buttons = (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_LEFT)   << MouseButton::LMB)
-                    + (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_RIGHT)  << MouseButton::RMB)
-                    + (glfwGetMouseButton(context.window_, GLFW_MOUSE_BUTTON_MIDDLE) << MouseButton::MMB);
+    uint8_t buttons = context.get_mouse_buttons_state();
 
     // Get window size
     int win_width, win_height;
-    glfwGetWindowSize(context.window_, &win_width, &win_height);
+    context.get_window_size(win_width, win_height);
 
     // Get mouse position
     double xpos, ypos;
-    glfwGetCursorPos(context.window_, &xpos, &ypos);
+    context.get_cursor_position(xpos, ypos);
 
     // Check that cursor is in window
     bool mouse_out = (xpos<0 || xpos>win_width || ypos<0 || ypos>win_height);
@@ -233,10 +185,7 @@ void InputHandler::handle_mouse(Context& context)
     if(mouse_lock_)
     {
         // Reset mouse position for next frame
-        glfwSetCursorPos(context.window_,
-                         win_width/2,
-                         win_height/2);
-
+        context.center_cursor();
 
         // Calculate deltas from last frame
         int dxi = xpos-win_width/2;

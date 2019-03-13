@@ -66,7 +66,7 @@ void GlobalsSet(hash_t name, const void* data)
 struct Engine::EngineImpl
 {
     EngineImpl():
-    game_loop(nullptr),
+    engine_core(nullptr),
     ed_tweaks(nullptr),
     scene(nullptr),
     entity_system(nullptr),
@@ -107,7 +107,7 @@ struct Engine::EngineImpl
         delete camera_controller;
         delete entity_system;
         delete scene;
-        delete game_loop;
+        delete engine_core;
 
         // Kill singletons
 #ifdef __DEBUG__
@@ -117,9 +117,9 @@ struct Engine::EngineImpl
         Config::Kill();
     }
 
-    void init()
+    void init(AbstractContext* context=nullptr)
     {
-        game_loop           = new GameLoop();
+        engine_core         = new EngineCore(context);
 
 #ifndef __DISABLE_EDITOR__
         ed_tweaks           = new EditorTweaksInitializer();
@@ -141,7 +141,7 @@ struct Engine::EngineImpl
 
     }
 
-    GameLoop* game_loop;
+    EngineCore* engine_core;
 
     // InitializerSystems
 #ifndef __DISABLE_EDITOR__
@@ -232,7 +232,8 @@ bool Engine::UseResourceArchive(const char* filename, hash_t key)
 }
 
 void Engine::Init(int argc, char const *argv[],
-                  void(*parse_arguments)(int, char const **))
+                  void(*parse_arguments)(int, char const **),
+                  AbstractContext* context)
 {
     DLOG("<s>--- WCore: Parsing program arguments ---</s>", "core", Severity::LOW);
     // First, try to initialize default values using config
@@ -249,22 +250,22 @@ void Engine::Init(int argc, char const *argv[],
 
     DLOG("<s>--- WCore: Creating game systems ---</s>", "core", Severity::LOW);
     // Create game systems
-    eimpl_->init();
+    eimpl_->init(context);
 
-    // * Initialize game_loop
+    // * Initialize engine_core
     DLOG("<s>--- WCore: Bootstrapping initializer systems ---</s>", "core", Severity::LOW);
     // Render callbacks
-    eimpl_->game_loop->set_render_func([&]()     { eimpl_->pipeline->render(); });
-    eimpl_->game_loop->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
+    eimpl_->engine_core->set_render_func([&]()     { eimpl_->pipeline->render(); });
+    eimpl_->engine_core->set_render_gui_func([&]() { eimpl_->pipeline->render_gui(); });
     // Initializer systems
 #ifndef __DISABLE_EDITOR__
-    eimpl_->game_loop->register_initializer_system("EditorTweaks"_h, static_cast<InitializerSystem*>(eimpl_->ed_tweaks));
+    eimpl_->engine_core->register_initializer_system("EditorTweaks"_h, static_cast<InitializerSystem*>(eimpl_->ed_tweaks));
 #endif
 
     // Initialization step
     try
     {
-        eimpl_->game_loop->init_system_parameters();
+        eimpl_->engine_core->init_system_parameters();
     }
     catch (const std::ifstream::failure& e)
     {
@@ -276,23 +277,23 @@ void Engine::Init(int argc, char const *argv[],
     // * Register game systems (init events, register editor widgets, add to update list)
     DLOG("<s>--- WCore: Registering game systems ---</s>", "core", Severity::LOW);
 #ifndef __DISABLE_EDITOR__
-    eimpl_->game_loop->register_game_system("Editor"_h,            static_cast<GameSystem*>(eimpl_->editor));
+    eimpl_->engine_core->register_game_system("Editor"_h,            static_cast<GameSystem*>(eimpl_->editor));
 #endif
-    eimpl_->game_loop->register_game_system("CameraController"_h,  static_cast<GameSystem*>(eimpl_->camera_controller));
-    eimpl_->game_loop->register_game_system("EntitySystem"_h,      static_cast<GameSystem*>(eimpl_->entity_system));
-    eimpl_->game_loop->register_game_system("Scene"_h,             static_cast<GameSystem*>(eimpl_->scene));
-    eimpl_->game_loop->register_game_system("Pipeline"_h,          static_cast<GameSystem*>(eimpl_->pipeline));
-    eimpl_->game_loop->register_game_system("Daylight"_h,          static_cast<GameSystem*>(eimpl_->daylight));
-    eimpl_->game_loop->register_game_system("RayCaster"_h,         static_cast<GameSystem*>(eimpl_->ray_caster));
-    eimpl_->game_loop->register_game_system("GameObjectFactory"_h, static_cast<GameSystem*>(eimpl_->game_object_factory));
-    eimpl_->game_loop->register_game_system("SceneLoader"_h,       static_cast<GameSystem*>(eimpl_->scene_loader));
-    eimpl_->game_loop->register_game_system("ChunkManager"_h,      static_cast<GameSystem*>(eimpl_->chunk_manager));
-    eimpl_->game_loop->register_game_system("SoundSystem"_h,       static_cast<GameSystem*>(eimpl_->sound_system));
+    eimpl_->engine_core->register_game_system("CameraController"_h,  static_cast<GameSystem*>(eimpl_->camera_controller));
+    eimpl_->engine_core->register_game_system("EntitySystem"_h,      static_cast<GameSystem*>(eimpl_->entity_system));
+    eimpl_->engine_core->register_game_system("Scene"_h,             static_cast<GameSystem*>(eimpl_->scene));
+    eimpl_->engine_core->register_game_system("Pipeline"_h,          static_cast<GameSystem*>(eimpl_->pipeline));
+    eimpl_->engine_core->register_game_system("Daylight"_h,          static_cast<GameSystem*>(eimpl_->daylight));
+    eimpl_->engine_core->register_game_system("RayCaster"_h,         static_cast<GameSystem*>(eimpl_->ray_caster));
+    eimpl_->engine_core->register_game_system("GameObjectFactory"_h, static_cast<GameSystem*>(eimpl_->game_object_factory));
+    eimpl_->engine_core->register_game_system("SceneLoader"_h,       static_cast<GameSystem*>(eimpl_->scene_loader));
+    eimpl_->engine_core->register_game_system("ChunkManager"_h,      static_cast<GameSystem*>(eimpl_->chunk_manager));
+    eimpl_->engine_core->register_game_system("SoundSystem"_h,       static_cast<GameSystem*>(eimpl_->sound_system));
 
     DLOG("<s>--- WCore: Initializing game systems ---</s>", "core", Severity::LOW);
-    eimpl_->game_loop->init_game_systems();
+    eimpl_->engine_core->init_game_systems();
 
-    //auto&& input_handler = eimpl_->game_loop->get_input_handler();
+    //auto&& input_handler = eimpl_->engine_core->get_input_handler();
     //dbg::LOG.track("input.mouse.locked"_h, input_handler);
     //dbg::LOG.track("input.mouse.unlocked"_h, input_handler);
     //dbg::LOG.track("input.mouse.focus"_h, input_handler);
@@ -404,7 +405,7 @@ void Engine::SetLightBrightness(uint32_t light_index, float value)
 
 int Engine::Run()
 {
-    int ret = eimpl_->game_loop->run();
+    int ret = eimpl_->engine_core->run();
     DLOG("<s>--- WCore: Game loop stopped ---</s>", "core", Severity::LOW);
 #ifdef __DEBUG__
     eimpl_->pipeline->dbg_show_statistics();
@@ -412,8 +413,8 @@ int Engine::Run()
     DLOG("<s>--- WCore: Serializing ---</s>", "core", Severity::LOW);
     try
     {
-        eimpl_->game_loop->serialize_system_parameters();
-        eimpl_->game_loop->unload_game_systems();
+        eimpl_->engine_core->serialize_system_parameters();
+        eimpl_->engine_core->unload_game_systems();
     }
     catch (const std::ofstream::failure& e)
     {
