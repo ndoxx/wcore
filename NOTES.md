@@ -6671,9 +6671,9 @@ De fait, on ne match que les caractères alphanumériques, les underscores et le
 ## Material Editor
 Une grosse optimisation à faire serait de pré-compiler toutes les texture maps (Albedo, Roughness, Normal, Metallic, AO et Depth) dans 3 images png 4 canaux :
 
-    [   Image1    ]  [     Image2     ]  [    Image3    ]
-    [[R][G][B] [A]]  [[R][G]  [B]  [A]]  [[R]  [G][B][A]]
-      Albedo  Rough   Normal Metal AO    Depth    ???
+    [   Image1   ]  [     Image2     ]  [    Image3      ]
+    [[R][G][B][A]]  [[R][G][B]  [A]]  [[R]  [G] [B]   [A]]
+      Albedo           Normal  Depth  Metal AO  Rough  ?
 
 Les sampler groups ne comporteront plus que 3 samplers au lieu de 6 et on divisera vraisemblablement les accès texture par 2.
 
@@ -7041,27 +7041,23 @@ La macro tr() sert à repérer les chaînes localisables. J'ai pris le réflexe 
 En pratique théorique, setWindowModified() est supposé se propager aux ancêtres quand il est fixé à true, mais pas quand il est à false. En pratique pratique, ça ne se propage quand-même pas chez-moi, et dans tout le code extérieur à _MainWindow_ c'est sans effet. Donc y a encore du boulot de recherche et d'expérimentation pour avoir un comportement satisfaisant.
 
 
-    [   Image1   ]  [     Image2     ]  [    Image3      ]
-    [[R][G][B][A]]  [[R][G][B]  [A]]  [[R]  [G] [B]   [A]]
-      Albedo           Normal  Depth  Metal AO  Rough  ?
+#[12-03-19]
+Le material editor s'appèle maintenant "Waterial" (merci Jess pour le nom).
 
-rch : est-ce qu'on pré-compresse les normales ou pas ? (pour l'instant c'est pas le cas)
-    -> Regarder si la compression commute avec une lerp, si pas le cas, incompatible avec le splatmapping (il faudrait décompresser->lerp->recompresser).
-
--> Regarder l'accès aux archivess depuis Qt.
-
-
-
-Procédure merdique pour build depuis zéro :
+## [BUILD]
+Procédure merdique actuelle pour build depuis zéro :
 
     - Installer Qt5 (open source) avec l'online installer
         - Choisir le support des versions 5.11 et 5.12
+    - Ajouter qmake dans le path :
+    export PATH="/home/ndx/Qt/5.12.1/gcc_64/bin/:$PATH"
+    find_package() de CMake va appeler qmake pour explorer l'arborescence de Qt.
 
 __NE PAS FAIRE__
 >> sudo apt-get install qt5-default
-    Pour que cmake findpackage trouve effectivement les .cmake
-        -> Ca va simplement péter l'install de Qt
+    -> Ca va simplement péter l'install de Qt
 
+Cloner mon git et compiler :
 >> git clone https://gitchub.com/ndoxx/wcore.git
 >> cd wcore
 >> git submodule init
@@ -7080,6 +7076,7 @@ __NE PAS FAIRE__
 >> make maze
 >> make materialeditor
 
+    [ ] Simplifier ce bordel
 
 J'avais un gros problème pour build materialeditor chez Jess. Qt ne détectait pas le standard c++17. Au départ ça a déclenché un bug avec cotire : "c++17 enabled in PCH but currently disabled". Désactiver cotire permettait alors de comprendre le problème sous-jacent : plein de messages d'erreurs s'affichaient pour me prévenir que certains éléments de syntaxes faisaient partie du draft c++17.
 
@@ -7093,6 +7090,109 @@ par
 set(CMAKE_CXX_STANDARD 17)
 ```
 Et là tout a fonctionné. Je suppose que Qt attendait un flag -std=c++1z pour fonctionner où que sais-je. Cette nouvelle notation permet d'être indépendant de la string associée au standard.
+
+
+## Image Processing
+J'ai implémenté les algos et les contrôles pour générer des AO maps et des Normal maps depuis des Depth/Height maps. Les algos sont basés sur le travail de Christian Petry (http://cpetry.github.io/NormalMap-Online/). Le gars utilise des shaders pour produire les textures, j'ai simplement traduit son code en C++ et l'ai adapté pour qu'il tourne rapidement sur un CPU et soit compatible avec les types QImage de Qt. J'ai aussi apporté quelques corrections ça-et-là, notamment en renormalisant les noyaux de Sobel-Feldman et Scharr. Le noyau de Scharr que j'utilise est différent du sien, j'ai choisi une version optimale en terme d'estimation de gradient (au sens des moindres carrés). J'ai aussi repris son code pour le filtre blur/sharpen. Le filtre blur est Gaussien séparable 5x5 et sharpen est un *Unsharp Mask*.
+
+## Scrollable
+Comme mes contrôles sont de plus en plus nombreux j'ai décidé de les regrouper dans une zone scrollable en dessous de chaque texture map. La scrollbar se masque et s'affiche automatiquement en fonction des dimensions de la fenêtre.
+
+Dans le ctor de TexMapControl :
+```cpp
+    QVBoxLayout* layout = new QVBoxLayout();
+    QFrame* additional_controls = new QFrame();
+    QScrollArea* scroll_area = new QScrollArea();
+    // ...
+    scroll_area->setObjectName("TexmapScroll");
+    scroll_area->setBackgroundRole(QPalette::Window);
+    scroll_area->setFrameShadow(QFrame::Plain);
+    scroll_area->setFrameShape(QFrame::NoFrame);
+    scroll_area->setWidgetResizable(true);
+    scroll_area->setWidget(additional_controls);
+    layout->addWidget(scroll_area);
+    this->setLayout(layout);
+```
+Les classes spécialisées n'ont plus qu'à définir un layout pour la QFrame, y poser des widgets et ajouter un stretch après :
+```cpp
+    QDoubleSpinBox* metallic_edit_ = new QDoubleSpinBox();
+    QFormLayout* addc_layout = new QFormLayout();
+    addc_layout->addRow(tr("Uniform value:"), metallic_edit_);
+    // ...
+    additional_controls->setLayout(addc_layout);
+    add_stretch(); // calls layout->addStretch();
+```
+
+La scrollarea utilisera la palette window par défaut pour son coloriage, par cohérence stylistique j'ai rendu son fond transparent et retapé la scrollbar, car il fallait bien qu'elle soit orange.
+
+Pour styliser la scroll area :
+```css
+    QScrollArea#TexmapScroll
+    {
+        background: transparent;
+    }
+    QScrollArea#TexmapScroll > QWidget > QWidget
+    {
+        background: transparent;
+    }
+    /*QScrollArea#TexmapScroll > QWidget > QScrollBar
+    {
+        background: palette(base);
+    }*/
+    QScrollBar:vertical
+    {
+        border: 2px solid grey;
+        background: rgb(255,120,26);
+        width: 15px;
+        margin: 20px 0px 20 0px;
+    }
+    QScrollBar::handle:vertical
+    {
+        background: rgb(255,150,26);
+        min-height: 20px;
+    }
+    QScrollBar::add-line:vertical
+    {
+        border: 2px solid grey;
+        background: rgb(255,120,26);
+        height: 20px;
+        subcontrol-position: bottom;
+        subcontrol-origin: margin;
+    }
+    QScrollBar::sub-line:vertical
+    {
+        border: 2px solid grey;
+        background: rgb(255,120,26);
+        height: 20px;
+        subcontrol-position: top;
+        subcontrol-origin: margin;
+    }
+    QScrollBar:up-arrow:vertical, QScrollBar::down-arrow:vertical
+    {
+        border: 2px solid grey;
+        width: 3px;
+        height: 3px;
+        background: white;
+    }
+```
+
+## Icons sur Ubuntu/Gnome
+Pour que l'éditeur soit accessible via un raccourci dans ma launchbar, j'ai dessiné une icone que j'ai placée dans /usr/share/pixmaps/ et j'ai créé un fichier waterial.desktop dans ~ /.local/share/applications :
+
+```.desktop
+[Desktop Entry]
+Version=1.0
+Name=Waterial
+Comment=Waterial is a material editor for the WCore engine.
+Exec=/home/ndx/Desktop/WCore/bin/waterial
+Path=/home/ndx/Desktop/WCore/bin/
+Icon=/usr/share/pixmaps/waterial_128.png
+Terminal=false
+Type=Application
+Categories=Utility;Development;
+```
+Il suffit ensuite de glisser-déposer le .desktop dans la launchbar.
+Cette opération doit être automatisée dans la target install en cas de déploiement.
 
 
 * TODO:

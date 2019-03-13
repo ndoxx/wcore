@@ -531,7 +531,16 @@
     <Chunk coords="(4,3)"/>
     <Chunk coords="(4,4)"/>
 
-    <Chunk coords="(5,0)"/>
+    <Chunk coords="(5,0)">
+        <Lights>
+            <Light type="point" ypos="relative">
+                <Position>(20.0,3.5,20.0)</Position>
+                <Color>(1.0, 0.9, 0.7)</Color>
+                <Radius>20.0</Radius>
+                <Brightness>20.0</Brightness>
+            </Light>
+        </Lights>
+    </Chunk>
     <Chunk coords="(6,0)"/>
     <Chunk coords="(5,1)"/>
     <Chunk coords="(6,1)">

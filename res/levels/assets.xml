@@ -23,7 +23,6 @@
         <Material name="ball01">
             <Texture>
                 <Units>Albedo</Units>
-                <!--<Albedo>ball01_albedo.png</Albedo>-->
                 <Block0>ball01_block0.png</Block0>
             </Texture>
             <Uniform>
@@ -34,14 +33,6 @@
 
         <Material name="beachSand">
             <Texture>
-                <!--
-                <Albedo>beachSand_albedo.png</Albedo>
-                <AO>beachSand_ao.png</AO>
-                <Depth>beachSand_depth.png</Depth>
-                <Metallic>beachSand_metal.png</Metallic>
-                <Normal>beachSand_norm.png</Normal>
-                <Roughness>beachSand_rough.png</Roughness>
-                -->
                 <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
                 <Block0>beachSand_block0.png</Block0>
                 <Block1>beachSand_block1.png</Block1>
@@ -64,13 +55,6 @@
 
         <Material name="grass">
             <Texture>
-                <!--
-                <Albedo>grass_albedo.png</Albedo>
-                <AO>grass_ao.png</AO>
-                <Depth>grass_depth.png</Depth>
-                <Normal>grass_norm.png</Normal>
-                <Roughness>grass_rough.png</Roughness>
-                -->
                 <Units>Albedo;Normal;Depth;AO;Roughness</Units>
                 <Block0>grass_block0.png</Block0>
                 <Block1>grass_block1.png</Block1>
@@ -93,13 +77,6 @@
 
         <Material name="brickWall">
             <Texture>
-                <!--
-                <Albedo>brickWall_albedo.png</Albedo>
-                <Depth>brickWall_depth.png</Depth>
-                <Normal>brickWall_norm.png</Normal>
-                <Roughness>brickWall_rough.png</Roughness>
-                <AO>brickWall_ao.png</AO>
-                -->
                 <Units>Albedo;Normal;Depth;AO;Roughness</Units>
                 <Block0>brickWall_block0.png</Block0>
                 <Block1>brickWall_block1.png</Block1>
@@ -117,11 +94,6 @@
 
         <Material name="cube">
             <Texture>
-                <!--
-                <Albedo>cube_albedo.png</Albedo>
-                <Metallic>cube_metal.png</Metallic>
-                <Roughness>cube_rough.png</Roughness>
-                -->
                 <Units>Albedo;Metallic;Roughness</Units>
                 <Block0>erwinCube_block0.png</Block0>
                 <Block1>erwinCube_block1.png</Block1>
@@ -139,7 +111,6 @@
 
         <Material name="dome01">
             <Texture>
-                <!--<Albedo>dome01_albedo.png</Albedo>-->
                 <Units>Albedo</Units>
                 <Block0>dome01_block0.png</Block0>
             </Texture>
@@ -151,14 +122,6 @@
 
         <Material name="pavedFloor">
             <Texture>
-                <!--
-                <Albedo>pavedFloor_albedo.png</Albedo>
-                <AO>pavedFloor_ao.png</AO>
-                <Depth>pavedFloor_depth.png</Depth>
-                <Metallic>pavedFloor_metal.png</Metallic>
-                <Normal>pavedFloor_norm.png</Normal>
-                <Roughness>pavedFloor_rough.png</Roughness>
-                -->
                 <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
                 <Block0>pavedFloor_block0.png</Block0>
                 <Block1>pavedFloor_block1.png</Block1>
@@ -175,14 +138,6 @@
 
         <Material name="sandstone">
             <Texture>
-                <!--
-                <Albedo>sandstone_albedo.png</Albedo>
-                <AO>sandstone_ao.png</AO>
-                <Depth>sandstone_depth.png</Depth>
-                <Metallic>sandstone_metal.png</Metallic>
-                <Normal>sandstone_norm.png</Normal>
-                <Roughness>sandstone_rough.png</Roughness>
-                -->
                 <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
                 <Block0>sandstone_block0.png</Block0>
                 <Block1>sandstone_block1.png</Block1>
@@ -190,6 +145,22 @@
             </Texture>
             <Uniform>
                 <ParallaxHeightScale>0.15</ParallaxHeightScale>
+            </Uniform>
+            <Override>
+                <NormalMap>true</NormalMap>
+                <ParallaxMap>true</ParallaxMap>
+            </Override>
+        </Material>
+
+        <Material name="treeBark01">
+            <Texture>
+                <Units>Albedo;Normal;Depth;AO;Roughness</Units>
+                <Block0>treeBark01_block0.png</Block0>
+                <Block1>treeBark01_block1.png</Block1>
+                <Block2>treeBark01_block2.png</Block2>
+            </Texture>
+            <Uniform>
+                <ParallaxHeightScale>0.025</ParallaxHeightScale>
             </Uniform>
             <Override>
                 <NormalMap>true</NormalMap>
@@ -327,6 +298,7 @@
         </Model>
         <Model name="tree03">
             <Mesh name=".tree03"/>
+            <!--<Material name="treeBark01"/>-->
             <Material name="darkWood"/>
         </Model>
         <Model name="earthSquare01">
