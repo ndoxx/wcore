@@ -63,10 +63,10 @@
             <bool name="print_backtrace_on_error" value="false"/>
         </logger>
         <channel_verbosity>
-            <uint name="texture"   value="3"/>
-            <uint name="material"  value="3"/>
+            <uint name="texture"   value="0"/>
+            <uint name="material"  value="0"/>
             <uint name="model"     value="0"/>
-            <uint name="shader"    value="2"/>
+            <uint name="shader"    value="0"/>
             <uint name="text"      value="0"/>
             <uint name="input"     value="0"/>
             <uint name="buffer"    value="0"/>

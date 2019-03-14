@@ -15,8 +15,6 @@
 //GUI
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
-    #include "imgui/imgui_impl_glfw.h"
-    #include "imgui/imgui_impl_opengl3.h"
 #endif
 
 #ifdef __PROFILING_EngineCore__
@@ -34,54 +32,6 @@ namespace wcore
     static MovingAverage idle_time_fifo(1000);
 #endif
 
-#ifndef __DISABLE_EDITOR__
-void EngineCore::init_imgui()
-{
-    // Setup Dear ImGui binding
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    context_->init_imgui();
-    ImGui_ImplOpenGL3_Init("#version 400 core");
-    // Setup style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
-    //ImGui::StyleColorsClassic();
-
-    ImGuiStyle * style = &ImGui::GetStyle();
-
-    ImVec4 neutral(0.7f, 0.3f, 0.05f, 1.0f);
-    ImVec4 active(1.0f, 0.5f, 0.05f, 1.00f);
-    ImVec4 hovered(0.6f, 0.6f, 0.6f, 1.00f);
-    ImVec4 inactive(0.7f, 0.3f, 0.05f, 0.75f);
-
-    style->WindowRounding = 5.0f;
-    //style->Colors[ImGuiCol_WindowBg] = ImVec4(1.0f, 1.0f, 1.0f, 0.75f);
-    style->Colors[ImGuiCol_Border] = ImVec4(0.7f, 0.3f, 0.05f, 0.75f);
-    style->Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-
-    style->Colors[ImGuiCol_TitleBg] = neutral;
-    style->Colors[ImGuiCol_TitleBgCollapsed] = inactive;
-    style->Colors[ImGuiCol_TitleBgActive] = active;
-
-    style->Colors[ImGuiCol_Header] = neutral;
-    style->Colors[ImGuiCol_HeaderHovered] = hovered;
-    style->Colors[ImGuiCol_HeaderActive] = active;
-
-    style->Colors[ImGuiCol_ResizeGrip] = neutral;
-    style->Colors[ImGuiCol_ResizeGripHovered] = hovered;
-    style->Colors[ImGuiCol_ResizeGripActive] = active;
-
-    style->Colors[ImGuiCol_Button] = neutral;
-    style->Colors[ImGuiCol_ButtonHovered] = hovered;
-    style->Colors[ImGuiCol_ButtonActive] = active;
-
-    style->Colors[ImGuiCol_SliderGrab] = hovered;
-    style->Colors[ImGuiCol_SliderGrabActive] = active;
-
-    style->Colors[ImGuiCol_PlotLines] = ImVec4(0.1f, 0.8f, 0.2f, 1.0f);
-}
-#endif
-
 EngineCore::EngineCore(AbstractContext* context):
 context_(context),
 render_editor_GUI_(false)
@@ -92,7 +42,7 @@ render_editor_GUI_(false)
 
     // GUI initialization
 #ifndef __DISABLE_EDITOR__
-    init_imgui();
+    context_->init_imgui();
     subscribe("input.keyboard"_h, handler_, &EngineCore::onKeyboardEvent);
 #endif
     subscribe("input.mouse.focus"_h, handler_, &EngineCore::onMouseFocus);
@@ -100,23 +50,11 @@ render_editor_GUI_(false)
 
 EngineCore::~EngineCore()
 {
-#ifndef __DISABLE_EDITOR__
-    // Shutdown ImGUI
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-#endif
+    // Will shutdown imgui if used
     delete context_;
 }
 
 #ifndef __DISABLE_EDITOR__
-void EngineCore::imgui_new_frame()
-{
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-}
-
 static bool show_log_window = false;
 void EngineCore::generate_editor_widgets()
 {
@@ -126,19 +64,13 @@ void EngineCore::generate_editor_widgets()
 
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
     if(ImGui::CollapsingHeader("Main debug options"))
-    {
         if(ImGui::Button("Show log window"))
-        {
             show_log_window = !show_log_window;
-        }
-    }
 
     game_systems_.generate_widgets();
 
     if(show_log_window)
-    {
         dbg::LOG.generate_widget();
-    }
 
     ImGui::End();
 }
@@ -177,9 +109,7 @@ bool EngineCore::onKeyboardEvent(const WData& data)
             toggle_editor_GUI_rendering();
             context_->center_cursor();
             if(!CONFIG.is("root.gui.cursor.custom"_h))
-            {
                 context_->toggle_hard_cursor();
-            }
         break;
 #endif
         case "k_tg_pause"_h:
@@ -216,15 +146,46 @@ bool EngineCore::onMouseFocus(const WData& data)
 void EngineCore::handle_events()
 {
 #ifndef __DISABLE_EDITOR__
-    ImGuiIO& io = ImGui::GetIO();
-    if(!io.WantCaptureMouse)    // Don't propagate mouse events to game if ImGui wants them
-        handler_.handle_mouse(*context_);
-    if(!io.WantCaptureKeyboard) // Don't propagate keyboard events to game if ImGui wants them
-        handler_.handle_keybindings(*context_);
+    if(context_->imgui_initialized())
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        if(!io.WantCaptureMouse)    // Don't propagate mouse events to game if ImGui wants them
+            handler_.handle_mouse(*context_);
+        if(!io.WantCaptureKeyboard) // Don't propagate keyboard events to game if ImGui wants them
+            handler_.handle_keybindings(*context_);
+    }
 #else
     handler_.handle_mouse(*context_);
     handler_.handle_keybindings(*context_);
 #endif
+}
+
+void EngineCore::update(float dt)
+{
+    if(game_clock_.is_game_paused())
+        return;
+    game_clock_.update(dt);
+
+    for(auto&& system: game_systems_)
+        system->update(game_clock_);
+
+    // To allow frame by frame update
+    game_clock_.release_flags();
+}
+
+void EngineCore::swap_buffers()
+{
+    context_->swap_buffers();
+}
+
+void EngineCore::poll_events()
+{
+    context_->poll_events();
+}
+
+bool EngineCore::window_required()
+{
+    return context_->window_required();
 }
 
 int EngineCore::run()
@@ -268,18 +229,10 @@ int EngineCore::run()
         handle_events();
         // Start the Dear ImGui frame
 #ifndef __DISABLE_EDITOR__
-        imgui_new_frame();
+        context_->imgui_new_frame();
 #endif
         // GAME UPDATES
-        if(game_clock_.is_game_paused())
-            continue;
-        game_clock_.update(dt);
-
-        for(auto&& system: game_systems_)
-            system->update(game_clock_);
-
-        // To allow frame by frame update
-        game_clock_.release_flags();
+        update(dt);
 
 #ifdef __PROFILING_EngineCore__
         {
@@ -303,15 +256,12 @@ int EngineCore::run()
 
         // Render game
         if(!game_clock_.is_game_paused())
-            render_func_();
+            render();
 
         // Render GUI
 #ifndef __DISABLE_EDITOR__
         if(render_editor_GUI_)
-        {
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        }
+            context_->imgui_render();
 #endif
         render_gui_func_(); // Game GUI
 

@@ -115,5 +115,5 @@ set(SRC_IMGUI
     ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui.cpp
     ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui_draw.cpp
     ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui_widgets.cpp
-    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui_impl_glfw.cpp
-    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/imgui_impl_opengl3.cpp)
+    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/examples/imgui_impl_glfw.cpp
+    ${CMAKE_SOURCE_DIR}/source/vendor/imgui/examples/imgui_impl_opengl3.cpp)

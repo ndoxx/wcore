@@ -120,23 +120,46 @@ struct Engine::EngineImpl
     void init(AbstractContext* context=nullptr)
     {
         engine_core         = new EngineCore(context);
+        DLOG("EngineCore <g>created</g>", "core", Severity::LOW);
 
 #ifndef __DISABLE_EDITOR__
         ed_tweaks           = new EditorTweaksInitializer();
+        DLOG("EditorTweaksInitializer <g>created</g>", "core", Severity::LOW);
 #endif
 
         scene               = new Scene();
+        DLOG("Scene <g>created</g>", "core", Severity::LOW);
+
         entity_system       = new EntitySystem();
+        DLOG("EntitySystem <g>created</g>", "core", Severity::LOW);
+
         camera_controller   = new CameraController();
+        DLOG("CameraController <g>created</g>", "core", Severity::LOW);
+
         game_object_factory = new GameObjectFactory();
+        DLOG("GameObjectFactory <g>created</g>", "core", Severity::LOW);
+
         scene_loader        = new SceneLoader();
+        DLOG("SceneLoader <g>created</g>", "core", Severity::LOW);
+
         pipeline            = new RenderPipeline();
+        DLOG("RenderPipeline <g>created</g>", "core", Severity::LOW);
+
         daylight            = new DaylightSystem();
+        DLOG("DaylightSystem <g>created</g>", "core", Severity::LOW);
+
         ray_caster          = new RayCaster();
+        DLOG("RayCaster <g>created</g>", "core", Severity::LOW);
+
         chunk_manager       = new ChunkManager();
+        DLOG("ChunkManager <g>created</g>", "core", Severity::LOW);
+
         sound_system        = new SoundSystem();
+        DLOG("SoundSystem <g>created</g>", "core", Severity::LOW);
+
 #ifndef __DISABLE_EDITOR__
         editor              = new Editor();
+        DLOG("Editor <g>created</g>", "core", Severity::LOW);
 #endif
 
     }
@@ -423,6 +446,28 @@ int Engine::Run()
     }
     DLOG("<s>--- WCore: Meow! ---</s>", "core", Severity::LOW);
     return ret;
+}
+
+void Engine::Update(float dt)
+{
+    eimpl_->engine_core->handle_events();
+    eimpl_->engine_core->update(dt);
+}
+
+void Engine::RenderFrame()
+{
+    eimpl_->engine_core->render();
+}
+
+void Engine::FinishFrame()
+{
+    eimpl_->engine_core->swap_buffers();
+    eimpl_->engine_core->poll_events();
+}
+
+bool Engine::WindowRequired()
+{
+    return eimpl_->engine_core->window_required();
 }
 
 

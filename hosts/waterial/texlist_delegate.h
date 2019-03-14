@@ -8,7 +8,7 @@
 namespace medit
 {
 
-class EditorModel;
+QT_FORWARD_DECLARE_CLASS(EditorModel)
 class TexlistDelegate: public QItemDelegate
 {
     Q_OBJECT
@@ -18,7 +18,7 @@ public:
 
     explicit TexlistDelegate(QObject* parent=0);
 
-    virtual void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    virtual void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const Q_DECL_OVERRIDE;
 
     inline void set_editor_model(EditorModel* model) { editor_model_ = model; }
     inline void set_item_name_validator(NameValidator validator) { item_name_validator_ = validator; }

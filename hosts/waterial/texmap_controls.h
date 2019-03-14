@@ -3,18 +3,18 @@
 
 #include <QGroupBox>
 
-class QVBoxLayout;
-class QCheckBox;
-class QFrame;
-class QPushButton;
-class QComboBox;
-class QScrollArea;
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QCheckBox)
+QT_FORWARD_DECLARE_CLASS(QFrame)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QComboBox)
+QT_FORWARD_DECLARE_CLASS(QScrollArea)
 
 namespace medit
 {
 
-class DropLabel;
-class DoubleSpinBox;
+QT_FORWARD_DECLARE_CLASS(DropLabel)
+QT_FORWARD_DECLARE_CLASS(DoubleSpinBox)
 struct TextureEntry;
 // Groups all the controls for a given texture map
 class TexMapControl: public QGroupBox

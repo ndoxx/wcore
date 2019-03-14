@@ -40,6 +40,8 @@ static fs::path get_selfpath()
 
 void Config::init()
 {
+    if(initialized_) return;
+
     DLOGS("[Config] Beginning configuration step.", "core", Severity::LOW);
     // Get path to executable
     self_path_ = get_selfpath();
@@ -68,6 +70,8 @@ void Config::init()
     get("root.debug.logger.print_backtrace_on_error"_h,  backtrace_on_error);
     dbg::LOG.set_backtrace_on_error(backtrace_on_error);
 #endif
+
+    initialized_ = true;
 
     DLOGES("core", Severity::LOW);
 }

@@ -26,8 +26,10 @@ private:
     fs::path conf_path_;
 
     Config (const Config&){}
-    Config(){}
+    Config(): initialized_(false){}
    ~Config(){}
+
+   bool initialized_;
 
 public:
     friend Config& Singleton<Config>::Instance();

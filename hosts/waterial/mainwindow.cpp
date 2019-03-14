@@ -29,9 +29,10 @@
 #include "editor_model.h"
 #include "texlist_delegate.h"
 #include "texmap_controls.h"
+#include "texmap_generator.h"
 #include "new_project_dialog.h"
 #include "droplabel.h"
-#include "texmap_generator.h"
+#include "gl_widget.h"
 
 // wcore
 #include "config.h"
@@ -71,7 +72,8 @@ dir_hierarchy_(new QTreeView),
 tex_list_(new QListView),
 texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
-pjname_label_(new QLabel()),
+pjname_label_(new QLabel),
+//gl_widget_(new GLWidget),
 new_project_dialog_(new NewProjectDialog(this)),
 file_dialog_(new QFileDialog(this))
 {
@@ -142,8 +144,11 @@ file_dialog_(new QFileDialog(this))
     QGroupBox* gb_preview     = new QGroupBox(tr("Preview"));
     gb_preview_ctl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     gb_preview->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    //gl_widget_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+
     layout_main_panel->addWidget(gb_preview_ctl, 0, 3);
     layout_main_panel->addWidget(gb_preview, 1, 3);
+    //layout_main_panel->addWidget(gl_widget_, 1, 3); // DNW black widget
     layout_main_panel->setColumnStretch(3, 3);
 
     // * Setup main layout

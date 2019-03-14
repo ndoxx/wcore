@@ -55,7 +55,15 @@ public:
     bool onKeyboardEvent(const WData& data);
     bool onMouseFocus(const WData& data);
     void handle_events();
+
     int run();
+
+    // Functions to handle game loop from outside
+    inline void render() { render_func_(); }
+    void update(float dt);
+    void swap_buffers();
+    void poll_events();
+    bool window_required();
 };
 
 }

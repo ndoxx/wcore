@@ -5,8 +5,8 @@
 //GUI
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
-    #include "imgui/imgui_impl_glfw.h"
-    #include "imgui/imgui_impl_opengl3.h"
+    #include "imgui/examples/imgui_impl_glfw.h"
+    #include "imgui/examples/imgui_impl_opengl3.h"
 #endif
 
 #include "glfwcontext.h"
@@ -195,9 +195,74 @@ bool GLFWContext::window_required()
 }
 
 #ifndef __DISABLE_EDITOR__
+static bool imgui_initialized_ = false;
 void GLFWContext::init_imgui()
 {
+    // Setup Dear ImGui binding
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(pimpl_->window_, true);
+    ImGui_ImplOpenGL3_Init("#version 400 core");
+    // Setup style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+    //ImGui::StyleColorsClassic();
+
+    ImGuiStyle* style = &ImGui::GetStyle();
+
+    ImVec4 neutral(0.7f, 0.3f, 0.05f, 1.0f);
+    ImVec4 active(1.0f, 0.5f, 0.05f, 1.00f);
+    ImVec4 hovered(0.6f, 0.6f, 0.6f, 1.00f);
+    ImVec4 inactive(0.7f, 0.3f, 0.05f, 0.75f);
+
+    style->WindowRounding = 5.0f;
+    //style->Colors[ImGuiCol_WindowBg] = ImVec4(1.0f, 1.0f, 1.0f, 0.75f);
+    style->Colors[ImGuiCol_Border] = ImVec4(0.7f, 0.3f, 0.05f, 0.75f);
+    style->Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+
+    style->Colors[ImGuiCol_TitleBg] = neutral;
+    style->Colors[ImGuiCol_TitleBgCollapsed] = inactive;
+    style->Colors[ImGuiCol_TitleBgActive] = active;
+
+    style->Colors[ImGuiCol_Header] = neutral;
+    style->Colors[ImGuiCol_HeaderHovered] = hovered;
+    style->Colors[ImGuiCol_HeaderActive] = active;
+
+    style->Colors[ImGuiCol_ResizeGrip] = neutral;
+    style->Colors[ImGuiCol_ResizeGripHovered] = hovered;
+    style->Colors[ImGuiCol_ResizeGripActive] = active;
+
+    style->Colors[ImGuiCol_Button] = neutral;
+    style->Colors[ImGuiCol_ButtonHovered] = hovered;
+    style->Colors[ImGuiCol_ButtonActive] = active;
+
+    style->Colors[ImGuiCol_SliderGrab] = hovered;
+    style->Colors[ImGuiCol_SliderGrabActive] = active;
+
+    style->Colors[ImGuiCol_PlotLines] = ImVec4(0.1f, 0.8f, 0.2f, 1.0f);
+
+    imgui_initialized_ = true;
+}
+void GLFWContext::shutdown_imgui()
+{
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+}
+void GLFWContext::imgui_new_frame()
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+}
+void GLFWContext::imgui_render()
+{
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+bool GLFWContext::imgui_initialized()
+{
+    return imgui_initialized_;
 }
 #endif // __DISABLE_EDITOR__
 

@@ -3,7 +3,8 @@
 
 #include <QDialog>
 
-class QLineEdit;
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
+
 namespace medit
 {
 

@@ -27,6 +27,8 @@ namespace wcore
         // Register a resource archive
         bool UseResourceArchive(const char* filename, hash_t key);
         // Register and launch systems
+        // Can pass a context here or leave it null. If let null, a
+        // GLFW context will be created automatically
         void Init(int argc,
                   char const *argv[],
                   void(*parse_arguments)(int, char const **)=nullptr,
@@ -50,7 +52,14 @@ namespace wcore
         void SetLightRadius(uint32_t light_index, float value);
         void SetLightBrightness(uint32_t light_index, float value);
 
+        // Automated game loop with frame control
         int Run();
+
+        // Functions to handle game loop from outside
+        void Update(float dt);
+        void RenderFrame();
+        void FinishFrame();
+        bool WindowRequired();
 
     private:
         struct EngineImpl;

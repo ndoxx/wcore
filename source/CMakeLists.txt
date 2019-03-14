@@ -34,6 +34,7 @@ add_library(wcore SHARED
 target_include_directories(wcore PUBLIC "${CMAKE_SOURCE_DIR}/source")
 target_include_directories(wcore PRIVATE "${CMAKE_SOURCE_DIR}/source/include")
 target_include_directories(wcore PRIVATE "${CMAKE_SOURCE_DIR}/source/vendor")
+target_include_directories(wcore PRIVATE "${CMAKE_SOURCE_DIR}/source/vendor/imgui")
 set_target_properties(wcore PROPERTIES PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/source/wcore.h")
 set_target_properties(wcore PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(wcore PROPERTIES SOVERSION 1)

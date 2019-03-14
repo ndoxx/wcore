@@ -5,24 +5,26 @@
 #include <QFrame>
 #include <QGroupBox>
 
-class QTreeView;
-class QListView;
-class QLineEdit;
-class QToolBar;
-class QFileSystemModel;
-class QItemSelection;
-class QFileDialog;
-class QProgressBar;
-class QStatusBar;
-class QLabel;
+QT_FORWARD_DECLARE_CLASS(QTreeView)
+QT_FORWARD_DECLARE_CLASS(QListView)
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
+QT_FORWARD_DECLARE_CLASS(QToolBar)
+QT_FORWARD_DECLARE_CLASS(QFileSystemModel)
+QT_FORWARD_DECLARE_CLASS(QItemSelection)
+QT_FORWARD_DECLARE_CLASS(QFileDialog)
+QT_FORWARD_DECLARE_CLASS(QProgressBar)
+QT_FORWARD_DECLARE_CLASS(QStatusBar)
+QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace medit
 {
 
-class EditorModel;
-class TexlistDelegate;
-class NewProjectDialog;
-class TexMapControl;
+QT_FORWARD_DECLARE_CLASS(EditorModel)
+QT_FORWARD_DECLARE_CLASS(TexlistDelegate)
+QT_FORWARD_DECLARE_CLASS(NewProjectDialog)
+QT_FORWARD_DECLARE_CLASS(TexMapControl)
+QT_FORWARD_DECLARE_CLASS(GLWidget)
+
 struct TextureEntry;
 class MainWindow: public QMainWindow
 {
@@ -37,8 +39,8 @@ public:
     // Retrieve data from controls and update a given entry with this information
     void update_entry(TextureEntry& entry);
 
-    virtual bool eventFilter(QObject* object, QEvent* event) override;
-    virtual void keyPressEvent(QKeyEvent* event) override;
+    virtual bool eventFilter(QObject* object, QEvent* event) Q_DECL_OVERRIDE;
+    virtual void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
 
 public slots:
     void handle_new_texture();
@@ -81,9 +83,11 @@ private:
 
     std::vector<TexMapControl*> texmap_controls_;
 
+    // Preview
+    //GLWidget* gl_widget_;
+
     // Status bar
     QLabel* status_label_;
-    //QProgressBar* status_progress_;
 
     // Dialogs
     NewProjectDialog* new_project_dialog_;

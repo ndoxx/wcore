@@ -43,6 +43,8 @@ set(waterial_SRCS
     droplabel.cpp
     spinbox.cpp
     color_picker_label.cpp
+    gl_widget.cpp
+    qt_context.cpp
     main.cpp
 )
 # Tell CMake to create the waterial executable
@@ -66,5 +68,5 @@ set_target_properties(iwcore PROPERTIES
 )
 
 # Use the Widgets module from Qt 5
-target_link_libraries(waterial iwcore Qt5::Widgets)
+target_link_libraries(waterial GL GLEW iwcore Qt5::Widgets)
 cotire(waterial)

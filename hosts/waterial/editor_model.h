@@ -16,9 +16,10 @@
     Defines the behavior of the material editor application
 */
 
-class QStringListModel;
-class QSortFilterProxyModel;
-class QListView;
+QT_FORWARD_DECLARE_CLASS(QStringListModel)
+QT_FORWARD_DECLARE_CLASS(QSortFilterProxyModel)
+QT_FORWARD_DECLARE_CLASS(QListView)
+
 namespace medit
 {
 
