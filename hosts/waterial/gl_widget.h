@@ -22,7 +22,6 @@ public:
     ~GLWidget();
 
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
 
 public slots:
     void cleanup();

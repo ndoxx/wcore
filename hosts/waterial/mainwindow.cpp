@@ -73,7 +73,7 @@ tex_list_(new QListView),
 texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
 pjname_label_(new QLabel),
-//gl_widget_(new GLWidget),
+gl_widget_(new GLWidget),
 new_project_dialog_(new NewProjectDialog(this)),
 file_dialog_(new QFileDialog(this))
 {
@@ -141,14 +141,11 @@ file_dialog_(new QFileDialog(this))
 
     // Preview
     QGroupBox* gb_preview_ctl = new QGroupBox(tr("Preview controls"));
-    QGroupBox* gb_preview     = new QGroupBox(tr("Preview"));
     gb_preview_ctl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    gb_preview->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    //gl_widget_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    gl_widget_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
     layout_main_panel->addWidget(gb_preview_ctl, 0, 3);
-    layout_main_panel->addWidget(gb_preview, 1, 3);
-    //layout_main_panel->addWidget(gl_widget_, 1, 3); // DNW black widget
+    layout_main_panel->addWidget(gl_widget_, 1, 3); // DNW black widget
     layout_main_panel->setColumnStretch(3, 3);
 
     // * Setup main layout

@@ -4,6 +4,7 @@
 #include "wcore.h"
 
 #include "gfx_driver.h" // Won't compile if removed: ensures GLFW header included before GL
+#include "frame_buffer.h"
 #include "thread_utils.h"
 #include "error.h"
 #include "config.h"
@@ -468,6 +469,12 @@ void Engine::FinishFrame()
 bool Engine::WindowRequired()
 {
     return eimpl_->engine_core->window_required();
+}
+
+void Engine::SetDefaultFrameBuffer(unsigned int index)
+{
+    FrameBuffer::set_default_framebuffer(index);
+    GFX::set_default_framebuffer(index);
 }
 
 

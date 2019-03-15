@@ -1,6 +1,5 @@
 #include <GL/glew.h>
 #include <QSurfaceFormat>
-//#include <QOpenGLContext>
 
 #include "gl_widget.h"
 #include "qt_context.h"
@@ -29,12 +28,7 @@ GLWidget::~GLWidget()
 
 QSize GLWidget::minimumSizeHint() const
 {
-    return QSize(200, 200);
-}
-
-QSize GLWidget::sizeHint() const
-{
-    return QSize(400, 400);
+    return QSize(320, 240);
 }
 
 void GLWidget::cleanup()
@@ -59,8 +53,10 @@ void GLWidget::initializeGL()
     glGetError();   // Mask an unavoidable error caused by GLEW
 
     GLB.START_LEVEL = "mv";
-    GLB.WIN_W = 400;
-    GLB.WIN_H = 400;
+    GLB.WIN_W = width();
+    GLB.WIN_H = height();
+    GLB.SCR_W = width();
+    GLB.SCR_H = height();
 
     engine_->Init(0, nullptr, nullptr, context_);
     engine_->LoadStart();
@@ -68,8 +64,9 @@ void GLWidget::initializeGL()
 
 void GLWidget::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    engine_->SetDefaultFrameBuffer(defaultFramebufferObject());
     engine_->Update(16.67/1000.f);
     engine_->RenderFrame();
     engine_->FinishFrame();
@@ -77,7 +74,8 @@ void GLWidget::paintGL()
 
 void GLWidget::resizeGL(int width, int height)
 {
-
+    GLB.WIN_W = width;
+    GLB.WIN_H = height;
 }
 
 void GLWidget::mousePressEvent(QMouseEvent* event)

@@ -42,7 +42,7 @@
                 <Position>(2.0,2.0,2.0)</Position>
                 <Color>(0.2, 0.9, 0.7)</Color>
                 <Radius>10.0</Radius>
-                <Brightness>10.0</Brightness>
+                <Brightness>100.0</Brightness>
             </Light>
         </Lights>
     </Chunk>

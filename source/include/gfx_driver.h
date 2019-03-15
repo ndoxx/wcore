@@ -9,6 +9,8 @@ namespace wcore
 {
 namespace GFX
 {
+static unsigned int DEFAULT_FRAMEBUFFER = 0;
+
 inline uint32_t get_error()         { return glGetError(); }
 inline void assert_no_error()       { assert(glGetError()==0); }
 
@@ -61,7 +63,9 @@ inline void bind_texture2D(uint32_t unit, uint32_t tex_index)
 }
 inline void unbind_texture2D()          { glBindTexture(GL_TEXTURE_2D, 0); }
 inline void unbind_vertex_array()       { glBindVertexArray(0); }
-inline void bind_default_frame_buffer() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+inline void bind_default_frame_buffer() { glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER); }
+
+inline void set_default_framebuffer(unsigned int index) { DEFAULT_FRAMEBUFFER = index; }
 
 inline void viewport(float xx, float yy, float width, float height)
 {

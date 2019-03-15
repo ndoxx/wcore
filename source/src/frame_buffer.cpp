@@ -8,6 +8,8 @@
 namespace wcore
 {
 
+unsigned int FrameBuffer::DEFAULT_FRAMEBUFFER = 0;
+
 FrameBuffer::FrameBuffer(const Texture& texture, const std::vector<GLenum>& attachments):
 frame_buffer_(0),
 render_buffer_(0),
@@ -129,7 +131,7 @@ height_(texture.get_height())
     }
 
     // Unbind frame buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
 }
 
 FrameBuffer::~FrameBuffer()
@@ -161,14 +163,14 @@ void FrameBuffer::bind_as_render_target() const
 
 void FrameBuffer::unbind() const
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
 }
 
 void FrameBuffer::with_render_target(std::function<void(void)> doFunc) const
 {
     bind_as_render_target();
     doFunc();
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
 }
 
 void FrameBuffer::blit_depth(FrameBuffer& destination) const

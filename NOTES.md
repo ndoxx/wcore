@@ -7195,6 +7195,51 @@ Il suffit ensuite de glisser-déposer le .desktop dans la launchbar.
 Cette opération doit être automatisée dans la target install en cas de déploiement.
 
 
+## Taille du fb
+J'essaye d'intégrer le moteur dans un widget pour réaliser la preview de Waterial. Bien entendu, ça ne fonctionne pas, j'ai un fond noir et des cheveux en moins. Une analyse avec apitrace semble montrer que ma scène est rendue correctement dans le LBuffer, mais le framebuffer par défaut (backbuffer) est de taille 1x1. Vraisemblablement, quelque chose a foiré lors de la génération du contexte.
+
+Récupérer de manière indirecte la taille du framebuffer par défaut :
+```cpp
+    GLint dims[4] = {0};
+    glGetIntegerv(GL_VIEWPORT, dims);
+    GLint fbWidth = dims[2];
+    GLint fbHeight = dims[3];
+    std::cout << "FB: " << fbWidth << " " << fbHeight << std::endl;
+```
+Je fais ça avant et après mon rendu de frame dans GLWidget::paintGL(), mais je n'observe pas de taille délirante.
+
+Pour une frame donnée, j'observe l'état d'OpenGL lors du dernier draw call qui correspond à l'affichage à l'écran :
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL)
+
+J'ai bien vérifié qu'un trace de la sandbox montre bien une taille correcte du framebuffer par défaut, ce n'est pas un problème lié à apitrace a priori.
+
+Je crois que je progresse. Le default framebuffer du widget n'est PAS 0 (voir [1]). Dans GLWidget::paintGL() je fais :
+```cpp
+    std::cout << defaultFramebufferObject() << std::endl;
+```
+Et ça m'affiche 10. Mon programme tente de bind sur 0, il est logique que ça ne fonctionne pas. Je vais essayer d'installer un hook dans ma lib pour choisir le framebuffer par défaut à bind depuis le code appelant.
+
+__MOTHERFUCKER__ C'était bien ça ! J'ai ajouté une fonction SetDefaultFrameBuffer() à l'API qui va modifier les membres statiques DEFAULT_FRAMEBUFFER de _FrameBuffer_ et du wrapper GFX. Au lieu d'appeler glBindFramebuffer(GL_FRAMEBUFFER, 0) le code va lancer glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER). En revanche cet appel doit être effectué dans paintGL() pour que cela fonctionne :
+```cpp
+void GLWidget::paintGL()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    engine_->SetDefaultFrameBuffer(defaultFramebufferObject());
+    engine_->Update(16.67/1000.f);
+    engine_->RenderFrame();
+    engine_->FinishFrame();
+}
+```
+
+Pour
+
+
+* Sources :
+    [1] https://forum.qt.io/topic/48816/qopenglcontext-s-defaultframebufferobject-always-returns-0-in-a-qopenglwidget-subclass
+
+
+
 * TODO:
     [ ] New texture maps (possibly grouped in same Gbuffer chan):
         * Emissivity map

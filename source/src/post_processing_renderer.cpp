@@ -79,6 +79,7 @@ void PostProcessingRenderer::render(Scene* pscene)
 
     // Render textured quad to screen
     GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
+    //GFX::bind_default_frame_buffer();
 
     // Bind relevant textures
     auto pbloom = Texture::get_named_texture("bloom"_h).lock();

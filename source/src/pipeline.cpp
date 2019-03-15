@@ -608,7 +608,7 @@ void RenderPipeline::render()
     }
     #endif
 
-// ------- HDR, POST-PROCESSING (draw texture "screen" on actual screen) ------
+// ------- HDR, POST-PROCESSING (draw LBuffer on screen) ------
     #ifdef __PROFILE__
     if(profile_renderers)
     {

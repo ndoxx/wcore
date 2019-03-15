@@ -84,7 +84,7 @@ private:
     std::vector<TexMapControl*> texmap_controls_;
 
     // Preview
-    //GLWidget* gl_widget_;
+    GLWidget* gl_widget_;
 
     // Status bar
     QLabel* status_label_;
