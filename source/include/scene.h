@@ -48,6 +48,7 @@ private:
     VertexArray<Vertex3P3N3T2U> instance_vertex_array_;
 
     std::map<uint32_t, Chunk*> chunks_;
+    std::map<hash_t, std::weak_ptr<Model>> ref_models_;
     std::vector<uint64_t> displayable_entities_;
     StaticOctree static_octree;
 
@@ -117,11 +118,12 @@ public:
     void submit_mesh_instance(std::shared_ptr<SurfaceMesh> mesh);
     void load_instance_geometry();
 
-    inline void add_model_instance(std::shared_ptr<Model> model, uint32_t chunk_index) { chunks_.at(chunk_index)->add_model(model,true); }
-    inline void add_model(std::shared_ptr<Model> model, uint32_t chunk_index)          { chunks_.at(chunk_index)->add_model(model); }
-    inline void add_model(pLineModel model, uint32_t chunk_index)                      { chunks_.at(chunk_index)->add_model(model); }
-    inline void add_light(std::shared_ptr<Light> light, uint32_t chunk_index)          { chunks_.at(chunk_index)->lights_.push_back(light); }
+    void add_model_instance(std::shared_ptr<Model> model, uint32_t chunk_index);
+    void add_model(std::shared_ptr<Model> model, uint32_t chunk_index);
+    void add_model(pLineModel model, uint32_t chunk_index)                             { chunks_.at(chunk_index)->add_model(model); }
+    void add_light(std::shared_ptr<Light> light, uint32_t chunk_index);
     void add_terrain(std::shared_ptr<TerrainChunk> terrain, uint32_t chunk_index);
+    std::weak_ptr<Model> get_model_by_ref(hash_t ref);
     inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index)   { chunks_.at(chunk_index)->add_position_updater(updater); }
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)            { chunks_.at(chunk_index)->add_rotator(rotator); }
 

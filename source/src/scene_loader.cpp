@@ -826,6 +826,20 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
             parse_motion(mot_node, pmdl, chunk_index);
         }
 
+        // Should we save a reference so that the model can be accessed via a hash?
+#ifdef __DEBUG__
+        std::string ref;
+        if(xml::parse_attribute(model, "href", ref))
+        {
+            hash_t href = H_(ref.c_str());
+            pmdl->set_reference(href);
+            HRESOLVE.add_intern_string(ref);
+        }
+#else
+        if(hash_t href = xml::parse_attribute_h(model, "href"))
+            pmdl->set_reference(href);
+#endif
+
         pmdl->update_bounding_boxes();
         if(!mesh_is_instance)
             pscene_->add_model(pmdl, chunk_index);

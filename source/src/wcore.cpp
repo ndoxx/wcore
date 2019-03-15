@@ -392,6 +392,16 @@ void Engine::SetModelOrientation(uint32_t model_index, const math::vec3& orienta
     pmdl->update_bounding_boxes();
 }
 
+bool Engine::VisitRefModel(hash_t href, std::function<void(Model& model)> func)
+{
+    if(auto pmdl = eimpl_->scene->get_model_by_ref(href).lock())
+    {
+        func(*pmdl);
+        return true;
+    }
+    return false;
+}
+
 uint32_t Engine::LoadPointLight(uint32_t chunk_index)
 {
     auto plight = eimpl_->scene_loader->load_point_light(chunk_index);

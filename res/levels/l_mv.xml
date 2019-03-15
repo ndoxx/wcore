@@ -15,7 +15,7 @@
                 </Transform>
             </Model>
             -->
-            <Model reference="the_model">
+            <Model href="the_model">
                 <Mesh type="cube"/>
                 <Material name="cube"/>
                 <Transform>

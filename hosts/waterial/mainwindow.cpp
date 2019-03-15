@@ -144,6 +144,8 @@ file_dialog_(new QFileDialog(this))
     gb_preview_ctl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     gl_widget_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
+    create_preview_controls(gb_preview_ctl);
+
     layout_main_panel->addWidget(gb_preview_ctl, 0, 3);
     layout_main_panel->addWidget(gl_widget_, 1, 3);
     layout_main_panel->setColumnStretch(3, 3);
@@ -302,6 +304,31 @@ void MainWindow::create_toolbars()
     pjname_label_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
     pjname_label_->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     toolbar_->addWidget(pjname_label_);
+}
+
+void MainWindow::create_preview_controls(QGroupBox* gb)
+{
+    QGridLayout* layout = new QGridLayout();
+
+    // * General controls
+    QVBoxLayout* layout_gen = new QVBoxLayout();
+    QGroupBox* gb_general = new QGroupBox();
+    gb_general->setObjectName("PreviewCtl");
+    // Active preview
+    QCheckBox* cb_active = new QCheckBox("Active");
+    cb_active->setCheckState(Qt::Checked);
+    connect(cb_active,  SIGNAL(stateChanged(int)),
+            gl_widget_, SLOT(handle_active_changed(int)));
+    layout_gen->addWidget(cb_active);
+    layout_gen->addStretch();
+
+    gb_general->setLayout(layout_gen);
+
+    layout->addWidget(gb_general, 0, 0);
+    layout->setRowStretch(0, 1);
+    layout->setColumnStretch(0, 1);
+
+    gb->setLayout(layout);
 }
 
 bool MainWindow::eventFilter(QObject* object, QEvent* event)

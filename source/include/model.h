@@ -68,6 +68,9 @@ protected:
     bool                  visible_;
     uint32_t              shadow_cull_face_;
 
+    hash_t reference_;
+    bool   has_reference_;
+
 #ifndef __DISABLE_EDITOR__
     // Editor callback to reset its selection when this model is destroyed
     Editor* editor_;
@@ -114,6 +117,7 @@ public:
 
     inline void set_position(const math::vec3& newpos)          { trans_.set_position(newpos); }
     inline void set_orientation(const math::quat& newori)       { trans_.set_orientation(newori); }
+    inline math::vec3 get_orientation_euler(bool deg=true)      { return trans_.get_orientation_euler(deg); }
     inline void set_scale(float scale)                          { trans_.set_scale(scale); }
     inline void rotate(float phi, float theta, float psi)       { trans_.rotate(phi, theta, psi); }
     inline void rotate(const math::vec3& axis, float angle)     { trans_.rotate(axis, angle); }
@@ -124,6 +128,11 @@ public:
     inline void translate_y(float y)                            { trans_.translate_y(y); }
     inline void translate_z(float z)                            { trans_.translate_z(z); }
 
+    // Reference
+    inline void set_reference(hash_t hname) { reference_ = hname; has_reference_ = true; }
+    inline void forget_reference()          { reference_ = 0; has_reference_ = false; }
+    inline hash_t get_reference() const     { return reference_; }
+    inline bool has_reference() const       { return has_reference_; }
 
 #ifndef __DISABLE_EDITOR__
     // Set editor callback to clear selection on destruction

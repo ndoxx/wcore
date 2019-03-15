@@ -19,15 +19,16 @@ public:
     Transformation(const math::vec3& position, const math::quat& orientation, float scale=1.0f);
     Transformation(math::vec3&& position, math::quat&& orientation, float scale=1.0f);
 
-    inline void set_position(const math::vec3& position) { position_ = position; }
-    inline void set_position(math::vec3&& position) { std::swap(position_, position); }
+    inline void set_position(const math::vec3& position)       { position_ = position; }
+    inline void set_position(math::vec3&& position)            { std::swap(position_, position); }
     inline void set_orientation(const math::quat& orientation) { orientation_ = orientation; }
-    inline void set_orientation(math::quat&& orientation) { std::swap(orientation_, orientation); }
+    inline void set_orientation(math::quat&& orientation)      { std::swap(orientation_, orientation); }
     inline void set_scale(float scale) { scale_ = scale; scaled_ = (scale!=1.0f); }
 
-    inline const math::vec3& get_position() const { return position_; }
-    inline math::vec3& get_position_nc() { return position_; }
-    inline const math::quat& get_orientation() const { return orientation_; }
+    inline const math::vec3& get_position() const              { return position_; }
+    inline math::vec3& get_position_nc()                       { return position_; }
+    inline const math::quat& get_orientation() const           { return orientation_; }
+    inline math::vec3 get_orientation_euler(bool deg)          { return orientation_.get_euler_angles(deg); }
     inline float get_scale() const { return scale_; }
     inline bool  is_scaled() const { return scaled_; }
     inline math::mat4 get_scale_matrix() const

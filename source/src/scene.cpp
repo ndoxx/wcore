@@ -523,6 +523,36 @@ void Scene::get_loaded_chunks_coords(std::vector<math::i32vec2>& coord_list) con
         coord_list.push_back(chunk->get_coordinates());
 }
 
+void Scene::add_model_instance(std::shared_ptr<Model> model, uint32_t chunk_index)
+{
+    chunks_.at(chunk_index)->add_model(model,true);
+    if(model->has_reference())
+    {
+        ref_models_.insert(std::pair(model->get_reference(), model));
+    }
+}
+
+void Scene::add_model(std::shared_ptr<Model> model, uint32_t chunk_index)
+{
+    chunks_.at(chunk_index)->add_model(model);
+    if(model->has_reference())
+        ref_models_.insert(std::pair(model->get_reference(), model));
+}
+
+std::weak_ptr<Model> Scene::get_model_by_ref(hash_t ref)
+{
+    auto it = ref_models_.find(ref);
+    if(it!= ref_models_.end())
+        return it->second;
+    else
+        return std::weak_ptr<Model>();
+}
+
+void Scene::add_light(std::shared_ptr<Light> light, uint32_t chunk_index)
+{
+    chunks_.at(chunk_index)->lights_.push_back(light);
+}
+
 #ifndef __DISABLE_EDITOR__
 const char* items[] = {"Freefly", "Light"};
 static int current_index = 0;

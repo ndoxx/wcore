@@ -20,7 +20,9 @@ frustum_cull_(true),
 is_dynamic_(false),
 is_terrain_(false),
 visible_(false),
-shadow_cull_face_(0)
+shadow_cull_face_(0),
+reference_(0),
+has_reference_(false)
 #ifndef __DISABLE_EDITOR__
 ,editor_(nullptr)
 ,selection_reset_(nullptr)

@@ -66,6 +66,7 @@ public slots:
 protected:
     void create_status_bar();
     void create_toolbars();
+    void create_preview_controls(QGroupBox* gb);
     void update_window_title(const QString& project_name);
     void clear_view();
 
