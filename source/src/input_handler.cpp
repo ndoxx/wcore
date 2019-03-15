@@ -187,6 +187,13 @@ void InputHandler::handle_mouse(AbstractContext& context)
         // Reset mouse position for next frame
         context.center_cursor();
 
+        // [HACK] (sorta) To circumvent an annoying behavior issue with GLFW where
+        // the cursor position has been set but refuses to update anyhow. In this case
+        // the positions returned by glfwGetCursorPos() are null. This results
+        // in unwanted mouse move events during the first two frames, screwing up
+        // the initial camera orientation.
+        if(xpos==0.f && ypos==0.f) return;
+
         // Calculate deltas from last frame
         int dxi = xpos-win_width/2;
         int dyi = ypos-win_height/2;

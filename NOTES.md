@@ -7320,6 +7320,15 @@ La fonction resizeGL(2) est appelée à chaque evt de redimensionnement du widge
 
 C'est à peu près tout.
 
+## Orientation de départ de la caméra
+On savait que c'était de la merde, maintenant on sait aussi pourquoi. Ce connard de GLFW se réserve le droit de retourner des valeurs nulles pour la position du curseur (via glfwGetCursorPos()) :
+
+    Any or all of the position arguments may be NULL. If an error occurs, all non-NULL position arguments will be set to zero.
+(Voir [2])
+C'est ce qui se produit lors des 2 premières frames, va comprendre pourquoi. Ca entraîne un evt mouse move sur le chan input.mouse.locked, et c'est ça qui baise l'orientation de la caméra de 30° exactement (en pitch et en yaw).
+
+Donc j'ai modifié InputHandler::handle_mouse() pour détecter cette situation et ne pas poster d'événement sur input.mouse.locked quand ça se produit.
+
 ## A faire
 On veut pouvoir faire les choses suivantes depuis l'API :
     [ ] Référencer un modèle donné via un hash
@@ -7339,7 +7348,7 @@ Le moteur doit aussi pouvoir :
 
 * Sources :
     [1] https://forum.qt.io/topic/48816/qopenglcontext-s-defaultframebufferobject-always-returns-0-in-a-qopenglwidget-subclass
-
+    [2] https://www.glfw.org/docs/latest/group__input.html#ga01d37b6c40133676b9cea60ca1d7c0cc
 
 
 * TODO:

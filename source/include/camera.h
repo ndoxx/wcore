@@ -141,16 +141,6 @@ inline void Camera::set_position(const math::vec3& newpos)
     position_ = newpos;
 }
 
-inline void Camera::set_orientation(float yaw, float pitch)
-{
-    pitch_ = (pitch<=MAX_PITCH)?pitch:MAX_PITCH;
-    yaw_   = yaw;
-    if(yaw_>=360.0f)
-        yaw_ -= 360.0f;
-    if(yaw_<0.0f)
-        yaw_ += 360.0f;
-}
-
 inline void Camera::move_forward()
 {
     const math::vec3& f = get_forward();
@@ -189,6 +179,16 @@ inline void Camera::update_orientation(float d_yaw, float d_pitch)
     pitch_ += rot_speed_*MOUSE_SENSITIVITY_Y*d_pitch;
     if(pitch_>MAX_PITCH || pitch_<-MAX_PITCH)
         pitch_ -= rot_speed_*MOUSE_SENSITIVITY_Y*d_pitch;
+    if(yaw_>=360.0f)
+        yaw_ -= 360.0f;
+    if(yaw_<0.0f)
+        yaw_ += 360.0f;
+}
+
+inline void Camera::set_orientation(float yaw, float pitch)
+{
+    pitch_ = (pitch<=MAX_PITCH)?pitch:MAX_PITCH;
+    yaw_   = yaw;
     if(yaw_>=360.0f)
         yaw_ -= 360.0f;
     if(yaw_<0.0f)

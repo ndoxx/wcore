@@ -6,11 +6,21 @@
 
     <Chunk coords="(0,0)">
         <Models>
+            <!--
             <Model name="interior01" ypos="relative">
                 <Transform>
                     <Position>(8.0,0.01,8.0)</Position>
                     <Angle>(0,-35,0)</Angle>
                     <Scale>2.0</Scale>
+                </Transform>
+            </Model>
+            -->
+            <Model reference="the_model">
+                <Mesh type="cube"/>
+                <Material name="cube"/>
+                <Transform>
+                    <Position>(0.0,0.0,0.0)</Position>
+                    <Scale>1.0</Scale>
                 </Transform>
             </Model>
         </Models>
@@ -102,8 +112,8 @@
     </Ambient>
 
     <Camera>
-        <Position>(8.5,17.5,-2)</Position>
-        <Orientation>(200,80)</Orientation>
+        <Position>(0,1.5,-1.5)</Position>
+        <Orientation>(180,25)</Orientation>
     </Camera>
 
     <!-- Sun -->
