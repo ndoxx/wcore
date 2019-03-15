@@ -78,6 +78,69 @@ std::shared_ptr<FaceMesh> make_cube(bool finalize)
     return pmesh;
 }
 
+std::shared_ptr<FaceMesh> make_cube_uniface(bool finalize)
+{
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
+    //                  /--------POSITION------  /----------UV----------
+    //Front 1          |                        |
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(0.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(0.0f, 1.0f));
+
+    //Right 2
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(2.0f/3.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 1.0f));
+
+    //Back 4
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(0.0f, 0.5f));
+
+    //Left 5
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(2.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f/3.0f, 0.5f));
+
+    //Top 3
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f,1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(1.0f,0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(2.0f/3.0f, 1.0f));
+
+    //Bottom 6
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(1.0f,0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f,0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(2.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
+
+    pmesh->push_triangle(0,  1,  2);
+    pmesh->push_triangle(0,  2,  3);
+    pmesh->push_triangle(4,  5,  6);
+    pmesh->push_triangle(4,  6,  7);
+    pmesh->push_triangle(8,  9,  10);
+    pmesh->push_triangle(8,  10, 11);
+    pmesh->push_triangle(12, 13, 14);
+    pmesh->push_triangle(12, 14, 15);
+    pmesh->push_triangle(16, 17, 18);
+    pmesh->push_triangle(16, 18, 19);
+    pmesh->push_triangle(20, 21, 22);
+    pmesh->push_triangle(20, 22, 23);
+
+    if(finalize)
+    {
+        pmesh->build_normals_and_tangents();
+        pmesh->compute_dimensions();
+    }
+
+    return pmesh;
+}
+
+
 // TODO: Fix UVs
 std::shared_ptr<FaceMesh> make_box(const math::extent_t& extent, float texture_scale)
 {

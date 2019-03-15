@@ -11,6 +11,7 @@
 #include "vendor/rapidxml/rapidxml.hpp"
 #include "wtypes.h"
 #include "math3d.h"
+#include "material_common.h"
 
 /*
     Defines the behavior of the material editor application
@@ -199,6 +200,9 @@ public:
     inline const QString& get_current_project() const { return current_project_; }
 
     void traverse_entries(std::function<void(TextureEntry&)> func);
+
+    // Get engine material descriptor for current material
+    wcore::MaterialDescriptor get_current_material_descriptor();
 
 protected:
     QString project_path_from_name(const QString& name);

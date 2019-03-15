@@ -38,7 +38,6 @@
 // wcore
 #include "config.h"
 #include "logger.h"
-#include "material_common.h"
 
 
 using namespace wcore;
@@ -802,61 +801,11 @@ void MainWindow::handle_gen_ao_map()
     }
 }
 
-/*
-Material::Material(const MaterialDescriptor& descriptor):
-texture_(nullptr),
-albedo_(descriptor.albedo),
-metallic_(descriptor.metallic),
-roughness_(descriptor.roughness),
-parallax_height_scale_(descriptor.parallax_height_scale),
-alpha_(descriptor.transparency),
-textured_(descriptor.is_textured),
-use_normal_map_(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL) && descriptor.enable_normal_mapping),
-use_parallax_map_(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH) && descriptor.enable_parallax_mapping),
-use_overlay_(false),
-blend_(descriptor.has_transparency)
-{
-    if(textured_)
-        texture_ = new Texture(descriptor.texture_descriptor);
-}
-*/
-
 void MainWindow::handle_material_swap()
 {
-    // Get current entry
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
-    {
-        TextureEntry& entry = editor_model_->get_current_texture_entry();
-
-        MaterialDescriptor desc;
-
-        // BLOCK0 -> ALBEDO
-        AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
-        if(albedo_map->has_image)
-        {
-            desc.texture_descriptor.add_unit(TextureUnit::ALBEDO);
-            desc.texture_descriptor.add_unit(TextureUnit::BLOCK0);
-            desc.texture_descriptor.locations[TextureUnit::BLOCK0] = texname.toStdString() + "_block0.png";
-            desc.is_textured = true;
-        }
-        else
-        {
-            math::vec4 albedo(albedo_map->u_albedo.x()/255.f,
-                              albedo_map->u_albedo.y()/255.f,
-                              albedo_map->u_albedo.z()/255.f,
-                              1.f);
-            desc.albedo = albedo;
-        }
-
-        gl_widget_->handle_material_swap(desc);
-
-        /*
-        descriptor.texture_descriptor.locations[unit] = texture_map;
-        descriptor.texture_descriptor.add_unit(unit);
-        descriptor.is_textured = true;
-        */
-    }
+        gl_widget_->handle_material_swap(editor_model_->get_current_material_descriptor());
 }
 
 void MainWindow::update_window_title(const QString& project_name)

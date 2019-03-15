@@ -540,8 +540,9 @@ units_(descriptor.units)
     {
         internal_ = std::make_shared<TextureInternal>(descriptor);
 
-        // Cache resource for later
-        RESOURCE_MAP_.insert(std::make_pair(resourceID_, internal_));
+        // Cache resource for later if texture is meant to be cached
+        if(resourceID_ != ""_h)
+            RESOURCE_MAP_.insert(std::make_pair(resourceID_, internal_));
     }
 }
 

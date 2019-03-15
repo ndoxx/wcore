@@ -53,7 +53,6 @@ void Model::set_material(Material* material)
 }
 
 
-
 LineModel::LineModel(Mesh<Vertex3P>* pmesh, Material* material):
 pmesh_(pmesh),
 pmaterial_(material),

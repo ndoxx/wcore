@@ -685,5 +685,115 @@ void EditorModel::traverse_entries(std::function<void(TextureEntry&)> func)
         func(entry);
 }
 
+/*
+Material::Material(const MaterialDescriptor& descriptor):
+texture_(nullptr),
+albedo_(descriptor.albedo),
+metallic_(descriptor.metallic),
+roughness_(descriptor.roughness),
+parallax_height_scale_(descriptor.parallax_height_scale),
+alpha_(descriptor.transparency),
+textured_(descriptor.is_textured),
+use_normal_map_(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL) && descriptor.enable_normal_mapping),
+use_parallax_map_(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH) && descriptor.enable_parallax_mapping),
+use_overlay_(false),
+blend_(descriptor.has_transparency)
+{
+    if(textured_)
+        texture_ = new Texture(descriptor.texture_descriptor);
+}
+*/
+
+/*
+    [   Block0   ]  [     Block1   ]  [     Block2       ]
+    [[R][G][B][A]]  [[R][G][B]  [A]]  [[R]  [G] [B]   [A]]
+      Albedo           Normal  Depth  Metal AO  Rough  ?
+*/
+
+wcore::MaterialDescriptor EditorModel::get_current_material_descriptor()
+{
+    TextureEntry& entry = get_current_texture_entry();
+
+    MaterialDescriptor desc;
+    // Leave desc.texture_descriptor.resource_id blank
+    // so that texture is never cached
+
+    // BLOCK0 -> ALBEDO
+    AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
+    if(albedo_map->has_image && albedo_map->use_image)
+    {
+        desc.texture_descriptor.add_unit(TextureUnit::ALBEDO);
+        desc.texture_descriptor.add_unit(TextureUnit::BLOCK0);
+        desc.texture_descriptor.locations[TextureUnit::BLOCK0] = current_texname_.toStdString() + "_block0.png";
+        desc.is_textured = true;
+    }
+    else
+    {
+        math::vec4 albedo(albedo_map->u_albedo.x()/255.f,
+                          albedo_map->u_albedo.y()/255.f,
+                          albedo_map->u_albedo.z()/255.f,
+                          1.f);
+        desc.albedo = albedo;
+    }
+
+    // BLOCK1 -> NORMAL / DEPTH
+    NormalMap* normal_map = static_cast<NormalMap*>(entry.texture_maps[NORMAL]);
+    DepthMap* depth_map   = static_cast<DepthMap*>(entry.texture_maps[DEPTH]);
+    bool has_block1 = false;
+    if(normal_map->has_image && normal_map->use_image)
+    {
+        desc.texture_descriptor.add_unit(TextureUnit::NORMAL);
+        has_block1 = true;
+    }
+    if(depth_map->has_image && depth_map->use_image)
+    {
+        desc.texture_descriptor.add_unit(TextureUnit::DEPTH);
+        has_block1 = true;
+    }
+    if(has_block1)
+    {
+        desc.is_textured = true;
+        desc.texture_descriptor.add_unit(TextureUnit::BLOCK1);
+        desc.texture_descriptor.locations[TextureUnit::BLOCK1] = current_texname_.toStdString() + "_block1.png";
+    }
+
+    // BLOCK2 -> METALLIC / AO / ROUGHNESS
+    MetallicMap* metallic_map   = static_cast<MetallicMap*>(entry.texture_maps[METALLIC]);
+    AOMap* ao_map               = static_cast<AOMap*>(entry.texture_maps[AO]);
+    RoughnessMap* roughness_map = static_cast<RoughnessMap*>(entry.texture_maps[ROUGHNESS]);
+    bool has_block2 = false;
+    if(metallic_map->has_image && metallic_map->use_image)
+    {
+        desc.texture_descriptor.add_unit(TextureUnit::METALLIC);
+        has_block2 = true;
+    }
+    else
+    {
+        desc.metallic = metallic_map->u_metallic;
+    }
+    if(roughness_map->has_image && roughness_map->use_image)
+    {
+        desc.texture_descriptor.add_unit(TextureUnit::ROUGHNESS);
+        has_block2 = true;
+    }
+    else
+    {
+        desc.roughness = roughness_map->u_roughness;
+    }
+    if(ao_map->has_image && ao_map->use_image)
+    {
+        desc.texture_descriptor.add_unit(TextureUnit::AO);
+        has_block2 = true;
+    }
+    if(has_block2)
+    {
+        desc.is_textured = true;
+        desc.texture_descriptor.add_unit(TextureUnit::BLOCK2);
+        desc.texture_descriptor.locations[TextureUnit::BLOCK2] = current_texname_.toStdString() + "_block2.png";
+    }
+
+
+    return desc;
+}
 
 } // namespace medit
