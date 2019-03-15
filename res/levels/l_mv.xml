@@ -1,28 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Scene>
     <Terrain chunkSize="32" latticeScale="1.0" textureScale="1.0">
-        <TerrainPatch origin="(0,0)" size="(1,1)" height="0">
-            <Generator type="simplex" seed="7">
-                <!--<Scale>0.5</Scale>-->
-                <Octaves>10</Octaves>
-                <Frequency>0.01</Frequency>
-                <Persistence>0.4</Persistence>
-                <LoBound>0.0</LoBound>
-                <HiBound>0.0</HiBound>
-            </Generator>
-            <Transform>
-                <Position>(0,0,0)</Position>
-            </Transform>
-            <Material>
-                <Uniform>
-                    <Albedo>(0.1,0.4,0.1)</Albedo>
-                    <Roughness>0.8</Roughness>
-                </Uniform>
-            </Material>
-            <Shadow>
-                <CullFace>1</CullFace>
-            </Shadow>
-        </TerrainPatch>
+        <TerrainPatch origin="(0,0)" size="(1,1)" height="0" void="true"/>
     </Terrain>
 
     <Chunk coords="(0,0)">
@@ -42,7 +21,7 @@
                 <Position>(2.0,2.0,2.0)</Position>
                 <Color>(0.2, 0.9, 0.7)</Color>
                 <Radius>10.0</Radius>
-                <Brightness>100.0</Brightness>
+                <Brightness>10.0</Brightness>
             </Light>
         </Lights>
     </Chunk>

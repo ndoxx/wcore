@@ -145,7 +145,7 @@ file_dialog_(new QFileDialog(this))
     gl_widget_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
     layout_main_panel->addWidget(gb_preview_ctl, 0, 3);
-    layout_main_panel->addWidget(gl_widget_, 1, 3); // DNW black widget
+    layout_main_panel->addWidget(gl_widget_, 1, 3);
     layout_main_panel->setColumnStretch(3, 3);
 
     // * Setup main layout

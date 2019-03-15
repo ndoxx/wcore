@@ -2,7 +2,6 @@
 #define GL_WIDGET_H
 
 #include <QOpenGLWidget>
-//#include <QOpenGLFunctions_4_0_Core>
 
 namespace wcore
 {
@@ -13,7 +12,7 @@ namespace medit
 {
 
 class QtContext;
-class GLWidget : public QOpenGLWidget//, protected QOpenGLFunctions_4_0_Core
+class GLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 

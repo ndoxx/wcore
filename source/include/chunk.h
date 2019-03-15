@@ -103,6 +103,7 @@ public:
     inline pLight get_light(uint32_t index)   { return lights_[index]; }
     inline const TerrainChunk& get_terrain() const  { return *terrain_; }
     inline TerrainChunk& get_terrain_nc()           { return *terrain_; }
+    inline bool has_terrain() const { return (terrain_!=nullptr); }
 
     void sort_models(pCamera camera);
 

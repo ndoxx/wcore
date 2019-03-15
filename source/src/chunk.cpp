@@ -40,7 +40,8 @@ line_buffer_unit_(GL_LINES),
 vertex_array_(buffer_unit_),
 terrain_vertex_array_(terrain_buffer_unit_),
 blend_vertex_array_(blend_buffer_unit_),
-line_vertex_array_(line_buffer_unit_)
+line_vertex_array_(line_buffer_unit_),
+terrain_(nullptr)
 {
 
 }
@@ -235,10 +236,13 @@ bool Chunk::visit_model_first(ModelVisitor func, ModelEvaluator ifFunc) const
     }
 
     // Terrain
-    if(ifFunc(*terrain_))
+    if(terrain_ != nullptr)
     {
-        func(*terrain_, index_);
-        return true;
+        if(ifFunc(*terrain_))
+        {
+            func(*terrain_, index_);
+            return true;
+        }
     }
 
     return false;
@@ -298,9 +302,12 @@ void Chunk::load_geometry()
     buffer_unit_.upload();
 
     // Terrain
-    terrain_buffer_unit_.submit(terrain_->get_mesh());
-    terrain_->get_mesh().set_buffer_batch(BufferToken::Batch::TERRAIN);
-    terrain_buffer_unit_.upload();
+    if(terrain_ != nullptr)
+    {
+        terrain_buffer_unit_.submit(terrain_->get_mesh());
+        terrain_->get_mesh().set_buffer_batch(BufferToken::Batch::TERRAIN);
+        terrain_buffer_unit_.upload();
+    }
 
     // Geometry with alpha blending
     for(pModel pmodel: models_blend_)
@@ -341,8 +348,11 @@ void Chunk::draw(const BufferToken& buffer_token) const
             buffer_unit_.draw(buffer_token);
             break;
         case BufferToken::Batch::TERRAIN:
-            terrain_vertex_array_.bind();
-            terrain_buffer_unit_.draw(buffer_token);
+            if(terrain_ != nullptr)
+            {
+                terrain_vertex_array_.bind();
+                terrain_buffer_unit_.draw(buffer_token);
+            }
             break;
         case BufferToken::Batch::BLEND:
             blend_vertex_array_.bind();

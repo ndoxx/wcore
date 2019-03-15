@@ -250,10 +250,13 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
                 // Is chunk visible? ~= Is terrain visible? (when viewed from the top)
 
                 // Get terrain chunk OBB
-                OBB& obb = chunk->get_terrain_nc().get_OBB();
-                // Frustum cull entire chunk
-                if(!camera_->frustum_collides(obb))
-                    continue;
+                if(chunk->has_terrain())
+                {
+                    OBB& obb = chunk->get_terrain_nc().get_OBB();
+                    // Frustum cull entire chunk
+                    if(!camera_->frustum_collides(obb))
+                        continue;
+                }
             }
 
             // Draw models
@@ -289,32 +292,6 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
                 }
             }
         }
-
-        // TERRAINS
-        // Terrains are heavily occluded by the static geometry on top,
-        // so we draw them last so as to maximize depth test fails
-        /*for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
-        {
-            Chunk* chunk = chunks_.at(chunks_order_[ii]);
-            // * Chunk frustum culling
-            // Always traverse the chunk we're at, else, frustum cull
-            if(chunk->get_index()!=current_chunk_index_)
-            {
-                // ----- /!\ (APPROX) /!\ -----
-                // Is chunk visible? ~= Is terrain visible? (when viewed from the top)
-
-                // Get terrain chunk OBB
-                OBB& obb = chunk->get_terrain_nc().get_OBB();
-                // Frustum cull entire chunk
-                if(!camera_->frustum_collides(obb))
-                    continue;
-            }
-
-            // Draw terrains
-            TerrainChunk& terrain = chunk->get_terrain_nc();
-            prepare(terrain);
-            chunk->draw(terrain.get_mesh().get_buffer_token());
-        }*/
     }
     //Traverse chunks back to front for transparent geometry
     else if(model_cat==wcore::MODEL_CATEGORY::TRANSPARENT)
@@ -325,10 +302,13 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
             Chunk* chunk = chunks_.at(chunks_order_[index]);
             // Is chunk visible?
             // Get terrain chunk AABB (APPROX)
-            AABB& aabb = chunk->get_terrain_nc().get_AABB();
-            // Frustum cull entire chunk
-            if(!camera_->frustum_collides(aabb))
-                continue;
+            if(chunk->has_terrain())
+            {
+                AABB& aabb = chunk->get_terrain_nc().get_AABB();
+                // Frustum cull entire chunk
+                if(!camera_->frustum_collides(aabb))
+                    continue;
+            }
 
             // Draw models
             chunk->traverse_models([&](const Model& model, uint32_t chunk_index)
@@ -346,6 +326,7 @@ void Scene::draw_terrains(std::function<void(const TerrainChunk&)> prepare,
     for(uint32_t ii=0; ii<chunks_order_.size(); ++ii)
     {
         Chunk* chunk = chunks_.at(chunks_order_[ii]);
+        if(!chunk->has_terrain()) continue;
         // * Chunk frustum culling
         // Always traverse the chunk we're at, else, frustum cull
         if(chunk->get_index()!=current_chunk_index_)
@@ -501,6 +482,11 @@ const HeightMap& Scene::get_heightmap(uint32_t chunk_index) const
     return chunks_.at(chunk_index)->get_terrain().get_heightmap();
 }
 
+bool Scene::has_terrain(uint32_t chunk_index) const
+{
+    return chunks_.at(chunk_index)->has_terrain();
+}
+
 float Scene::get_height(math::vec3 position) const
 {
     i32vec2 chunk_coords((uint32_t)floor(position.x()/chunk_size_m_),
@@ -508,13 +494,15 @@ float Scene::get_height(math::vec3 position) const
     uint32_t chunk_index = std::hash<i32vec2>{}(chunk_coords);
     if(has_chunk(chunk_index))
     {
+        if(!has_terrain(chunk_index)) return 0.f;
+
         vec2 lcp(fmod(position.x(), chunk_size_m_),
                  fmod(position.z(), chunk_size_m_));
         return chunks_.at(chunk_index)->get_terrain()
                                       .get_heightmap()
                                       .get_height(lcp);
     }
-    return 0.0f;
+    return 0.f;
 }
 
 void Scene::get_far_chunks(uint32_t unload_radius, std::vector<uint32_t>& chunk_list) const

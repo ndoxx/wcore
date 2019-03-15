@@ -355,16 +355,16 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
     {
         ++chunk_size_m_;
         DLOGW("[SceneLoader] Chunk size must be <v>odd</v> for hex terrain meshes.", "chunk", Severity::WARN);
-        DLOGI("Corrected: Chunk Size is now " + std::to_string(chunk_size_m_), "chunk", Severity::WARN);
+        DLOGI("<i>Corrected</i>: Chunk Size is now " + std::to_string(chunk_size_m_), "chunk", Severity::WARN);
     }
     chunk_size_ = uint32_t(floor(chunk_size_m_/lattice_scale_));
     pscene_->set_chunk_size_meters(chunk_size_m_);
     TerrainChunk::set_chunk_size(chunk_size_);
 
     // For each terrain patch
-    for (xml_node<>* patch=node->first_node("TerrainPatch");
-         patch;
-         patch=patch->next_sibling("TerrainPatch"))
+    for(xml_node<>* patch=node->first_node("TerrainPatch");
+        patch;
+        patch=patch->next_sibling("TerrainPatch"))
     {
         // Parse size and starting coordinates
         i32vec2 patchStart, patchSize;
@@ -374,6 +374,18 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
         if(!success)
         {
             DLOGE("[SceneLoader] TerrainPatch node must define 'origin' and 'size' attributes.", "parsing", Severity::CRIT);
+        }
+
+        // Check if patch is void (empty, no terrain, zitch)
+        bool patch_is_void = false;
+        if(xml::parse_attribute(patch, "void", patch_is_void))
+        {
+            if(patch_is_void)
+            {
+                std::stringstream ss;
+                ss << "Terrain patch at <v>" << patchStart << "</v> is <h>void</h>";
+                DLOGI(ss.str(), "chunk", Severity::LOW);
+            }
         }
 
         // For each chunk within that patch
@@ -400,7 +412,7 @@ void SceneLoader::parse_patches(rapidxml::xml_node<>* node)
                     DLOGI(ss.str(), "scene", Severity::WARN);
                 }
 #endif
-                chunk_patches_[chunk_index] = patch;
+                chunk_patches_[chunk_index] = patch_is_void ? nullptr : patch;
             }
         }
     }
@@ -657,9 +669,16 @@ void SceneLoader::parse_terrain(const i32vec2& chunk_coords)
         ss << "[SceneLoader] <b>Orphan chunk</b> at <v>" << chunk_coords << "</v>"
            << " (chunk is outside of all terrain patches).";
         DLOGE(ss.str(), "chunk", Severity::CRIT);
-        return;
+        fatal(ss.str());
     }
     xml_node<>* patch = it->second;
+
+    // If patch is null, we have a void patch and should not create a terrain
+    if(patch == nullptr)
+    {
+        DLOG("Void patch", "chunk", Severity::LOW);
+        return;
+    }
 
     // Get nodes
     xml_node<>* splat_node = patch->first_node("Splat");
@@ -1003,7 +1022,7 @@ void SceneLoader::parse_lights(xml_node<>* chunk_node, uint32_t chunk_index)
         xml::parse_node(light, "AmbientStrength", ambient_strength);
 
         // Do we position the light relative to a heightmap?
-        if(is_pos_relative(light))
+        if(is_pos_relative(light) && pscene_->has_terrain(chunk_index))
         {
             float height = pscene_->get_heightmap(chunk_index).get_height(position.xz());
             position[1] += height;
@@ -1192,16 +1211,22 @@ void SceneLoader::ground_model(Model& model, const HeightMap& hm)
 
 void SceneLoader::ground_model(Model& model, uint32_t chunk_index)
 {
-    // Find height at model (x,z) position and apply offset to model
-    float height = pscene_->get_heightmap(chunk_index).get_height(model.get_position().xz());
-    model.translate_y(height);
+    if(pscene_->has_terrain(chunk_index))
+    {
+        // Find height at model (x,z) position and apply offset to model
+        float height = pscene_->get_heightmap(chunk_index).get_height(model.get_position().xz());
+        model.translate_y(height);
+    }
 }
 
 void SceneLoader::ground_model(LineModel& model, uint32_t chunk_index)
 {
-    // Find height at model (x,z) position and apply offset to model
-    float height = pscene_->get_heightmap(chunk_index).get_height(model.get_position().xz());
-    model.translate_y(height);
+    if(pscene_->has_terrain(chunk_index))
+    {
+        // Find height at model (x,z) position and apply offset to model
+        float height = pscene_->get_heightmap(chunk_index).get_height(model.get_position().xz());
+        model.translate_y(height);
+    }
 }
 
 void SceneLoader::parse_bezier_interpolator(rapidxml::xml_node<>* bez_node,

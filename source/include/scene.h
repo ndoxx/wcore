@@ -97,6 +97,7 @@ public:
 
     const HeightMap& get_heightmap(uint32_t chunk_index) const;
     float get_height(math::vec3 position) const;
+    bool has_terrain(uint32_t chunk_index) const;
 
     inline bool has_skybox() const          { return (skybox_ != nullptr); }
     inline const SkyBox& get_skybox() const { return *skybox_; }

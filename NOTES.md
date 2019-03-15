@@ -7195,8 +7195,9 @@ Il suffit ensuite de glisser-déposer le .desktop dans la launchbar.
 Cette opération doit être automatisée dans la target install en cas de déploiement.
 
 
+#[15-03-19]
 ## Taille du fb
-J'essaye d'intégrer le moteur dans un widget pour réaliser la preview de Waterial. Bien entendu, ça ne fonctionne pas, j'ai un fond noir et des cheveux en moins. Une analyse avec apitrace semble montrer que ma scène est rendue correctement dans le LBuffer, mais le framebuffer par défaut (backbuffer) est de taille 1x1. Vraisemblablement, quelque chose a foiré lors de la génération du contexte.
+J'essaye d'intégrer le moteur dans un widget pour réaliser la preview de Waterial. Bien entendu, ça ne fonctionne pas, j'ai un fond noir et des cheveux en moins. Une analyse avec apitrace semble montrer que ma scène est rendue correctement dans le LBuffer, mais *le framebuffer par défaut (backbuffer) est de taille 1x1*. Vraisemblablement, quelque chose a foiré lors de la génération du contexte.
 
 Récupérer de manière indirecte la taille du framebuffer par défaut :
 ```cpp
@@ -7212,7 +7213,7 @@ Pour une frame donnée, j'observe l'état d'OpenGL lors du dernier draw call qui
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL)
 
-J'ai bien vérifié qu'un trace de la sandbox montre bien une taille correcte du framebuffer par défaut, ce n'est pas un problème lié à apitrace a priori.
+J'ai vérifié qu'un trace de la sandbox montre bien une taille correcte du framebuffer par défaut, ce n'est pas un problème lié à apitrace a priori.
 
 Je crois que je progresse. Le default framebuffer du widget n'est PAS 0 (voir [1]). Dans GLWidget::paintGL() je fais :
 ```cpp
@@ -7232,8 +7233,109 @@ void GLWidget::paintGL()
 }
 ```
 
-Pour
+Pour référence, je suis tombé sur un snippet intéressant pour remplir une QImage dans paintGL() :
+```cpp
+    makeCurrent();
+    glPushAttrib(GL_VIEWPORT_BIT);
+    glViewport(0, 0, width(), height());
+    QOpenGLFramebufferObject fbo(width(), height(), QOpenGLFramebufferObject::CombinedDepthStencil);
+    fbo.bind();
+    glClearColor(1, 1, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Draw stuff
+
+    fbo.release();
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glPopAttrib();
+    QImage fboImage(fbo.toImage());
+    QImage image(fboImage.constBits(), fboImage.width(), fboImage.height(), QImage::Format_ARGB32);
+    image.save("out.png");
+```
+
+## Comment faire un widget OpenGL
+Dans un premier temps, il y a des variables à ajuster au niveau global pour la génération du contexte. Dans le main on fait :
+```cpp
+    QSurfaceFormat fmt;
+    fmt.setDepthBufferSize(24);
+    fmt.setStencilBufferSize(8);
+    fmt.setVersion(4, 0);
+    fmt.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(fmt);
+```
+Juste avant la création de la fenêtre _MainWindow_.
+Ensuite on crée un objet qui hérite de QOpenGLWidget. Classiquement, on veut aussi hériter en protected d'une des classes QOpenGLFunctions_xx pour avoir accès à l'API :
+```cpp
+class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_0_Core
+{
+    // ...
+};
+```
+Noter que la classe QOpenGLFunctions tout court existe, mais correspond à l'API OpenGLES2. Donc on s'expose à des invalid read si on utilise ça pour du code OpenGL4.x.
+En pratique, comme mon code utilise GLew et qu'il y a une incompatibilité entre les deux, je ne peux me le permettre, et j'omets simplement cet héritage.
+
+La classe _GLWidget_ doit surcharger plusieurs fonctions :
+```cpp
+protected:
+    void initializeGL() Q_DECL_OVERRIDE;
+    void paintGL() Q_DECL_OVERRIDE;
+    void resizeGL(int width, int height) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
+```
+initializeGL() est chargée d'initialiser les fonctions d'OpenGL. Si l'on utilise l'héritage sur QOpenGLFunctions_xx on peut y appeler initializeOpenGLFunctions(). Dans mon cas, c'est GLew qu'il faut initialiser :
+```cpp
+void GLWidget::initializeGL()
+{
+    // Initialize GLEW
+    glewExperimental = GL_TRUE; // If not set, segfault at glGenVertexArrays()
+    if (glewInit() != GLEW_OK) {
+        DLOGF("Failed to initialize GLEW.", "core", Severity::CRIT);
+        fatal("Failed to initialize GLEW.");
+    }
+    glGetError();   // Mask an unavoidable error caused by GLEW
+
+    // ...
+    engine_->Init(0, nullptr, nullptr, context_);
+    engine_->LoadStart();
+}
+```
+Noter que j'ai aussi dû créer une nouvelle classe _QtContext_ héritant de _AbstractContext_, qui est pour l'instant un gros stub de merde, mais qui doit néanmoins être passée à Engine::Init() afin que le moteur ne crée pas de contexte GLFW par défaut (voir qt_context.h/cpp). Je ne sais pas encore comment je vais m'y prendre pour la remplir, parceque la gestion des evts par Qt est très différente de celle de GLFW qui a inspiré l'interface d'_AbstractContext_.
+
+La fonction paintGL() est appelée à chaque update du widget. C'est là qu'on dessine le stuff. Il est recommandé de toujours la commencer par un glClear() afin de permettre à certains hardwares (en particulier embarqués) de bien déduire l'état du double-buffering, sans quoi on peut s'attendre à de grosses baisses de perfs.
+```cpp
+void GLWidget::paintGL()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    engine_->SetDefaultFrameBuffer(defaultFramebufferObject());
+    engine_->Update(16.67/1000.f);
+    engine_->RenderFrame();
+    engine_->FinishFrame();
+}
+```
+
+La fonction resizeGL(2) est appelée à chaque evt de redimensionnement du widget. Je me contente d'y provoquer un update des propriétés GLB.WIN_W et GLB.WIN_H pour le moment. Ce sont ces variables qui sont utilisées lors de l'appel à glViewport() dans mon code (en tout cas lors du rendu à l'écran).
+
+C'est à peu près tout.
+
+## A faire
+On veut pouvoir faire les choses suivantes depuis l'API :
+    [ ] Référencer un modèle donné via un hash
+    [ ] Swapper le material d'un modèle référencé
+    [ ] Swapper le mesh d'un modèle référencé. En l'occurrence il me faut pouvoir afficher le material sur :
+        [ ] Un plan
+        [ ] Un cube
+        [ ] Une sphère
+        [ ] Un .obj quelconque
+    [ ] Modifier le mouvement d'un objet référencé, même si c'est complètement hacky dans un premier temps.
+    [ ] Activer/Désactiver plusieurs systèmes de rendu de la pipeline. Basiquement, j'aimerais pouvoir faire une passe géométrique, une passe lighting et puis c'est marre.
+    [ ] Intéragir dynamiquement avec les sources lumineuses.
+
+Le moteur doit aussi pouvoir :
+    [X] Se passer complètement de terrain dans ses chunks.
+        -> Pour déclarer un terrain patch vide, il faut ajouter l'attribut void="true" dans le node *TerrainPatch*.
 
 * Sources :
     [1] https://forum.qt.io/topic/48816/qopenglcontext-s-defaultframebufferobject-always-returns-0-in-a-qopenglwidget-subclass
