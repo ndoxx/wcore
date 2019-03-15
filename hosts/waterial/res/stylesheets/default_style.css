@@ -10,7 +10,7 @@ QGroupBox::title
     subcontrol-position: top center;
     padding:0px 10px;
 }
-QGroupBox#PreviewCtl
+QGroupBox#GeneralPreviewCtl
 {
     border: 2px solid rgb(170,170,170);
     background: rgb(150,150,150);

@@ -10,6 +10,7 @@
 #include "error.h"
 #include "globals.h"
 #include "model.h"
+#include "material.h"
 
 using namespace wcore;
 
@@ -23,15 +24,22 @@ context_(new QtContext),
 frame_timer_(new QTimer(this)),
 active_(true),
 rotate_model_(true),
-dphi_(0.1f),
-dtheta_(0.1f),
-dpsi_(0.1f)
+reset_orientation_(false),
+dphi_(0.0f),
+dtheta_(0.5f),
+dpsi_(0.0f),
+model_x_(0.f),
+model_y_(0.f),
+model_z_(0.f),
+new_material_(nullptr)
 {
 
 }
 
 GLWidget::~GLWidget()
 {
+    if(new_material_)
+        delete new_material_;
     delete engine_;
 }
 
@@ -59,6 +67,9 @@ void GLWidget::initializeGL()
     engine_->Init(0, nullptr, nullptr, context_);
     engine_->LoadStart();
 
+    // Systems configuration
+    engine_->SetShadowMappingEnabled(false);
+
     connect(frame_timer_, SIGNAL(timeout()), this, SLOT(update()));
     frame_timer_->start(16);
 }
@@ -73,8 +84,25 @@ void GLWidget::paintGL()
     // Update model
     engine_->VisitRefModel("the_model"_h, [&](Model& model)
     {
+        // Reset orientation?
+        if(reset_orientation_)
+        {
+            model.reset_orientation();
+            reset_orientation_ = false;
+        }
+
+        // Set model position
+        model.set_position(math::vec3(model_x_, model_y_, model_z_));
+
         if(rotate_model_)
             model.rotate(dphi_,dtheta_,dpsi_);
+
+        // Swap material?
+        if(new_material_)
+        {
+            model.set_material(new_material_);
+            new_material_ = nullptr;
+        }
     });
 
     engine_->Update(16.67/1000.f);
@@ -112,6 +140,51 @@ void GLWidget::cleanup()
 void GLWidget::handle_active_changed(int newstate)
 {
     active_ = (newstate == Qt::Checked);
+}
+
+void GLWidget::handle_rotate_changed(int newstate)
+{
+    rotate_model_ = (newstate == Qt::Checked);
+}
+
+void GLWidget::handle_dphi_changed(double newvalue)
+{
+    dphi_ = (float)newvalue;
+}
+
+void GLWidget::handle_dtheta_changed(double newvalue)
+{
+    dtheta_ = (float)newvalue;
+}
+
+void GLWidget::handle_dpsi_changed(double newvalue)
+{
+    dpsi_ = (float)newvalue;
+}
+
+void GLWidget::handle_reset_orientation()
+{
+    reset_orientation_ = true;
+}
+
+void GLWidget::handle_x_changed(double newvalue)
+{
+    model_x_ = (float)newvalue;
+}
+
+void GLWidget::handle_y_changed(double newvalue)
+{
+    model_y_ = (float)newvalue;
+}
+
+void GLWidget::handle_z_changed(double newvalue)
+{
+    model_z_ = (float)newvalue;
+}
+
+void GLWidget::handle_material_swap(const wcore::MaterialDescriptor& descriptor)
+{
+    new_material_ = new Material(descriptor);
 }
 
 

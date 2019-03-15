@@ -27,7 +27,6 @@ enum class TextureUnit: uint16_t
 
 struct TextureParameters
 {
-public:
     uint32_t filter;
     uint32_t internal_format;
     uint32_t format;
@@ -39,20 +38,21 @@ public:
 
 struct TextureDescriptor
 {
-public:
     typedef std::map<TextureUnit, std::string> TexMap;
 
     // Image texture file names by map type
     TexMap locations;
     // Flags for each unit
-    uint16_t units = 0;
+    uint16_t units;
     // Sampler group number
-    uint8_t sampler_group = 1;
-    uint8_t n_units = 0;
+    uint8_t sampler_group;
+    uint8_t n_units;
     // OpenGL texture parameters
     TextureParameters parameters;
     // Unique id
     hash_t resource_id;
+
+    TextureDescriptor();
 
     inline bool has_unit(TextureUnit unit) const { return (units&(uint16_t)unit); }
     inline void add_unit(TextureUnit unit)       { units |= (uint16_t)unit; ++n_units; }
@@ -60,23 +60,24 @@ public:
 
 struct MaterialDescriptor
 {
-public:
     TextureDescriptor texture_descriptor;
 
     // Uniform alternatives
-    math::vec3 albedo = math::vec3(1.0f,0.0f,0.0f);
-    float      transparency = 1.0f;
-    float      metallic = 0.0f;
-    float      roughness = 0.1f;
-    bool       has_transparency = false;
-    bool       is_textured = false;
+    math::vec3 albedo;
+    float      transparency;
+    float      metallic;
+    float      roughness;
+    bool       has_transparency;
+    bool       is_textured;
 
     // Shading information
-    float parallax_height_scale = 0.1f;
+    float parallax_height_scale;
 
     // Override
-    bool enable_normal_mapping = true;
-    bool enable_parallax_mapping = true;
+    bool enable_normal_mapping;
+    bool enable_parallax_mapping;
+
+    MaterialDescriptor();
 
 #ifdef __DEBUG__
     friend std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc);

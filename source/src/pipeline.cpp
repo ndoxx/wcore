@@ -133,7 +133,7 @@ void RenderPipeline::perform_test()
 
 }
 
-
+void RenderPipeline::set_shadow_mapping_enabled(bool value)    { lighting_renderer_->set_shadow_mapping_enabled(value); }
 void RenderPipeline::set_pp_gamma(const math::vec3& value)     { post_processing_renderer_->set_gamma(value); }
 void RenderPipeline::set_pp_fog_color(const math::vec3& value) { post_processing_renderer_->set_fog_color(value); }
 void RenderPipeline::set_pp_saturation(float value)            { post_processing_renderer_->set_saturation(value); }

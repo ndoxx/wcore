@@ -60,6 +60,8 @@ public:
     void render_gui();
     void dbg_show_statistics();
 
+    void set_shadow_mapping_enabled(bool value);
+
 #ifdef __DEBUG__
     void debug_draw_segment(const math::vec3& world_start,
                             const math::vec3& world_end,

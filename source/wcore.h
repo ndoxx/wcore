@@ -68,6 +68,9 @@ namespace wcore
         // To set the default framebuffer to render to in case it is non-zero
         void SetDefaultFrameBuffer(unsigned int index);
 
+        // Pipeline control
+        void SetShadowMappingEnabled(bool value);
+
     private:
         struct EngineImpl;
         std::unique_ptr<EngineImpl> eimpl_; // opaque pointer

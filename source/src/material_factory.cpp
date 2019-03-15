@@ -11,16 +11,7 @@ namespace wcore
 {
 
 using namespace rapidxml;
-/*
-std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
-{
-    {TextureUnit::ALBEDO,    "Albedo"},
-    {TextureUnit::AO,        "AO"},
-    {TextureUnit::DEPTH,     "Depth"},
-    {TextureUnit::METALLIC,  "Metallic"},
-    {TextureUnit::NORMAL,    "Normal"},
-    {TextureUnit::ROUGHNESS, "Roughness"}
-};*/
+
 std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
 {
     {TextureUnit::BLOCK0, "Block0"},

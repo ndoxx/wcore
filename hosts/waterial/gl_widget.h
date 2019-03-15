@@ -6,6 +6,8 @@
 namespace wcore
 {
 class Engine;
+class Material;
+struct MaterialDescriptor;
 }
 
 QT_FORWARD_DECLARE_CLASS(QTimer)
@@ -36,6 +38,15 @@ public:
 public slots:
     void cleanup();
     void handle_active_changed(int newstate);
+    void handle_rotate_changed(int newstate);
+    void handle_dphi_changed(double newvalue);
+    void handle_dtheta_changed(double newvalue);
+    void handle_dpsi_changed(double newvalue);
+    void handle_reset_orientation();
+    void handle_x_changed(double newvalue);
+    void handle_y_changed(double newvalue);
+    void handle_z_changed(double newvalue);
+    void handle_material_swap(const wcore::MaterialDescriptor& descriptor);
 
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
@@ -54,9 +65,14 @@ private:
 
     // Model properties
     bool rotate_model_;
+    bool reset_orientation_;
     float dphi_;
     float dtheta_;
     float dpsi_;
+    float model_x_;
+    float model_y_;
+    float model_z_;
+    wcore::Material* new_material_;
 };
 
 } // namespace medit

@@ -32,11 +32,13 @@
 #include "texmap_generator.h"
 #include "new_project_dialog.h"
 #include "droplabel.h"
+#include "double_slider.h"
 #include "gl_widget.h"
 
 // wcore
 #include "config.h"
 #include "logger.h"
+#include "material_common.h"
 
 
 using namespace wcore;
@@ -311,22 +313,102 @@ void MainWindow::create_preview_controls(QGroupBox* gb)
     QGridLayout* layout = new QGridLayout();
 
     // * General controls
-    QVBoxLayout* layout_gen = new QVBoxLayout();
-    QGroupBox* gb_general = new QGroupBox();
-    gb_general->setObjectName("PreviewCtl");
+    QHBoxLayout* layout_gen = new QHBoxLayout();
+    QGroupBox* gb_general = new QGroupBox(tr("General"));
+    gb_general->setObjectName("GeneralPreviewCtl");
     // Active preview
-    QCheckBox* cb_active = new QCheckBox("Active");
+    QCheckBox* cb_active = new QCheckBox(tr("Active"));
     cb_active->setCheckState(Qt::Checked);
     connect(cb_active,  SIGNAL(stateChanged(int)),
             gl_widget_, SLOT(handle_active_changed(int)));
     layout_gen->addWidget(cb_active);
-    layout_gen->addStretch();
 
     gb_general->setLayout(layout_gen);
-
-    layout->addWidget(gb_general, 0, 0);
-    layout->setRowStretch(0, 1);
+    layout->addWidget(gb_general, 0, 0, 1, 3); // Span all columns
+    layout->setRowStretch(0, 0);
     layout->setColumnStretch(0, 1);
+
+    // * Model controls
+    QFormLayout* layout_model = new QFormLayout();
+    QGroupBox* gb_model = new QGroupBox(tr("Model"));
+    // Enable rotation
+    QCheckBox* cb_rotate = new QCheckBox();
+    cb_rotate->setCheckState(Qt::Checked);
+    connect(cb_rotate,  SIGNAL(stateChanged(int)),
+            gl_widget_, SLOT(handle_rotate_changed(int)));
+    layout_model->addRow(new QLabel(tr("Rotate")), cb_rotate);
+
+    // Reset orientation
+    QPushButton* btn_reset_ori = new QPushButton(tr("Reset orientation"));
+    btn_reset_ori->setMaximumHeight(20);
+    connect(btn_reset_ori,  SIGNAL(clicked()),
+            gl_widget_,     SLOT(handle_reset_orientation()));
+    layout_model->addWidget(btn_reset_ori);
+
+    // Rotation parameters
+    DoubleSlider* sld_dphi = new DoubleSlider();
+    DoubleSlider* sld_dtheta = new DoubleSlider();
+    DoubleSlider* sld_dpsi = new DoubleSlider();
+    sld_dphi->setMaximumHeight(20);
+    sld_dphi->set_value(0.0);
+    sld_dtheta->setMaximumHeight(20);
+    sld_dtheta->set_value(0.5);
+    sld_dpsi->setMaximumHeight(20);
+    sld_dpsi->set_value(0.0);
+    connect(sld_dphi,   SIGNAL(doubleValueChanged(double)),
+            gl_widget_, SLOT(handle_dphi_changed(double)));
+    connect(sld_dtheta, SIGNAL(doubleValueChanged(double)),
+            gl_widget_, SLOT(handle_dtheta_changed(double)));
+    connect(sld_dpsi,   SIGNAL(doubleValueChanged(double)),
+            gl_widget_, SLOT(handle_dpsi_changed(double)));
+
+    layout_model->addRow(new QLabel(tr("phi")), sld_dphi);
+    layout_model->addRow(new QLabel(tr("theta")), sld_dtheta);
+    layout_model->addRow(new QLabel(tr("psi")), sld_dpsi);
+
+    // Position parameters
+    DoubleSlider* sld_x = new DoubleSlider();
+    DoubleSlider* sld_y = new DoubleSlider();
+    DoubleSlider* sld_z = new DoubleSlider();
+    sld_x->setMaximumHeight(20);
+    sld_x->set_range(-2.0,2.0);
+    sld_x->set_value(0.0);
+    sld_y->setMaximumHeight(20);
+    sld_y->set_range(-2.0,2.0);
+    sld_y->set_value(0.0);
+    sld_z->setMaximumHeight(20);
+    sld_z->set_range(-1.0,2.0);
+    sld_z->set_value(0.0);
+    connect(sld_x,      SIGNAL(doubleValueChanged(double)),
+            gl_widget_, SLOT(handle_x_changed(double)));
+    connect(sld_y,      SIGNAL(doubleValueChanged(double)),
+            gl_widget_, SLOT(handle_y_changed(double)));
+    connect(sld_z,      SIGNAL(doubleValueChanged(double)),
+            gl_widget_, SLOT(handle_z_changed(double)));
+
+    layout_model->addRow(new QLabel(tr("x")), sld_x);
+    layout_model->addRow(new QLabel(tr("y")), sld_y);
+    layout_model->addRow(new QLabel(tr("z")), sld_z);
+
+    gb_model->setLayout(layout_model);
+    layout->addWidget(gb_model, 1, 0);
+    layout->setRowStretch(1, 1);
+
+    // * Light controls
+    QFormLayout* layout_light = new QFormLayout();
+    QGroupBox* gb_light = new QGroupBox(tr("Light"));
+
+    gb_light->setLayout(layout_light);
+    layout->addWidget(gb_light, 1, 1);
+    layout->setColumnStretch(1, 1);
+
+    // * Camera controls
+    QFormLayout* layout_camera = new QFormLayout();
+    QGroupBox* gb_camera = new QGroupBox(tr("Camera"));
+
+    gb_camera->setLayout(layout_camera);
+    layout->addWidget(gb_camera, 1, 2);
+    layout->setColumnStretch(2, 1);
 
     gb->setLayout(layout);
 }
@@ -506,7 +588,11 @@ void MainWindow::handle_compile_current()
 
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
+    {
         editor_model_->compile(texname);
+        // Swap material in preview
+        handle_material_swap();
+    }
 }
 
 void MainWindow::handle_compile_all()
@@ -713,6 +799,63 @@ void MainWindow::handle_gen_ao_map()
 
             QApplication::restoreOverrideCursor();
         }
+    }
+}
+
+/*
+Material::Material(const MaterialDescriptor& descriptor):
+texture_(nullptr),
+albedo_(descriptor.albedo),
+metallic_(descriptor.metallic),
+roughness_(descriptor.roughness),
+parallax_height_scale_(descriptor.parallax_height_scale),
+alpha_(descriptor.transparency),
+textured_(descriptor.is_textured),
+use_normal_map_(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL) && descriptor.enable_normal_mapping),
+use_parallax_map_(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH) && descriptor.enable_parallax_mapping),
+use_overlay_(false),
+blend_(descriptor.has_transparency)
+{
+    if(textured_)
+        texture_ = new Texture(descriptor.texture_descriptor);
+}
+*/
+
+void MainWindow::handle_material_swap()
+{
+    // Get current entry
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        TextureEntry& entry = editor_model_->get_current_texture_entry();
+
+        MaterialDescriptor desc;
+
+        // BLOCK0 -> ALBEDO
+        AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
+        if(albedo_map->has_image)
+        {
+            desc.texture_descriptor.add_unit(TextureUnit::ALBEDO);
+            desc.texture_descriptor.add_unit(TextureUnit::BLOCK0);
+            desc.texture_descriptor.locations[TextureUnit::BLOCK0] = texname.toStdString() + "_block0.png";
+            desc.is_textured = true;
+        }
+        else
+        {
+            math::vec4 albedo(albedo_map->u_albedo.x()/255.f,
+                              albedo_map->u_albedo.y()/255.f,
+                              albedo_map->u_albedo.z()/255.f,
+                              1.f);
+            desc.albedo = albedo;
+        }
+
+        gl_widget_->handle_material_swap(desc);
+
+        /*
+        descriptor.texture_descriptor.locations[unit] = texture_map;
+        descriptor.texture_descriptor.add_unit(unit);
+        descriptor.is_textured = true;
+        */
     }
 }
 

@@ -487,5 +487,9 @@ void Engine::SetDefaultFrameBuffer(unsigned int index)
     GFX::set_default_framebuffer(index);
 }
 
+void Engine::SetShadowMappingEnabled(bool value)
+{
+    eimpl_->pipeline->set_shadow_mapping_enabled(value);
+}
 
 }

@@ -41,6 +41,7 @@ set(waterial_SRCS
     mainwindow.cpp
     new_project_dialog.cpp
     droplabel.cpp
+    double_slider.cpp
     spinbox.cpp
     color_picker_label.cpp
     gl_widget.cpp

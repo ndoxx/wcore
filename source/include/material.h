@@ -33,7 +33,6 @@ private:
     bool use_parallax_map_;
     bool use_overlay_;
     bool blend_;
-    bool cached_;
 
 public:
     Material() = delete;
@@ -45,9 +44,6 @@ public:
     ~Material();
 
     bool has_texture(TextureUnit unit) const;
-
-    inline bool is_cached() const                  { return cached_; }
-    inline void set_cached(bool value)             { cached_ = value; }
 
     inline bool is_textured() const                { return textured_; }
     inline const Texture& get_texture() const      { return *texture_; }

@@ -95,6 +95,7 @@ public:
 
     inline const Material& get_material() const                 { return *pmaterial_; }
     inline Material& get_material()                             { return *pmaterial_; }
+    void set_material(Material* material);
 
     inline const math::vec3& get_position() const               { return trans_.get_position(); }
 
@@ -117,6 +118,7 @@ public:
 
     inline void set_position(const math::vec3& newpos)          { trans_.set_position(newpos); }
     inline void set_orientation(const math::quat& newori)       { trans_.set_orientation(newori); }
+    inline void reset_orientation()                             { trans_.reset_orientation(); }
     inline math::vec3 get_orientation_euler(bool deg=true)      { return trans_.get_orientation_euler(deg); }
     inline void set_scale(float scale)                          { trans_.set_scale(scale); }
     inline void rotate(float phi, float theta, float psi)       { trans_.rotate(phi, theta, psi); }
