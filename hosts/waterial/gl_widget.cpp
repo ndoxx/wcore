@@ -91,11 +91,11 @@ void GLWidget::paintGL()
             reset_orientation_ = false;
         }
 
-        // Set model position
-        model.set_position(math::vec3(model_x_, model_y_, model_z_));
-
         if(rotate_model_)
             model.rotate(dphi_,dtheta_,dpsi_);
+
+        // Set model position
+        model.set_position(math::vec3(model_x_, model_y_, model_z_));
 
         // Swap material?
         if(new_material_)

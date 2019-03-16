@@ -457,9 +457,9 @@ std::shared_ptr<FaceMesh> make_uv_sphere(uint32_t nRings,
         }
     }
     // South pole
-    pmesh->emplace_vertex(vec3(0,-1,0),vec3(0),vec3(0),vec2(0));
+    pmesh->emplace_vertex(vec3(0.f,-1.f,0.f),vec3(0.f),vec3(0.f),vec2(0.f));
     // North pole
-    pmesh->emplace_vertex(vec3(0,1,0),vec3(0),vec3(0),vec2(0));
+    pmesh->emplace_vertex(vec3(0.f,1.f,0.f),vec3(0.f),vec3(0.f),vec2(0.f));
 
     uint32_t npoints = nRingPoints*nRings + 2;
 
@@ -505,20 +505,20 @@ std::shared_ptr<TriangularMesh> make_icosahedron(bool finalize)
 {
     std::shared_ptr<TriangularMesh> pmesh(new TriangularMesh);
 
-    pmesh->emplace_vertex(vec3(-ONE_N,  PHI_N,  0), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3( ONE_N,  PHI_N,  0), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3(-ONE_N, -PHI_N,  0), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3( ONE_N, -PHI_N,  0), vec3(0), vec3(0), vec2(0));
+    pmesh->emplace_vertex(vec3(-ONE_N,  PHI_N,  0.f), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3( ONE_N,  PHI_N,  0.f), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3(-ONE_N, -PHI_N,  0.f), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3( ONE_N, -PHI_N,  0.f), vec3(0.f), vec3(0.f), vec2(0.f));
 
-    pmesh->emplace_vertex(vec3( 0, -ONE_N,  PHI_N), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3( 0,  ONE_N,  PHI_N), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3( 0, -ONE_N, -PHI_N), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3( 0,  ONE_N, -PHI_N), vec3(0), vec3(0), vec2(0));
+    pmesh->emplace_vertex(vec3( 0.f, -ONE_N,  PHI_N), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3( 0.f,  ONE_N,  PHI_N), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3( 0.f, -ONE_N, -PHI_N), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3( 0.f,  ONE_N, -PHI_N), vec3(0.f), vec3(0.f), vec2(0.f));
 
-    pmesh->emplace_vertex(vec3( PHI_N,  0, -ONE_N), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3( PHI_N,  0,  ONE_N), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3(-PHI_N,  0, -ONE_N), vec3(0), vec3(0), vec2(0));
-    pmesh->emplace_vertex(vec3(-PHI_N,  0,  ONE_N), vec3(0), vec3(0), vec2(0));
+    pmesh->emplace_vertex(vec3( PHI_N,  0.f, -ONE_N), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3( PHI_N,  0.f,  ONE_N), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3(-PHI_N,  0.f, -ONE_N), vec3(0.f), vec3(0.f), vec2(0.f));
+    pmesh->emplace_vertex(vec3(-PHI_N,  0.f,  ONE_N), vec3(0.f), vec3(0.f), vec2(0.f));
 
     pmesh->push_triangle(0, 11, 5);
     pmesh->push_triangle(0, 5, 1);
@@ -559,20 +559,20 @@ MeshP* make_icosahedron_3P()
 {
     MeshP* pmesh = new MeshP;
 
-    pmesh->_emplace_vertex(vec3(-ONE_N,  PHI_N,  0));
-    pmesh->_emplace_vertex(vec3( ONE_N,  PHI_N,  0));
-    pmesh->_emplace_vertex(vec3(-ONE_N, -PHI_N,  0));
-    pmesh->_emplace_vertex(vec3( ONE_N, -PHI_N,  0));
+    pmesh->_emplace_vertex(vec3(-ONE_N,  PHI_N,  0.f));
+    pmesh->_emplace_vertex(vec3( ONE_N,  PHI_N,  0.f));
+    pmesh->_emplace_vertex(vec3(-ONE_N, -PHI_N,  0.f));
+    pmesh->_emplace_vertex(vec3( ONE_N, -PHI_N,  0.f));
 
-    pmesh->_emplace_vertex(vec3( 0, -ONE_N,  PHI_N));
-    pmesh->_emplace_vertex(vec3( 0,  ONE_N,  PHI_N));
-    pmesh->_emplace_vertex(vec3( 0, -ONE_N, -PHI_N));
-    pmesh->_emplace_vertex(vec3( 0,  ONE_N, -PHI_N));
+    pmesh->_emplace_vertex(vec3( 0.f, -ONE_N,  PHI_N));
+    pmesh->_emplace_vertex(vec3( 0.f,  ONE_N,  PHI_N));
+    pmesh->_emplace_vertex(vec3( 0.f, -ONE_N, -PHI_N));
+    pmesh->_emplace_vertex(vec3( 0.f,  ONE_N, -PHI_N));
 
-    pmesh->_emplace_vertex(vec3( PHI_N,  0, -ONE_N));
-    pmesh->_emplace_vertex(vec3( PHI_N,  0,  ONE_N));
-    pmesh->_emplace_vertex(vec3(-PHI_N,  0, -ONE_N));
-    pmesh->_emplace_vertex(vec3(-PHI_N,  0,  ONE_N));
+    pmesh->_emplace_vertex(vec3( PHI_N,  0.f, -ONE_N));
+    pmesh->_emplace_vertex(vec3( PHI_N,  0.f,  ONE_N));
+    pmesh->_emplace_vertex(vec3(-PHI_N,  0.f, -ONE_N));
+    pmesh->_emplace_vertex(vec3(-PHI_N,  0.f,  ONE_N));
 
     pmesh->push_line(0, 1);
     pmesh->push_line(0, 5);
@@ -614,8 +614,8 @@ MeshP* make_segment_x_3P()
 {
     MeshP* pmesh = new MeshP;
 
-    pmesh->_emplace_vertex(vec3(0,0,0));
-    pmesh->_emplace_vertex(vec3(1,0,0));
+    pmesh->_emplace_vertex(vec3(0.f,0.f,0.f));
+    pmesh->_emplace_vertex(vec3(1.f,0.f,0.f));
 
     pmesh->push_line(0, 1);
 
@@ -626,8 +626,8 @@ MeshP* make_segment_y_3P()
 {
     MeshP* pmesh = new MeshP;
 
-    pmesh->_emplace_vertex(vec3(0,0,0));
-    pmesh->_emplace_vertex(vec3(0,1,0));
+    pmesh->_emplace_vertex(vec3(0.f,0.f,0.f));
+    pmesh->_emplace_vertex(vec3(0.f,1.f,0.f));
 
     pmesh->push_line(0, 1);
 
@@ -638,8 +638,8 @@ MeshP* make_segment_z_3P()
 {
     MeshP* pmesh = new MeshP;
 
-    pmesh->_emplace_vertex(vec3(0,0,0));
-    pmesh->_emplace_vertex(vec3(0,0,1));
+    pmesh->_emplace_vertex(vec3(0.f,0.f,0.f));
+    pmesh->_emplace_vertex(vec3(0.f,0.f,1.f));
 
     pmesh->push_line(0, 1);
 
@@ -650,12 +650,12 @@ MeshP* make_cross3D_3P()
 {
     MeshP* pmesh = new MeshP;
 
-    pmesh->_emplace_vertex(vec3(-0.5f,0,0));
-    pmesh->_emplace_vertex(vec3(0.5f,0,0));
-    pmesh->_emplace_vertex(vec3(0,-0.5f,0));
-    pmesh->_emplace_vertex(vec3(0,0.5f,0));
-    pmesh->_emplace_vertex(vec3(0,0,-0.5f));
-    pmesh->_emplace_vertex(vec3(0,0,0.5f));
+    pmesh->_emplace_vertex(vec3(-0.5f,0.f,0.f));
+    pmesh->_emplace_vertex(vec3(0.5f,0.f,0.f));
+    pmesh->_emplace_vertex(vec3(0.f,-0.5f,0.f));
+    pmesh->_emplace_vertex(vec3(0.f,0.5f,0.f));
+    pmesh->_emplace_vertex(vec3(0.f,0.f,-0.5f));
+    pmesh->_emplace_vertex(vec3(0.f,0.f,0.5f));
 
     pmesh->push_line(0, 1);
     pmesh->push_line(2, 3);
@@ -678,7 +678,7 @@ static uint32_t get_mid_point(const i32vec2& edge,
     {
         // Normalize position to force it on the unit sphere
         vec3 pos(pmesh->mid_position(edge.x(),edge.y()).normalized());
-        midp = pmesh->emplace_vertex(pos, vec3(0), vec3(0), pmesh->mid_uv(edge.x(),edge.y()));
+        midp = pmesh->emplace_vertex(pos, vec3(0.f), vec3(0.f), pmesh->mid_uv(edge.x(),edge.y()));
         lookup.insert(std::make_pair(edge, midp));
     }
 
@@ -859,10 +859,10 @@ MeshP* make_quad_3P()
 MeshPU* make_quad_3P2U()
 {
     MeshPU* pmesh = new MeshPU;
-    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, 0.0f), vec2(0, 0));
-    pmesh->_emplace_vertex(vec3(1.0f,  -1.0f, 0.0f), vec2(1, 0));
-    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, 0.0f), vec2(0, 1));
-    pmesh->_emplace_vertex(vec3(1.0f,   1.0f, 0.0f), vec2(1, 1));
+    pmesh->_emplace_vertex(vec3(-1.0f, -1.0f, 0.0f), vec2(0.f, 0.f));
+    pmesh->_emplace_vertex(vec3(1.0f,  -1.0f, 0.0f), vec2(1.f, 0.f));
+    pmesh->_emplace_vertex(vec3(-1.0f,  1.0f, 0.0f), vec2(0.f, 1.f));
+    pmesh->_emplace_vertex(vec3(1.0f,   1.0f, 0.0f), vec2(1.f, 1.f));
     pmesh->_push_triangle(0,  1,  2);
     pmesh->_push_triangle(1,  3,  2);
     return pmesh;
@@ -1038,10 +1038,10 @@ void skin_spline(std::shared_ptr<FaceMesh> pmesh,
             vec3 br_pos(A + radius_b*cos(theta_r)*b_x + radius_b*sin(theta_r)*b_z);
             vec3 tr_pos(B + radius_t*cos(theta_r)*t_x + radius_t*sin(theta_r)*t_z);
 
-            uint32_t BL = pmesh->emplace_vertex(bl_pos, vec3(0), vec3(0), vec2(0,0));
-            uint32_t TL = pmesh->emplace_vertex(tl_pos, vec3(0), vec3(0), vec2(0,1));
-            uint32_t BR = pmesh->emplace_vertex(br_pos, vec3(0), vec3(0), vec2(1,0));
-            uint32_t TR = pmesh->emplace_vertex(tr_pos, vec3(0), vec3(0), vec2(1,1));
+            uint32_t BL = pmesh->emplace_vertex(bl_pos, vec3(0.f), vec3(0.f), vec2(0.f, 0.f));
+            uint32_t TL = pmesh->emplace_vertex(tl_pos, vec3(0.f), vec3(0.f), vec2(0.f, 1.f));
+            uint32_t BR = pmesh->emplace_vertex(br_pos, vec3(0.f), vec3(0.f), vec2(1.f, 0.f));
+            uint32_t TR = pmesh->emplace_vertex(tr_pos, vec3(0.f), vec3(0.f), vec2(1.f, 1.f));
 
             pmesh->push_triangle(BL, TR, BR);
             pmesh->push_triangle(BL, TL, TR);
@@ -1057,9 +1057,9 @@ void skin_spline(std::shared_ptr<FaceMesh> pmesh,
         vec3 bl_pos(B + radius_t*cos(theta_l)*t_x + radius_t*sin(theta_l)*t_z);
         vec3 br_pos(B + radius_t*cos(theta_r)*t_x + radius_t*sin(theta_r)*t_z);
 
-        uint32_t BL = pmesh->emplace_vertex(bl_pos, vec3(0), vec3(0), vec2(0,0));
-        uint32_t BR = pmesh->emplace_vertex(br_pos, vec3(0), vec3(0), vec2(1,0));
-        uint32_t T  = pmesh->emplace_vertex(C,      vec3(0), vec3(0), vec2(0.5,1));
+        uint32_t BL = pmesh->emplace_vertex(bl_pos, vec3(0.f), vec3(0.f), vec2(0.f,0.f));
+        uint32_t BR = pmesh->emplace_vertex(br_pos, vec3(0.f), vec3(0.f), vec2(1.f,0.f));
+        uint32_t T  = pmesh->emplace_vertex(C,      vec3(0.f), vec3(0.f), vec2(0.5f,1.f));
 
         pmesh->push_triangle(BL, T, BR);
     }
