@@ -748,6 +748,7 @@ wcore::MaterialDescriptor EditorModel::get_current_material_descriptor()
     if(depth_map->has_image && depth_map->use_image)
     {
         desc.texture_descriptor.add_unit(TextureUnit::DEPTH);
+        desc.parallax_height_scale = depth_map->u_parallax_scale;
         has_block1 = true;
     }
     if(has_block1)

@@ -83,40 +83,41 @@ std::shared_ptr<FaceMesh> make_cube_uniface(bool finalize)
     std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
     //                  /--------POSITION------  /----------UV----------
     //Front 1          |                        |
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(0.0f, 0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(0.0f, 1.0f));
+    //Front 1          |                        |
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(0.0f, 1.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(0.0f, 0.0f));
 
     //Right 2
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(2.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f/3.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(0.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(0.0f, 0.0f));
 
     //Back 4
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f/3.0f, 0.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(0.0f, 0.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(0.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(0.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(0.0f, 0.0f));
 
     //Left 5
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(2.0f/3.0f, 0.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(1.0f/3.0f, 0.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(0.0f, 1.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(0.0f, 0.0f));
 
     //Top 3
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f,1.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(1.0f,0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(2.0f/3.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f, 0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 1.0f,-0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f,-0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 1.0f, 0.5f), vec2(0.0f, 1.0f));
 
     //Bottom 6
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(1.0f,0.5f));
-    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f,0.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(2.0f/3.0f, 0.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f,-0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, 0.0f, 0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f, 0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, 0.0f,-0.5f), vec2(0.0f, 1.0f));
 
     pmesh->push_triangle(0,  1,  2);
     pmesh->push_triangle(0,  2,  3);

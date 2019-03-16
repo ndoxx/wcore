@@ -16,8 +16,8 @@
             </Model>
             -->
             <Model href="the_model">
-                <Mesh type="cube"/>
-                <Material name="cube"/>
+                <Mesh type="cube_uniface"/>
+                <Material name="default"/>
                 <Transform>
                     <Position>(0.0,0.0,0.0)</Position>
                     <Scale>1.0</Scale>

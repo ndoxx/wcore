@@ -361,9 +361,9 @@ void MainWindow::create_preview_controls(QGroupBox* gb)
     connect(sld_dpsi,   SIGNAL(doubleValueChanged(double)),
             gl_widget_, SLOT(handle_dpsi_changed(double)));
 
-    layout_model->addRow(new QLabel(tr("phi")), sld_dphi);
-    layout_model->addRow(new QLabel(tr("theta")), sld_dtheta);
-    layout_model->addRow(new QLabel(tr("psi")), sld_dpsi);
+    layout_model->addRow(new QLabel(QString::fromUtf8("\u03C6")), sld_dphi);
+    layout_model->addRow(new QLabel(QString::fromUtf8("\u03B8")), sld_dtheta);
+    layout_model->addRow(new QLabel(QString::fromUtf8("\u03C8")), sld_dpsi);
 
     // Position parameters
     DoubleSlider* sld_x = new DoubleSlider();

@@ -263,6 +263,8 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_procedural(hash_t mesh_typ
 
     if(mesh_type == "cube"_h)
         pmesh = static_cast<std::shared_ptr<SurfaceMesh>>(factory::make_cube());
+    else if(mesh_type == "cube_uniface"_h)
+        pmesh = static_cast<std::shared_ptr<SurfaceMesh>>(factory::make_cube_uniface());
     else if(mesh_type == "icosahedron"_h)
         pmesh = static_cast<std::shared_ptr<SurfaceMesh>>(factory::make_icosahedron());
     else if(mesh_type == "tentacle"_h) // TMP
