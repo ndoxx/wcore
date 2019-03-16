@@ -8,7 +8,7 @@
 
 using namespace wcore;
 
-namespace medit
+namespace waterial
 {
 
 TexlistDelegate::TexlistDelegate(QObject* parent):
@@ -47,4 +47,4 @@ void TexlistDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 }
 
 
-} // namespace medit
+} // namespace waterial

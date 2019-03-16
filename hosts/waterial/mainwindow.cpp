@@ -29,6 +29,7 @@
 #include "editor_model.h"
 #include "texlist_delegate.h"
 #include "texmap_controls.h"
+#include "preview_controls.h"
 #include "texmap_generator.h"
 #include "new_project_dialog.h"
 #include "droplabel.h"
@@ -42,7 +43,7 @@
 
 using namespace wcore;
 
-namespace medit
+namespace waterial
 {
 
 static bool validate_texture_name(const QString& name)
@@ -75,6 +76,7 @@ texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
 pjname_label_(new QLabel),
 gl_widget_(new GLWidget),
+preview_controls_(new PreviewControlWidget(gl_widget_)),
 new_project_dialog_(new NewProjectDialog(this)),
 file_dialog_(new QFileDialog(this))
 {
@@ -141,13 +143,10 @@ file_dialog_(new QFileDialog(this))
     }
 
     // Preview
-    QGroupBox* gb_preview_ctl = new QGroupBox(tr("Preview controls"));
-    gb_preview_ctl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    preview_controls_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     gl_widget_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
-    create_preview_controls(gb_preview_ctl);
-
-    layout_main_panel->addWidget(gb_preview_ctl, 0, 3);
+    layout_main_panel->addWidget(preview_controls_, 0, 3);
     layout_main_panel->addWidget(gl_widget_, 1, 3);
     layout_main_panel->setColumnStretch(3, 3);
 
@@ -305,111 +304,6 @@ void MainWindow::create_toolbars()
     pjname_label_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
     pjname_label_->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     toolbar_->addWidget(pjname_label_);
-}
-
-void MainWindow::create_preview_controls(QGroupBox* gb)
-{
-    QGridLayout* layout = new QGridLayout();
-
-    // * General controls
-    QHBoxLayout* layout_gen = new QHBoxLayout();
-    QGroupBox* gb_general = new QGroupBox(tr("General"));
-    gb_general->setObjectName("GeneralPreviewCtl");
-    // Active preview
-    QCheckBox* cb_active = new QCheckBox(tr("Active"));
-    cb_active->setCheckState(Qt::Checked);
-    connect(cb_active,  SIGNAL(stateChanged(int)),
-            gl_widget_, SLOT(handle_active_changed(int)));
-    layout_gen->addWidget(cb_active);
-
-    gb_general->setLayout(layout_gen);
-    layout->addWidget(gb_general, 0, 0, 1, 3); // Span all columns
-    layout->setRowStretch(0, 0);
-    layout->setColumnStretch(0, 1);
-
-    // * Model controls
-    QFormLayout* layout_model = new QFormLayout();
-    QGroupBox* gb_model = new QGroupBox(tr("Model"));
-    // Enable rotation
-    QCheckBox* cb_rotate = new QCheckBox();
-    cb_rotate->setCheckState(Qt::Checked);
-    connect(cb_rotate,  SIGNAL(stateChanged(int)),
-            gl_widget_, SLOT(handle_rotate_changed(int)));
-    layout_model->addRow(new QLabel(tr("Rotate")), cb_rotate);
-
-    // Reset orientation
-    QPushButton* btn_reset_ori = new QPushButton(tr("Reset orientation"));
-    btn_reset_ori->setMaximumHeight(20);
-    connect(btn_reset_ori,  SIGNAL(clicked()),
-            gl_widget_,     SLOT(handle_reset_orientation()));
-    layout_model->addWidget(btn_reset_ori);
-
-    // Rotation parameters
-    DoubleSlider* sld_dphi = new DoubleSlider();
-    DoubleSlider* sld_dtheta = new DoubleSlider();
-    DoubleSlider* sld_dpsi = new DoubleSlider();
-    sld_dphi->setMaximumHeight(20);
-    sld_dphi->set_value(0.0);
-    sld_dtheta->setMaximumHeight(20);
-    sld_dtheta->set_value(0.5);
-    sld_dpsi->setMaximumHeight(20);
-    sld_dpsi->set_value(0.0);
-    connect(sld_dphi,   SIGNAL(doubleValueChanged(double)),
-            gl_widget_, SLOT(handle_dphi_changed(double)));
-    connect(sld_dtheta, SIGNAL(doubleValueChanged(double)),
-            gl_widget_, SLOT(handle_dtheta_changed(double)));
-    connect(sld_dpsi,   SIGNAL(doubleValueChanged(double)),
-            gl_widget_, SLOT(handle_dpsi_changed(double)));
-
-    layout_model->addRow(new QLabel(QString::fromUtf8("\u03C6")), sld_dphi);
-    layout_model->addRow(new QLabel(QString::fromUtf8("\u03B8")), sld_dtheta);
-    layout_model->addRow(new QLabel(QString::fromUtf8("\u03C8")), sld_dpsi);
-
-    // Position parameters
-    DoubleSlider* sld_x = new DoubleSlider();
-    DoubleSlider* sld_y = new DoubleSlider();
-    DoubleSlider* sld_z = new DoubleSlider();
-    sld_x->setMaximumHeight(20);
-    sld_x->set_range(-2.0,2.0);
-    sld_x->set_value(0.0);
-    sld_y->setMaximumHeight(20);
-    sld_y->set_range(-2.0,2.0);
-    sld_y->set_value(0.0);
-    sld_z->setMaximumHeight(20);
-    sld_z->set_range(-1.0,2.0);
-    sld_z->set_value(0.0);
-    connect(sld_x,      SIGNAL(doubleValueChanged(double)),
-            gl_widget_, SLOT(handle_x_changed(double)));
-    connect(sld_y,      SIGNAL(doubleValueChanged(double)),
-            gl_widget_, SLOT(handle_y_changed(double)));
-    connect(sld_z,      SIGNAL(doubleValueChanged(double)),
-            gl_widget_, SLOT(handle_z_changed(double)));
-
-    layout_model->addRow(new QLabel(tr("x")), sld_x);
-    layout_model->addRow(new QLabel(tr("y")), sld_y);
-    layout_model->addRow(new QLabel(tr("z")), sld_z);
-
-    gb_model->setLayout(layout_model);
-    layout->addWidget(gb_model, 1, 0);
-    layout->setRowStretch(1, 1);
-
-    // * Light controls
-    QFormLayout* layout_light = new QFormLayout();
-    QGroupBox* gb_light = new QGroupBox(tr("Light"));
-
-    gb_light->setLayout(layout_light);
-    layout->addWidget(gb_light, 1, 1);
-    layout->setColumnStretch(1, 1);
-
-    // * Camera controls
-    QFormLayout* layout_camera = new QFormLayout();
-    QGroupBox* gb_camera = new QGroupBox(tr("Camera"));
-
-    gb_camera->setLayout(layout_camera);
-    layout->addWidget(gb_camera, 1, 2);
-    layout->setColumnStretch(2, 1);
-
-    gb->setLayout(layout);
 }
 
 bool MainWindow::eventFilter(QObject* object, QEvent* event)
@@ -823,4 +717,4 @@ void MainWindow::clear_view()
 }
 
 
-} // namespace medit
+} // namespace waterial

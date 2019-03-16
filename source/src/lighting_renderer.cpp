@@ -229,7 +229,7 @@ void LightingRenderer::render(Scene* pscene)
             pshadow->generate_mipmaps(0);
 #else
             lpass_dir_shader_.send_uniform("rd.v2_shadowTexelSize"_h, ShadowMapRenderer::SHADOW_TEXEL_SIZE);
-            lpass_dir_shader_.send_uniform("rd.f_shadowBias"_h, pscene->shadow_bias_ * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
+            lpass_dir_shader_.send_uniform("rd.f_shadowBias"_h, shadow_bias_ * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
 #endif
         }
 

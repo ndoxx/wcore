@@ -10,7 +10,7 @@
     - updates its color when a color is choosen
 */
 
-namespace medit
+namespace waterial
 {
 
 class ColorPickerLabel: public QLabel
@@ -38,6 +38,6 @@ private:
     QColor color_;
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // COLOR_PICKER_LABEL_H

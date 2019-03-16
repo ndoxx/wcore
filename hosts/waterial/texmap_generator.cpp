@@ -32,7 +32,7 @@
 
 using namespace wcore::math;
 
-namespace medit
+namespace waterial
 {
 namespace generator
 {
@@ -258,5 +258,5 @@ void ao_from_depth(const QImage& depth_map, QImage& ao_map, const AOGenOptions& 
 }
 
 } // namespace generator
-} // namespace medit
+} // namespace waterial
 

@@ -5,7 +5,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 
-namespace medit
+namespace waterial
 {
 
 class NewProjectDialog: public QDialog
@@ -21,6 +21,6 @@ private:
     QLineEdit* name_input_;
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // NEW_PROJECT_DIALOG_H

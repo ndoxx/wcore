@@ -16,7 +16,7 @@ QT_FORWARD_DECLARE_CLASS(QProgressBar)
 QT_FORWARD_DECLARE_CLASS(QStatusBar)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 
-namespace medit
+namespace waterial
 {
 
 QT_FORWARD_DECLARE_CLASS(EditorModel)
@@ -24,6 +24,7 @@ QT_FORWARD_DECLARE_CLASS(TexlistDelegate)
 QT_FORWARD_DECLARE_CLASS(NewProjectDialog)
 QT_FORWARD_DECLARE_CLASS(TexMapControl)
 QT_FORWARD_DECLARE_CLASS(GLWidget)
+QT_FORWARD_DECLARE_CLASS(PreviewControlWidget)
 
 struct TextureEntry;
 class MainWindow: public QMainWindow
@@ -67,7 +68,6 @@ public slots:
 protected:
     void create_status_bar();
     void create_toolbars();
-    void create_preview_controls(QGroupBox* gb);
     void update_window_title(const QString& project_name);
     void clear_view();
 
@@ -83,10 +83,11 @@ private:
 
     QLabel* pjname_label_;
 
-    std::vector<TexMapControl*> texmap_controls_;
-
     // Preview
     GLWidget* gl_widget_;
+
+    std::vector<TexMapControl*> texmap_controls_;
+    PreviewControlWidget* preview_controls_;
 
     // Status bar
     QLabel* status_label_;
@@ -97,6 +98,6 @@ private:
 };
 
 
-} // namespace medit
+} // namespace waterial
 
 #endif // MAINWINDOW_H

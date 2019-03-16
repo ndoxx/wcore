@@ -3,7 +3,7 @@
 
 #include <QDoubleSpinBox>
 
-namespace medit
+namespace waterial
 {
 
 class DoubleSpinBox: public QDoubleSpinBox
@@ -17,6 +17,6 @@ public:
 };
 
 
-} // namespace medit
+} // namespace waterial
 
 #endif // SPINBOX_H

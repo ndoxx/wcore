@@ -1,6 +1,6 @@
 #include "texlist_model.h"
 
-namespace medit
+namespace waterial
 {
 
 QModelIndex TexListModel::append(const QString& string)
@@ -16,4 +16,4 @@ TexListModel& TexListModel::operator<<(const QString& string)
     return *this;
 }
 
-} // namespace medit
+} // namespace waterial

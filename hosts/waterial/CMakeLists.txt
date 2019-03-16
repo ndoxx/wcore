@@ -38,6 +38,7 @@ set(waterial_SRCS
     texlist_model.cpp
     texlist_delegate.cpp
     texmap_controls.cpp
+    preview_controls.cpp
     mainwindow.cpp
     new_project_dialog.cpp
     droplabel.cpp

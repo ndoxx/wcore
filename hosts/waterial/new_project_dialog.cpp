@@ -8,7 +8,7 @@
 
 #include "new_project_dialog.h"
 
-namespace medit
+namespace waterial
 {
 
 NewProjectDialog::NewProjectDialog(QWidget* parent):
@@ -40,4 +40,4 @@ QString NewProjectDialog::get_project_name() const
 }
 
 
-} // namespace medit
+} // namespace waterial

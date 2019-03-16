@@ -5,7 +5,7 @@
 #include <QItemDelegate>
 #include <QComboBox>
 
-namespace medit
+namespace waterial
 {
 
 QT_FORWARD_DECLARE_CLASS(EditorModel)
@@ -31,6 +31,6 @@ private:
     EditorModel* editor_model_;
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // TEXLIST_DELEGATE_H

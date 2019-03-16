@@ -9,7 +9,7 @@
 #include "droplabel.h"
 
 
-namespace medit
+namespace waterial
 {
 
 static QString ssIdle = "border-radius: 5px; border: none; background: white;";
@@ -119,5 +119,5 @@ void DropLabel::handle_context_menu(const QPoint& pos)
 }
 
 
-} // namespace medit
+} // namespace waterial
 

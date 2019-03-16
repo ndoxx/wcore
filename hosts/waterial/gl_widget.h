@@ -12,7 +12,7 @@ struct MaterialDescriptor;
 
 QT_FORWARD_DECLARE_CLASS(QTimer)
 
-namespace medit
+namespace waterial
 {
 
 class QtContext;
@@ -75,6 +75,6 @@ private:
     wcore::Material* new_material_;
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // GL_WIDGET_H

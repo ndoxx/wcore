@@ -21,12 +21,6 @@ private:
     unsigned int noise_texture_;
     bool active_;
 
-    static uint32_t KERNEL_SQRSIZE_;
-    static uint32_t NOISE_SQRSIZE_;
-    static uint32_t KERNEL_SIZE_;
-    static uint32_t NOISE_SIZE_;
-
-public:
     float SSAO_radius_;
     float SSAO_bias_;
     float SSAO_vbias_;
@@ -34,6 +28,12 @@ public:
     float SSAO_scale_;
     BlurPassPolicy blur_policy_;
 
+    static uint32_t KERNEL_SQRSIZE_;
+    static uint32_t NOISE_SQRSIZE_;
+    static uint32_t KERNEL_SIZE_;
+    static uint32_t NOISE_SIZE_;
+
+public:
     SSAORenderer();
     virtual ~SSAORenderer();
 
@@ -43,6 +43,27 @@ public:
     inline void set_enabled(bool value) { active_ = value; }
     inline bool is_active() const { return active_; }
     inline bool& get_active() { return active_; }
+
+    inline void set_radius(float value)      { SSAO_radius_ = value; }
+    inline void set_scalar_bias(float value) { SSAO_bias_ = value; }
+    inline void set_vector_bias(float value) { SSAO_vbias_ = value; }
+    inline void set_intensity(float value)   { SSAO_intensity_ = value; }
+    inline void set_scale(float value)       { SSAO_scale_ = value; }
+    inline void set_blur_policy(const BlurPassPolicy& value) { blur_policy_ = value; }
+
+    inline float get_radius() const      { return SSAO_radius_; }
+    inline float get_scalar_bias() const { return SSAO_bias_; }
+    inline float get_vector_bias() const { return SSAO_vbias_; }
+    inline float get_intensity() const   { return SSAO_intensity_; }
+    inline float get_scale() const       { return SSAO_scale_; }
+    inline const BlurPassPolicy& get_blur_policy() const { return blur_policy_; }
+
+    inline float& get_radius_nc()      { return SSAO_radius_; }
+    inline float& get_scalar_bias_nc() { return SSAO_bias_; }
+    inline float& get_vector_bias_nc() { return SSAO_vbias_; }
+    inline float& get_intensity_nc()   { return SSAO_intensity_; }
+    inline float& get_scale_nc()       { return SSAO_scale_; }
+    inline BlurPassPolicy& get_blur_policy_nc() { return blur_policy_; }
 
     void generate_random_kernel();
 };

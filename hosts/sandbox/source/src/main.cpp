@@ -7,7 +7,7 @@ int main(int argc, char const *argv[])
 {
     wcore::Engine engine;
     engine.Init(argc, argv, sandbox::parse_program_arguments);
-    engine.LoadStart();
+    engine.scene_control->LoadStart();
     return engine.Run();
 
     /*while(engine.WindowRequired())

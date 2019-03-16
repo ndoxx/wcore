@@ -68,8 +68,6 @@ public:
     Scene();
    ~Scene();
 
-    float shadow_bias_;                     // Bias parameter for PCF shadow mapping
-
     // Static octree access
     inline StaticOctree& get_static_octree() { return static_octree; }
     void populate_static_octree(uint32_t chunk_index);

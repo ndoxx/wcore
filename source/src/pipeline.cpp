@@ -98,33 +98,25 @@ void RenderPipeline::init_self()
     // Pipeline control tweaks
     edtweaks->register_variable("root.geometry.parallax.min_distance"_h,   geometry_renderer_->get_min_parallax_distance_nc());
     // Post-processing tweaks
-    edtweaks->register_variable("root.postproc.aberration.shift"_h,        post_processing_renderer_->aberration_shift_);
-    edtweaks->register_variable("root.postproc.aberration.magnitude"_h,    post_processing_renderer_->aberration_strength_);
-    edtweaks->register_variable("root.postproc.vignette.falloff"_h,        post_processing_renderer_->vignette_falloff_);
-    edtweaks->register_variable("root.postproc.vignette.balance"_h,        post_processing_renderer_->vignette_balance_);
-    edtweaks->register_variable("root.postproc.color.vibrance.strength"_h, post_processing_renderer_->vibrance_);
-    edtweaks->register_variable("root.postproc.color.vibrance.balance"_h,  post_processing_renderer_->vibrance_bal_);
-    edtweaks->register_variable("root.postproc.fxaa.enabled"_h,            post_processing_renderer_->fxaa_enabled_);
-    edtweaks->register_variable("root.postproc.dithering.enabled"_h,       post_processing_renderer_->dithering_enabled_);
+    edtweaks->register_variable("root.postproc.aberration.shift"_h,        post_processing_renderer_->get_aberration_shift_nc());
+    edtweaks->register_variable("root.postproc.aberration.magnitude"_h,    post_processing_renderer_->get_aberration_strength_nc());
+    edtweaks->register_variable("root.postproc.vignette.falloff"_h,        post_processing_renderer_->get_vignette_falloff_nc());
+    edtweaks->register_variable("root.postproc.vignette.balance"_h,        post_processing_renderer_->get_vignette_balance_nc());
+    edtweaks->register_variable("root.postproc.color.vibrance.strength"_h, post_processing_renderer_->get_vibrance_nc());
+    edtweaks->register_variable("root.postproc.color.vibrance.balance"_h,  post_processing_renderer_->get_vibrance_balance_nc());
+    edtweaks->register_variable("root.postproc.fxaa.enabled"_h,            post_processing_renderer_->get_fxaa_enabled_nc());
+    edtweaks->register_variable("root.postproc.dithering.enabled"_h,       post_processing_renderer_->get_dithering_enabled_nc());
 
     // SSAO tweaks
-    edtweaks->register_variable("root.ssao.radius"_h,                      SSAO_renderer_->SSAO_radius_);
-    edtweaks->register_variable("root.ssao.bias"_h,                        SSAO_renderer_->SSAO_bias_);
-    edtweaks->register_variable("root.ssao.vbias"_h,                       SSAO_renderer_->SSAO_vbias_);
-    edtweaks->register_variable("root.ssao.intensity"_h,                   SSAO_renderer_->SSAO_intensity_);
-    edtweaks->register_variable("root.ssao.scale"_h,                       SSAO_renderer_->SSAO_scale_);
-    edtweaks->register_variable("root.ssao.blur.passes"_h,                 SSAO_renderer_->blur_policy_.n_pass_);
-    edtweaks->register_variable("root.ssao.blur.compression"_h,            SSAO_renderer_->blur_policy_.gamma_r_);
+    edtweaks->register_variable("root.ssao.radius"_h,                      SSAO_renderer_->get_radius_nc());
+    edtweaks->register_variable("root.ssao.bias"_h,                        SSAO_renderer_->get_scalar_bias_nc());
+    edtweaks->register_variable("root.ssao.vbias"_h,                       SSAO_renderer_->get_vector_bias_nc());
+    edtweaks->register_variable("root.ssao.intensity"_h,                   SSAO_renderer_->get_intensity_nc());
+    edtweaks->register_variable("root.ssao.scale"_h,                       SSAO_renderer_->get_scale_nc());
+    edtweaks->register_variable("root.ssao.blur.passes"_h,                 SSAO_renderer_->get_blur_policy_nc().n_pass_);
+    edtweaks->register_variable("root.ssao.blur.compression"_h,            SSAO_renderer_->get_blur_policy_nc().gamma_r_);
     edtweaks->register_variable("root.ssao.blur.kernel_half_size"_h,       SSAO_kernel_half_size);
     edtweaks->register_variable("root.ssao.blur.kernel_sigma"_h,           SSAO_sigma);
-
-    // Shadow tweaks
-    /*
-    Scene* pscene = locate<Scene>("Scene"_h);
-    edtweaks->register_variable("root.shadow.depth_bias"_h,    pscene->shadow_bias_);
-    edtweaks->register_variable("root.shadow.slope_bias"_h,    lighting_renderer_->shadow_slope_bias_);
-    edtweaks->register_variable("root.shadow.normal_offset"_h, lighting_renderer_->normal_offset_);
-    */
 #endif
 }
 
@@ -134,10 +126,28 @@ void RenderPipeline::perform_test()
 }
 
 void RenderPipeline::set_shadow_mapping_enabled(bool value)    { lighting_renderer_->set_shadow_mapping_enabled(value); }
+void RenderPipeline::set_shadow_bias(float value)              { lighting_renderer_->set_shadow_bias(value); }
+void RenderPipeline::set_bright_threshold(float value)         { lighting_renderer_->set_bright_threshold(value); }
+void RenderPipeline::set_bright_knee(float value)              { lighting_renderer_->set_bright_knee(value); }
+void RenderPipeline::set_shadow_slope_bias(float value)        { lighting_renderer_->set_shadow_slope_bias(value); }
+void RenderPipeline::set_normal_offset(float value)            { lighting_renderer_->set_normal_offset(value); }
+
+void RenderPipeline::set_bloom_enabled(bool value)             { post_processing_renderer_->set_bloom_enabled(value); }
+void RenderPipeline::set_fog_enabled(bool value)               { post_processing_renderer_->set_fog_enabled(value); }
+void RenderPipeline::set_fxaa_enabled(bool value)              { post_processing_renderer_->set_fxaa_enabled(value); }
 void RenderPipeline::set_pp_gamma(const math::vec3& value)     { post_processing_renderer_->set_gamma(value); }
 void RenderPipeline::set_pp_fog_color(const math::vec3& value) { post_processing_renderer_->set_fog_color(value); }
 void RenderPipeline::set_pp_saturation(float value)            { post_processing_renderer_->set_saturation(value); }
 void RenderPipeline::set_pp_fog_density(float value)           { post_processing_renderer_->set_fog_density(value); }
+void RenderPipeline::set_pp_exposure(float value)              { post_processing_renderer_->set_exposure(value); }
+void RenderPipeline::set_pp_contrast(float value)              { post_processing_renderer_->set_contrast(value); }
+void RenderPipeline::set_pp_vibrance(float value)              { post_processing_renderer_->set_vibrance(value); }
+void RenderPipeline::set_pp_vignette_falloff(float value)      { post_processing_renderer_->set_vignette_falloff(value); }
+void RenderPipeline::set_pp_vignette_balance(float value)      { post_processing_renderer_->set_vignette_balance(value); }
+void RenderPipeline::set_pp_aberration_shift(float value)      { post_processing_renderer_->set_aberration_shift(value); }
+void RenderPipeline::set_pp_aberration_strength(float value)   { post_processing_renderer_->set_aberration_strength(value); }
+void RenderPipeline::set_pp_acc_blindness_type(int value)      { post_processing_renderer_->set_acc_blindness_type(value); }
+void RenderPipeline::set_pp_vibrance_balance(const math::vec3& value) { post_processing_renderer_->set_vibrance_balance(value); }
 
 static float neighbors_search_eadius = 5.f;
 
@@ -280,8 +290,8 @@ void RenderPipeline::generate_widget()
     {
         ImGui::BeginChild("##pipelinectl", ImVec2(0, 3*ImGui::GetItemsLineHeightWithSpacing()));
         ImGui::Columns(2, nullptr, false);
-        ImGui::Checkbox("Lighting",       &lighting_renderer_->get_lighting_enabled_flag());
-        ImGui::Checkbox("Shadow Mapping", &lighting_renderer_->get_shadow_enabled_flag());
+        ImGui::Checkbox("Lighting",       &lighting_renderer_->get_lighting_enabled_nc());
+        ImGui::Checkbox("Shadow Mapping", &lighting_renderer_->get_shadow_enabled_nc());
         if(ImGui::Checkbox("SSAO", &SSAO_renderer_->get_active()))
         {
             lighting_renderer_->set_SSAO_enabled(SSAO_renderer_->is_active());
@@ -308,11 +318,11 @@ void RenderPipeline::generate_widget()
             ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
             if(ImGui::TreeNode("Tuning"))
             {
-                ImGui::SliderFloat("Radius",      &SSAO_renderer_->SSAO_radius_, 0.01f, 1.0f);
-                ImGui::SliderFloat("Scalar bias", &SSAO_renderer_->SSAO_bias_, 0.0f, 1.0f);
-                ImGui::SliderFloat("Vector bias", &SSAO_renderer_->SSAO_vbias_, 0.0f, 0.5f);
-                ImGui::SliderFloat("Intensity",   &SSAO_renderer_->SSAO_intensity_, 0.0f, 5.0f);
-                ImGui::SliderFloat("Scale",       &SSAO_renderer_->SSAO_scale_, 0.01f, 1.0f);
+                ImGui::SliderFloat("Radius",      &SSAO_renderer_->get_radius_nc(), 0.01f, 1.0f);
+                ImGui::SliderFloat("Scalar bias", &SSAO_renderer_->get_scalar_bias_nc(), 0.0f, 1.0f);
+                ImGui::SliderFloat("Vector bias", &SSAO_renderer_->get_vector_bias_nc(), 0.0f, 0.5f);
+                ImGui::SliderFloat("Intensity",   &SSAO_renderer_->get_intensity_nc(), 0.0f, 5.0f);
+                ImGui::SliderFloat("Scale",       &SSAO_renderer_->get_scale_nc(), 0.01f, 1.0f);
                 ImGui::TreePop();
                 ImGui::Separator();
             }
@@ -326,11 +336,11 @@ void RenderPipeline::generate_widget()
                 update_kernel     |= ImGui::SliderFloat("Sigma",   &SSAO_sigma, 0.5f, 2.0f);
                 if(update_kernel)
                 {
-                    SSAO_renderer_->blur_policy_.kernel_.update_kernel(2*SSAO_kernel_half_size-1, SSAO_sigma);
+                    SSAO_renderer_->get_blur_policy_nc().kernel_.update_kernel(2*SSAO_kernel_half_size-1, SSAO_sigma);
                 }
 
-                ImGui::SliderInt("Blur passes",   &SSAO_renderer_->blur_policy_.n_pass_, 0, 5);
-                ImGui::SliderFloat("Compression", &SSAO_renderer_->blur_policy_.gamma_r_, 0.5f, 2.0f);
+                ImGui::SliderInt("Blur passes",   &SSAO_renderer_->get_blur_policy_nc().n_pass_, 0, 5);
+                ImGui::SliderFloat("Compression", &SSAO_renderer_->get_blur_policy_nc().gamma_r_, 0.5f, 2.0f);
                 ImGui::TreePop();
             }
         }
@@ -342,8 +352,8 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("Bloom control"))
         {
-            ImGui::SliderFloat("Threshold", &lighting_renderer_->bright_threshold_, 0.5f, 2.0f);
-            ImGui::SliderFloat("Knee",      &lighting_renderer_->bright_knee_, 0.01f, 1.0f);
+            ImGui::SliderFloat("Threshold", &lighting_renderer_->get_bright_threshold_nc(), 0.5f, 2.0f);
+            ImGui::SliderFloat("Knee",      &lighting_renderer_->get_bright_knee_nc(), 0.01f, 1.0f);
             int ker_size = 2*bloom_kernel_half_size-1;
             ImGui::Text("Blur: Gaussian kernel %dx%d", ker_size, ker_size);
             bool update_kernel = ImGui::SliderInt("Half-size ", &bloom_kernel_half_size, 3, 8);
@@ -356,14 +366,14 @@ void RenderPipeline::generate_widget()
     }
 
     // SHADOW OPTIONS
-    if(lighting_renderer_->get_shadow_enabled_flag())
+    if(lighting_renderer_->get_shadow_enabled_nc())
     {
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("Shadow control"))
         {
-            ImGui::SliderFloat("Depth bias",    &pscene->shadow_bias_, 0.0f, 5.0f);
-            ImGui::SliderFloat("Slope bias",    &lighting_renderer_->shadow_slope_bias_, 0.0f, 0.5f);
-            ImGui::SliderFloat("Normal offset", &lighting_renderer_->normal_offset_, -1.0f, 1.0f);
+            ImGui::SliderFloat("Depth bias",    &lighting_renderer_->get_shadow_bias_nc(), 0.0f, 5.0f);
+            ImGui::SliderFloat("Slope bias",    &lighting_renderer_->get_shadow_slope_bias_nc(), 0.0f, 0.5f);
+            ImGui::SliderFloat("Normal offset", &lighting_renderer_->get_normal_offset_nc(), -1.0f, 1.0f);
         }
     }
 
@@ -374,8 +384,8 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
         if(ImGui::TreeNode("Chromatic aberration"))
         {
-            ImGui::SliderFloat("Shift",     &post_processing_renderer_->aberration_shift_, 0.0f, 10.0f);
-            ImGui::SliderFloat("Magnitude", &post_processing_renderer_->aberration_strength_, 0.0f, 1.0f);
+            ImGui::SliderFloat("Shift",     &post_processing_renderer_->get_aberration_shift_nc(), 0.0f, 10.0f);
+            ImGui::SliderFloat("Magnitude", &post_processing_renderer_->get_aberration_strength_nc(), 0.0f, 1.0f);
             ImGui::TreePop();
             ImGui::Separator();
         }
@@ -383,8 +393,8 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
         if(ImGui::TreeNode("Vignette"))
         {
-            ImGui::SliderFloat("Falloff", &post_processing_renderer_->vignette_falloff_, 0.0f, 2.0f);
-            ImGui::SliderFloat("Balance", &post_processing_renderer_->vignette_balance_, 0.0f, 1.0f);
+            ImGui::SliderFloat("Falloff", &post_processing_renderer_->get_vignette_falloff_nc(), 0.0f, 2.0f);
+            ImGui::SliderFloat("Balance", &post_processing_renderer_->get_vignette_balance_nc(), 0.0f, 1.0f);
             ImGui::TreePop();
             ImGui::Separator();
         }
@@ -395,8 +405,8 @@ void RenderPipeline::generate_widget()
             ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
             if(ImGui::TreeNode("Vibrance"))
             {
-                ImGui::SliderFloat("Strength",         &post_processing_renderer_->vibrance_, -1.0f, 1.0f);
-                ImGui::SliderFloat3("Balance", (float*)&post_processing_renderer_->vibrance_bal_, 0.0f, 1.0f);
+                ImGui::SliderFloat("Strength",         &post_processing_renderer_->get_vibrance_nc(), -1.0f, 1.0f);
+                ImGui::SliderFloat3("Balance", (float*)&post_processing_renderer_->get_vibrance_balance_nc(), 0.0f, 1.0f);
                 ImGui::TreePop();
                 ImGui::Separator();
             }
@@ -404,10 +414,10 @@ void RenderPipeline::generate_widget()
             ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
             if(ImGui::TreeNode("Correction"))
             {
-                ImGui::SliderFloat("Saturation",     &post_processing_renderer_->saturation_, 0.0f, 2.0f);
-                ImGui::SliderFloat3("Gamma", (float*)&post_processing_renderer_->gamma_, 1.0f, 2.0f);
-                ImGui::SliderFloat("Exposure",       &post_processing_renderer_->exposure_, 0.1f, 5.0f);
-                ImGui::SliderFloat("Contrast",       &post_processing_renderer_->contrast_, 0.0f, 2.0f);
+                ImGui::SliderFloat("Saturation",     &post_processing_renderer_->get_saturation_nc(), 0.0f, 2.0f);
+                ImGui::SliderFloat3("Gamma", (float*)&post_processing_renderer_->get_gamma_nc(), 1.0f, 2.0f);
+                ImGui::SliderFloat("Exposure",       &post_processing_renderer_->get_exposure_nc(), 0.1f, 5.0f);
+                ImGui::SliderFloat("Contrast",       &post_processing_renderer_->get_contrast_nc(), 0.0f, 2.0f);
                 ImGui::TreePop();
                 ImGui::Separator();
             }
@@ -417,11 +427,11 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
         if(ImGui::TreeNode("Fog"))
         {
-            ImGui::Checkbox("Enable fog", &post_processing_renderer_->fog_enabled_);
-            if(post_processing_renderer_->get_fog_enabled_flag())
+            ImGui::Checkbox("Enable fog", &post_processing_renderer_->get_fog_enabled_nc());
+            if(post_processing_renderer_->get_fog_enabled_nc())
             {
-                ImGui::SliderFloat("Density",      &post_processing_renderer_->fog_density_, 0.0f, 0.1f);
-                ImGui::ColorEdit3("Color", (float*)&post_processing_renderer_->fog_color_);
+                ImGui::SliderFloat("Density",      &post_processing_renderer_->get_fog_density_nc(), 0.0f, 0.1f);
+                ImGui::ColorEdit3("Color", (float*)&post_processing_renderer_->get_fog_color_nc());
             }
             ImGui::TreePop();
             ImGui::Separator();
@@ -430,7 +440,7 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
         if(ImGui::TreeNode("FXAA"))
         {
-            ImGui::Checkbox("Enable FXAA", &post_processing_renderer_->fxaa_enabled_);
+            ImGui::Checkbox("Enable FXAA", &post_processing_renderer_->get_fxaa_enabled_nc());
             ImGui::TreePop();
             ImGui::Separator();
         }
@@ -438,11 +448,11 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
         if(ImGui::TreeNode("Accessibility"))
         {
-            ImGui::WCombo("##daltmodesel", "Daltonize", post_processing_renderer_->acc_daltonize_mode_, 3, acc_dalt_mode_items);
-            if(post_processing_renderer_->acc_daltonize_mode_)
+            ImGui::WCombo("##daltmodesel", "Daltonize", post_processing_renderer_->get_acc_daltonize_mode_nc(), 3, acc_dalt_mode_items);
+            if(post_processing_renderer_->get_acc_daltonize_mode_nc())
             {
                 ImGui::Indent();
-                ImGui::WCombo("##blindnesssel", "Blindness", post_processing_renderer_->acc_blindness_type_, 3, acc_blindness_items);
+                ImGui::WCombo("##blindnesssel", "Blindness", post_processing_renderer_->get_acc_blindness_type_nc(), 3, acc_blindness_items);
                 ImGui::Unindent();
             }
             ImGui::TreePop();
@@ -452,7 +462,7 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::TreeNode("Misc."))
         {
-            ImGui::Checkbox("Enable dithering", &post_processing_renderer_->dithering_enabled_);
+            ImGui::Checkbox("Enable dithering", &post_processing_renderer_->get_dithering_enabled_nc());
             ImGui::TreePop();
         }
     }

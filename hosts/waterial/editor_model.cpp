@@ -16,7 +16,7 @@
 using namespace wcore;
 using namespace rapidxml;
 
-namespace medit
+namespace waterial
 {
 
 static std::map<int, std::string> texmap_names =
@@ -797,4 +797,4 @@ wcore::MaterialDescriptor EditorModel::get_current_material_descriptor()
     return desc;
 }
 
-} // namespace medit
+} // namespace waterial

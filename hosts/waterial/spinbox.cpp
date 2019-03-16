@@ -3,7 +3,7 @@
 
 #include "spinbox.h"
 
-namespace medit
+namespace waterial
 {
 
 DoubleSpinBox::DoubleSpinBox(QWidget* parent):
@@ -39,4 +39,4 @@ void DoubleSpinBox::set_constrains(double minval, double maxval, double step, do
 }
 
 
-} // namespace medit
+} // namespace waterial

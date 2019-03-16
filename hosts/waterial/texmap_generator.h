@@ -3,7 +3,7 @@
 
 #include <QImage>
 
-namespace medit
+namespace waterial
 {
 namespace generator
 {
@@ -43,6 +43,6 @@ void ao_from_depth(const QImage& depth_map, QImage& ao_map, const AOGenOptions& 
 void blur_sharp(QImage& img, float sigma);
 
 } // namespace generator
-} // namespace medit
+} // namespace waterial
 
 #endif // NORMAL_GENERATOR_H

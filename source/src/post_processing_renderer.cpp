@@ -20,8 +20,9 @@ fog_enabled_(true),
 bloom_enabled_(true),
 fxaa_enabled_(true),
 dithering_enabled_(false),
-gamma_(1),
-vibrance_bal_(1),
+acc_daltonize_mode_(0),
+acc_blindness_type_(0),
+fog_density_(0.05),
 vibrance_(0),
 saturation_(1),
 exposure_(1.8f),
@@ -30,10 +31,9 @@ vignette_falloff_(0.1f),
 vignette_balance_(0.25f),
 aberration_shift_(0.0f),
 aberration_strength_(0.0f),
-acc_daltonize_mode_(0),
-acc_blindness_type_(0),
-fog_color_(0),
-fog_density_(0.05)
+gamma_(1.f),
+vibrance_bal_(1.f),
+fog_color_(0.f)
 {
     load_geometry();
 }

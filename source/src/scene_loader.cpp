@@ -26,6 +26,7 @@
 #include "input_handler.h"
 #include "file_system.h"
 #include "basic_components.h"
+#include "pipeline.h"
 
 namespace wcore
 {
@@ -340,7 +341,10 @@ void SceneLoader::parse_directional_light(rapidxml::xml_node<>* node)
 
     float shadow_bias = 0.1f;
     if(xml::parse_node(dir_node, "ShadowBias", shadow_bias))
-        pscene_->shadow_bias_ = shadow_bias;
+    {
+        RenderPipeline* ppipeline_ = locate<RenderPipeline>("Pipeline"_h);
+        ppipeline_->set_shadow_bias(shadow_bias);
+    }
 }
 
 void SceneLoader::parse_patches(rapidxml::xml_node<>* node)

@@ -2,7 +2,7 @@
 #include <cassert>
 #include "double_slider.h"
 
-namespace medit
+namespace waterial
 {
 
 DoubleSlider::DoubleSlider(QWidget* parent):
@@ -42,4 +42,4 @@ void DoubleSlider::notifyValueChanged(int value)
 }
 
 
-} // namespace medit
+} // namespace waterial

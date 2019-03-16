@@ -3,7 +3,7 @@
 
 #include <QStringListModel>
 
-namespace medit
+namespace waterial
 {
 
 class TexListModel: public QStringListModel
@@ -16,6 +16,6 @@ public:
     TexListModel& operator<<(const QString& string);
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // TEXLIST_MODEL_H

@@ -49,18 +49,39 @@ public:
     virtual void generate_widget() override;
 #endif
 
-    void set_pp_gamma(const math::vec3& value);
-    void set_pp_fog_color(const math::vec3& value);
-    void set_pp_saturation(float value);
-    void set_pp_fog_density(float value);
-
     bool onKeyboardEvent(const WData& data);
     bool onMouseEvent(const WData& data);
     void render();
     void render_gui();
     void dbg_show_statistics();
 
+    // Enable/Disable rendering subsystems
+    void set_fog_enabled(bool value);
+    void set_fxaa_enabled(bool value);
     void set_shadow_mapping_enabled(bool value);
+    void set_bloom_enabled(bool value);
+
+    // Post processing parameter access
+    void set_pp_gamma(const math::vec3& value);
+    void set_pp_fog_color(const math::vec3& value);
+    void set_pp_saturation(float value);
+    void set_pp_fog_density(float value);
+    void set_pp_exposure(float value);
+    void set_pp_contrast(float value);
+    void set_pp_vibrance(float value);
+    void set_pp_vignette_falloff(float value);
+    void set_pp_vignette_balance(float value);
+    void set_pp_aberration_shift(float value);
+    void set_pp_aberration_strength(float value);
+    void set_pp_acc_blindness_type(int value);
+    void set_pp_vibrance_balance(const math::vec3& value);
+
+    // Lighting parameter access
+    void set_shadow_bias(float value);
+    void set_bright_threshold(float value);
+    void set_bright_knee(float value);
+    void set_shadow_slope_bias(float value);
+    void set_normal_offset(float value);
 
 #ifdef __DEBUG__
     void debug_draw_segment(const math::vec3& world_start,

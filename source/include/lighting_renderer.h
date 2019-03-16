@@ -28,25 +28,48 @@ private:
     bool shadow_enabled_;
     bool lighting_enabled_;
 
-public:
     float bright_threshold_;
     float bright_knee_;
     float shadow_slope_bias_;
+    float shadow_bias_;
     float normal_offset_;
 
+public:
     LightingRenderer(ShadowMapRenderer& smr);
     virtual ~LightingRenderer() = default;
 
     void load_geometry();
     virtual void render(Scene* pscene) override;
 
-    inline void toggle_SSAO() { SSAO_enabled_ = !SSAO_enabled_; }
-    inline void set_SSAO_enabled(bool value) { SSAO_enabled_ = value; }
-    inline void set_lighting_enabled(bool value) { lighting_enabled_ = value; }
+    inline void set_SSAO_enabled(bool value)           { SSAO_enabled_ = value; }
+    inline void set_lighting_enabled(bool value)       { lighting_enabled_ = value; }
     inline void set_shadow_mapping_enabled(bool value) { shadow_enabled_ = value; }
-    inline bool& get_SSAO_enabled_flag()     { return SSAO_enabled_; }
-    inline bool& get_shadow_enabled_flag()   { return shadow_enabled_; }
-    inline bool& get_lighting_enabled_flag() { return lighting_enabled_; }
+
+    inline void toggle_SSAO()           { SSAO_enabled_ = !SSAO_enabled_; }
+    inline void toggle_lighting()       { lighting_enabled_ = !lighting_enabled_; }
+    inline void toggle_shadow_mapping() { shadow_enabled_ = !shadow_enabled_; }
+
+    inline bool& get_SSAO_enabled_nc()     { return SSAO_enabled_; }
+    inline bool& get_shadow_enabled_nc()   { return shadow_enabled_; }
+    inline bool& get_lighting_enabled_nc() { return lighting_enabled_; }
+
+    inline void set_bright_threshold(float value)  { bright_threshold_ = value; }
+    inline void set_bright_knee(float value)       { bright_knee_ = value; }
+    inline void set_shadow_slope_bias(float value) { shadow_slope_bias_ = value; }
+    inline void set_shadow_bias(float value)       { shadow_bias_ = value; }
+    inline void set_normal_offset(float value)     { normal_offset_ = value; }
+
+    inline float get_bright_threshold() const  { return bright_threshold_; }
+    inline float get_bright_knee() const       { return bright_knee_; }
+    inline float get_shadow_slope_bias() const { return shadow_slope_bias_; }
+    inline float get_shadow_bias() const       { return shadow_bias_; }
+    inline float get_normal_offset() const     { return normal_offset_; }
+
+    inline float& get_bright_threshold_nc()  { return bright_threshold_; }
+    inline float& get_bright_knee_nc()       { return bright_knee_; }
+    inline float& get_shadow_slope_bias_nc() { return shadow_slope_bias_; }
+    inline float& get_shadow_bias_nc()       { return shadow_bias_; }
+    inline float& get_normal_offset_nc()     { return normal_offset_; }
 
 private:
     inline size_t QUAD_OFFSET()   { return buffer_offsets_[0]; }

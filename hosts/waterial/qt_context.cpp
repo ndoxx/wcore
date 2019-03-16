@@ -1,6 +1,6 @@
 #include "qt_context.h"
 
-namespace medit
+namespace waterial
 {
 
 QtContext::~QtContext()
@@ -66,4 +66,4 @@ void QtContext::poll_events()
 }
 
 
-} // namespace medit
+} // namespace waterial

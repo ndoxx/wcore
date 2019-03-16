@@ -14,7 +14,7 @@
 
 using namespace wcore;
 
-namespace medit
+namespace waterial
 {
 
 GLWidget::GLWidget(QWidget* parent):
@@ -65,10 +65,10 @@ void GLWidget::initializeGL()
     GLB.SCR_H = 600;
 
     engine_->Init(0, nullptr, nullptr, context_);
-    engine_->LoadStart();
+    engine_->scene_control->LoadStart();
 
     // Systems configuration
-    engine_->SetShadowMappingEnabled(false);
+    engine_->pipeline_control->SetShadowMappingEnabled(false);
 
     connect(frame_timer_, SIGNAL(timeout()), this, SLOT(update()));
     frame_timer_->start(16);
@@ -79,10 +79,10 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     if(!active_) return;
 
-    engine_->SetDefaultFrameBuffer(defaultFramebufferObject());
+    engine_->pipeline_control->SetDefaultFrameBuffer(defaultFramebufferObject());
 
     // Update model
-    engine_->VisitRefModel("the_model"_h, [&](Model& model)
+    engine_->scene_control->VisitRefModel("the_model"_h, [&](Model& model)
     {
         // Reset orientation?
         if(reset_orientation_)
@@ -188,4 +188,4 @@ void GLWidget::handle_material_swap(const wcore::MaterialDescriptor& descriptor)
 }
 
 
-} // namespace medit
+} // namespace waterial

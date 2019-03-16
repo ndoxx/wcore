@@ -344,8 +344,8 @@ int main(int argc, char const *argv[])
     wcore::GlobalsSet(H_("START_LEVEL"), "maze");
 
     // * Load level and first chunk, but don't send geometry yet
-    engine.LoadLevel();
-    uint32_t chunk00 = engine.LoadChunk(0, 0, false);
+    engine.scene_control->LoadLevel();
+    uint32_t chunk00 = engine.scene_control->LoadChunk(0, 0, false);
 
     std::default_random_engine rng;
     std::uniform_real_distribution<float> distribution(0.0,1.0);
@@ -375,16 +375,16 @@ int main(int argc, char const *argv[])
         if(nwalls>=3 && distribution(rng) > 0.5f)
         {
             wcore::math::vec3 cell_center(2.0f*xx+2.0f, 0.f, 2.0f*zz+1.0f);
-            uint32_t light_index = engine.LoadPointLight(chunk00);
-            engine.SetLightPosition(light_index, cell_center+math::vec3(0.f,3.0f,1.f));
-            engine.SetLightColor(light_index, math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
-            engine.SetLightRadius(light_index, 5.0f);
-            engine.SetLightBrightness(light_index, 10.0f);
+            uint32_t light_index = engine.scene_control->LoadPointLight(chunk00);
+            engine.scene_control->SetLightPosition(light_index, cell_center+math::vec3(0.f,3.0f,1.f));
+            engine.scene_control->SetLightColor(light_index, math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
+            engine.scene_control->SetLightRadius(light_index, 5.0f);
+            engine.scene_control->SetLightBrightness(light_index, 10.0f);
 
-            uint32_t teapot_index = engine.LoadModel(H_("teapot01"), chunk00);
-            engine.SetModelScale(teapot_index, 0.05f);
-            engine.SetModelPosition(teapot_index, cell_center+math::vec3(0,0.4f,1.0f));
-            engine.SetModelOrientation(teapot_index, math::vec3(0,90,0));
+            uint32_t teapot_index = engine.scene_control->LoadModel(H_("teapot01"), chunk00);
+            engine.scene_control->SetModelScale(teapot_index, 0.05f);
+            engine.scene_control->SetModelPosition(teapot_index, cell_center+math::vec3(0,0.4f,1.0f));
+            engine.scene_control->SetModelOrientation(teapot_index, math::vec3(0,90,0));
         }
     });
     // Simplify geometry and place walls
@@ -395,42 +395,42 @@ int main(int argc, char const *argv[])
         wcore::math::vec3 cell_center(2.0f*xx+2.0f, 0.f, 2.0f*zz+1.0f);
         if(state & CellState::WALL_LEFT)
         {
-            uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
-            engine.SetModelPosition(wall_index, cell_center+math::vec3(0,0,0));
-            engine.SetModelOrientation(wall_index, math::vec3(0,90,0));
+            uint32_t wall_index = engine.scene_control->LoadModel(H_("brickWall01"), chunk00);
+            engine.scene_control->SetModelPosition(wall_index, cell_center+math::vec3(0,0,0));
+            engine.scene_control->SetModelOrientation(wall_index, math::vec3(0,90,0));
             ++nwalls;
         }
         if(state & CellState::WALL_RIGHT)
         {
-            uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
-            engine.SetModelPosition(wall_index, cell_center+math::vec3(0,0,2.0f));
-            engine.SetModelOrientation(wall_index, math::vec3(0,90,0));
+            uint32_t wall_index = engine.scene_control->LoadModel(H_("brickWall01"), chunk00);
+            engine.scene_control->SetModelPosition(wall_index, cell_center+math::vec3(0,0,2.0f));
+            engine.scene_control->SetModelOrientation(wall_index, math::vec3(0,90,0));
             ++nwalls;
         }
         if(state & CellState::WALL_UP)
         {
-            uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
-            engine.SetModelPosition(wall_index, cell_center+math::vec3(1.0f,0.f,1.0));
+            uint32_t wall_index = engine.scene_control->LoadModel(H_("brickWall01"), chunk00);
+            engine.scene_control->SetModelPosition(wall_index, cell_center+math::vec3(1.0f,0.f,1.0));
             ++nwalls;
         }
         if(state & CellState::WALL_DOWN)
         {
-            uint32_t wall_index = engine.LoadModel(H_("brickWall01"), chunk00);
-            engine.SetModelPosition(wall_index, cell_center+math::vec3(-1.0f-0.01f,-0.01f,1.0));
+            uint32_t wall_index = engine.scene_control->LoadModel(H_("brickWall01"), chunk00);
+            engine.scene_control->SetModelPosition(wall_index, cell_center+math::vec3(-1.0f-0.01f,-0.01f,1.0));
             ++nwalls;
         }
 
         if(nwalls>=3 && distribution(rng) > 0.5f)
         {
-            uint32_t light_index = engine.LoadPointLight(chunk00);
-            engine.SetLightPosition(light_index, cell_center+math::vec3(0.f,3.0f,1.f));
-            engine.SetLightColor(light_index, math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
-            engine.SetLightRadius(light_index, 5.0f);
-            engine.SetLightBrightness(light_index, 10.0f);
+            uint32_t light_index = engine.scene_control->LoadPointLight(chunk00);
+            engine.scene_control->SetLightPosition(light_index, cell_center+math::vec3(0.f,3.0f,1.f));
+            engine.scene_control->SetLightColor(light_index, math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
+            engine.scene_control->SetLightRadius(light_index, 5.0f);
+            engine.scene_control->SetLightBrightness(light_index, 10.0f);
         }
     });
 
     // * Send chunk geometry to GL and run
-    engine.SendChunk(0, 0);
+    engine.scene_control->SendChunk(0, 0);
     return engine.Run();
 }

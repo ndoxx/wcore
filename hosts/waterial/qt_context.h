@@ -3,7 +3,7 @@
 
 #include "wcontext.h"
 
-namespace medit
+namespace waterial
 {
 
 class QtContext: public wcore::AbstractContext

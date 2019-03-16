@@ -10,7 +10,7 @@ QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QComboBox)
 QT_FORWARD_DECLARE_CLASS(QScrollArea)
 
-namespace medit
+namespace waterial
 {
 
 QT_FORWARD_DECLARE_CLASS(DropLabel)
@@ -34,8 +34,11 @@ public:
     // TMP
     inline DropLabel* get_droplabel() { return droplabel; }
 
+signals:
+    void sig_controls_changed();
+
 public slots:
-    void handle_sig_texmap_changed(bool init_state);
+    void handle_sig_texmap_changed();
 
 protected:
     virtual void clear_additional() {}
@@ -186,6 +189,6 @@ private:
     DoubleSpinBox* blursharp_edit_;
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // TEXMAP_CONTROLS_H

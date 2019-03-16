@@ -17,7 +17,7 @@
 #include "mainwindow.h"
 #include "texmap_generator.h"
 
-namespace medit
+namespace waterial
 {
 
 TexMapControl::TexMapControl(const QString& title, int index):
@@ -35,10 +35,11 @@ texmap_index(index)
     policy.setHeightForWidth(true);
     droplabel->setSizePolicy(policy);
     QObject::connect(droplabel, SIGNAL(sig_texmap_changed(bool)),
-                     this,      SLOT(handle_sig_texmap_changed(bool)));
+                     this,      SLOT(handle_sig_texmap_changed()));
 
     // Checkbox to enable/disable texture map
     map_enabled->setEnabled(false);
+
 
     layout->addSpacerItem(new QSpacerItem(20, 10));
     layout->addWidget(droplabel);
@@ -102,11 +103,9 @@ void TexMapControl::add_stretch()
     layout->addStretch();
 }
 
-void TexMapControl::handle_sig_texmap_changed(bool init_state)
+void TexMapControl::handle_sig_texmap_changed()
 {
-    map_enabled->setEnabled(init_state);
-    map_enabled->setCheckState(init_state ? Qt::Checked : Qt::Unchecked);
-    setWindowModified(true); // DNW does not propagate to parent
+    emit sig_controls_changed();
 }
 
 AlbedoControl::AlbedoControl():
@@ -433,4 +432,4 @@ void NormalControl::get_options(generator::NormalGenOptions& options)
 }
 
 
-} // namespace medit
+} // namespace waterial

@@ -21,7 +21,7 @@ QT_FORWARD_DECLARE_CLASS(QStringListModel)
 QT_FORWARD_DECLARE_CLASS(QSortFilterProxyModel)
 QT_FORWARD_DECLARE_CLASS(QListView)
 
-namespace medit
+namespace waterial
 {
 
 enum TexMapControlIndex: uint32_t
@@ -219,6 +219,6 @@ private:
     std::map<wcore::hash_t, TextureEntry> texture_descriptors_;
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // EDITOR_MODEL_H

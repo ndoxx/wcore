@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     fmt.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(fmt);
 
-    medit::MainWindow w;
+    waterial::MainWindow w;
     w.show();
 
     return a.exec();

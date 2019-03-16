@@ -3,7 +3,7 @@
 
 #include "color_picker_label.h"
 
-namespace medit
+namespace waterial
 {
 
 ColorPickerLabel::ColorPickerLabel(QWidget* parent, Qt::WindowFlags f):
@@ -45,4 +45,4 @@ void ColorPickerLabel::set_color(const QColor& color)
 }
 
 
-} // namespace medit
+} // namespace waterial

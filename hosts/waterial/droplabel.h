@@ -10,7 +10,7 @@
     - preserves image aspect ratio during resize operations
 */
 
-namespace medit
+namespace waterial
 {
 
 class DropLabel: public QLabel
@@ -53,6 +53,6 @@ private:
     bool initialized_;
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // DROPLABEL_H

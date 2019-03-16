@@ -3,7 +3,7 @@
 
 #include <QSlider>
 
-namespace medit
+namespace waterial
 {
 
 class DoubleSlider : public QSlider
@@ -28,6 +28,6 @@ private:
     double maxval_;
 };
 
-} // namespace medit
+} // namespace waterial
 
 #endif // DOUBLE_SLIDER_H
