@@ -45,7 +45,7 @@ set_target_properties(maze
 add_library(iwcore SHARED IMPORTED)
 set_target_properties(iwcore PROPERTIES
   IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/libwcore.so"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/include"
 )
 
 target_link_libraries(maze

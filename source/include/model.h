@@ -118,6 +118,7 @@ public:
 
     inline void set_position(const math::vec3& newpos)          { trans_.set_position(newpos); }
     inline void set_orientation(const math::quat& newori)       { trans_.set_orientation(newori); }
+    inline void set_orientation(const math::vec3& newori)       { trans_.set_orientation(math::quat(newori.z(),newori.y(),newori.x())); }
     inline void reset_orientation()                             { trans_.reset_orientation(); }
     inline math::vec3 get_orientation_euler(bool deg=true)      { return trans_.get_orientation_euler(deg); }
     inline void set_scale(float scale)                          { trans_.set_scale(scale); }

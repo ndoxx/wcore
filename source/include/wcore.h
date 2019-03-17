@@ -10,7 +10,7 @@
 #include "wecs.h"
 #include "wcontext.h"
 
-#include "math3d.h"
+#include "include/math3d.h"
 
 using wcore::H_;
 
@@ -81,13 +81,15 @@ public:
     uint32_t LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry=true);
     // Send chunk geometry to graphics driver
     void SendChunk(uint32_t xx, uint32_t zz);
-
-    // Load a model given an instance name, a chunk index, and an optional reference
-    void LoadModel(hash_t name, uint32_t chunk_index, hash_t href=0);
     // Visit referenced model in scene by hash name
     bool VisitModelRef(hash_t href, std::function<void(Model& model)> visit);
 
     // * The following functions will likely be deprecated soon
+    void LoadModel(hash_t name, uint32_t chunk_index, hash_t href=0);
+    /*void SetModelPosition(uint32_t model_index, const math::vec3& position);
+    void SetModelOrientation(uint32_t model_index, const math::vec3& orientation);
+    void SetModelScale(uint32_t model_index, float scale);*/
+
     uint32_t LoadPointLight(uint32_t chunk_index);
     void SetLightPosition(uint32_t light_index, const math::vec3& value);
     void SetLightColor(uint32_t light_index, const math::vec3& value);

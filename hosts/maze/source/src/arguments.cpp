@@ -32,22 +32,22 @@ void parse_program_arguments(int argc, char const *argv[])
         std::size_t xpos = screenSizeStr.find("x");
         uint32_t scrw = std::stoi(screenSizeStr.substr(0, xpos));
         uint32_t scrh = std::stoi(screenSizeStr.substr(xpos+1));
-        wcore::GlobalsSet(H_("SCR_W"), &scrw);
-        wcore::GlobalsSet(H_("SCR_H"), &scrh);
+        wcore::SetGlobal(H_("SCR_W"), &scrw);
+        wcore::SetGlobal(H_("SCR_H"), &scrh);
     }
 
     // Level name specified?
     const char* levelName = get_cmd_option(argv, argv + argc, "-l");
     if(levelName)
     {
-        wcore::GlobalsSet(H_("START_LEVEL"), levelName);
+        wcore::SetGlobal(H_("START_LEVEL"), levelName);
     }
 
     // Fullscreen
     if(cmd_option_exists(argv, argv + argc, "-f"))
     {
         bool fullscr = true;
-        wcore::GlobalsSet(H_("SCR_FULL"), &fullscr);
+        wcore::SetGlobal(H_("SCR_FULL"), &fullscr);
     }
 }
 

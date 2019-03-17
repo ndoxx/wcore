@@ -139,10 +139,13 @@ bool SceneLoader::onKeyboardEvent(const WData& data)
     return true; // Do NOT consume event
 }
 
-pModel SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index)
+pModel SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index, hash_t href)
 {
     // Create model from instance name
     pModel pmdl = game_object_factory_->make_model_instance(name);
+
+    if(href)
+        pmdl->set_reference(href);
 
     pmdl->update_bounding_boxes();
 

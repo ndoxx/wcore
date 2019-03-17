@@ -1,4 +1,5 @@
 #include <map>
+#include <cassert>
 #include <fstream>
 
 #include "wcore.h"
@@ -41,7 +42,7 @@ static void warn_global_not_found(hash_t name)
     DLOGW("Skipping.", "core", Severity::WARN);
 }
 
-void GlobalsSet(hash_t name, const void* data)
+void SetGlobal(hash_t name, const void* data)
 {
     switch(name)
     {
@@ -64,6 +65,15 @@ void GlobalsSet(hash_t name, const void* data)
     }
 }
 
+//    ______ _                 _
+//    | ___ (_)               | |
+//    | |_/ /_ _ __ ___  _ __ | |
+//    |  __/| | '_ ` _ \| '_ \| |
+//    | |   | | | | | | | |_) | |
+//    \_|   |_|_| |_| |_| .__/|_|
+//                      | |
+//                      |_|
+
 struct Engine::EngineImpl
 {
     EngineImpl():
@@ -82,7 +92,7 @@ struct Engine::EngineImpl
 #ifndef __DISABLE_EDITOR__
     editor(nullptr),
 #endif
-    current_model_handle(0),
+    //current_model_handle(0),
     current_light_handle(0)
     {
         // Instanciate singletons
@@ -188,23 +198,19 @@ struct Engine::EngineImpl
 #endif
 
     // TMP?
-    std::map<uint32_t, std::shared_ptr<Model>> handled_models;
-    uint32_t current_model_handle;
+    //std::map<uint32_t, std::shared_ptr<Model>> handled_models;
+    //uint32_t current_model_handle;
     std::map<uint32_t, std::shared_ptr<Light>> handled_lights;
     uint32_t current_light_handle;
 };
 
-Engine::SceneControl::SceneControl(std::shared_ptr<EngineImpl> impl):
-eimpl_(impl)
-{
+//      ___  ______ _____  ______
+//     / _ \ | ___ \_   _| | ___ \
+//    / /_\ \| |_/ / | |   | |_/ / __ _ ___  ___
+//    |  _  ||  __/  | |   | ___ \/ _` / __|/ _ \
+//    | | | || |    _| |_  | |_/ / (_| \__ \  __/
+//    \_| |_/\_|    \___/  \____/ \__,_|___/\___|
 
-}
-
-Engine::PipelineControl::PipelineControl(std::shared_ptr<EngineImpl> impl):
-eimpl_(impl)
-{
-
-}
 
 Engine::Engine()
 {
@@ -237,13 +243,28 @@ Engine::Engine()
 #endif
 
     eimpl_ = std::shared_ptr<EngineImpl>(new EngineImpl);
-    scene_control = new SceneControl(eimpl_);
-    pipeline_control = new PipelineControl(eimpl_);
+    scene = new SceneControl(eimpl_);
+    pipeline = new PipelineControl(eimpl_);
 }
 
 Engine::~Engine()
 {
 
+}
+
+void Engine::SetFrameSize(uint32_t width, uint32_t height, bool fullscreen)
+{
+    GLB.SCR_W = width;
+    GLB.SCR_H = height;
+    GLB.WIN_W = width;
+    GLB.WIN_H = height;
+    GLB.SCR_FULL = fullscreen;
+}
+
+void Engine::SetWindowSize(uint32_t width, uint32_t height)
+{
+    GLB.WIN_W = width;
+    GLB.WIN_H = height;
 }
 
 bool Engine::UseResourceArchive(const char* filename, hash_t key)
@@ -386,8 +407,30 @@ bool Engine::WindowRequired()
     return eimpl_->engine_core->window_required();
 }
 
-void Engine::SceneControl::LoadStart()
+
+//     _____
+//    /  ___|
+//    \ `--.  ___ ___ _ __   ___
+//     `--. \/ __/ _ \ '_ \ / _ \
+//    /\__/ / (_|  __/ | | |  __/
+//    \____/ \___\___|_| |_|\___|
+
+Engine::SceneControl::SceneControl(std::shared_ptr<EngineImpl> impl):
+eimpl_(impl)
 {
+
+}
+
+void Engine::SceneControl::SetStartLevel(const char* level_name)
+{
+    GLB.START_LEVEL = level_name;
+}
+
+void Engine::SceneControl::LoadStart(const char* level_name)
+{
+    if(level_name != nullptr)
+         GLB.START_LEVEL = level_name;
+
     // Load level
     eimpl_->scene_loader->load_level(GLB.START_LEVEL);
     eimpl_->scene_loader->load_global(*eimpl_->daylight);
@@ -398,11 +441,18 @@ void Engine::SceneControl::LoadStart()
 #endif
 }
 
-void Engine::SceneControl::LoadLevel()
+void Engine::SceneControl::LoadLevel(const char* level_name)
 {
-    // Load level
+    if(level_name != nullptr)
+         GLB.START_LEVEL = level_name;
+
+    // Load level but don't send geometry just yet
     eimpl_->scene_loader->load_level(GLB.START_LEVEL);
     eimpl_->scene_loader->load_global(*eimpl_->daylight);
+
+#ifdef __DEBUG__
+    show_driver_error("post LoadLevel() glGetError(): ");
+#endif
 }
 
 uint32_t Engine::SceneControl::LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry)
@@ -410,7 +460,7 @@ uint32_t Engine::SceneControl::LoadChunk(uint32_t xx, uint32_t zz, bool send_geo
     return eimpl_->scene_loader->load_chunk(math::i32vec2(xx,zz), send_geometry);
 }
 
-bool Engine::SceneControl::VisitRefModel(hash_t href, std::function<void(Model& model)> visit)
+bool Engine::SceneControl::VisitModelRef(hash_t href, std::function<void(Model& model)> visit)
 {
     if(auto pmdl = eimpl_->scene->get_model_by_ref(href).lock())
     {
@@ -429,37 +479,9 @@ void Engine::SceneControl::SendChunk(uint32_t xx, uint32_t zz)
 
 
 
-uint32_t Engine::SceneControl::LoadModel(hash_t name, uint32_t chunk_index)
+void Engine::SceneControl::LoadModel(hash_t name, uint32_t chunk_index, hash_t href)
 {
-    auto pmdl = eimpl_->scene_loader->load_model_instance(name, chunk_index);
-    eimpl_->handled_models.insert(std::pair(eimpl_->current_model_handle, pmdl));
-    return eimpl_->current_model_handle++;
-}
-
-void Engine::SceneControl::SetModelPosition(uint32_t model_index, const math::vec3& position)
-{
-    std::shared_ptr<Model> pmdl = eimpl_->handled_models.at(model_index);
-    pmdl->set_position(position);
-    pmdl->update_bounding_boxes();
-}
-
-void Engine::SceneControl::SetModelScale(uint32_t model_index, float scale)
-{
-    auto it = eimpl_->handled_models.find(model_index);
-    if(it!=eimpl_->handled_models.end())
-    {
-        it->second->set_scale(scale);
-        it->second->update_bounding_boxes();
-    }
-}
-
-void Engine::SceneControl::SetModelOrientation(uint32_t model_index, const math::vec3& orientation)
-{
-    std::shared_ptr<Model> pmdl = eimpl_->handled_models.at(model_index);
-    pmdl->set_orientation(math::quat(orientation.z(),
-                          orientation.y(),
-                          orientation.x()));
-    pmdl->update_bounding_boxes();
+    auto pmdl = eimpl_->scene_loader->load_model_instance(name, chunk_index, href);
 }
 
 uint32_t Engine::SceneControl::LoadPointLight(uint32_t chunk_index)
@@ -498,6 +520,20 @@ void Engine::SceneControl::SetLightBrightness(uint32_t light_index, float value)
 }
 
 
+//    ______ _            _ _
+//    | ___ (_)          | (_)
+//    | |_/ /_ _ __   ___| |_ _ __   ___
+//    |  __/| | '_ \ / _ \ | | '_ \ / _ \
+//    | |   | | |_) |  __/ | | | | |  __/
+//    \_|   |_| .__/ \___|_|_|_| |_|\___|
+//            | |
+//            |_|
+
+Engine::PipelineControl::PipelineControl(std::shared_ptr<EngineImpl> impl):
+eimpl_(impl)
+{
+
+}
 
 void Engine::PipelineControl::SetDefaultFrameBuffer(unsigned int index)
 {
@@ -595,5 +631,32 @@ void Engine::PipelineControl::SetPostprocVibranceBalance(const math::vec3& value
     eimpl_->pipeline->set_pp_vibrance_balance(value);
 }
 
+
+#ifdef __DEBUG__
+void Engine::PipelineControl::dDrawSegment(const math::vec3& world_start,
+                                           const math::vec3& world_end,
+                                           int ttl,
+                                           const math::vec3& color)
+{
+    eimpl_->pipeline->debug_draw_segment(world_start, world_end, ttl, color);
+}
+
+void Engine::PipelineControl::dDrawSphere(const math::vec3& world_pos,
+                                          float radius,
+                                          int ttl,
+                                          const math::vec3& color)
+{
+    eimpl_->pipeline->debug_draw_sphere(world_pos, radius, ttl, color);
+}
+
+void Engine::PipelineControl::dDrawCross3(const math::vec3& world_pos,
+                                          float radius,
+                                          int ttl,
+                                          const math::vec3& color)
+{
+    eimpl_->pipeline->debug_draw_cross3(world_pos, radius, ttl, color);
+}
+
+#endif
 
 }

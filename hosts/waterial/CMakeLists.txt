@@ -66,7 +66,7 @@ set_target_properties(waterial
 add_library(iwcore SHARED IMPORTED)
 set_target_properties(iwcore PROPERTIES
   IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/libwcore.so"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/include"
 )
 
 # Use the Widgets module from Qt 5

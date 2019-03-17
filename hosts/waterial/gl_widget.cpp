@@ -8,7 +8,6 @@
 #include "wcore.h"
 #include "logger.h"
 #include "error.h"
-#include "globals.h"
 #include "model.h"
 #include "material.h"
 
@@ -60,15 +59,12 @@ void GLWidget::initializeGL()
     }
     glGetError();   // Mask an unavoidable error caused by GLEW
 
-    GLB.START_LEVEL = "mv";
-    GLB.SCR_W = 800;
-    GLB.SCR_H = 600;
-
+    engine_->SetFrameSize(800, 600);
     engine_->Init(0, nullptr, nullptr, context_);
-    engine_->scene_control->LoadStart();
+    engine_->scene->LoadStart("mv");
 
     // Systems configuration
-    engine_->pipeline_control->SetShadowMappingEnabled(false);
+    engine_->pipeline->SetShadowMappingEnabled(false);
 
     connect(frame_timer_, SIGNAL(timeout()), this, SLOT(update()));
     frame_timer_->start(16);
@@ -79,10 +75,10 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     if(!active_) return;
 
-    engine_->pipeline_control->SetDefaultFrameBuffer(defaultFramebufferObject());
+    engine_->pipeline->SetDefaultFrameBuffer(defaultFramebufferObject());
 
     // Update model
-    engine_->scene_control->VisitRefModel("the_model"_h, [&](Model& model)
+    engine_->scene->VisitModelRef("the_model"_h, [&](Model& model)
     {
         // Reset orientation?
         if(reset_orientation_)
@@ -112,8 +108,7 @@ void GLWidget::paintGL()
 
 void GLWidget::resizeGL(int width, int height)
 {
-    GLB.WIN_W = width;
-    GLB.WIN_H = height;
+    engine_->SetWindowSize(width, height);
 }
 
 void GLWidget::mousePressEvent(QMouseEvent* event)
