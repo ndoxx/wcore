@@ -13,6 +13,7 @@
 #include <QLineEdit>
 #include <QKeyEvent>
 #include <QMenu>
+#include <QMenuBar>
 #include <QToolBar>
 #include <QFile>
 #include <QTextStream>
@@ -35,11 +36,11 @@
 #include "droplabel.h"
 #include "double_slider.h"
 #include "gl_widget.h"
+#include "settings.h"
 
 // wcore
 #include "config.h"
 #include "logger.h"
-
 
 using namespace wcore;
 
@@ -58,8 +59,8 @@ static bool validate_texture_name(const QString& name)
 
     if(!ret)
     {
-        DLOGW("Invalid texture name.", "core", Severity::WARN);
-        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores are allowed.", "core", Severity::WARN);
+        DLOGW("Invalid texture name.", "waterial", Severity::WARN);
+        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores are allowed.", "waterial", Severity::WARN);
     }
 
     return ret;
@@ -94,12 +95,25 @@ file_dialog_(new QFileDialog(this))
     pjname_label_->setObjectName("TBProjectLabel");
     update_window_title("");
     setWindowIcon(QIcon(":/res/icons/waterial.ico"));
-    setWindowState(Qt::WindowMaximized);
+    //setWindowState(Qt::WindowMaximized);
 
-    // Status bar
+
+    // Get config folder
+    fs::path conf_path = CONFIG.get_config_directory();
+    if(fs::exists(conf_path))
+        config_folder_ = QDir(QString::fromStdString(conf_path.string()));
+    else
+    {
+        DLOGW("Unable to locate config directory.", "waterial", Severity::WARN);
+        DLOGI("Using current directory to store configuration", "waterial", Severity::WARN);
+        config_folder_ = QDir::currentPath();
+    }
+
+    read_settings();
+    create_actions();
+    update_recent_file_actions();
+    create_menus();
     create_status_bar();
-
-    // Toolbars
     create_toolbars();
 
     QFrame* side_panel = new QFrame();
@@ -164,14 +178,14 @@ file_dialog_(new QFileDialog(this))
     QString work_path_qstr;
     if(!CONFIG.get<fs::path>("root.folders.texwork"_h, work_path))
     {
-        DLOGW("Unable to read root.folders.texwork node in config.", "core", Severity::WARN);
-        DLOGI("Using current directory instead.", "core", Severity::WARN);
+        DLOGW("Unable to read root.folders.texwork node in config.", "waterial", Severity::WARN);
+        DLOGI("Using current directory instead.", "waterial", Severity::WARN);
         work_path_qstr = QDir::currentPath();
     }
     else
     {
-        DLOGN("Detected texture work directory:", "core", Severity::LOW);
-        DLOGI("<p>" + work_path.string() + "</p>", "core", Severity::LOW);
+        DLOGN("Detected texture work directory:", "waterial", Severity::LOW);
+        DLOGI("<p>" + work_path.string() + "</p>", "waterial", Severity::LOW);
         work_path_qstr = QString::fromStdString(work_path.string());
     }
     editor_model_->set_project_folder(work_path_qstr);
@@ -185,14 +199,14 @@ file_dialog_(new QFileDialog(this))
     fs::path tex_path;
     if(!CONFIG.get<fs::path>("root.folders.texture"_h, tex_path))
     {
-        DLOGW("Unable to read root.folders.texture node in config.", "core", Severity::WARN);
-        DLOGI("Using current directory instead.", "core", Severity::WARN);
+        DLOGW("Unable to read root.folders.texture node in config.", "waterial", Severity::WARN);
+        DLOGI("Using current directory instead.", "waterial", Severity::WARN);
         editor_model_->set_output_folder(QDir::currentPath());
     }
     else
     {
-        DLOGN("Detected texture output directory:", "core", Severity::LOW);
-        DLOGI("<p>" + tex_path.string() + "</p>", "core", Severity::LOW);
+        DLOGN("Detected texture output directory:", "waterial", Severity::LOW);
+        DLOGI("<p>" + tex_path.string() + "</p>", "waterial", Severity::LOW);
         editor_model_->set_output_folder(QString::fromStdString(tex_path.string()));
     }
 
@@ -243,6 +257,12 @@ file_dialog_(new QFileDialog(this))
     static_cast<AOControl*>(texmap_controls_[AO])->connect_controls(this);
 
     clear_view();
+
+    // Open last project if any
+    if(recent_files_.count())
+    {
+        recent_file_action_[0]->trigger();
+    }
 }
 
 MainWindow::~MainWindow()
@@ -250,6 +270,158 @@ MainWindow::~MainWindow()
     delete dir_fs_model_;
     delete window_;
     delete editor_model_;
+}
+
+void MainWindow::read_settings()
+{
+    WSettings settings(config_folder_);
+    restoreGeometry(settings.value("window/geometry").toByteArray());
+    restoreState(settings.value("window/windowState").toByteArray());
+
+    recent_files_ = settings.value("file/recent").toStringList();
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    // Close project cleanly
+    handle_close_project();
+
+    // Save settings before closing
+    DLOGN("Saving settings.", "waterial", Severity::LOW);
+    WSettings settings(config_folder_);
+    settings.setValue("window/geometry", saveGeometry());
+    settings.setValue("window/windowState", saveState());
+    settings.setValue("file/recent", recent_files_);
+    QMainWindow::closeEvent(event);
+}
+
+void MainWindow::create_actions()
+{
+    // * File actions
+    new_project_action_ = new QAction(tr("New project"), this);
+    new_project_action_->setIcon(QIcon(":/res/icons/new_project.png"));
+    new_project_action_->setStatusTip(tr("Create a new empty project"));
+    new_project_action_->setShortcut(QKeySequence::New);
+    connect(new_project_action_, SIGNAL(triggered()), this, SLOT(handle_new_project()));
+
+    open_project_action_ = new QAction(tr("Open"), this);
+    open_project_action_->setIcon(QIcon(":/res/icons/open_project.png"));
+    open_project_action_->setStatusTip(tr("Open a project file"));
+    open_project_action_->setShortcut(QKeySequence::Open);
+    connect(open_project_action_, SIGNAL(triggered()), this, SLOT(handle_open_project()));
+
+    save_project_action_ = new QAction(tr("Save"), this);
+    save_project_action_->setIcon(QIcon(":/res/icons/save.png"));
+    save_project_action_->setStatusTip(tr("Save current project"));
+    save_project_action_->setShortcut(QKeySequence::Save);
+    connect(save_project_action_, SIGNAL(triggered()), this, SLOT(handle_serialize_project()));
+
+    save_project_as_action_ = new QAction(tr("Save as"), this);
+    save_project_as_action_->setIcon(QIcon(":/res/icons/save_as.png"));
+    save_project_as_action_->setStatusTip(tr("Save current project under another name"));
+    save_project_as_action_->setShortcut(QKeySequence::SaveAs);
+    connect(save_project_as_action_, SIGNAL(triggered()), this, SLOT(handle_serialize_project_as()));
+
+    close_project_action_ = new QAction(tr("Close"), this);
+    close_project_action_->setIcon(QIcon(":/res/icons/close_project.png"));
+    close_project_action_->setStatusTip(tr("Close current project"));
+    close_project_action_->setShortcut(QKeySequence::Close);
+    connect(close_project_action_, SIGNAL(triggered()), this, SLOT(handle_close_project()));
+
+    close_app_action_ = new QAction(tr("Exit"), this);
+    close_app_action_->setStatusTip(tr("Quit Waterial"));
+    close_app_action_->setShortcut(QKeySequence::Quit);
+    connect(close_app_action_, SIGNAL(triggered()), this, SLOT(handle_quit()));
+
+    for(int ii=0; ii<MAX_RECENT_FILES; ++ii)
+    {
+        recent_file_action_.push_back(new QAction("", this));
+        connect(recent_file_action_[ii], SIGNAL(triggered()), this, SLOT(handle_open_recent_project()));
+    }
+
+    // * Current texture actions
+    rename_tex_action_ = new QAction(tr("Rename"), this);
+    rename_tex_action_->setIcon(QIcon(":/res/icons/rename.png"));
+    rename_tex_action_->setStatusTip(tr("Rename current texture"));
+    connect(rename_tex_action_, SIGNAL(triggered()), this, SLOT(handle_rename_current_texture()));
+
+    clear_tex_action_ = new QAction(tr("Clear"), this);
+    clear_tex_action_->setIcon(QIcon(":/res/icons/clear.png"));
+    clear_tex_action_->setStatusTip(tr("Clear current texture"));
+    connect(clear_tex_action_, SIGNAL(triggered()), this, SLOT(handle_clear_current_texture()));
+
+    delete_tex_action_ = new QAction(tr("Delete"), this);
+    delete_tex_action_->setIcon(QIcon(":/res/icons/delete.png"));
+    delete_tex_action_->setStatusTip(tr("Delete current texture"));
+    connect(delete_tex_action_, SIGNAL(triggered()), this, SLOT(handle_delete_current_texture()));
+
+    compile_tex_action_ = new QAction(tr("Compile"), this);
+    compile_tex_action_->setIcon(QIcon(":/res/icons/compile.png"));
+    compile_tex_action_->setStatusTip(tr("Compile current texture"));
+    connect(compile_tex_action_, SIGNAL(triggered()), this, SLOT(handle_compile_current()));
+
+    compile_all_tex_action_ = new QAction(tr("Compile All"), this);
+    compile_all_tex_action_->setIcon(QIcon(":/res/icons/compile_all.png"));
+    compile_all_tex_action_->setStatusTip(tr("Compile all textures in current project"));
+    connect(compile_all_tex_action_, SIGNAL(triggered()), this, SLOT(handle_compile_all()));
+}
+
+void MainWindow::update_recent_file_actions()
+{
+    QMutableStringListIterator it(recent_files_);
+    // Remove all non existing files from list
+    while(it.hasNext())
+    {
+        if(!QFile::exists(it.next()))
+            it.remove();
+    }
+
+    // Add an action for each recent file discovered
+    for(int ii=0; ii<MAX_RECENT_FILES; ++ii)
+    {
+        if(ii<recent_files_.count())
+        {
+            QString text = tr("&%1 %2").arg(ii+1).arg(recent_files_[ii]);
+            recent_file_action_[ii]->setText(text);
+            recent_file_action_[ii]->setData(recent_files_[ii]);
+            recent_file_action_[ii]->setVisible(true);
+        }
+        else
+            recent_file_action_[ii]->setVisible(false);
+    }
+}
+
+void MainWindow::create_menus()
+{
+    // * File menu
+    QMenu* file_menu = menuBar()->addMenu(tr("&File"));
+    file_menu->addAction(new_project_action_);
+    file_menu->addAction(open_project_action_);
+    file_menu->addAction(save_project_action_);
+    file_menu->addAction(save_project_as_action_);
+    file_menu->addAction(close_project_action_);
+
+    file_menu->addSeparator();
+    // Recent file actions
+    for(int ii=0; ii<MAX_RECENT_FILES; ++ii)
+    {
+        file_menu->addAction(recent_file_action_[ii]);
+    }
+
+    file_menu->addSeparator();
+
+    file_menu->addAction(close_app_action_);
+
+    // * Texture menu
+    QMenu* tex_menu = menuBar()->addMenu(tr("&Texture"));
+    tex_menu->addAction(rename_tex_action_);
+    tex_menu->addAction(clear_tex_action_);
+    tex_menu->addAction(delete_tex_action_);
+
+    tex_menu->addSeparator();
+
+    tex_menu->addAction(compile_tex_action_);
+    tex_menu->addAction(compile_all_tex_action_);
 }
 
 void MainWindow::create_status_bar()
@@ -267,33 +439,24 @@ void MainWindow::create_status_bar()
 void MainWindow::create_toolbars()
 {
     toolbar_ = addToolBar("Texture");
+    toolbar_->setObjectName("Toolbar");
 
-    toolbar_->addAction(QIcon(":/res/icons/new_project.png"), "New project",
-                        this, SLOT(handle_new_project()));
-    toolbar_->addAction(QIcon(":/res/icons/open_project.png"), "Open project",
-                        this, SLOT(handle_open_project()));
-    toolbar_->addAction(QIcon(":/res/icons/save.png"), "Save project",
-                        this, SLOT(handle_serialize_project()));
-    toolbar_->addAction(QIcon(":/res/icons/save_as.png"), "Save project as",
-                        this, SLOT(handle_serialize_project_as()));
-    toolbar_->addAction(QIcon(":/res/icons/close_project.png"), "Close project",
-                        this, SLOT(handle_close_project()));
+    toolbar_->addAction(new_project_action_);
+    toolbar_->addAction(open_project_action_);
+    toolbar_->addAction(save_project_action_);
+    toolbar_->addAction(save_project_as_action_);
+    toolbar_->addAction(close_project_action_);
 
     toolbar_->addSeparator();
 
-    toolbar_->addAction(QIcon(":/res/icons/rename.png"), "Rename",
-                        this, SLOT(handle_rename_current_texture()));
-    toolbar_->addAction(QIcon(":/res/icons/clear.png"), "Clear",
-                        this, SLOT(handle_clear_current_texture()));
-    toolbar_->addAction(QIcon(":/res/icons/delete.png"), "Delete",
-                        this, SLOT(handle_delete_current_texture()));
+    toolbar_->addAction(rename_tex_action_);
+    toolbar_->addAction(clear_tex_action_);
+    toolbar_->addAction(delete_tex_action_);
 
     toolbar_->addSeparator();
 
-    toolbar_->addAction(QIcon(":/res/icons/compile.png"), "Compile",
-                        this, SLOT(handle_compile_current()));
-    toolbar_->addAction(QIcon(":/res/icons/compile_all.png"), "Compile all",
-                        this, SLOT(handle_compile_all()));
+    toolbar_->addAction(compile_tex_action_);
+    toolbar_->addAction(compile_all_tex_action_);
 
     toolbar_->addSeparator();
 
@@ -324,21 +487,10 @@ bool MainWindow::eventFilter(QObject* object, QEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    if(event->type() == QEvent::KeyPress)
+    /*if(event->type() == QEvent::KeyPress)
     {
-        if(event->matches(QKeySequence::New))
-            handle_new_project();
-        if(event->matches(QKeySequence::Open))
-            handle_open_project();
-        if(event->matches(QKeySequence::Save))
-            handle_serialize_project();
-        if(event->matches(QKeySequence::SaveAs))
-            handle_serialize_project_as();
-        if(event->matches(QKeySequence::Close))
-            handle_close_project();
-        if(event->matches(QKeySequence::Quit))
-            handle_quit();
-    }
+
+    }*/
 }
 
 void MainWindow::update_entry(TextureEntry& entry)
@@ -376,14 +528,14 @@ void MainWindow::handle_new_texture()
     // First, check that no texture of the same name exists already
     if(editor_model_->has_entry(H_(newtex_name.toUtf8().constData())))
     {
-        DLOGW("Texture <n>" + newtex_name.toStdString() + "</n> already exists.", "core", Severity::WARN);
+        DLOGW("Texture <n>" + newtex_name.toStdString() + "</n> already exists.", "waterial", Severity::WARN);
         return;
     }
 
     // If name is valid, add texture to editor model
     if(validate_texture_name(newtex_name))
     {
-        DLOGN("New texture: <n>" + newtex_name.toStdString() + "</n>", "core", Severity::LOW);
+        DLOGN("New texture: <n>" + newtex_name.toStdString() + "</n>", "waterial", Severity::LOW);
         QModelIndex index = editor_model_->add_texture(newtex_name);
         // Select newly created item in list view
         if(index.isValid())
@@ -401,7 +553,7 @@ void MainWindow::handle_save_current_texture()
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
     {
-        DLOGN("Saving texture <n>" + texname.toStdString() + "</n>", "core", Severity::LOW);
+        DLOGN("Saving texture <n>" + texname.toStdString() + "</n>", "waterial", Severity::LOW);
 
         TextureEntry& entry = editor_model_->get_current_texture_entry();
         entry.name = texname;
@@ -411,7 +563,7 @@ void MainWindow::handle_save_current_texture()
 
 void MainWindow::handle_save_all_textures()
 {
-    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+    DLOGW("NOT IMPLEMENTED YET", "waterial", Severity::WARN);
 }
 
 void MainWindow::handle_delete_current_texture()
@@ -419,7 +571,7 @@ void MainWindow::handle_delete_current_texture()
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
     {
-        DLOGN("Deleting texture <n>" + texname.toStdString() + "</n>", "core", Severity::LOW);
+        DLOGN("Deleting texture <n>" + texname.toStdString() + "</n>", "waterial", Severity::LOW);
         // Remove from editor model
         editor_model_->delete_current_texture(tex_list_);
         if(editor_model_->get_num_entries() == 0)
@@ -430,7 +582,7 @@ void MainWindow::handle_delete_current_texture()
 
 void MainWindow::handle_clear_current_texture()
 {
-    DLOGW("NOT IMPLEMENTED YET", "core", Severity::WARN);
+    DLOGW("NOT IMPLEMENTED YET", "waterial", Severity::WARN);
     setWindowModified(true);
 }
 
@@ -493,7 +645,7 @@ void MainWindow::handle_compile_all()
     // First, save texture to editor model
     handle_save_current_texture();
 
-    DLOGN("Compiling <h>all</h> textures.", "core", Severity::LOW);
+    DLOGN("Compiling <h>all</h> textures.", "waterial", Severity::LOW);
     editor_model_->traverse_entries([&](TextureEntry& entry)
     {
         const QString& texname = entry.name;
@@ -575,6 +727,7 @@ void MainWindow::handle_open_project()
         editor_model_->open_project(filename);
         QApplication::restoreOverrideCursor();
         update_window_title(editor_model_->get_current_project());
+
         // Select first texture by default (shows the user something happened)
         QModelIndex index = tex_list_->model()->index(0,0);
         if(index.isValid())
@@ -582,8 +735,32 @@ void MainWindow::handle_open_project()
     }
 }
 
+void MainWindow::handle_open_recent_project()
+{
+    // Close current project if any and clear view
+    handle_close_project();
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QAction* action = qobject_cast<QAction*>(sender());
+    if(action)
+    {
+        editor_model_->open_project(action->data().toString());
+        update_window_title(editor_model_->get_current_project());
+
+        // Select first texture by default (shows the user something happened)
+        QModelIndex index = tex_list_->model()->index(0,0);
+        if(index.isValid())
+            tex_list_->selectionModel()->select(index, QItemSelectionModel::Select);
+    }
+    QApplication::restoreOverrideCursor();
+}
+
 void MainWindow::handle_close_project()
 {
+    // Add recent file
+    recent_files_.prepend(editor_model_->get_current_project_path());
+    update_recent_file_actions();
+
     editor_model_->close_project();
     update_window_title("");
     clear_view();
@@ -591,7 +768,7 @@ void MainWindow::handle_close_project()
 
 void MainWindow::handle_quit()
 {
-    QCoreApplication::quit();
+    close();
 }
 
 void MainWindow::handle_project_needs_saving()
@@ -631,8 +808,8 @@ void MainWindow::handle_gen_normal_map()
             QString filename = texname + "_norm_gen.png";
             QString normal_path(dir.filePath(filename));
 
-            DLOGN("Saving generated <h>normal</h> map:", "core", Severity::LOW);
-            DLOGI("<p>" + normal_path.toStdString() + "</p>", "core", Severity::LOW);
+            DLOGN("Saving generated <h>normal</h> map:", "waterial", Severity::LOW);
+            DLOGI("<p>" + normal_path.toStdString() + "</p>", "waterial", Severity::LOW);
 
             normalmap.save(normal_path);
 
@@ -679,8 +856,8 @@ void MainWindow::handle_gen_ao_map()
             QString filename = texname + "_ao_gen.png";
             QString ao_path(dir.filePath(filename));
 
-            DLOGN("Saving generated <h>AO</h> map:", "core", Severity::LOW);
-            DLOGI("<p>" + ao_path.toStdString() + "</p>", "core", Severity::LOW);
+            DLOGN("Saving generated <h>AO</h> map:", "waterial", Severity::LOW);
+            DLOGI("<p>" + ao_path.toStdString() + "</p>", "waterial", Severity::LOW);
 
             aomap.save(ao_path);
 

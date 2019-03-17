@@ -54,7 +54,7 @@ void GLWidget::initializeGL()
     // Initialize GLEW
     glewExperimental = GL_TRUE; // If not set, segfault at glGenVertexArrays()
     if (glewInit() != GLEW_OK) {
-        DLOGF("Failed to initialize GLEW.", "core", Severity::CRIT);
+        DLOGF("Failed to initialize GLEW.", "waterial", Severity::CRIT);
         fatal("Failed to initialize GLEW.");
     }
     glGetError();   // Mask an unavoidable error caused by GLEW

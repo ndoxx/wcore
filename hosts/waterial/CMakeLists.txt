@@ -47,6 +47,7 @@ set(waterial_SRCS
     color_picker_label.cpp
     gl_widget.cpp
     qt_context.cpp
+    settings.cpp
     main.cpp
 )
 # Tell CMake to create the waterial executable

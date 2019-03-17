@@ -33,7 +33,7 @@ void TexlistDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
         hash_t new_hname = H_(new_name.toUtf8().constData());
         if(!editor_model_->has_entry(new_hname))
         {
-            DLOGN("Renaming texture <n>" + old_name.toStdString() + "</n> to <v>" + new_name.toStdString() + "</v>", "core", Severity::LOW);
+            DLOGN("Renaming texture <n>" + old_name.toStdString() + "</n> to <v>" + new_name.toStdString() + "</v>", "waterial", Severity::LOW);
 
             editor_model_->rename_texture(old_name, new_name);
             model->setData(index, QVariant::fromValue(new_name));
@@ -41,7 +41,7 @@ void TexlistDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
         }
         else
         {
-            DLOGW("Texture <n>" + new_name.toStdString() + "</n> already exists.", "core", Severity::WARN);
+            DLOGW("Texture <n>" + new_name.toStdString() + "</n> already exists.", "waterial", Severity::WARN);
         }
     }
 }

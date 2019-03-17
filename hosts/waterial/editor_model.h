@@ -198,6 +198,7 @@ public:
     bool validate_project_name(const QString& name);
 
     inline const QString& get_current_project() const { return current_project_; }
+    inline QString get_current_project_path() const   { return project_path_from_name(current_project_); }
 
     void traverse_entries(std::function<void(TextureEntry&)> func);
 
@@ -205,8 +206,8 @@ public:
     wcore::MaterialDescriptor get_current_material_descriptor();
 
 protected:
-    QString project_path_from_name(const QString& name);
-    QString project_file_from_name(const QString& name);
+    QString project_path_from_name(const QString& name) const;
+    QString project_file_from_name(const QString& name) const;
 
 private:
     QString current_texname_;

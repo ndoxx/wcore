@@ -4,10 +4,12 @@
 
 #include "mainwindow.h"
 #include "config.h"
+#include "logger.h"
 
 int main(int argc, char *argv[])
 {
     wcore::CONFIG.init();
+    wcore::dbg::LOG.register_channel("waterial",  3);
 
     QApplication a(argc, argv);
     // Qt screws with locale settings on unices to "sniff out" the charset.

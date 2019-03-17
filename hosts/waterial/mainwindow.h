@@ -1,9 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <vector>
+
 #include <QMainWindow>
 #include <QFrame>
 #include <QGroupBox>
+#include <QDir>
+#include <QAction>
 
 QT_FORWARD_DECLARE_CLASS(QTreeView)
 QT_FORWARD_DECLARE_CLASS(QListView)
@@ -58,6 +62,7 @@ public slots:
     void handle_serialize_project_as();
     void handle_new_project();
     void handle_open_project();
+    void handle_open_recent_project();
     void handle_close_project();
     void handle_quit();
     void handle_project_needs_saving();
@@ -65,7 +70,14 @@ public slots:
     void handle_gen_ao_map();
     void handle_material_swap();
 
+protected slots:
+    virtual void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE;
+
 protected:
+    void read_settings();
+    void update_recent_file_actions();
+    void create_actions();
+    void create_menus();
     void create_status_bar();
     void create_toolbars();
     void update_window_title(const QString& project_name);
@@ -95,6 +107,27 @@ private:
     // Dialogs
     NewProjectDialog* new_project_dialog_;
     QFileDialog* file_dialog_;
+
+    QStringList recent_files_;
+
+    // Actions
+    enum { MAX_RECENT_FILES = 5 };
+    std::vector<QAction*> recent_file_action_;
+
+    QAction* new_project_action_;
+    QAction* open_project_action_;
+    QAction* save_project_action_;
+    QAction* save_project_as_action_;
+    QAction* close_project_action_;
+    QAction* close_app_action_;
+
+    QAction* rename_tex_action_;
+    QAction* clear_tex_action_;
+    QAction* delete_tex_action_;
+    QAction* compile_tex_action_;
+    QAction* compile_all_tex_action_;
+
+    QDir config_folder_;
 };
 
 

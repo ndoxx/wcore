@@ -7383,9 +7383,33 @@ Pour générer une suppression facilement (voir [1]), créer une application min
 Ca va générer un gros log qui contient toutes les sorties de valgrind, et chaque erreur est accomapgnée d'une suppression. Alors le gawk script tools/parse_valgrind_suppressions.sh permet d'extraire les suppressions et de les sortir dans un fichier de suppression :
 >> cat ./minimalraw.log | ./parse_valgrind_suppressions.sh > minimal.supp
 
+## const-correctness
+Petit bout de code assez marrant (voir [2]) :
+```cpp
+struct Type
+{
+  int _i = 0;
+  void modify(Type & t) const
+  {
+    t._i = 1;
+  }
+};
+
+int main()
+{
+  Type t;
+  t.modify(t);
+  assert (t._i == 1);
+}
+```
+
+    An object changed its own value from within a const-qualified member function! Everything is const-correct!
+
+
 
 * Sources :
     [1] https://wiki.wxwidgets.org/Valgrind_Suppression_File_Howto
+    [2] https://akrzemi1.wordpress.com/2014/06/02/ref-qualifiers/
 
 * TODO:
     [ ] New texture maps (possibly grouped in same Gbuffer chan):
