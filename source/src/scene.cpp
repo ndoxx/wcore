@@ -539,9 +539,9 @@ void Scene::add_model(std::shared_ptr<Model> model, uint32_t chunk_index)
         ref_models_.insert(std::pair(model->get_reference(), model));
 }
 
-std::weak_ptr<Model> Scene::get_model_by_ref(hash_t ref)
+std::weak_ptr<Model> Scene::get_model_by_ref(hash_t href)
 {
-    auto it = ref_models_.find(ref);
+    auto it = ref_models_.find(href);
     if(it!= ref_models_.end())
         return it->second;
     else
@@ -551,6 +551,17 @@ std::weak_ptr<Model> Scene::get_model_by_ref(hash_t ref)
 void Scene::add_light(std::shared_ptr<Light> light, uint32_t chunk_index)
 {
     chunks_.at(chunk_index)->lights_.push_back(light);
+    if(light->has_reference())
+        ref_lights_.insert(std::pair(light->get_reference(), light));
+}
+
+std::weak_ptr<Light> Scene::get_light_by_ref(hash_t href)
+{
+    auto it = ref_lights_.find(href);
+    if(it!= ref_lights_.end())
+        return it->second;
+    else
+        return std::weak_ptr<Light>();
 }
 
 #ifndef __DISABLE_EDITOR__

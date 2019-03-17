@@ -155,12 +155,16 @@ pModel SceneLoader::load_model_instance(hash_t name, uint32_t chunk_index, hash_
 }
 
 
-pLight SceneLoader::load_point_light(uint32_t chunk_index)
+pLight SceneLoader::load_point_light(uint32_t chunk_index, hash_t href)
 {
     std::shared_ptr<Light> pointlight(new PointLight(vec3(0,0,0),
                                                      vec3(1,1,1),
                                                      1.f,
                                                      10.f));
+
+    if(href)
+        pointlight->set_reference(href);
+
     pointlight->set_ambient_strength(0.05);
     pscene_->add_light(pointlight, chunk_index);
     return pointlight;
@@ -1059,29 +1063,42 @@ void SceneLoader::parse_lights(xml_node<>* chunk_node, uint32_t chunk_index)
         }
         else if(!light_type.compare("point"))
         {
-            float radius;
-            if(xml::parse_node(light, "Radius", radius))
+            float radius = 10.f;
+            xml::parse_node(light, "Radius", radius);
+
+            // Translate according to chunk coordinates
+            auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
+            vec3 offset((chunk_size_m_-1)*chunk_coords.x(),
+                        0,
+                        (chunk_size_m_-1)*chunk_coords.y());
+
+            std::shared_ptr<Light> pointlight(new PointLight(position+offset,
+                                                             color,
+                                                             radius,
+                                                             brightness));
+            pointlight->set_ambient_strength(ambient_strength);
+
+            // Motion
+            xml_node<>* mot_node = light->first_node("Motion");
+            if(mot_node)
             {
-                // Translate according to chunk coordinates
-                auto chunk_coords = pscene_->get_chunk_coordinates(chunk_index);
-                vec3 offset((chunk_size_m_-1)*chunk_coords.x(),
-                            0,
-                            (chunk_size_m_-1)*chunk_coords.y());
-
-                std::shared_ptr<Light> pointlight(new PointLight(position+offset,
-                                                                 color,
-                                                                 radius,
-                                                                 brightness));
-                pointlight->set_ambient_strength(ambient_strength);
-                pscene_->add_light(pointlight, chunk_index);
-
-                // Motion
-                xml_node<>* mot_node = light->first_node("Motion");
-                if(mot_node)
-                {
-                    parse_motion(mot_node, pointlight, chunk_index);
-                }
+                parse_motion(mot_node, pointlight, chunk_index);
             }
+
+        // Should we save a reference so that the light can be accessed via a hash?
+#ifdef __DEBUG__
+            std::string ref;
+            if(xml::parse_attribute(light, "href", ref))
+            {
+                hash_t href = H_(ref.c_str());
+                pointlight->set_reference(href);
+                HRESOLVE.add_intern_string(ref);
+            }
+#else
+            if(hash_t href = xml::parse_attribute_h(light, "href"))
+                pointlight->set_reference(href);
+#endif
+            pscene_->add_light(pointlight, chunk_index);
         }
     }
 }

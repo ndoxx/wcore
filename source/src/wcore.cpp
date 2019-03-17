@@ -88,12 +88,10 @@ struct Engine::EngineImpl
     daylight(nullptr),
     ray_caster(nullptr),
     chunk_manager(nullptr),
-    sound_system(nullptr),
+    sound_system(nullptr)
 #ifndef __DISABLE_EDITOR__
-    editor(nullptr),
+    ,editor(nullptr)
 #endif
-    //current_model_handle(0),
-    current_light_handle(0)
     {
         // Instanciate singletons
         FileSystem::Instance();
@@ -196,12 +194,6 @@ struct Engine::EngineImpl
 #ifndef __DISABLE_EDITOR__
     Editor*            editor;
 #endif
-
-    // TMP?
-    //std::map<uint32_t, std::shared_ptr<Model>> handled_models;
-    //uint32_t current_model_handle;
-    std::map<uint32_t, std::shared_ptr<Light>> handled_lights;
-    uint32_t current_light_handle;
 };
 
 //      ___  ______ _____  ______
@@ -460,6 +452,23 @@ uint32_t Engine::SceneControl::LoadChunk(uint32_t xx, uint32_t zz, bool send_geo
     return eimpl_->scene_loader->load_chunk(math::i32vec2(xx,zz), send_geometry);
 }
 
+void Engine::SceneControl::SendChunk(uint32_t xx, uint32_t zz)
+{
+    uint32_t chunk_index = std::hash<math::i32vec2>{}(math::i32vec2(xx,zz));
+    eimpl_->scene->populate_static_octree(chunk_index);
+    eimpl_->scene->load_geometry(chunk_index);
+}
+
+void Engine::SceneControl::LoadModel(hash_t name, uint32_t chunk_index, hash_t href)
+{
+    auto pmdl = eimpl_->scene_loader->load_model_instance(name, chunk_index, href);
+}
+
+void Engine::SceneControl::LoadPointLight(uint32_t chunk_index, hash_t href)
+{
+    auto plight = eimpl_->scene_loader->load_point_light(chunk_index, href);
+}
+
 bool Engine::SceneControl::VisitModelRef(hash_t href, std::function<void(Model& model)> visit)
 {
     if(auto pmdl = eimpl_->scene->get_model_by_ref(href).lock())
@@ -470,53 +479,14 @@ bool Engine::SceneControl::VisitModelRef(hash_t href, std::function<void(Model& 
     return false;
 }
 
-void Engine::SceneControl::SendChunk(uint32_t xx, uint32_t zz)
+bool Engine::SceneControl::VisitLightRef(hash_t href, std::function<void(Light& light)> visit)
 {
-    uint32_t chunk_index = std::hash<math::i32vec2>{}(math::i32vec2(xx,zz));
-    eimpl_->scene->populate_static_octree(chunk_index);
-    eimpl_->scene->load_geometry(chunk_index);
-}
-
-
-
-void Engine::SceneControl::LoadModel(hash_t name, uint32_t chunk_index, hash_t href)
-{
-    auto pmdl = eimpl_->scene_loader->load_model_instance(name, chunk_index, href);
-}
-
-uint32_t Engine::SceneControl::LoadPointLight(uint32_t chunk_index)
-{
-    auto plight = eimpl_->scene_loader->load_point_light(chunk_index);
-    eimpl_->handled_lights.insert(std::pair(eimpl_->current_light_handle, plight));
-    return eimpl_->current_light_handle++;
-}
-
-void Engine::SceneControl::SetLightPosition(uint32_t light_index, const math::vec3& value)
-{
-    auto it = eimpl_->handled_lights.find(light_index);
-    if(it!=eimpl_->handled_lights.end())
-        it->second->set_position(value);
-}
-
-void Engine::SceneControl::SetLightColor(uint32_t light_index, const math::vec3& value)
-{
-    auto it = eimpl_->handled_lights.find(light_index);
-    if(it!=eimpl_->handled_lights.end())
-        it->second->set_color(value);
-}
-
-void Engine::SceneControl::SetLightRadius(uint32_t light_index, float value)
-{
-    auto it = eimpl_->handled_lights.find(light_index);
-    if(it!=eimpl_->handled_lights.end())
-        it->second->set_radius(value);
-}
-
-void Engine::SceneControl::SetLightBrightness(uint32_t light_index, float value)
-{
-    auto it = eimpl_->handled_lights.find(light_index);
-    if(it!=eimpl_->handled_lights.end())
-        it->second->set_brightness(value);
+    if(auto plight = eimpl_->scene->get_light_by_ref(href).lock())
+    {
+        visit(*plight);
+        return true;
+    }
+    return false;
 }
 
 

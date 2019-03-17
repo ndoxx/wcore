@@ -11,6 +11,7 @@
 #include "arguments.h"
 
 #include "model.h"
+#include "lights.h"
 
 enum CellState: uint8_t
 {
@@ -381,13 +382,17 @@ int main(int argc, char const *argv[])
         if(nwalls>=3 && distribution(rng) > 0.5f)
         {
             wcore::math::vec3 cell_center(2.0f*xx+2.0f, 0.f, 2.0f*zz+1.0f);
-            uint32_t light_index = engine.scene->LoadPointLight(chunk00);
-            engine.scene->SetLightPosition(light_index, cell_center+math::vec3(0.f,3.0f,1.f));
-            engine.scene->SetLightColor(light_index, math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
-            engine.scene->SetLightRadius(light_index, 5.0f);
-            engine.scene->SetLightBrightness(light_index, 10.0f);
+            hash_t href = make_reference("point_light", xx, zz);
+            engine.scene->LoadPointLight(chunk00, href);
+            engine.scene->VisitLightRef(href, [&](Light& light)
+            {
+                light.set_position(cell_center+math::vec3(0.f,3.0f,1.f));
+                light.set_color(math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
+                light.set_radius(5.f);
+                light.set_brightness(10.f);
+            });
 
-            hash_t href = make_reference("teapot", xx, zz);
+            href = make_reference("teapot", xx, zz);
             engine.scene->LoadModel("teapot01"_h, chunk00, href);
             engine.scene->VisitModelRef(href, [&](Model& model)
             {
@@ -449,15 +454,6 @@ int main(int argc, char const *argv[])
                 model.update_bounding_boxes();
             });
             ++nwalls;
-        }
-
-        if(nwalls>=3 && distribution(rng) > 0.5f)
-        {
-            uint32_t light_index = engine.scene->LoadPointLight(chunk00);
-            engine.scene->SetLightPosition(light_index, cell_center+math::vec3(0.f,3.0f,1.f));
-            engine.scene->SetLightColor(light_index, math::vec3(0.25f+xx/20.f,distribution(rng),0.25f+zz/20.f));
-            engine.scene->SetLightRadius(light_index, 5.0f);
-            engine.scene->SetLightBrightness(light_index, 10.0f);
         }
     });
 

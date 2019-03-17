@@ -16,13 +16,12 @@ protected:
     float ambient_strength_;
     float brightness_;
 
+    hash_t reference_;
+    bool has_reference_;
+
 public:
     Light(const math::vec3& position,
           const math::vec3& color,
-          float brightness = 1.0f);
-
-    Light(math::vec3&& position,
-          math::vec3&& color,
           float brightness = 1.0f);
 
     virtual ~Light();
@@ -56,6 +55,12 @@ public:
 
     virtual void set_radius(float value) {}
 
+    // Reference
+    inline void set_reference(hash_t hname) { reference_ = hname; has_reference_ = true; }
+    inline void forget_reference()          { reference_ = 0; has_reference_ = false; }
+    inline hash_t get_reference() const     { return reference_; }
+    inline bool has_reference() const       { return has_reference_; }
+
 protected:
     inline void send_uniform_float(unsigned int program_id, const char* name, float value) const;
     inline void send_uniform_vec3(unsigned int program_id, const char* name, const math::vec3& value) const;
@@ -66,10 +71,6 @@ class DirectionalLight : public Light
 public:
     DirectionalLight(const math::vec3& position,
                      const math::vec3& color,
-                     float brightness = 1.0f);
-
-    DirectionalLight(math::vec3&& position,
-                     math::vec3&& color,
                      float brightness = 1.0f);
 
     ~DirectionalLight();
@@ -91,11 +92,6 @@ private:
 public:
     PointLight(const math::vec3& position,
                const math::vec3& color,
-               float radius     = 7.0f,
-               float brightness = 1.0f);
-
-    PointLight(math::vec3&& position,
-               math::vec3&& color,
                float radius     = 7.0f,
                float brightness = 1.0f);
 

@@ -49,6 +49,7 @@ private:
 
     std::map<uint32_t, Chunk*> chunks_;
     std::map<hash_t, std::weak_ptr<Model>> ref_models_;
+    std::map<hash_t, std::weak_ptr<Light>> ref_lights_;
     std::vector<uint64_t> displayable_entities_;
     StaticOctree static_octree;
 
@@ -121,7 +122,8 @@ public:
     void add_model(pLineModel model, uint32_t chunk_index)                             { chunks_.at(chunk_index)->add_model(model); }
     void add_light(std::shared_ptr<Light> light, uint32_t chunk_index);
     void add_terrain(std::shared_ptr<TerrainChunk> terrain, uint32_t chunk_index);
-    std::weak_ptr<Model> get_model_by_ref(hash_t ref);
+    std::weak_ptr<Model> get_model_by_ref(hash_t href);
+    std::weak_ptr<Light> get_light_by_ref(hash_t href);
     inline void add_position_updater(PositionUpdater* updater, uint32_t chunk_index)   { chunks_.at(chunk_index)->add_position_updater(updater); }
     inline void add_rotator(ConstantRotator* rotator, uint32_t chunk_index)            { chunks_.at(chunk_index)->add_rotator(rotator); }
 

@@ -20,6 +20,7 @@ namespace wcore
 extern "C" void WAPI SetGlobal(hash_t name, const void* data);
 
 class Model;
+class Light;
 class WAPI Engine
 {
 private:
@@ -71,6 +72,7 @@ class WAPI Engine::SceneControl
 public:
     SceneControl(std::shared_ptr<EngineImpl> impl);
 
+    // * Level control
     // Set a level name to load with LoadStart
     void SetStartLevel(const char* level_name);
     // Load first level, load and send chunk geometry near to camera start position
@@ -82,17 +84,17 @@ public:
     // Send chunk geometry to graphics driver
     void SendChunk(uint32_t xx, uint32_t zz);
 
+    // * Game object creation
     // Load a model given an instance name, a chunk index, and an optional reference
     void LoadModel(hash_t name, uint32_t chunk_index, hash_t href=0);
+    // Add a point light given a chunk index and an optional reference
+    void LoadPointLight(uint32_t chunk_index, hash_t href=0);
+
+    // * Game object visitors
+    // Visit referenced light in scene by hash name
+    bool VisitLightRef(hash_t href, std::function<void(Light& light)> visit);
     // Visit referenced model in scene by hash name
     bool VisitModelRef(hash_t href, std::function<void(Model& model)> visit);
-
-    // * The following functions will likely be deprecated soon
-    uint32_t LoadPointLight(uint32_t chunk_index);
-    void SetLightPosition(uint32_t light_index, const math::vec3& value);
-    void SetLightColor(uint32_t light_index, const math::vec3& value);
-    void SetLightRadius(uint32_t light_index, float value);
-    void SetLightBrightness(uint32_t light_index, float value);
 
 private:
     std::shared_ptr<EngineImpl> eimpl_; // opaque pointer

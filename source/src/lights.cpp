@@ -15,15 +15,9 @@ Light::Light(const math::vec3& position,
 position_(position),
 color_(color),
 ambient_strength_(0.03f),
-brightness_(brightness){}
-
-Light::Light(math::vec3&& position,
-             math::vec3&& color,
-             float brightness):
-position_(std::move(position)),
-color_(std::move(color)),
-ambient_strength_(0.03f),
-brightness_(brightness)
+brightness_(brightness),
+reference_(0),
+has_reference_(false)
 {
 
 }
@@ -37,13 +31,6 @@ DirectionalLight::DirectionalLight(const math::vec3& position,
                                    const math::vec3& color,
                                    float brightness):
 Light(position, color, brightness){}
-
-DirectionalLight::DirectionalLight(math::vec3&& position,
-                                   math::vec3&& color,
-                                   float brightness):
-Light(std::move(position),
-      std::move(color),
-      brightness){}
 
 DirectionalLight::~DirectionalLight(){}
 
@@ -83,19 +70,6 @@ PointLight::PointLight(const math::vec3& position,
                        float radius,
                        float brightness):
 Light(position, color, brightness),
-radius_(radius),
-index_(N_INST_++)
-{
-
-}
-
-PointLight::PointLight(math::vec3&& position,
-                       math::vec3&& color,
-                       float radius,
-                       float brightness):
-Light(std::move(position),
-      std::move(color),
-      brightness),
 radius_(radius),
 index_(N_INST_++)
 {

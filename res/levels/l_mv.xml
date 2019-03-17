@@ -6,15 +6,6 @@
 
     <Chunk coords="(0,0)">
         <Models>
-            <!--
-            <Model name="interior01" ypos="relative">
-                <Transform>
-                    <Position>(8.0,0.01,8.0)</Position>
-                    <Angle>(0,-35,0)</Angle>
-                    <Scale>2.0</Scale>
-                </Transform>
-            </Model>
-            -->
             <Model href="the_model">
                 <Mesh type="cube_uniface"/>
                 <Material name="default"/>
@@ -26,10 +17,9 @@
         </Models>
 
         <Lights>
-            <!-- Static lights -->
-            <Light type="point" ypos="relative">
+            <Light type="point" href="the_point_light">
                 <Position>(2.0,2.0,2.0)</Position>
-                <Color>(0.2, 0.9, 0.7)</Color>
+                <Color>(1.0, 1.0, 1.0)</Color>
                 <Radius>10.0</Radius>
                 <Brightness>10.0</Brightness>
             </Light>
