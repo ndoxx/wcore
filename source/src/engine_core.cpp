@@ -197,7 +197,7 @@ int EngineCore::run()
 
     nanoClock frame_clock;
     nanoClock clock;
-    float dt = 0.0f;
+    float dt = 1.0f/target_fps_; // Set to non-zero value to avoid 1st frame render bug
 
 #ifdef __PROFILING_EngineCore__
     nanoClock profile_clock;

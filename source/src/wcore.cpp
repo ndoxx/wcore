@@ -469,6 +469,16 @@ void Engine::SceneControl::LoadPointLight(uint32_t chunk_index, hash_t href)
     auto plight = eimpl_->scene_loader->load_point_light(chunk_index, href);
 }
 
+Model& Engine::SceneControl::GetModelRef(hash_t href)
+{
+    return *eimpl_->scene->get_model_by_ref(href).lock();
+}
+
+Light& Engine::SceneControl::GetLightRef(hash_t href)
+{
+    return *eimpl_->scene->get_light_by_ref(href).lock();
+}
+
 bool Engine::SceneControl::VisitModelRef(hash_t href, std::function<void(Model& model)> visit)
 {
     if(auto pmdl = eimpl_->scene->get_model_by_ref(href).lock())

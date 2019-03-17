@@ -36,6 +36,8 @@ allow_parallax_mapping_(true)
 {
     CONFIG.get("root.render.override.allow_normal_mapping"_h, allow_normal_mapping_);
     CONFIG.get("root.render.override.allow_parallax_mapping"_h, allow_parallax_mapping_);
+
+    GFX::set_clear_color(math::vec4(0.f,0.f,0.f,1.f));
 }
 
 static uint64_t texture_index;
@@ -60,7 +62,8 @@ void GeometryRenderer::render(Scene* pscene)
     // Draw to G-Buffer
     GBuffer::Instance().bind_as_target();
 
-    GFX::clear_color_depth();
+    GFX::clear_color_depth(); // Suppressed valgrind false positive in valgrind.supp
+
     // Bind VAO, draw, unbind VAO
     pscene->draw_models([&](const Model& model)
     {

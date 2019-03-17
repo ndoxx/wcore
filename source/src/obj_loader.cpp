@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <string_view>
 
 #include <algorithm>
 #include <cctype>
@@ -55,16 +56,21 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
     std::vector<Triangle> triangles;
     std::vector<std::string> materials;
 
+    const char* mtllib_cc = "mtllib";
+    const char* usemtl_cc = "usemtl";
+
     // For each line
     bool first_line = true;
     bool is_blender_export = false;
     while(std::getline(stream, line))
     {
+        // Use string_view for faster substr operations
+        std::string_view line_view{line.c_str(), line.size()};
 #ifdef __DEBUG__
         if(first_line)
         {
             // Read first line and detect Blender exports
-            if(!line.substr(0,9).compare("# Blender"))
+            if(!line_view.substr(0,9).compare("# Blender"))
             {
                 DLOGI("<h>Blender</h> export detected.", "model", Severity::LOW);
                 is_blender_export = true;
@@ -73,17 +79,14 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
         }
 #endif
 
-        if(!line.substr(0,6).compare("mtllib"))
+        if(!line_view.substr(0,6).compare(mtllib_cc))
         {
-            //mtllib = trim_whitespaces(&line[7]);
-            mtllib = line.substr(7);
+            mtllib = line_view.substr(7);
             trim_whitespaces(mtllib);
         }
-        //if(strncmp(line, "usemtl", 6) == 0)
-        if(!line.substr(0,6).compare("usemtl"))
+        if(!line_view.substr(0,6).compare(usemtl_cc))
         {
-            //std::string usemtl(trim_whitespaces(&line[7]));
-            usemtl = line.substr(7);
+            usemtl = line_view.substr(7);
             trim_whitespaces(usemtl);
             if(material_map.find(usemtl) == material_map.end())
             {
@@ -97,13 +100,13 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
         vec3 pos;
         vec3 uv;
         vec3 normal;
-        if(line[0] == 'v' && line[1] == ' ')
+        if(line_view[0] == 'v' && line_view[1] == ' ')
         {
             if(sscanf(line.c_str(),"v %f %f %f", &pos[0], &pos[1], &pos[2])==3)
                 positions.push_back(pos);
         }
         // Texture coordinate
-        else if(line[0] == 'v' && line[1] == 't' && line[2] == ' ')
+        else if(line_view[0] == 'v' && line_view[1] == 't' && line_view[2] == ' ')
         {
             if(sscanf(line.c_str(),"vt %f %f", &uv[0], &uv[1])==2)
             {
@@ -116,7 +119,7 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
             }
         }
         // Normal
-        else if(line[0] == 'v' && line[1] == 'n' && line[2] == ' ')
+        else if(line_view[0] == 'v' && line_view[1] == 'n' && line_view[2] == ' ')
         {
             if(sscanf(line.c_str(),"vn %f %f %f", &normal[0], &normal[1], &normal[2])==3)
             {
@@ -127,7 +130,7 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
 
         // Faces
         int integers[9];
-        if(line[0] == 'f')
+        if(line_view[0] == 'f')
         {
             Triangle tri;
             bool tri_ok = false;

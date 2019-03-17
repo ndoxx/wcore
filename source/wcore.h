@@ -90,11 +90,16 @@ public:
     // Add a point light given a chunk index and an optional reference
     void LoadPointLight(uint32_t chunk_index, hash_t href=0);
 
-    // * Game object visitors
+    // * Game object visitors / accessors
+    // Get referenced model in scene by hash name, hash name MUST exist
+    Model& GetModelRef(hash_t href);
+    // Get referenced light in scene by hash name, hash name MUST exist
+    Light& GetLightRef(hash_t href);
     // Visit referenced light in scene by hash name
     bool VisitLightRef(hash_t href, std::function<void(Light& light)> visit);
     // Visit referenced model in scene by hash name
     bool VisitModelRef(hash_t href, std::function<void(Model& model)> visit);
+
 
 private:
     std::shared_ptr<EngineImpl> eimpl_; // opaque pointer

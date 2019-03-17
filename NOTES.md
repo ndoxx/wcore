@@ -7331,16 +7331,16 @@ Donc j'ai modifié InputHandler::handle_mouse() pour détecter cette situation e
 
 ## A faire
 On veut pouvoir faire les choses suivantes depuis l'API :
-    [ ] Référencer un modèle donné via un hash
-    [ ] Swapper le material d'un modèle référencé
+    [X] Référencer un modèle donné via un hash
+    [X] Swapper le material d'un modèle référencé
     [ ] Swapper le mesh d'un modèle référencé. En l'occurrence il me faut pouvoir afficher le material sur :
         [ ] Un plan
-        [ ] Un cube
+        [X] Un cube
         [ ] Une sphère
         [ ] Un .obj quelconque
-    [ ] Modifier le mouvement d'un objet référencé, même si c'est complètement hacky dans un premier temps.
-    [ ] Activer/Désactiver plusieurs systèmes de rendu de la pipeline. Basiquement, j'aimerais pouvoir faire une passe géométrique, une passe lighting et puis c'est marre.
-    [ ] Intéragir dynamiquement avec les sources lumineuses.
+    [X] Modifier le mouvement d'un objet référencé, même si c'est complètement hacky dans un premier temps.
+    [/] Activer/Désactiver plusieurs systèmes de rendu de la pipeline. Basiquement, j'aimerais pouvoir faire une passe géométrique, une passe lighting et puis c'est marre.
+    [X] Intéragir dynamiquement avec les sources lumineuses.
 
 Le moteur doit aussi pouvoir :
     [X] Se passer complètement de terrain dans ses chunks.
@@ -7350,6 +7350,42 @@ Le moteur doit aussi pouvoir :
     [1] https://forum.qt.io/topic/48816/qopenglcontext-s-defaultframebufferobject-always-returns-0-in-a-qopenglwidget-subclass
     [2] https://www.glfw.org/docs/latest/group__input.html#ga01d37b6c40133676b9cea60ca1d7c0cc
 
+
+#[17-03-19]
+
+## Valgrind
+
+Pour tracker l'origine d'une "uninitialized value" :
+>> valgrind --track-origins=yes ../bin/sandbox -l mv
+
+    ==6595== Conditional jump or move depends on uninitialised value(s)
+    ==6595==    at 0x81B7496: ??? (in /usr/lib/nvidia-410/libnvidia-glcore.so.410.104)
+    [...]
+    ==6595==  Uninitialised value was created by a stack allocation
+    ==6595==    at 0x8314D30: ??? (in /usr/lib/nvidia-410/libnvidia-glcore.so.410.104)
+
+Cette erreur se produit dans le _GeometryRenderer_ au premier appel à glClear(), même si glClearColor() a été appelé avant. C'est probablement un faux positif, et j'ai marqué cette erreur pour la suppression dans valgrind.supp :
+
+```supp
+{
+    <NVidia-driver>
+    Memcheck:Cond
+    obj:/usr/lib/nvidia-410/libnvidia-glcore.so.410.104
+}
+```
+>> valgrind --suppressions=../valgrind.supp ../bin/sandbox -l mv
+
+Qt est aussi du genre à générer beaucoup de faux positifs, faudra que je me bricole un fichier de suppression à l'occasion.
+
+Pour générer une suppression facilement (voir [1]), créer une application minimale et lancer :
+>> valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-file=minimalraw.log ./minimal
+
+Ca va générer un gros log qui contient toutes les sorties de valgrind, et chaque erreur est accomapgnée d'une suppression. Alors le gawk script tools/parse_valgrind_suppressions.sh permet d'extraire les suppressions et de les sortir dans un fichier de suppression :
+>> cat ./minimalraw.log | ./parse_valgrind_suppressions.sh > minimal.supp
+
+
+* Sources :
+    [1] https://wiki.wxwidgets.org/Valgrind_Suppression_File_Howto
 
 * TODO:
     [ ] New texture maps (possibly grouped in same Gbuffer chan):

@@ -1,0 +1,5 @@
+{
+    <NVidia-driver>
+    Memcheck:Cond
+    obj:/usr/lib/nvidia-410/libnvidia-glcore.so.410.104
+}
