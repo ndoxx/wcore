@@ -43,7 +43,8 @@ public:
     virtual void generate_widget() override;
 #endif
 
-    inline void toggle() { active_ = !active_; }
+    inline void toggle()                { active_ = !active_; }
+    inline void set_enabled(bool value) { active_ = value; }
 
     inline void set_color_interp(math::CSplineCatmullV3* interp)
     {

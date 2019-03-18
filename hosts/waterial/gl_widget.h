@@ -3,6 +3,8 @@
 
 #include <QOpenGLWidget>
 
+#include "math3d.h"
+
 namespace wcore
 {
 class Engine;
@@ -48,6 +50,13 @@ public slots:
     void handle_z_changed(double newvalue);
     void handle_material_swap(const wcore::MaterialDescriptor& descriptor);
 
+    void handle_light_radius_changed(double newvalue);
+    void handle_light_brightness_changed(double newvalue);
+    void handle_light_x_changed(double newvalue);
+    void handle_light_y_changed(double newvalue);
+    void handle_light_z_changed(double newvalue);
+    void handle_light_color_changed(QColor newvalue);
+
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
     void paintGL() Q_DECL_OVERRIDE;
@@ -66,12 +75,15 @@ private:
     // Model properties
     bool rotate_model_;
     bool reset_orientation_;
+    bool show_light_proxy_;
     float dphi_;
     float dtheta_;
     float dpsi_;
-    float model_x_;
-    float model_y_;
-    float model_z_;
+    wcore::math::vec3 model_pos_;
+    wcore::math::vec3 light_pos_;
+    wcore::math::vec3 light_color_;
+    float light_radius_;
+    float light_brightness_;
     wcore::Material* new_material_;
 };
 

@@ -42,6 +42,8 @@ void ColorPickerLabel::set_color(const QColor& color)
                 + "; color: " + QColor(255-color_.red(), 255-color_.green(), 255-color_.blue(), 255).name()
                 + "; border: 2px solid black; }");
     setText(color_.name());
+
+    emit sig_value_changed(color_);
 }
 
 

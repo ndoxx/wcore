@@ -16,6 +16,7 @@ namespace waterial
 QT_FORWARD_DECLARE_CLASS(DropLabel)
 QT_FORWARD_DECLARE_CLASS(DoubleSpinBox)
 struct TextureEntry;
+class MainWindow;
 // Groups all the controls for a given texture map
 class TexMapControl: public QGroupBox
 {
@@ -24,6 +25,9 @@ class TexMapControl: public QGroupBox
 public:
     TexMapControl(const QString& title, int index);
     virtual ~TexMapControl() = default;
+
+    virtual void connect_controls(MainWindow* main_window) { }
+    void connect_all(MainWindow* main_window);
 
     void clear();
     void write_entry(TextureEntry& entry);
@@ -38,7 +42,7 @@ signals:
     void sig_controls_changed();
 
 public slots:
-    void handle_sig_texmap_changed();
+    void handle_sig_something_changed();
 
 protected:
     virtual void clear_additional() {}
@@ -127,7 +131,6 @@ private:
     DoubleSpinBox* parallax_scale_edit_;
 };
 
-class MainWindow;
 namespace generator
 {
     struct NormalGenOptions;
@@ -143,7 +146,7 @@ public:
     explicit AOControl();
     virtual ~AOControl() = default;
 
-    void connect_controls(MainWindow* main_window);
+    virtual void connect_controls(MainWindow* main_window) override;
     void get_options(generator::AOGenOptions& options);
 
 protected:
@@ -170,7 +173,7 @@ public:
     explicit NormalControl();
     virtual ~NormalControl() = default;
 
-    void connect_controls(MainWindow* main_window);
+    virtual void connect_controls(MainWindow* main_window) override;
     void get_options(generator::NormalGenOptions& options);
 
 protected:

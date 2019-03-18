@@ -34,12 +34,13 @@ texmap_index(index)
     QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     policy.setHeightForWidth(true);
     droplabel->setSizePolicy(policy);
-    QObject::connect(droplabel, SIGNAL(sig_texmap_changed(bool)),
-                     this,      SLOT(handle_sig_texmap_changed()));
+    /*connect(droplabel, SIGNAL(sig_texmap_changed(bool)),
+            this,      SLOT(handle_sig_something_changed()));*/
 
     // Checkbox to enable/disable texture map
     map_enabled->setEnabled(false);
-
+    /*connect(map_enabled, SIGNAL(stateChanged(int)),
+            this,        SLOT(handle_sig_something_changed()));*/
 
     layout->addSpacerItem(new QSpacerItem(20, 10));
     layout->addWidget(droplabel);
@@ -66,6 +67,16 @@ texmap_index(index)
 
     this->setLayout(layout);
 }
+
+void TexMapControl::connect_all(MainWindow* main_window)
+{
+    connect(this,        &TexMapControl::sig_controls_changed,
+            main_window, &MainWindow::handle_project_needs_saving);
+
+    // Connect sub-controls
+    connect_controls(main_window);
+}
+
 
 void TexMapControl::write_entry(TextureEntry& entry)
 {
@@ -103,7 +114,7 @@ void TexMapControl::add_stretch()
     layout->addStretch();
 }
 
-void TexMapControl::handle_sig_texmap_changed()
+void TexMapControl::handle_sig_something_changed()
 {
     emit sig_controls_changed();
 }
@@ -319,8 +330,8 @@ void AOControl::read_entry_additional(const TextureEntry& entry)
 
 void AOControl::connect_controls(MainWindow* main_window)
 {
-    QObject::connect(gen_from_depth_btn_, &QPushButton::clicked,
-                     main_window,         &MainWindow::handle_gen_ao_map);
+    connect(gen_from_depth_btn_, &QPushButton::clicked,
+            main_window,         &MainWindow::handle_gen_ao_map);
 }
 
 void AOControl::get_options(generator::AOGenOptions& options)
@@ -416,8 +427,8 @@ void NormalControl::read_entry_additional(const TextureEntry& entry)
 
 void NormalControl::connect_controls(MainWindow* main_window)
 {
-    QObject::connect(gen_from_depth_btn_, &QPushButton::clicked,
-                     main_window,         &MainWindow::handle_gen_normal_map);
+    connect(gen_from_depth_btn_, &QPushButton::clicked,
+            main_window,         &MainWindow::handle_gen_normal_map);
 }
 
 void NormalControl::get_options(generator::NormalGenOptions& options)

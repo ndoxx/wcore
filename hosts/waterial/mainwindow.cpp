@@ -154,6 +154,7 @@ file_dialog_(new QFileDialog(this))
         layout_main_panel->addWidget(texmap_controls_[ii], row, col);
         layout_main_panel->setRowStretch(row, 1); // So that all texmap controls will stretch the same way
         layout_main_panel->setColumnStretch(col, 1);
+        texmap_controls_[ii]->connect_all(this);
     }
 
     // Preview
@@ -241,20 +242,17 @@ file_dialog_(new QFileDialog(this))
     tex_list_->setItemDelegate(tex_list_delegate_); // For editing purposes
 
     // * Configure signals and slots
-    QObject::connect(button_new_tex, SIGNAL(clicked()),
-                     this,           SLOT(handle_new_texture()));
-    QObject::connect(texname_edit_,  SIGNAL(returnPressed()),
-                     this,           SLOT(handle_new_texture()));
-    QObject::connect(tex_list_->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-                     this,                        SLOT(handle_texlist_selection_changed(QItemSelection)));
-    QObject::connect(tex_list_, SIGNAL(customContextMenuRequested(const QPoint&)),
-                     this,      SLOT(handle_texlist_context_menu(const QPoint&)));
+    connect(button_new_tex, SIGNAL(clicked()),
+            this,           SLOT(handle_new_texture()));
+    connect(texname_edit_,  SIGNAL(returnPressed()),
+            this,           SLOT(handle_new_texture()));
+    connect(tex_list_->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this,                        SLOT(handle_texlist_selection_changed(QItemSelection)));
+    connect(tex_list_, SIGNAL(customContextMenuRequested(const QPoint&)),
+            this,      SLOT(handle_texlist_context_menu(const QPoint&)));
 
-    QObject::connect(tex_list_delegate_, SIGNAL(sig_data_changed()),
-                     this,               SLOT(handle_project_needs_saving()));
-
-    static_cast<NormalControl*>(texmap_controls_[NORMAL])->connect_controls(this);
-    static_cast<AOControl*>(texmap_controls_[AO])->connect_controls(this);
+    connect(tex_list_delegate_, SIGNAL(sig_data_changed()),
+            this,               SLOT(handle_project_needs_saving()));
 
     clear_view();
 

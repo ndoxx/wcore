@@ -120,6 +120,8 @@ public:
     void SetFogEnabled(bool value);
     // Enable/Disable FXAA
     void SetFXAAEnabled(bool value);
+    // Enable/Disable Daylight system
+    void SetDaylightSystemEnabled(bool value);
 
     // * Lighting control
     // Set the amount of light necessary to trigger the bloom effect locally
@@ -132,6 +134,8 @@ public:
     void SetShadowBias(float value);
     // Set the amout of normal offset to be used with shadow mapping
     void SetShadowNormalOffset(float value);
+    // Set whether the directional light is active
+    void SetDirectionalLightEnabled(bool value);
 
     // * Post processing control
     // Set exposure tone mapping parameter
@@ -157,6 +161,8 @@ public:
 
     // * Debug / Editor helper functions
 #ifdef __DEBUG__
+    void dShowLightProxy(int mode);
+
     void dDrawSegment(const math::vec3& world_start,
                       const math::vec3& world_end,
                       int ttl = 60,

@@ -3,19 +3,13 @@ QGroupBox
     border: 2px solid rgb(170,170,170);
     background: rgb(150,150,150);
     color: rgb(214,245,245);
+    padding-top: 8px;
 }
 QGroupBox::title
 {
     background-color: transparent;
     subcontrol-position: top center;
     padding:0px 10px;
-}
-QGroupBox#GeneralPreviewCtl
-{
-    border: 2px solid rgb(170,170,170);
-    background: rgb(150,150,150);
-    color: rgb(214,245,245);
-    margin-top: 8px;
 }
 QFrame#SidePanel
 {

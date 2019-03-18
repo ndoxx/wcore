@@ -26,6 +26,7 @@ smr_(smr),
 SSAO_enabled_(true),
 shadow_enabled_(true),
 lighting_enabled_(true),
+dirlight_enabled_(true),
 bright_threshold_(1.0f),
 bright_knee_(0.1f),
 shadow_slope_bias_(0.1f),
@@ -180,6 +181,7 @@ void LightingRenderer::render(Scene* pscene)
         vertex_array_.unbind();
     }
 
+    if(!dirlight_enabled_) return;
     if(auto dir_light = pscene->get_directional_light().lock())
     {
         // Render shadow map

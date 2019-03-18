@@ -60,6 +60,7 @@ public:
     void set_fxaa_enabled(bool value);
     void set_shadow_mapping_enabled(bool value);
     void set_bloom_enabled(bool value);
+    void set_directional_light_enabled(bool value);
 
     // Post processing parameter access
     void set_pp_gamma(const math::vec3& value);
@@ -84,6 +85,8 @@ public:
     void set_normal_offset(float value);
 
 #ifdef __DEBUG__
+    void show_light_proxy(int mode);
+
     void debug_draw_segment(const math::vec3& world_start,
                             const math::vec3& world_end,
                             int ttl = 60,

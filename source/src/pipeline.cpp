@@ -126,6 +126,7 @@ void RenderPipeline::perform_test()
 }
 
 void RenderPipeline::set_shadow_mapping_enabled(bool value)    { lighting_renderer_->set_shadow_mapping_enabled(value); }
+void RenderPipeline::set_directional_light_enabled(bool value) { lighting_renderer_->set_directional_light_enabled(value); }
 void RenderPipeline::set_shadow_bias(float value)              { lighting_renderer_->set_shadow_bias(value); }
 void RenderPipeline::set_bright_threshold(float value)         { lighting_renderer_->set_bright_threshold(value); }
 void RenderPipeline::set_bright_knee(float value)              { lighting_renderer_->set_bright_knee(value); }
@@ -691,6 +692,11 @@ void RenderPipeline::dbg_show_statistics()
 }
 
 #ifdef __DEBUG__
+void RenderPipeline::show_light_proxy(int mode)
+{
+    debug_renderer_->set_light_display_mode(mode);
+}
+
 void RenderPipeline::debug_draw_segment(const math::vec3& world_start,
                                         const math::vec3& world_end,
                                         int ttl,
@@ -704,7 +710,6 @@ void RenderPipeline::debug_draw_sphere(const math::vec3& world_pos,
                                        const math::vec3& color)
 {
     debug_renderer_->request_draw_sphere(world_pos, radius, ttl, color);
-
 }
 void RenderPipeline::debug_draw_cross3(const math::vec3& world_pos,
                                        float radius,
@@ -712,7 +717,6 @@ void RenderPipeline::debug_draw_cross3(const math::vec3& world_pos,
                                        const math::vec3& color)
 {
     debug_renderer_->request_draw_cross3(world_pos, radius, ttl, color);
-
 }
 #endif
 

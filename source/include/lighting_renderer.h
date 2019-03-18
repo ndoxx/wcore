@@ -27,6 +27,7 @@ private:
     bool SSAO_enabled_;
     bool shadow_enabled_;
     bool lighting_enabled_;
+    bool dirlight_enabled_;
 
     float bright_threshold_;
     float bright_knee_;
@@ -41,9 +42,10 @@ public:
     void load_geometry();
     virtual void render(Scene* pscene) override;
 
-    inline void set_SSAO_enabled(bool value)           { SSAO_enabled_ = value; }
-    inline void set_lighting_enabled(bool value)       { lighting_enabled_ = value; }
-    inline void set_shadow_mapping_enabled(bool value) { shadow_enabled_ = value; }
+    inline void set_SSAO_enabled(bool value)              { SSAO_enabled_ = value; }
+    inline void set_lighting_enabled(bool value)          { lighting_enabled_ = value; }
+    inline void set_shadow_mapping_enabled(bool value)    { shadow_enabled_ = value; }
+    inline void set_directional_light_enabled(bool value) { dirlight_enabled_ = value; }
 
     inline void toggle_SSAO()           { SSAO_enabled_ = !SSAO_enabled_; }
     inline void toggle_lighting()       { lighting_enabled_ = !lighting_enabled_; }

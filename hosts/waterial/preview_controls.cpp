@@ -9,6 +9,7 @@
 #include "preview_controls.h"
 #include "gl_widget.h"
 #include "double_slider.h"
+#include "color_picker_label.h"
 
 namespace waterial
 {
@@ -17,6 +18,8 @@ PreviewControlWidget::PreviewControlWidget(GLWidget* preview, QWidget* parent):
 QGroupBox(parent)
 {
     QGridLayout* layout = new QGridLayout();
+
+    setTitle(tr("Preview controls"));
 
     // * General controls
     auto* gb_general = create_general_controls(preview);
@@ -46,7 +49,6 @@ QGroupBox* PreviewControlWidget::create_general_controls(GLWidget* preview)
 {
     QHBoxLayout* layout_gen = new QHBoxLayout();
     QGroupBox* gb_general = new QGroupBox(tr("General"));
-    gb_general->setObjectName("GeneralPreviewCtl");
 
     // Active preview
     QCheckBox* cb_active = new QCheckBox(tr("Active"));
@@ -133,6 +135,49 @@ QGroupBox* PreviewControlWidget::create_light_controls(GLWidget* preview)
 {
     QFormLayout* layout_light = new QFormLayout();
     QGroupBox* gb_light = new QGroupBox(tr("Light"));
+
+    DoubleSlider* sld_r = new DoubleSlider();
+    DoubleSlider* sld_b = new DoubleSlider();
+    DoubleSlider* sld_x = new DoubleSlider();
+    DoubleSlider* sld_y = new DoubleSlider();
+    DoubleSlider* sld_z = new DoubleSlider();
+
+    sld_r->setMaximumHeight(20);
+    sld_r->set_range(0.0,10.0);
+    sld_r->set_value(5.0);
+    sld_b->setMaximumHeight(20);
+    sld_b->set_range(0.0,50.0);
+    sld_b->set_value(10.0);
+    sld_x->setMaximumHeight(20);
+    sld_x->set_range(-3.0,3.0);
+    sld_x->set_value(0.0);
+    sld_y->setMaximumHeight(20);
+    sld_y->set_range(-5.0,5.0);
+    sld_y->set_value(2.0);
+    sld_z->setMaximumHeight(20);
+    sld_z->set_range(-3.0,3.0);
+    sld_z->set_value(0.0);
+    connect(sld_r,   SIGNAL(doubleValueChanged(double)),
+            preview, SLOT(handle_light_radius_changed(double)));
+    connect(sld_b,   SIGNAL(doubleValueChanged(double)),
+            preview, SLOT(handle_light_brightness_changed(double)));
+    connect(sld_x,   SIGNAL(doubleValueChanged(double)),
+            preview, SLOT(handle_light_x_changed(double)));
+    connect(sld_y,   SIGNAL(doubleValueChanged(double)),
+            preview, SLOT(handle_light_y_changed(double)));
+    connect(sld_z,   SIGNAL(doubleValueChanged(double)),
+            preview, SLOT(handle_light_z_changed(double)));
+
+    ColorPickerLabel* color_picker = new ColorPickerLabel();
+    connect(color_picker, SIGNAL(sig_value_changed(QColor)),
+            preview,      SLOT(handle_light_color_changed(QColor)));
+
+    layout_light->addRow(new QLabel(tr("Color")), color_picker);
+    layout_light->addRow(new QLabel(tr("Radius")), sld_r);
+    layout_light->addRow(new QLabel(tr("Brightness")), sld_b);
+    layout_light->addRow(new QLabel(tr("x")), sld_x);
+    layout_light->addRow(new QLabel(tr("y")), sld_y);
+    layout_light->addRow(new QLabel(tr("z")), sld_z);
 
     gb_light->setLayout(layout_light);
 

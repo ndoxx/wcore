@@ -27,6 +27,7 @@ public:
 
 signals:
     void clicked();
+    void sig_value_changed(QColor newvalue);
 
 public slots:
     void handle_albedo_color_edit();

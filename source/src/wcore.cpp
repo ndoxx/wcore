@@ -541,6 +541,11 @@ void Engine::PipelineControl::SetFXAAEnabled(bool value)
     eimpl_->pipeline->set_fxaa_enabled(value);
 }
 
+void Engine::PipelineControl::SetDaylightSystemEnabled(bool value)
+{
+    eimpl_->daylight->set_enabled(value);
+}
+
 void Engine::PipelineControl::SetLightingBrightThreshold(float value)
 {
     eimpl_->pipeline->set_bright_threshold(value);
@@ -565,6 +570,12 @@ void Engine::PipelineControl::SetShadowNormalOffset(float value)
 {
     eimpl_->pipeline->set_normal_offset(value);
 }
+
+void Engine::PipelineControl::SetDirectionalLightEnabled(bool value)
+{
+    eimpl_->pipeline->set_directional_light_enabled(value);
+}
+
 
 void Engine::PipelineControl::SetPostprocExposure(float value)
 {
@@ -613,6 +624,11 @@ void Engine::PipelineControl::SetPostprocVibranceBalance(const math::vec3& value
 
 
 #ifdef __DEBUG__
+void Engine::PipelineControl::dShowLightProxy(int mode)
+{
+    eimpl_->pipeline->show_light_proxy(mode);
+}
+
 void Engine::PipelineControl::dDrawSegment(const math::vec3& world_start,
                                            const math::vec3& world_end,
                                            int ttl,

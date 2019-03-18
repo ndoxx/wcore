@@ -51,13 +51,14 @@ public:
     void load_geometry();
     virtual void render(Scene* pscene) override;
 
-    inline void toggle_line_models() { display_line_models_ = !display_line_models_; }
+    inline void toggle_line_models()             { display_line_models_ = !display_line_models_; }
 
-    inline void next_bb_display_mode() { bb_display_mode_ = (++bb_display_mode_)%4; }
-    inline int get_bb_display_mode() const { return bb_display_mode_; }
+    inline void next_bb_display_mode()           { bb_display_mode_ = (bb_display_mode_+1)%4; }
+    inline int get_bb_display_mode() const       { return bb_display_mode_; }
 
-    inline void next_light_display_mode() { light_display_mode_ = (++light_display_mode_)%3; }
-    inline int get_light_display_mode() const { return light_display_mode_; }
+    inline void next_light_display_mode()        { light_display_mode_ = (light_display_mode_+1)%3; }
+    inline int get_light_display_mode() const    { return light_display_mode_; }
+    inline void set_light_display_mode(int mode) { light_display_mode_ = mode%3; }
 
     inline void clear_draw_requests() { draw_requests_.clear(); }
 

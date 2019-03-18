@@ -10,6 +10,7 @@
 #include "error.h"
 #include "model.h"
 #include "material.h"
+#include "lights.h"
 
 using namespace wcore;
 
@@ -24,12 +25,15 @@ frame_timer_(new QTimer(this)),
 active_(true),
 rotate_model_(true),
 reset_orientation_(false),
+show_light_proxy_(false),
 dphi_(0.0f),
 dtheta_(0.5f),
 dpsi_(0.0f),
-model_x_(0.f),
-model_y_(0.f),
-model_z_(0.f),
+model_pos_(0.f),
+light_pos_(0.f,2.f,0.f),
+light_color_(1.f,1.f,1.f),
+light_radius_(5.f),
+light_brightness_(10.f),
 new_material_(nullptr)
 {
 
@@ -65,6 +69,8 @@ void GLWidget::initializeGL()
 
     // Systems configuration
     engine_->pipeline->SetShadowMappingEnabled(false);
+    engine_->pipeline->SetDirectionalLightEnabled(false);
+    engine_->pipeline->SetDaylightSystemEnabled(false);
 
     connect(frame_timer_, SIGNAL(timeout()), this, SLOT(update()));
     frame_timer_->start(16);
@@ -91,7 +97,7 @@ void GLWidget::paintGL()
             model.rotate(dphi_,dtheta_,dpsi_);
 
         // Set model position
-        model.set_position(math::vec3(model_x_, model_y_, model_z_));
+        model.set_position(model_pos_);
 
         // Swap material?
         if(new_material_)
@@ -100,6 +106,16 @@ void GLWidget::paintGL()
             new_material_ = nullptr;
         }
     });
+
+    // Update light
+    engine_->scene->VisitLightRef("the_point_light"_h, [&](Light& light)
+    {
+        light.set_position(light_pos_);
+        light.set_color(light_color_);
+        light.set_radius(light_radius_);
+        light.set_brightness(light_brightness_);
+    });
+    engine_->pipeline->dShowLightProxy(1);
 
     engine_->Update(16.67/1000.f);
     engine_->RenderFrame();
@@ -164,22 +180,54 @@ void GLWidget::handle_reset_orientation()
 
 void GLWidget::handle_x_changed(double newvalue)
 {
-    model_x_ = (float)newvalue;
+    model_pos_[0] = -(float)newvalue;
 }
 
 void GLWidget::handle_y_changed(double newvalue)
 {
-    model_y_ = (float)newvalue;
+    model_pos_[1] = (float)newvalue;
 }
 
 void GLWidget::handle_z_changed(double newvalue)
 {
-    model_z_ = (float)newvalue;
+    model_pos_[2] = (float)newvalue;
 }
 
 void GLWidget::handle_material_swap(const wcore::MaterialDescriptor& descriptor)
 {
     new_material_ = new Material(descriptor);
+}
+
+void GLWidget::handle_light_x_changed(double newvalue)
+{
+    light_pos_[0] = -(float)newvalue;
+}
+
+void GLWidget::handle_light_y_changed(double newvalue)
+{
+    light_pos_[1] = (float)newvalue;
+}
+
+void GLWidget::handle_light_z_changed(double newvalue)
+{
+    light_pos_[2] = (float)newvalue;
+}
+
+void GLWidget::handle_light_radius_changed(double newvalue)
+{
+    light_radius_ = (float)newvalue;
+}
+
+void GLWidget::handle_light_brightness_changed(double newvalue)
+{
+    light_brightness_ = (float)newvalue;
+}
+
+void GLWidget::handle_light_color_changed(QColor newvalue)
+{
+    light_color_ = math::vec3(newvalue.red()/255.f,
+                              newvalue.green()/255.f,
+                              newvalue.blue()/255.f);
 }
 
 
