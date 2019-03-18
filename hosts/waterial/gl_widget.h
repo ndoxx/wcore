@@ -52,10 +52,16 @@ public slots:
 
     void handle_light_radius_changed(double newvalue);
     void handle_light_brightness_changed(double newvalue);
+    void handle_light_ambient_changed(double newvalue);
     void handle_light_x_changed(double newvalue);
     void handle_light_y_changed(double newvalue);
     void handle_light_z_changed(double newvalue);
+    void handle_light_inclination_changed(double newvalue);
+    void handle_light_perihelion_changed(double newvalue);
     void handle_light_color_changed(QColor newvalue);
+    void handle_light_type_changed(int newvalue);
+
+    void handle_bloom_changed(int newvalue);
 
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
@@ -82,8 +88,12 @@ private:
     wcore::math::vec3 model_pos_;
     wcore::math::vec3 light_pos_;
     wcore::math::vec3 light_color_;
-    float light_radius_;
     float light_brightness_;
+    float light_amb_;
+    float light_radius_;
+    float light_inclination_;
+    float light_perihelion_;
+    int light_type_;
     wcore::Material* new_material_;
 };
 

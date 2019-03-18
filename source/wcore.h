@@ -95,6 +95,8 @@ public:
     Model& GetModelRef(hash_t href);
     // Get referenced light in scene by hash name, hash name MUST exist
     Light& GetLightRef(hash_t href);
+    // Get directionnal light
+    Light& GetDirectionalLight();
     // Visit referenced light in scene by hash name
     bool VisitLightRef(hash_t href, std::function<void(Light& light)> visit);
     // Visit referenced model in scene by hash name

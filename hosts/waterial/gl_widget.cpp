@@ -32,8 +32,12 @@ dpsi_(0.0f),
 model_pos_(0.f),
 light_pos_(0.f,2.f,0.f),
 light_color_(1.f,1.f,1.f),
-light_radius_(5.f),
 light_brightness_(10.f),
+light_amb_(0.03f),
+light_radius_(5.f),
+light_inclination_(85.f * M_PI / 180.f),
+light_perihelion_(90.f * M_PI / 180.f),
+light_type_(0),
 new_material_(nullptr)
 {
 
@@ -111,11 +115,22 @@ void GLWidget::paintGL()
     engine_->scene->VisitLightRef("the_point_light"_h, [&](Light& light)
     {
         light.set_position(light_pos_);
-        light.set_color(light_color_);
         light.set_radius(light_radius_);
-        light.set_brightness(light_brightness_);
+        light.set_color(light_color_);
+        light.set_ambient_strength(light_amb_);
+        light.set_brightness((light_type_==0) ? light_brightness_ : 0.f);
     });
     engine_->pipeline->dShowLightProxy(1);
+
+    Light& dirlight = engine_->scene->GetDirectionalLight();
+    math::vec3 sun_pos(cos(light_inclination_),
+                       sin(light_inclination_)*sin(light_perihelion_),
+                       sin(light_inclination_)*cos(light_perihelion_));
+    sun_pos.normalize();
+    dirlight.set_position(sun_pos);
+    dirlight.set_color(light_color_);
+    dirlight.set_ambient_strength(light_amb_);
+    dirlight.set_brightness(light_brightness_);
 
     engine_->Update(16.67/1000.f);
     engine_->RenderFrame();
@@ -223,6 +238,21 @@ void GLWidget::handle_light_brightness_changed(double newvalue)
     light_brightness_ = (float)newvalue;
 }
 
+void GLWidget::handle_light_ambient_changed(double newvalue)
+{
+    light_amb_ = (float)newvalue;
+}
+
+void GLWidget::handle_light_inclination_changed(double newvalue)
+{
+    light_inclination_ = (float)newvalue;
+}
+
+void GLWidget::handle_light_perihelion_changed(double newvalue)
+{
+    light_perihelion_ = (float)newvalue;
+}
+
 void GLWidget::handle_light_color_changed(QColor newvalue)
 {
     light_color_ = math::vec3(newvalue.red()/255.f,
@@ -230,5 +260,23 @@ void GLWidget::handle_light_color_changed(QColor newvalue)
                               newvalue.blue()/255.f);
 }
 
+void GLWidget::handle_light_type_changed(int newvalue)
+{
+    light_type_ = newvalue;
+
+    if(light_type_ == 0) // Point
+    {
+        engine_->pipeline->SetDirectionalLightEnabled(false);
+    }
+    else if(light_type_ == 1) // Directional
+    {
+        engine_->pipeline->SetDirectionalLightEnabled(true);
+    }
+}
+
+void GLWidget::handle_bloom_changed(int newvalue)
+{
+    engine_->pipeline->SetBloomEnabled(newvalue == Qt::Checked);
+}
 
 } // namespace waterial

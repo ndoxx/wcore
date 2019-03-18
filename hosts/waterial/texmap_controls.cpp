@@ -36,8 +36,8 @@ texmap_index(index)
     droplabel->setSizePolicy(policy);
     connect(droplabel, SIGNAL(sig_texmap_changed(bool)),
             this,      SLOT(handle_sig_texmap_changed(bool)));
-    connect(droplabel, SIGNAL(sig_texmap_changed(bool)),
-            this,      SLOT(handle_sig_something_changed()));
+    /*connect(droplabel, SIGNAL(sig_texmap_changed(bool)),
+            this,      SLOT(handle_sig_something_changed()));*/
 
     // Checkbox to enable/disable texture map
     map_enabled->setEnabled(false);

@@ -479,6 +479,11 @@ Light& Engine::SceneControl::GetLightRef(hash_t href)
     return *eimpl_->scene->get_light_by_ref(href).lock();
 }
 
+Light& Engine::SceneControl::GetDirectionalLight()
+{
+    return *eimpl_->scene->get_directional_light_nc().lock();
+}
+
 bool Engine::SceneControl::VisitModelRef(hash_t href, std::function<void(Model& model)> visit)
 {
     if(auto pmdl = eimpl_->scene->get_model_by_ref(href).lock())

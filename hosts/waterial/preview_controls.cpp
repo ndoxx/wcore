@@ -1,3 +1,4 @@
+#include <iostream>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -5,6 +6,7 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QPushButton>
+#include <QComboBox>
 
 #include "preview_controls.h"
 #include "gl_widget.h"
@@ -72,7 +74,7 @@ QGroupBox* PreviewControlWidget::create_model_controls(GLWidget* preview)
     cb_rotate->setCheckState(Qt::Checked);
     connect(cb_rotate, SIGNAL(stateChanged(int)),
             preview,   SLOT(handle_rotate_changed(int)));
-    layout_model->addRow(new QLabel(tr("Rotate")), cb_rotate);
+    layout_model->addRow(tr("Rotate"), cb_rotate);
 
     // Reset orientation
     QPushButton* btn_reset_ori = new QPushButton(tr("Reset orientation"));
@@ -98,9 +100,9 @@ QGroupBox* PreviewControlWidget::create_model_controls(GLWidget* preview)
     connect(sld_dpsi,   SIGNAL(doubleValueChanged(double)),
             preview,    SLOT(handle_dpsi_changed(double)));
 
-    layout_model->addRow(new QLabel(QString::fromUtf8("\u03C6")), sld_dphi);
-    layout_model->addRow(new QLabel(QString::fromUtf8("\u03B8")), sld_dtheta);
-    layout_model->addRow(new QLabel(QString::fromUtf8("\u03C8")), sld_dpsi);
+    layout_model->addRow(QString::fromUtf8("\u03C6"), sld_dphi);
+    layout_model->addRow(QString::fromUtf8("\u03B8"), sld_dtheta);
+    layout_model->addRow(QString::fromUtf8("\u03C8"), sld_dpsi);
 
     // Position parameters
     DoubleSlider* sld_x = new DoubleSlider();
@@ -122,9 +124,9 @@ QGroupBox* PreviewControlWidget::create_model_controls(GLWidget* preview)
     connect(sld_z,   SIGNAL(doubleValueChanged(double)),
             preview, SLOT(handle_z_changed(double)));
 
-    layout_model->addRow(new QLabel(tr("x")), sld_x);
-    layout_model->addRow(new QLabel(tr("y")), sld_y);
-    layout_model->addRow(new QLabel(tr("z")), sld_z);
+    layout_model->addRow(tr("x"), sld_x);
+    layout_model->addRow(tr("y"), sld_y);
+    layout_model->addRow(tr("z"), sld_z);
 
     gb_model->setLayout(layout_model);
 
@@ -136,18 +138,56 @@ QGroupBox* PreviewControlWidget::create_light_controls(GLWidget* preview)
     QFormLayout* layout_light = new QFormLayout();
     QGroupBox* gb_light = new QGroupBox(tr("Light"));
 
+    // Light type combo box
+    combo_light_type_ = new QComboBox();
+    combo_light_type_->addItems(QStringList()<<"Point"<<"Directional");
+    combo_light_type_->setMaximumHeight(22);
+    connect(combo_light_type_, SIGNAL(currentIndexChanged(int)),
+            this,              SLOT(handle_light_type_changed(int)));
+    connect(this,    SIGNAL(sig_light_type_changed(int)),
+            preview, SLOT(handle_light_type_changed(int)));
+    layout_light->addRow(tr("Type"), combo_light_type_);
+
+    DoubleSlider* sld_bright = new DoubleSlider();
+    DoubleSlider* sld_ambient = new DoubleSlider();
+
+    point_light_controls_ = new QWidget();
+    dir_light_controls_ = new QWidget();
+    QFormLayout* layout_point_light = new QFormLayout();
+    QFormLayout* layout_dir_light = new QFormLayout();
+
+    point_light_controls_->setObjectName("InternalWidget");
+    dir_light_controls_->setObjectName("InternalWidget");
+
     DoubleSlider* sld_r = new DoubleSlider();
-    DoubleSlider* sld_b = new DoubleSlider();
     DoubleSlider* sld_x = new DoubleSlider();
     DoubleSlider* sld_y = new DoubleSlider();
     DoubleSlider* sld_z = new DoubleSlider();
 
+    layout_point_light->addRow(tr("Radius"), sld_r);
+    layout_point_light->addRow(tr("x"), sld_x);
+    layout_point_light->addRow(tr("y"), sld_y);
+    layout_point_light->addRow(tr("z"), sld_z);
+
+    DoubleSlider* sld_incl = new DoubleSlider();
+    DoubleSlider* sld_peri = new DoubleSlider();
+
+    layout_dir_light->addRow(tr("Inclination"), sld_incl);
+    layout_dir_light->addRow(tr("Arg. perihelion"), sld_peri);
+
+    point_light_controls_->setLayout(layout_point_light);
+    dir_light_controls_->setLayout(layout_dir_light);
+    dir_light_controls_->hide();
+
+    sld_bright->setMaximumHeight(20);
+    sld_bright->set_range(0.0,50.0);
+    sld_bright->set_value(10.0);
+    sld_ambient->setMaximumHeight(20);
+    sld_ambient->set_range(0.0,0.5);
+    sld_ambient->set_value(0.03);
     sld_r->setMaximumHeight(20);
     sld_r->set_range(0.0,10.0);
     sld_r->set_value(5.0);
-    sld_b->setMaximumHeight(20);
-    sld_b->set_range(0.0,50.0);
-    sld_b->set_value(10.0);
     sld_x->setMaximumHeight(20);
     sld_x->set_range(-3.0,3.0);
     sld_x->set_value(0.0);
@@ -157,27 +197,54 @@ QGroupBox* PreviewControlWidget::create_light_controls(GLWidget* preview)
     sld_z->setMaximumHeight(20);
     sld_z->set_range(-3.0,3.0);
     sld_z->set_value(0.0);
+    sld_incl->setMaximumHeight(20);
+    sld_incl->set_range(0.0,M_PI);
+    sld_incl->set_value(85.0 * M_PI / 180.0);
+    sld_peri->setMaximumHeight(20);
+    sld_peri->set_range(0.0,2*M_PI);
+    sld_peri->set_value(90.0 * M_PI / 180.0);
     connect(sld_r,   SIGNAL(doubleValueChanged(double)),
-            preview, SLOT(handle_light_radius_changed(double)));
-    connect(sld_b,   SIGNAL(doubleValueChanged(double)),
-            preview, SLOT(handle_light_brightness_changed(double)));
+            preview,    SLOT(handle_light_radius_changed(double)));
+    connect(sld_bright, SIGNAL(doubleValueChanged(double)),
+            preview,     SLOT(handle_light_brightness_changed(double)));
+    connect(sld_ambient, SIGNAL(doubleValueChanged(double)),
+            preview, SLOT(handle_light_ambient_changed(double)));
     connect(sld_x,   SIGNAL(doubleValueChanged(double)),
             preview, SLOT(handle_light_x_changed(double)));
     connect(sld_y,   SIGNAL(doubleValueChanged(double)),
             preview, SLOT(handle_light_y_changed(double)));
     connect(sld_z,   SIGNAL(doubleValueChanged(double)),
             preview, SLOT(handle_light_z_changed(double)));
+    connect(sld_incl, SIGNAL(doubleValueChanged(double)),
+            preview,  SLOT(handle_light_inclination_changed(double)));
+    connect(sld_peri, SIGNAL(doubleValueChanged(double)),
+            preview,  SLOT(handle_light_perihelion_changed(double)));
 
     ColorPickerLabel* color_picker = new ColorPickerLabel();
     connect(color_picker, SIGNAL(sig_value_changed(QColor)),
             preview,      SLOT(handle_light_color_changed(QColor)));
 
-    layout_light->addRow(new QLabel(tr("Color")), color_picker);
-    layout_light->addRow(new QLabel(tr("Radius")), sld_r);
-    layout_light->addRow(new QLabel(tr("Brightness")), sld_b);
-    layout_light->addRow(new QLabel(tr("x")), sld_x);
-    layout_light->addRow(new QLabel(tr("y")), sld_y);
-    layout_light->addRow(new QLabel(tr("z")), sld_z);
+    layout_light->addRow(tr("Color"), color_picker);
+    layout_light->addRow(tr("Brightness"), sld_bright);
+    layout_light->addRow(tr("Ambient"), sld_ambient);
+
+    layout_light->addRow(point_light_controls_);
+    layout_light->addRow(dir_light_controls_);
+
+    // Add separator
+    auto sep = new QFrame;
+    sep->setObjectName("Separator");
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Sunken);
+    layout_light->addRow(sep);
+
+    // Bloom control
+    QCheckBox* cb_bloom = new QCheckBox();
+    cb_bloom->setCheckState(Qt::Checked);
+    connect(cb_bloom, SIGNAL(stateChanged(int)),
+            preview,  SLOT(handle_bloom_changed(int)));
+
+    layout_light->addRow(tr("Enable bloom"), cb_bloom);
 
     gb_light->setLayout(layout_light);
 
@@ -194,6 +261,20 @@ QGroupBox* PreviewControlWidget::create_camera_controls(GLWidget* preview)
     return gb_camera;
 }
 
+void PreviewControlWidget::handle_light_type_changed(int newvalue)
+{
+    if(newvalue == 0) // Point light
+    {
+        point_light_controls_->show();
+        dir_light_controls_->hide();
+    }
+    else if(newvalue == 1) // Directional light
+    {
+        dir_light_controls_->show();
+        point_light_controls_->hide();
+    }
+    emit sig_light_type_changed(newvalue);
+}
 
 
 } // namespace waterial
