@@ -36,6 +36,7 @@ class DebugRenderer : public Renderer<Vertex3P>
 private:
     Shader line_shader_;
     bool display_line_models_;
+    float light_proxy_scale_;
 
     std::list<DebugDrawRequest> draw_requests_;
 
@@ -61,6 +62,8 @@ public:
     inline void set_light_display_mode(int mode) { light_display_mode_ = mode%3; }
 
     inline void clear_draw_requests() { draw_requests_.clear(); }
+
+    inline void set_light_proxy_scale(float value) { light_proxy_scale_ = value; }
 
     // Show static octree neighbors of selected object for 5s
     void show_selection_neighbors(Scene* pscene, float radius=10.f);

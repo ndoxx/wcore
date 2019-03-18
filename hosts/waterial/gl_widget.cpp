@@ -25,7 +25,7 @@ frame_timer_(new QTimer(this)),
 active_(true),
 rotate_model_(true),
 reset_orientation_(false),
-show_light_proxy_(false),
+light_proxy_cooldown_(0),
 dphi_(0.0f),
 dtheta_(0.5f),
 dpsi_(0.0f),
@@ -75,6 +75,7 @@ void GLWidget::initializeGL()
     engine_->pipeline->SetShadowMappingEnabled(false);
     engine_->pipeline->SetDirectionalLightEnabled(false);
     engine_->pipeline->SetDaylightSystemEnabled(false);
+    //engine_->pipeline->dShowLightProxy(1);
 
     connect(frame_timer_, SIGNAL(timeout()), this, SLOT(update()));
     frame_timer_->start(16);
@@ -120,7 +121,6 @@ void GLWidget::paintGL()
         light.set_ambient_strength(light_amb_);
         light.set_brightness((light_type_==0) ? light_brightness_ : 0.f);
     });
-    engine_->pipeline->dShowLightProxy(1);
 
     Light& dirlight = engine_->scene->GetDirectionalLight();
     math::vec3 sun_pos(cos(light_inclination_),
@@ -131,6 +131,17 @@ void GLWidget::paintGL()
     dirlight.set_color(light_color_);
     dirlight.set_ambient_strength(light_amb_);
     dirlight.set_brightness(light_brightness_);
+
+    /*if(light_type_ == 0 && show_light_proxy_) // Point
+    {
+        engine_->pipeline->dDrawSphere(light_pos_, 0.05f, 10, light_color_);
+        show_light_proxy_ = false;
+    }*/
+
+    if(--light_proxy_cooldown_>0)
+        engine_->pipeline->dShowLightProxy(1,0.1f);
+    else
+        engine_->pipeline->dShowLightProxy(0);
 
     engine_->Update(16.67/1000.f);
     engine_->RenderFrame();
@@ -152,6 +163,10 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 
 }
 
+void GLWidget::reset_light_proxy_cooldown()
+{
+    light_proxy_cooldown_ = 40;
+}
 
 // Slots
 void GLWidget::cleanup()
@@ -216,16 +231,19 @@ void GLWidget::handle_material_swap(const wcore::MaterialDescriptor& descriptor)
 void GLWidget::handle_light_x_changed(double newvalue)
 {
     light_pos_[0] = -(float)newvalue;
+    reset_light_proxy_cooldown();
 }
 
 void GLWidget::handle_light_y_changed(double newvalue)
 {
     light_pos_[1] = (float)newvalue;
+    reset_light_proxy_cooldown();
 }
 
 void GLWidget::handle_light_z_changed(double newvalue)
 {
     light_pos_[2] = (float)newvalue;
+    reset_light_proxy_cooldown();
 }
 
 void GLWidget::handle_light_radius_changed(double newvalue)

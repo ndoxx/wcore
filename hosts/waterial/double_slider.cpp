@@ -2,6 +2,8 @@
 #include <cassert>
 #include "double_slider.h"
 
+#define NSTEPS 100
+
 namespace waterial
 {
 
@@ -14,7 +16,7 @@ maxval_(1.0)
             this, SLOT(notifyValueChanged(int)));
 
     setOrientation(Qt::Horizontal);
-    setRange(0, 100);
+    setRange(0, NSTEPS);
 }
 
 void DoubleSlider::set_range(double minval, double maxval)
@@ -24,7 +26,7 @@ void DoubleSlider::set_range(double minval, double maxval)
     minval_ = minval;
     maxval_ = maxval;
     double range = maxval_-minval_;
-    setRange((int)std::floor(minval_*100/range), (int)std::floor(maxval_*100/range));
+    setRange((int)std::floor(minval_*NSTEPS/range), (int)std::floor(maxval_*NSTEPS/range));
 }
 
 void DoubleSlider::set_value(double value)
@@ -32,12 +34,12 @@ void DoubleSlider::set_value(double value)
     assert(value<=maxval_ && "[DoubleSlider] value should be less than or equal to maximum value.");
     assert(value>=minval_ && "[DoubleSlider] value should be greater than or equal to minimum value.");
 
-    setValue((int)std::floor(value*100/(maxval_-minval_)));
+    setValue((int)std::floor(value*NSTEPS/(maxval_-minval_)));
 }
 
 void DoubleSlider::notifyValueChanged(int value)
 {
-    double_value_ = (value * (maxval_-minval_)) / 100.0;
+    double_value_ = (value * (maxval_-minval_)) / NSTEPS;
     emit doubleValueChanged(double_value_);
 }
 

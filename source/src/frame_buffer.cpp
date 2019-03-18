@@ -194,7 +194,7 @@ void FrameBuffer::blit_depth_default_fb(uint32_t screenWidth, uint32_t screenHei
 {
     // write depth buffer to default framebuffer
     glBindFramebuffer(GL_READ_FRAMEBUFFER, frame_buffer_);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
     glBlitFramebuffer(0,            // src x0
                       0,            // src y0
                       width_,       // src x1

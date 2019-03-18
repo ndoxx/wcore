@@ -27,6 +27,7 @@ DebugRenderer::DebugRenderer():
 Renderer<Vertex3P>(GL_LINES),
 line_shader_(ShaderResource("line.vert;line.frag")),
 display_line_models_(true),
+light_proxy_scale_(1.0f),
 light_display_mode_(0),
 bb_display_mode_(0),
 enable_depth_test_(true),
@@ -160,7 +161,16 @@ void DebugRenderer::render(Scene* pscene)
         {
             // Get model matrix and compute products
             // Scale model in display mode 2 only
-            mat4 MVP(PV*light.get_model_matrix(light_display_mode_==2));
+            mat4 M(light.get_model_matrix(light_display_mode_==2));
+            mat4 MVP;
+            if(light_proxy_scale_!=1.f)
+            {
+                mat4 S;
+                S.init_scale(light_proxy_scale_);
+                MVP = PV*M*S;
+            }
+            else
+                MVP = PV*M;
 
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             line_shader_.send_uniform("v4_line_color"_h, vec4(light.get_color().normalized()));
@@ -198,7 +208,7 @@ void DebugRenderer::render(Scene* pscene)
 
     // DRAW REQUESTS
     auto it = draw_requests_.begin();
-    while (it != draw_requests_.end())
+    while(it != draw_requests_.end())
     {
         // Remove dead requests
         bool alive = (--(*it).ttl >= 0);

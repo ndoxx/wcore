@@ -629,9 +629,9 @@ void Engine::PipelineControl::SetPostprocVibranceBalance(const math::vec3& value
 
 
 #ifdef __DEBUG__
-void Engine::PipelineControl::dShowLightProxy(int mode)
+void Engine::PipelineControl::dShowLightProxy(int mode, float scale)
 {
-    eimpl_->pipeline->show_light_proxy(mode);
+    eimpl_->pipeline->show_light_proxy(mode, scale);
 }
 
 void Engine::PipelineControl::dDrawSegment(const math::vec3& world_start,

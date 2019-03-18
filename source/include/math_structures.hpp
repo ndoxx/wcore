@@ -916,6 +916,18 @@ public:
     }
 
     /**
+     * @brief Rescale matrix by a scalar factor
+     *
+     * @return The matrix itself.
+     */
+    const mat& scale(float scale_factor)
+    {
+        for(unsigned ii=0; ii<Size; ++ii)
+            value_[ii] = scale_factor*value_[ii];
+        return *this;
+    }
+
+    /**
      * @brief Square NxN Matrix multiplication.
      * @details See linear algebra 101!
      *

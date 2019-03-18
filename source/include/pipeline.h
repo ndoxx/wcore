@@ -85,7 +85,7 @@ public:
     void set_normal_offset(float value);
 
 #ifdef __DEBUG__
-    void show_light_proxy(int mode);
+    void show_light_proxy(int mode, float scale=1.f);
 
     void debug_draw_segment(const math::vec3& world_start,
                             const math::vec3& world_end,

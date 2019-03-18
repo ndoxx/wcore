@@ -163,7 +163,7 @@ public:
 
     // * Debug / Editor helper functions
 #ifdef __DEBUG__
-    void dShowLightProxy(int mode);
+    void dShowLightProxy(int mode, float scale=1.f);
 
     void dDrawSegment(const math::vec3& world_start,
                       const math::vec3& world_end,

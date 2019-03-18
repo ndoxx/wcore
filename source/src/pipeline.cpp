@@ -692,9 +692,10 @@ void RenderPipeline::dbg_show_statistics()
 }
 
 #ifdef __DEBUG__
-void RenderPipeline::show_light_proxy(int mode)
+void RenderPipeline::show_light_proxy(int mode, float scale)
 {
     debug_renderer_->set_light_display_mode(mode);
+    debug_renderer_->set_light_proxy_scale(scale);
 }
 
 void RenderPipeline::debug_draw_segment(const math::vec3& world_start,

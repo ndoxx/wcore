@@ -71,6 +71,9 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
 private:
+    void reset_light_proxy_cooldown();
+
+private:
     wcore::Engine* engine_;
     QtContext* context_;
     QTimer* frame_timer_;
@@ -81,7 +84,7 @@ private:
     // Model properties
     bool rotate_model_;
     bool reset_orientation_;
-    bool show_light_proxy_;
+    int light_proxy_cooldown_;
     float dphi_;
     float dtheta_;
     float dpsi_;
