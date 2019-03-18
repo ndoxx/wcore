@@ -2,7 +2,7 @@ QGroupBox
 {
     border: 2px solid rgb(170,170,170);
     background: rgb(150,150,150);
-    color: rgb(214,245,245);
+    color: rgb(255,204,0);
     padding-top: 8px;
 }
 QGroupBox::title

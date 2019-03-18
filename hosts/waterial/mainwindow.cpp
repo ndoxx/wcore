@@ -608,6 +608,8 @@ void MainWindow::handle_texlist_selection_changed(const QItemSelection& selectio
         editor_model_->set_current_texture_name(current_tex);
         // Retrieve and display saved texture information
         update_texture_view();
+        // Swap texture in viewer if possible
+        handle_material_swap();
     }
 }
 
@@ -874,7 +876,7 @@ void MainWindow::handle_material_swap()
 {
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
-        gl_widget_->handle_material_swap(editor_model_->get_current_material_descriptor());
+        gl_widget_->handle_material_swap(editor_model_);
 }
 
 void MainWindow::update_window_title(const QString& project_name)

@@ -204,6 +204,7 @@ public:
 
     // Get engine material descriptor for current material
     wcore::MaterialDescriptor get_current_material_descriptor();
+    bool validate_descriptor(const wcore::MaterialDescriptor& descriptor);
 
 protected:
     QString project_path_from_name(const QString& name) const;

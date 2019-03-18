@@ -797,4 +797,22 @@ wcore::MaterialDescriptor EditorModel::get_current_material_descriptor()
     return desc;
 }
 
+std::array<TextureUnit,3> units_to_check = {TextureUnit::BLOCK0, TextureUnit::BLOCK1, TextureUnit::BLOCK2};
+
+bool EditorModel::validate_descriptor(const wcore::MaterialDescriptor& descriptor)
+{
+    // Check that each needed image file exists
+    bool success = true;
+    for(int ii=0; ii<units_to_check.size(); ++ii)
+    {
+        if(descriptor.texture_descriptor.has_unit(units_to_check[ii]))
+        {
+            QString filename = QString::fromStdString(descriptor.texture_descriptor.locations.at(units_to_check[ii]));
+            QFileInfo check_file(output_folder_.filePath(filename));
+            success &= (check_file.exists() && check_file.isFile());
+        }
+    }
+    return success;
+}
+
 } // namespace waterial

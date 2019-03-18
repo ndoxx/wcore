@@ -30,7 +30,7 @@ scroll_area(new QScrollArea),
 texmap_index(index)
 {
     droplabel->setAcceptDrops(true);
-    droplabel->setMinimumSize(QSize(200,200));
+    droplabel->setMinimumSize(QSize(100,100));
     QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     policy.setHeightForWidth(true);
     droplabel->setSizePolicy(policy);

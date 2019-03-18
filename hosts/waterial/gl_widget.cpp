@@ -2,6 +2,7 @@
 #include <QSurfaceFormat>
 #include <QTimer>
 #include <QCheckBox>
+#include <QFileInfo>
 
 #include "gl_widget.h"
 #include "qt_context.h"
@@ -11,6 +12,7 @@
 #include "model.h"
 #include "material.h"
 #include "lights.h"
+#include "editor_model.h"
 
 using namespace wcore;
 
@@ -103,6 +105,7 @@ void GLWidget::paintGL()
 
         // Set model position
         model.set_position(model_pos_);
+        model.update_bounding_boxes();
 
         // Swap material?
         if(new_material_)
@@ -132,12 +135,6 @@ void GLWidget::paintGL()
     dirlight.set_ambient_strength(light_amb_);
     dirlight.set_brightness(light_brightness_);
 
-    /*if(light_type_ == 0 && show_light_proxy_) // Point
-    {
-        engine_->pipeline->dDrawSphere(light_pos_, 0.05f, 10, light_color_);
-        show_light_proxy_ = false;
-    }*/
-
     if(--light_proxy_cooldown_>0)
         engine_->pipeline->dShowLightProxy(1,0.1f);
     else
@@ -165,7 +162,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 
 void GLWidget::reset_light_proxy_cooldown()
 {
-    light_proxy_cooldown_ = 40;
+    light_proxy_cooldown_ = 60;
 }
 
 // Slots
@@ -223,9 +220,11 @@ void GLWidget::handle_z_changed(double newvalue)
     model_pos_[2] = (float)newvalue;
 }
 
-void GLWidget::handle_material_swap(const wcore::MaterialDescriptor& descriptor)
+void GLWidget::handle_material_swap(EditorModel* edmodel)
 {
-    new_material_ = new Material(descriptor);
+    const wcore::MaterialDescriptor descriptor = edmodel->get_current_material_descriptor();
+    if(edmodel->validate_descriptor(descriptor))
+        new_material_ = new Material(descriptor);
 }
 
 void GLWidget::handle_light_x_changed(double newvalue)
@@ -296,5 +295,6 @@ void GLWidget::handle_bloom_changed(int newvalue)
 {
     engine_->pipeline->SetBloomEnabled(newvalue == Qt::Checked);
 }
+
 
 } // namespace waterial

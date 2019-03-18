@@ -16,6 +16,7 @@ QT_FORWARD_DECLARE_CLASS(QTimer)
 
 namespace waterial
 {
+QT_FORWARD_DECLARE_CLASS(EditorModel)
 
 class QtContext;
 class GLWidget : public QOpenGLWidget
@@ -48,7 +49,7 @@ public slots:
     void handle_x_changed(double newvalue);
     void handle_y_changed(double newvalue);
     void handle_z_changed(double newvalue);
-    void handle_material_swap(const wcore::MaterialDescriptor& descriptor);
+    void handle_material_swap(EditorModel* edmodel);
 
     void handle_light_radius_changed(double newvalue);
     void handle_light_brightness_changed(double newvalue);
