@@ -42,6 +42,7 @@ signals:
     void sig_controls_changed();
 
 public slots:
+    void handle_sig_texmap_changed(bool initialized);
     void handle_sig_something_changed();
 
 protected:
