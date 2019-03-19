@@ -132,7 +132,7 @@ bool CameraController::onMouseEvent(const WData& data)
 bool CameraStateFreefly::onMouseEvent(const WData& data, Camera& camera)
 {
     const MouseData& md = static_cast<const MouseData&>(data);
-    camera.update_orientation(md.dx, md.dy);
+    camera.update_orientation(-md.dx, -md.dy);
 
     return true; // Do NOT consume event
 }

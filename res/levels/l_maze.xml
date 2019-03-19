@@ -154,7 +154,7 @@
 
     <Camera>
         <Position>(0,7,0)</Position>
-        <Orientation>(180,10)</Orientation>
+        <Orientation>(223,-38)</Orientation>
     </Camera>
 
     <!-- Sun -->

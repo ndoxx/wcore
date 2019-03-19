@@ -103,7 +103,7 @@
 
     <Camera>
         <Position>(0,1.5,-1.5)</Position>
-        <Orientation>(180,25)</Orientation>
+        <Orientation>(180,-25)</Orientation>
     </Camera>
 
     <!-- Sun -->

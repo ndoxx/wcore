@@ -186,7 +186,12 @@ void FrustumBox::update(const Camera& camera)
 {
     const vec3& right   = camera.get_right();
     const vec3& up      = camera.get_up();
-    const vec3& forward = camera.get_forward();
+    const vec3& forward = -camera.get_forward();
+    // camera forward is towards the negative z direction
+    // we negate it here because world coordinates use
+    // the opposite convention (objects far from the origin
+    // along the z axis have a positive z component)
+
 
     const vec3& p    = camera.get_position();
     const Frustum& f = camera.get_frustum();

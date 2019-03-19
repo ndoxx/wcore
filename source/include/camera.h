@@ -12,37 +12,6 @@ namespace wcore
 class AABB;
 class Camera
 {
-private:
-    float           pitch_;
-    float           yaw_;
-    float           dt_;
-    float           speed_;
-    float           rot_speed_;
-
-    math::Frustum   frustum_;
-    math::mat4      proj_;
-    math::mat4      view_;
-    math::mat4      model_;
-    math::vec3      position_;
-    math::vec3      right_;
-    math::vec3      up_;
-    math::vec3      forward_;
-
-    std::array<math::vec2,4> rays_;
-
-    FrustumBox      frusBox_;
-    bool            update_frustum_;
-    bool            is_ortho_;
-
-    float NEAR;
-    float FAR;
-    float MOUSE_SENSITIVITY_X;
-    float MOUSE_SENSITIVITY_Y;
-    float SPEED_SLOW;
-    float SPEED_FAST;
-
-    static float MAX_PITCH;
-
 public:
 
     inline float get_near() { return NEAR; }
@@ -119,6 +88,38 @@ public:
 
 private:
     void compute_rays_perspective();
+
+private:
+private:
+    float           pitch_;
+    float           yaw_;
+    float           dt_;
+    float           speed_;
+    float           rot_speed_;
+
+    math::Frustum   frustum_;
+    math::mat4      proj_;
+    math::mat4      view_;
+    math::mat4      model_;
+    math::vec3      position_;
+    math::vec3      right_;
+    math::vec3      up_;
+    math::vec3      forward_;
+
+    std::array<math::vec2,4> rays_;
+
+    FrustumBox      frusBox_;
+    bool            update_frustum_;
+    bool            is_ortho_;
+
+    float NEAR;
+    float FAR;
+    float MOUSE_SENSITIVITY_X;
+    float MOUSE_SENSITIVITY_Y;
+    float SPEED_SLOW;
+    float SPEED_FAST;
+
+    static float MAX_PITCH;
 };
 
 inline const math::vec3& Camera::get_right() const
@@ -144,13 +145,13 @@ inline void Camera::set_position(const math::vec3& newpos)
 inline void Camera::move_forward()
 {
     const math::vec3& f = get_forward();
-    update_position(math::vec3(f.x(), 0.0f, f.z()).normalized()*dt_);
+    update_position(math::vec3(f.x(), 0.0f, f.z()).normalized()*(-dt_));
 }
 
 inline void Camera::move_backward()
 {
     const math::vec3& f = get_forward();
-    update_position(math::vec3(f.x(), 0.0f, f.z()).normalized()*(-dt_));
+    update_position(math::vec3(f.x(), 0.0f, f.z()).normalized()*dt_);
 }
 
 inline void Camera::ascend()

@@ -18,37 +18,28 @@ namespace math
 
 void init_rotation_euler(mat4& Matrix, float z, float y, float x)
 {
-    mat4 rx, ry, rz;
+    float a1 = z;
+    float a2 = y;
+    float a3 = x;
 
-      rx[0]  = 1.0f;   /*rx[1]   = 0.0f;*/  /*rx[2]  = 0.0f ;*/ /*rx[3]  = 0.0f;*/
-    /*rx[4]  = 0.0f;*/   rx[5]   = cos(x);    rx[6]  = sin(x);  /*rx[7]  = 0.0f;*/
-    /*rx[8]  = 0.0f;*/   rx[9]   = -sin(x);   rx[10] = cos(x);  /*rx[11] = 0.0f;*/
-    /*rx[12] = 0.0f;*/ /*rx[13]  = 0.0f;*/  /*rx[14] = 0.0f;*/    rx[15] = 1.0f;
-
-      ry[0]  = cos(y);  /*ry[1]  = 0.0f;*/    ry[2]  = -sin(y);  /*ry[3]  = 0.0f;*/
-    /*ry[4]  = 0.0f;*/    ry[5]  = 1.0f;    /*ry[6]  = 0.0f;*/  /*ry[7]  = 0.0f;*/
-      ry[8]  = sin(y); /*ry[9]  = 0.0f;*/    ry[10] = cos(y);  /*ry[11] = 0.0f;*/
-    /*ry[12] = 0.0f;*/  /*ry[13] = 0.0f;*/  /*ry[14] = 0.0f;*/   ry[15]  = 1.0f;
-
-      rz[0]  = cos(z);    rz[1]  = sin(z);  /*rz[2] = 0.0f;*/   /*rz[3]  = 0.0f;*/
-      rz[4]  = -sin(z);   rz[5]  = cos(z);  /*rz[6] = 0.0f;*/   /*rz[7]  = 0.0f;*/
-    /*rz[8]  = 0.0f;*/  /*rz[9]  = 0.0f;*/    rz[10] = 1.0f;    /*rz[11] = 0.0f;*/
-    /*rz[12] = 0.0f;*/  /*rz[13] = 0.0f;*/  /*rz[14] = 0.0f;*/   rz[15]  = 1.0f;
-
-    Matrix = rx * ry * rz;
+    Matrix = mat4(cos(a1)*cos(a2), cos(a1)*sin(a2)*sin(a3)-cos(a3)*sin(a1), sin(a1)*sin(a3)+cos(a1)*cos(a3)*sin(a2), 0.f,
+                  cos(a2)*sin(a1), cos(a1)*cos(a3)+sin(a1)*sin(a2)*sin(a3), cos(a3)*sin(a1)*sin(a2)-cos(a1)*sin(a3), 0.f,
+                  -sin(a2),        cos(a2)*sin(a3),                         cos(a2)*cos(a3),                         0.f,
+                  0.f,             0.f,                                     0.f,                                     1.f);
 }
 
 void init_look_at(mat4& Matrix, const vec3& eye, const vec3& target, const vec3& up)
 {
-    vec3 zaxis = (eye - target).normalized();     // The "forward" vector.
-    vec3 xaxis = (cross(up, zaxis)).normalized(); // The "right" vector.
-    vec3 yaxis = cross(zaxis, xaxis);             // The "up" vector.
+    vec3 zaxis = (eye - target).normalized();     // "forward -z" vector.
+    vec3 xaxis = (cross(up, zaxis)).normalized(); // "right" vector.
+    vec3 yaxis = cross(zaxis, xaxis);             // "up" vector.
+
     vec3 trans(-xaxis.dot(eye), -yaxis.dot(eye), -zaxis.dot(eye));
 
-    Matrix[0]  = xaxis.x();  Matrix[1]  = yaxis.x();  Matrix[2]  = zaxis.x(); Matrix[3]  = 0.0f;
-    Matrix[4]  = xaxis.y();  Matrix[5]  = yaxis.y();  Matrix[6]  = zaxis.y(); Matrix[7]  = 0.0f;
-    Matrix[8]  = xaxis.z();  Matrix[9]  = yaxis.z();  Matrix[10] = zaxis.z(); Matrix[11] = 0.0f;
-    Matrix[12] = trans[0];   Matrix[13] = trans[1];   Matrix[14] = trans[2];  Matrix[15] = 1.0f;
+    Matrix[0] = xaxis.x();  Matrix[4] = xaxis.y();  Matrix[8]  = xaxis.z(); Matrix[12] = trans[0];
+    Matrix[1] = yaxis.x();  Matrix[5] = yaxis.y();  Matrix[9]  = yaxis.z(); Matrix[13] = trans[1];
+    Matrix[2] = zaxis.x();  Matrix[6] = zaxis.y();  Matrix[10] = zaxis.z(); Matrix[14] = trans[2];
+    Matrix[3] = 0.0f;       Matrix[7] = 0.0f;       Matrix[11] = 0.0f;      Matrix[15] = 1.0f;
 }
 
 void init_perspective(mat4& Matrix, float fov, float aspectRatio, float zNear, float zFar, bool leftHanded)
@@ -59,11 +50,12 @@ void init_perspective(mat4& Matrix, float fov, float aspectRatio, float zNear, f
     float zRange = zFar - zNear;
     float p1 = -(zNear+zFar)/zRange;
     float p2 = -2.0*zFar*zNear/zRange;
+    float ll = (leftHanded ? -1 : 1 ); //-1 for Opengl
 
-    Matrix[0]  = xScale; Matrix[1]  = 0.0f;   Matrix[2]  = 0.0f; Matrix[3]  = 0.0f;
-    Matrix[4]  = 0.0f;   Matrix[5]  = yScale; Matrix[6]  = 0.0f; Matrix[7]  = 0.0f;
-    Matrix[8]  = 0.0f;   Matrix[9]  = 0.0f;   Matrix[10] = p1;   Matrix[11] = (leftHanded ? -1 : 1 ); //-1 for Opengl
-    Matrix[12] = 0.0f;   Matrix[13] = 0.0f;   Matrix[14] = p2;   Matrix[15] = 0.0f;
+    Matrix[0] = xScale; Matrix[4] = 0.0f;   Matrix[8]  = 0.0f; Matrix[12] = 0.0f;
+    Matrix[1] = 0.0f;   Matrix[5] = yScale; Matrix[9]  = 0.0f; Matrix[13] = 0.0f;
+    Matrix[2] = 0.0f;   Matrix[6] = 0.0f;   Matrix[10] = p1;   Matrix[14] = ll;
+    Matrix[3] = 0.0f;   Matrix[7] = 0.0f;   Matrix[11] = p2;   Matrix[15] = 0.0f;
 }
 
 void init_frustum(mat4& Matrix, const Frustum& f, bool leftHanded)
@@ -74,11 +66,12 @@ void init_frustum(mat4& Matrix, const Frustum& f, bool leftHanded)
     float zx = (f.r+f.l)/f.w;
     float zy = (f.t+f.b)/f.h;
     float zp = -2*f.f*f.n/f.d;
+    float ll = (leftHanded ? -1 : 1 ); //-1 for Opengl
 
-    Matrix[0]  = xScale; Matrix[1]  = 0.0f;   Matrix[2]  = 0.0f;   Matrix[3]  = 0.0f;
-    Matrix[4]  = 0.0f;   Matrix[5]  = yScale; Matrix[6]  = 0.0f;   Matrix[7]  = 0.0f;
-    Matrix[8]  = zx;     Matrix[9]  = zy;     Matrix[10] = zScale; Matrix[11] = (leftHanded ? -1 : 1 ); //-1 for Opengl
-    Matrix[12] = 0.0f;   Matrix[13] = 0.0f;   Matrix[14] = zp;     Matrix[15] = 0.0f;
+    Matrix[0] = xScale; Matrix[4] = 0.0f;   Matrix[8]  = zx;     Matrix[12] = 0.0f;
+    Matrix[1] = 0.0f;   Matrix[5] = yScale; Matrix[9]  = zy;     Matrix[13] = 0.0f;
+    Matrix[2] = 0.0f;   Matrix[6] = 0.0f;   Matrix[10] = zScale; Matrix[14] = zp;
+    Matrix[3] = 0.0f;   Matrix[7] = 0.0f;   Matrix[11] = ll;     Matrix[15] = 0.0f;
 }
 
 void init_ortho(mat4& Matrix, const Frustum& f, bool leftHanded)
@@ -87,10 +80,10 @@ void init_ortho(mat4& Matrix, const Frustum& f, bool leftHanded)
     float ty = -(f.t+f.b)/f.h;
     float tz = -(f.f+f.n)/f.d;
 
-    Matrix[0]  = 2.0f/f.w; Matrix[1]  = 0.0f;     Matrix[2]  = 0.0f;     Matrix[3]  = 0.0f;
-    Matrix[4]  = 0.0f;     Matrix[5]  = 2.0f/f.h; Matrix[6]  = 0.0f;     Matrix[7]  = 0.0f;
-    Matrix[8]  = 0.0f;     Matrix[9]  = 0.0f;     Matrix[10] = -2.0/f.d; Matrix[11] = 0.0f;
-    Matrix[12] = tx;       Matrix[13] = ty;       Matrix[14] = tz;       Matrix[15] = 1.0f;
+    Matrix[0] = 2.0f/f.w; Matrix[4] = 0.0f;     Matrix[8]  = 0.0f;     Matrix[12] = tx;
+    Matrix[1] = 0.0f;     Matrix[5] = 2.0f/f.h; Matrix[9]  = 0.0f;     Matrix[13] = ty;
+    Matrix[2] = 0.0f;     Matrix[6] = 0.0f;     Matrix[10] = -2.0/f.d; Matrix[14] = tz;
+    Matrix[3] = 0.0f;     Matrix[7] = 0.0f;     Matrix[11] = 0.0f;     Matrix[15] = 1.0f;
 }
 
 bool inverse(const mat3& m, mat3& Inverse)

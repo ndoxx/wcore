@@ -21,6 +21,7 @@ extern "C" void WAPI SetGlobal(hash_t name, const void* data);
 
 class Model;
 class Light;
+class Camera;
 class WAPI Engine
 {
 private:
@@ -91,6 +92,8 @@ public:
     void LoadPointLight(uint32_t chunk_index, hash_t href=0);
 
     // * Game object visitors / accessors
+    // Get scene camera
+    Camera& GetCamera();
     // Get referenced model in scene by hash name, hash name MUST exist
     Model& GetModelRef(hash_t href);
     // Get referenced light in scene by hash name, hash name MUST exist

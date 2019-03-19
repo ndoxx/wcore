@@ -626,7 +626,7 @@
 
     <Camera>
         <Position>(4.2,3.6,9.0)</Position>
-        <Orientation>(133.0,24.0)</Orientation>
+        <Orientation>(224.0,-14.0)</Orientation>
     </Camera>
 
     <!-- Sun -->

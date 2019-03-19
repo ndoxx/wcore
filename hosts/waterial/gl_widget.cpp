@@ -12,6 +12,7 @@
 #include "model.h"
 #include "material.h"
 #include "lights.h"
+#include "camera.h"
 #include "editor_model.h"
 
 using namespace wcore;
@@ -31,6 +32,7 @@ light_proxy_cooldown_(0),
 dphi_(0.0f),
 dtheta_(0.5f),
 dpsi_(0.0f),
+cam_coords_(2.0f,M_PI/4.0f,M_PI),
 model_pos_(0.f),
 light_pos_(0.f,2.f,0.f),
 light_color_(1.f,1.f,1.f),
@@ -140,6 +142,17 @@ void GLWidget::paintGL()
     else
         engine_->pipeline->dShowLightProxy(0);
 
+    // Update camera
+    /*Camera& cam = engine_->scene->GetCamera();
+    cam.set_position(math::vec3(cam_coords_.x()*sin(cam_coords_.y())*sin(cam_coords_.z()),
+                                cam_coords_.x()*cos(cam_coords_.y()),
+                                cam_coords_.x()*sin(cam_coords_.y())*cos(cam_coords_.z())));*/
+    //BANG();
+    //std::cout << cam.get_view_matrix() << std::endl;
+    //cam.look_at(math::vec3(0.f));
+    //std::cout << cam.get_view_matrix() << std::endl;
+    //std::cout << cam.get_position() << std::endl;
+
     engine_->Update(16.67/1000.f);
     engine_->RenderFrame();
     engine_->FinishFrame();
@@ -203,6 +216,21 @@ void GLWidget::handle_dpsi_changed(double newvalue)
 void GLWidget::handle_reset_orientation()
 {
     reset_orientation_ = true;
+}
+
+void GLWidget::handle_cam_radius_changed(double newvalue)
+{
+    cam_coords_[0] = (float)newvalue;
+}
+
+void GLWidget::handle_cam_inclination_changed(double newvalue)
+{
+    cam_coords_[1] = (float)newvalue;
+}
+
+void GLWidget::handle_cam_azimuth_changed(double newvalue)
+{
+    cam_coords_[2] = (float)newvalue;
 }
 
 void GLWidget::handle_x_changed(double newvalue)

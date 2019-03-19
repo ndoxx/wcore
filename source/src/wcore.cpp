@@ -12,8 +12,6 @@
 #include "intern_string.h"
 #include "engine_core.h"
 #include "scene.h"
-#include "model.h"
-#include "lights.h"
 #include "file_system.h"
 #include "chunk_manager.h"
 #include "camera_controller.h"
@@ -467,6 +465,11 @@ void Engine::SceneControl::LoadModel(hash_t name, uint32_t chunk_index, hash_t h
 void Engine::SceneControl::LoadPointLight(uint32_t chunk_index, hash_t href)
 {
     auto plight = eimpl_->scene_loader->load_point_light(chunk_index, href);
+}
+
+Camera& Engine::SceneControl::GetCamera()
+{
+    return eimpl_->scene->get_camera();
 }
 
 Model& Engine::SceneControl::GetModelRef(hash_t href)

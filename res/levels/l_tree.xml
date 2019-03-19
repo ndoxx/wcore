@@ -444,7 +444,7 @@
 
     <Camera>
         <Position>(39,28,35)</Position>
-        <Orientation>(319,26)</Orientation>
+        <Orientation>(40,-32)</Orientation>
     </Camera>
 
     <!-- Sun -->

@@ -256,6 +256,31 @@ QGroupBox* PreviewControlWidget::create_camera_controls(GLWidget* preview)
     QFormLayout* layout_camera = new QFormLayout();
     QGroupBox* gb_camera = new QGroupBox(tr("Camera"));
 
+    DoubleSlider* sld_r = new DoubleSlider();
+    DoubleSlider* sld_theta = new DoubleSlider();
+    DoubleSlider* sld_phi = new DoubleSlider();
+
+    sld_r->setMaximumHeight(20);
+    sld_r->set_range(0.0,5.0);
+    sld_r->set_value(2.0);
+    sld_theta->setMaximumHeight(20);
+    sld_theta->set_range(0.0,M_PI);
+    sld_theta->set_value(M_PI / 4.0f);
+    sld_phi->setMaximumHeight(20);
+    sld_phi->set_range(0.0,2*M_PI);
+    sld_phi->set_value(M_PI);
+
+    connect(sld_r,   SIGNAL(doubleValueChanged(double)),
+            preview, SLOT(handle_cam_radius_changed(double)));
+    connect(sld_theta, SIGNAL(doubleValueChanged(double)),
+            preview,   SLOT(handle_cam_inclination_changed(double)));
+    connect(sld_phi, SIGNAL(doubleValueChanged(double)),
+            preview, SLOT(handle_cam_azimuth_changed(double)));
+
+    layout_camera->addRow(tr("Radius"), sld_r);
+    layout_camera->addRow(tr("Inclination"), sld_theta);
+    layout_camera->addRow(tr("Azimuth"), sld_phi);
+
     gb_camera->setLayout(layout_camera);
 
     return gb_camera;

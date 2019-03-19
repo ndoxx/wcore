@@ -62,6 +62,10 @@ public slots:
     void handle_light_color_changed(QColor newvalue);
     void handle_light_type_changed(int newvalue);
 
+    void handle_cam_radius_changed(double newvalue);
+    void handle_cam_inclination_changed(double newvalue);
+    void handle_cam_azimuth_changed(double newvalue);
+
     void handle_bloom_changed(int newvalue);
 
 protected:
@@ -89,6 +93,7 @@ private:
     float dphi_;
     float dtheta_;
     float dpsi_;
+    wcore::math::vec3 cam_coords_; // radius r, inclination theta, azimuth phi
     wcore::math::vec3 model_pos_;
     wcore::math::vec3 light_pos_;
     wcore::math::vec3 light_color_;

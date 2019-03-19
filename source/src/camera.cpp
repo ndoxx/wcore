@@ -97,22 +97,22 @@ void Camera::update(float dt)
     // Update frame interval
     dt_ = dt;
 
-    // Update matrices
-    mat4 R;
+    // * Update matrices
+    // First, compute camera model matrix
+    mat4 R,T;
     init_rotation_euler(R, 0.0f, TORADIANS(yaw_), TORADIANS(pitch_));
-    mat4 T;
-    init_translation(T, -position_);
-    view_ = R*T;
-
-    R.transpose();
     init_translation(T, position_);
     model_ = T*R;
 
-    right_ = vec3(view_.row(0)).normalized();
-    up_ = vec3(view_.row(1)).normalized();
-    forward_ = -vec3(view_.row(2)).normalized(); // WTF -
+    // Invert it to obtain the view matrix
+    math::inverse_affine(model_, view_);
 
-    // Update frustum bounding box
+    // * Extract proper axes
+    right_   = vec3(model_.col(0));
+    up_      = vec3(model_.col(1));
+    forward_ = vec3(model_.col(2));
+
+    // * Update frustum bounding box
     if(update_frustum_)
         frusBox_.update(*this);
 }
@@ -126,11 +126,13 @@ void Camera::look_at(const math::vec3& posLookAt)
 {
     // Initialize view matrix
     math::init_look_at(view_, position_, posLookAt, vec3(0,1,0));
+    // Invert it to obtain the model matrix
+    math::inverse_affine(view_, model_);
 
     // Get each axis
-    right_ = vec3(view_.row(0));
-    up_ = vec3(view_.row(1));
-    forward_ = -vec3(view_.row(2)); // WTF -
+    right_   = vec3(model_.col(0));
+    up_      = vec3(model_.col(1));
+    forward_ = vec3(model_.col(2));
 
     // Update frustum bounding box
     if(update_frustum_)
