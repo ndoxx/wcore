@@ -9,6 +9,7 @@ namespace waterial
 {
 
 QT_FORWARD_DECLARE_CLASS(GLWidget)
+QT_FORWARD_DECLARE_CLASS(DoubleSlider)
 
 class PreviewControlWidget: public QGroupBox
 {
@@ -22,6 +23,8 @@ signals:
 
 protected slots:
     void handle_light_type_changed(int newvalue);
+    void handle_reset_cam_orientation();
+    void handle_reset_model_position();
 
 protected:
     QGroupBox* create_general_controls(GLWidget* preview);
@@ -33,6 +36,13 @@ private:
     QComboBox* combo_light_type_;
     QWidget* point_light_controls_;
     QWidget* dir_light_controls_;
+
+    DoubleSlider* sld_cam_r_;
+    DoubleSlider* sld_cam_theta_;
+    DoubleSlider* sld_cam_phi_;
+    DoubleSlider* sld_mod_x_;
+    DoubleSlider* sld_mod_y_;
+    DoubleSlider* sld_mod_z_;
 };
 
 } // namespace waterial

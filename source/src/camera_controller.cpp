@@ -129,6 +129,11 @@ bool CameraController::onMouseEvent(const WData& data)
     return current_state()->onMouseEvent(data, *camera_);
 }
 
+void CameraStateFreefly::control(Camera& camera, float dt)
+{
+    camera.freefly_view();
+}
+
 bool CameraStateFreefly::onMouseEvent(const WData& data, Camera& camera)
 {
     const MouseData& md = static_cast<const MouseData&>(data);

@@ -67,6 +67,7 @@ class CameraStateFreefly: public CameraController::CameraState
 public:
     virtual bool onMouseEvent(const WData& data, Camera& camera) override;
     virtual bool onKeyboardEvent(const WData& data, Camera& camera) override;
+    virtual void control(Camera& camera, float dt) override;
 };
 
 class CameraStateTrackingShot: public CameraController::CameraState

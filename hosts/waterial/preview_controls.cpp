@@ -81,7 +81,7 @@ QGroupBox* PreviewControlWidget::create_model_controls(GLWidget* preview)
     btn_reset_ori->setMaximumHeight(20);
     connect(btn_reset_ori, SIGNAL(clicked()),
             preview,       SLOT(handle_reset_orientation()));
-    layout_model->addWidget(btn_reset_ori);
+    layout_model->addRow(btn_reset_ori);
 
     // Rotation parameters
     DoubleSlider* sld_dphi = new DoubleSlider();
@@ -104,29 +104,37 @@ QGroupBox* PreviewControlWidget::create_model_controls(GLWidget* preview)
     layout_model->addRow(QString::fromUtf8("\u03B8"), sld_dtheta);
     layout_model->addRow(QString::fromUtf8("\u03C8"), sld_dpsi);
 
-    // Position parameters
-    DoubleSlider* sld_x = new DoubleSlider();
-    DoubleSlider* sld_y = new DoubleSlider();
-    DoubleSlider* sld_z = new DoubleSlider();
-    sld_x->setMaximumHeight(20);
-    sld_x->set_range(-2.0,2.0);
-    sld_x->set_value(0.0);
-    sld_y->setMaximumHeight(20);
-    sld_y->set_range(-2.0,2.0);
-    sld_y->set_value(0.0);
-    sld_z->setMaximumHeight(20);
-    sld_z->set_range(-1.0,2.0);
-    sld_z->set_value(0.0);
-    connect(sld_x,   SIGNAL(doubleValueChanged(double)),
-            preview, SLOT(handle_x_changed(double)));
-    connect(sld_y,   SIGNAL(doubleValueChanged(double)),
-            preview, SLOT(handle_y_changed(double)));
-    connect(sld_z,   SIGNAL(doubleValueChanged(double)),
-            preview, SLOT(handle_z_changed(double)));
+    // Reset position
+    QPushButton* btn_reset_pos = new QPushButton(tr("Reset position"));
+    btn_reset_pos->setMaximumHeight(20);
+    connect(btn_reset_pos, SIGNAL(clicked()),
+            this,          SLOT(handle_reset_model_position()));
+    layout_model->addRow(btn_reset_pos);
 
-    layout_model->addRow(tr("x"), sld_x);
-    layout_model->addRow(tr("y"), sld_y);
-    layout_model->addRow(tr("z"), sld_z);
+    // Position parameters
+    sld_mod_x_ = new DoubleSlider();
+    sld_mod_y_ = new DoubleSlider();
+    sld_mod_z_ = new DoubleSlider();
+
+    sld_mod_x_->setMaximumHeight(20);
+    sld_mod_x_->set_range(-2.0,2.0);
+    sld_mod_x_->set_value(0.0);
+    sld_mod_y_->setMaximumHeight(20);
+    sld_mod_y_->set_range(-2.0,2.0);
+    sld_mod_y_->set_value(0.0);
+    sld_mod_z_->setMaximumHeight(20);
+    sld_mod_z_->set_range(-1.0,2.0);
+    sld_mod_z_->set_value(0.0);
+    connect(sld_mod_x_, SIGNAL(doubleValueChanged(double)),
+            preview,    SLOT(handle_x_changed(double)));
+    connect(sld_mod_y_, SIGNAL(doubleValueChanged(double)),
+            preview,    SLOT(handle_y_changed(double)));
+    connect(sld_mod_z_, SIGNAL(doubleValueChanged(double)),
+            preview,    SLOT(handle_z_changed(double)));
+
+    layout_model->addRow(tr("x"), sld_mod_x_);
+    layout_model->addRow(tr("y"), sld_mod_y_);
+    layout_model->addRow(tr("z"), sld_mod_z_);
 
     gb_model->setLayout(layout_model);
 
@@ -256,30 +264,37 @@ QGroupBox* PreviewControlWidget::create_camera_controls(GLWidget* preview)
     QFormLayout* layout_camera = new QFormLayout();
     QGroupBox* gb_camera = new QGroupBox(tr("Camera"));
 
-    DoubleSlider* sld_r = new DoubleSlider();
-    DoubleSlider* sld_theta = new DoubleSlider();
-    DoubleSlider* sld_phi = new DoubleSlider();
+    // Reset orientation
+    QPushButton* btn_reset_ori = new QPushButton(tr("Reset orientation"));
+    btn_reset_ori->setMaximumHeight(20);
+    connect(btn_reset_ori, SIGNAL(clicked()),
+            this,          SLOT(handle_reset_cam_orientation()));
+    layout_camera->addRow(btn_reset_ori);
 
-    sld_r->setMaximumHeight(20);
-    sld_r->set_range(0.0,5.0);
-    sld_r->set_value(2.0);
-    sld_theta->setMaximumHeight(20);
-    sld_theta->set_range(0.0,M_PI);
-    sld_theta->set_value(M_PI / 4.0f);
-    sld_phi->setMaximumHeight(20);
-    sld_phi->set_range(0.0,2*M_PI);
-    sld_phi->set_value(M_PI);
+    sld_cam_r_ = new DoubleSlider();
+    sld_cam_theta_ = new DoubleSlider();
+    sld_cam_phi_ = new DoubleSlider();
 
-    connect(sld_r,   SIGNAL(doubleValueChanged(double)),
+    sld_cam_r_->setMaximumHeight(20);
+    sld_cam_r_->set_range(0.0,5.0);
+    sld_cam_r_->set_value(2.0);
+    sld_cam_theta_->setMaximumHeight(20);
+    sld_cam_theta_->set_range(5.0*M_PI/180.f,M_PI);
+    sld_cam_theta_->set_value(M_PI / 4.0f);
+    sld_cam_phi_->setMaximumHeight(20);
+    sld_cam_phi_->set_range(0.0,2*M_PI);
+    sld_cam_phi_->set_value(M_PI);
+
+    connect(sld_cam_r_,   SIGNAL(doubleValueChanged(double)),
             preview, SLOT(handle_cam_radius_changed(double)));
-    connect(sld_theta, SIGNAL(doubleValueChanged(double)),
+    connect(sld_cam_theta_, SIGNAL(doubleValueChanged(double)),
             preview,   SLOT(handle_cam_inclination_changed(double)));
-    connect(sld_phi, SIGNAL(doubleValueChanged(double)),
+    connect(sld_cam_phi_, SIGNAL(doubleValueChanged(double)),
             preview, SLOT(handle_cam_azimuth_changed(double)));
 
-    layout_camera->addRow(tr("Radius"), sld_r);
-    layout_camera->addRow(tr("Inclination"), sld_theta);
-    layout_camera->addRow(tr("Azimuth"), sld_phi);
+    layout_camera->addRow(tr("Radius"), sld_cam_r_);
+    layout_camera->addRow(tr("Inclination"), sld_cam_theta_);
+    layout_camera->addRow(tr("Azimuth"), sld_cam_phi_);
 
     gb_camera->setLayout(layout_camera);
 
@@ -299,6 +314,20 @@ void PreviewControlWidget::handle_light_type_changed(int newvalue)
         point_light_controls_->hide();
     }
     emit sig_light_type_changed(newvalue);
+}
+
+void PreviewControlWidget::handle_reset_cam_orientation()
+{
+    sld_cam_r_->set_value(2.0);
+    sld_cam_theta_->set_value(M_PI / 4.0f);
+    sld_cam_phi_->set_value(M_PI);
+}
+
+void PreviewControlWidget::handle_reset_model_position()
+{
+    sld_mod_x_->set_value(0.0);
+    sld_mod_y_->set_value(0.0);
+    sld_mod_z_->set_value(0.0);
 }
 
 

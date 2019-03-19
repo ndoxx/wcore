@@ -13,19 +13,17 @@ namespace math
     cash misses. So a line of initialization like this one:
         M[0]  = 1.0f;    M[1]  = 0.0f;    M[2]  = 0.0f ;  M[3]  = 0.0f;
     would initialize the first COLUMN of a 4x4 matrix.
+
+    [.] Not nssly the case anymore.
 */
 
 
-void init_rotation_euler(mat4& Matrix, float z, float y, float x)
+void init_rotation_tait_bryan(mat4& Matrix, float z, float y, float x)
 {
-    float a1 = z;
-    float a2 = y;
-    float a3 = x;
-
-    Matrix = mat4(cos(a1)*cos(a2), cos(a1)*sin(a2)*sin(a3)-cos(a3)*sin(a1), sin(a1)*sin(a3)+cos(a1)*cos(a3)*sin(a2), 0.f,
-                  cos(a2)*sin(a1), cos(a1)*cos(a3)+sin(a1)*sin(a2)*sin(a3), cos(a3)*sin(a1)*sin(a2)-cos(a1)*sin(a3), 0.f,
-                  -sin(a2),        cos(a2)*sin(a3),                         cos(a2)*cos(a3),                         0.f,
-                  0.f,             0.f,                                     0.f,                                     1.f);
+    Matrix = mat4(cos(z)*cos(y), cos(z)*sin(y)*sin(x)-cos(x)*sin(z), sin(z)*sin(x)+cos(z)*cos(x)*sin(y), 0.f,
+                  cos(y)*sin(z), cos(z)*cos(x)+sin(z)*sin(y)*sin(x), cos(x)*sin(z)*sin(y)-cos(z)*sin(x), 0.f,
+                  -sin(y),       cos(y)*sin(x),                      cos(y)*cos(x),                      0.f,
+                  0.f,            0.f,                               0.f,                                1.f);
 }
 
 void init_look_at(mat4& Matrix, const vec3& eye, const vec3& target, const vec3& up)
@@ -45,12 +43,11 @@ void init_look_at(mat4& Matrix, const vec3& eye, const vec3& target, const vec3&
 void init_perspective(mat4& Matrix, float fov, float aspectRatio, float zNear, float zFar, bool leftHanded)
 {
     float yScale = 1.0f / tan(TORADIANS(fov/2));
-    // NDC left handed for OpenGL
-    float xScale = (leftHanded ? 1 : -1 ) * yScale / aspectRatio;
+    float ll = (leftHanded ? -1 : 1 ); //-1 for Opengl
+    float xScale = -ll * yScale / aspectRatio;
     float zRange = zFar - zNear;
     float p1 = -(zNear+zFar)/zRange;
     float p2 = -2.0*zFar*zNear/zRange;
-    float ll = (leftHanded ? -1 : 1 ); //-1 for Opengl
 
     Matrix[0] = xScale; Matrix[4] = 0.0f;   Matrix[8]  = 0.0f; Matrix[12] = 0.0f;
     Matrix[1] = 0.0f;   Matrix[5] = yScale; Matrix[9]  = 0.0f; Matrix[13] = 0.0f;
@@ -60,13 +57,13 @@ void init_perspective(mat4& Matrix, float fov, float aspectRatio, float zNear, f
 
 void init_frustum(mat4& Matrix, const Frustum& f, bool leftHanded)
 {
-    float xScale = 2*f.n/f.w * (leftHanded ? 1 : -1 );
+    float ll = (leftHanded ? -1 : 1 ); //-1 for Opengl
+    float xScale = 2*f.n/f.w * (-ll);
     float yScale = 2*f.n/f.h;
     float zScale = -(f.f+f.n)/f.d;
     float zx = (f.r+f.l)/f.w;
     float zy = (f.t+f.b)/f.h;
     float zp = -2*f.f*f.n/f.d;
-    float ll = (leftHanded ? -1 : 1 ); //-1 for Opengl
 
     Matrix[0] = xScale; Matrix[4] = 0.0f;   Matrix[8]  = zx;     Matrix[12] = 0.0f;
     Matrix[1] = 0.0f;   Matrix[5] = yScale; Matrix[9]  = zy;     Matrix[13] = 0.0f;

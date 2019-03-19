@@ -13,6 +13,9 @@
                     <Position>(0.0,0.0,0.0)</Position>
                     <Scale>1.0</Scale>
                 </Transform>
+                <Override>
+                    <EnableCulling>false</EnableCulling>
+                </Override>
             </Model>
         </Models>
 

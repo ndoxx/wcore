@@ -108,7 +108,7 @@ float det(const mat3& Matrix);
 
 float det(const mat4& Matrix);
 
-void init_rotation_euler(mat4& Matrix, float z, float y, float x);
+void init_rotation_tait_bryan(mat4& Matrix, float z, float y, float x);
 
 void init_look_at(mat4& Matrix, const vec3& eye, const vec3& target, const vec3& up);
 

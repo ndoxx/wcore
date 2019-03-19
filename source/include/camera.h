@@ -20,7 +20,7 @@ public:
     Camera() = delete;
     Camera(float scr_width, float scr_height);
 
-    void set_perspective(float scr_width, float scr_height, float z_far=100.0f);
+    void set_perspective(float scr_width, float scr_height, float z_near=0.1f, float z_far=100.0f);
     inline void set_perspective() { init_frustum(proj_, frustum_); }
 
     void set_orthographic(const std::array<float,6>& extent);
@@ -79,7 +79,11 @@ public:
                                     float texel_size_x = 0.0f,
                                     float texel_size_y = 0.0f);
 
-    void look_at(const math::vec3& posLookAt);
+    inline void set_look_at(const math::vec3& value) { lookat_ = value; }
+    // Update view matrix using position and target information
+    void look_at_view();
+    // Update view matrix using pitch/yaw and position information
+    void freefly_view();
     void update(float dt);
 
 #ifndef __DISABLE_EDITOR__
@@ -102,6 +106,7 @@ private:
     math::mat4      view_;
     math::mat4      model_;
     math::vec3      position_;
+    math::vec3      lookat_;
     math::vec3      right_;
     math::vec3      up_;
     math::vec3      forward_;

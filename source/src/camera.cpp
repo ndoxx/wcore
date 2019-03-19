@@ -24,6 +24,7 @@ yaw_(0.0f),
 dt_(0.0f),
 proj_(),
 position_(0.0f,0.0f,0.0f),
+lookat_(0.0f,0.0f,0.0f),
 update_frustum_(true),
 is_ortho_(false)
 {
@@ -33,20 +34,18 @@ is_ortho_(false)
     CONFIG.get("root.camera.speed_fast"_h, SPEED_FAST);
     CONFIG.get("root.camera.speed_rot"_h, rot_speed_);
     speed_ = SPEED_SLOW;
-    frustum_.init(-scr_width/(scr_height)*NEAR, scr_width/(scr_height)*NEAR, -NEAR, NEAR, NEAR, FAR);
 
-    init_frustum(proj_, frustum_);
-    compute_rays_perspective();
+    set_perspective(scr_width, scr_height, NEAR, FAR);
 
     CONFIG.get("root.input.mouse.sensitivity"_h, MOUSE_SENSITIVITY_X);
     MOUSE_SENSITIVITY_Y = MOUSE_SENSITIVITY_X * ((CONFIG.is("root.input.mouse.y_inverted"_h))?-1.0f:1.0f);
 }
 
-void Camera::set_perspective(float scr_width, float scr_height, float z_far)
+void Camera::set_perspective(float scr_width, float scr_height, float z_near, float z_far)
 {
-    frustum_.l = -scr_width/(scr_height)*NEAR;
-    frustum_.r = scr_width/(scr_height)*NEAR;
-    frustum_.f = z_far;
+    NEAR = z_near;
+    FAR = z_far;
+    frustum_.init(-scr_width/(scr_height)*NEAR, scr_width/(scr_height)*NEAR, -NEAR, NEAR, NEAR, FAR);
     init_frustum(proj_, frustum_);
     compute_rays_perspective();
     is_ortho_ = false;
@@ -97,10 +96,17 @@ void Camera::update(float dt)
     // Update frame interval
     dt_ = dt;
 
+    // * Update frustum bounding box
+    if(update_frustum_)
+        frusBox_.update(*this);
+}
+
+void Camera::freefly_view()
+{
     // * Update matrices
     // First, compute camera model matrix
     mat4 R,T;
-    init_rotation_euler(R, 0.0f, TORADIANS(yaw_), TORADIANS(pitch_));
+    init_rotation_tait_bryan(R, 0.0f, TORADIANS(yaw_), TORADIANS(pitch_));
     init_translation(T, position_);
     model_ = T*R;
 
@@ -111,21 +117,12 @@ void Camera::update(float dt)
     right_   = vec3(model_.col(0));
     up_      = vec3(model_.col(1));
     forward_ = vec3(model_.col(2));
-
-    // * Update frustum bounding box
-    if(update_frustum_)
-        frusBox_.update(*this);
 }
 
-float Camera::get_frustum_diagonal() const
-{
-    return (frusBox_.RBN()-frusBox_.LTF()).norm();
-}
-
-void Camera::look_at(const math::vec3& posLookAt)
+void Camera::look_at_view()
 {
     // Initialize view matrix
-    math::init_look_at(view_, position_, posLookAt, vec3(0,1,0));
+    math::init_look_at(view_, position_, lookat_, vec3(0,1,0));
     // Invert it to obtain the model matrix
     math::inverse_affine(view_, model_);
 
@@ -137,6 +134,11 @@ void Camera::look_at(const math::vec3& posLookAt)
     // Update frustum bounding box
     if(update_frustum_)
         frusBox_.update(*this);
+}
+
+float Camera::get_frustum_diagonal() const
+{
+    return (frusBox_.RBN()-frusBox_.LTF()).norm();
 }
 
 void Camera::compute_rays_perspective()
@@ -221,7 +223,8 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
     set_position(100.0f*view_dir/*+other.position_*/);
 
     // Look at target position
-    look_at(vec3(0)/*+other.position_*/);
+    set_look_at(vec3(0)/*+other.position_*/);
+    look_at_view();
 
     // Transform corners from world to view space
     static std::array<vec3, 8> corners_lightspace;

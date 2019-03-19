@@ -74,12 +74,12 @@ void GLWidget::initializeGL()
     engine_->SetFrameSize(800, 600);
     engine_->Init(0, nullptr, nullptr, context_);
     engine_->scene->LoadStart("mv");
+    engine_->scene->GetCamera().set_perspective(800,600,0.1f,20.f);
 
     // Systems configuration
     engine_->pipeline->SetShadowMappingEnabled(false);
     engine_->pipeline->SetDirectionalLightEnabled(false);
     engine_->pipeline->SetDaylightSystemEnabled(false);
-    //engine_->pipeline->dShowLightProxy(1);
 
     connect(frame_timer_, SIGNAL(timeout()), this, SLOT(update()));
     frame_timer_->start(16);
@@ -142,18 +142,27 @@ void GLWidget::paintGL()
     else
         engine_->pipeline->dShowLightProxy(0);
 
+    engine_->Update(16.67/1000.f);
+
     // Update camera
-    /*Camera& cam = engine_->scene->GetCamera();
+    // [HACK] camera is updated once by the engine update
+    // reupdate camera to impose our spherical coordinates control
+    // [TODO] implement this in a camera controller state and
+    // allow to switch state from the API
+    Camera& cam = engine_->scene->GetCamera();
     cam.set_position(math::vec3(cam_coords_.x()*sin(cam_coords_.y())*sin(cam_coords_.z()),
                                 cam_coords_.x()*cos(cam_coords_.y()),
-                                cam_coords_.x()*sin(cam_coords_.y())*cos(cam_coords_.z())));*/
-    //BANG();
-    //std::cout << cam.get_view_matrix() << std::endl;
-    //cam.look_at(math::vec3(0.f));
-    //std::cout << cam.get_view_matrix() << std::endl;
-    //std::cout << cam.get_position() << std::endl;
+                                cam_coords_.x()*sin(cam_coords_.y())*cos(cam_coords_.z())));
+    cam.set_look_at(math::vec3(0.f));
+    cam.look_at_view();
+    // [HACK] Model is set not to be cullable, otherwise it will cull (strangely)
+    // for some values of azimuth and inclination
 
-    engine_->Update(16.67/1000.f);
+    /*math::vec3 coords_deg(cam_coords_);
+    coords_deg[1] *= 180.f/M_PI;
+    coords_deg[2] *= 180.f/M_PI;
+    std::cout << coords_deg << std::endl;*/
+
     engine_->RenderFrame();
     engine_->FinishFrame();
 }

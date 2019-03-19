@@ -778,6 +778,7 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         xml_node<>* trn_node = model->first_node("Transform");
         xml_node<>* mot_node = model->first_node("Motion");
         xml_node<>* shadow_node = model->first_node("Shadow");
+        xml_node<>* override_node = model->first_node("Override");
 
         // Do we position the models relative to a heightmap?
         bool relative_positioning = is_pos_relative(model);
@@ -835,6 +836,14 @@ void SceneLoader::parse_models(xml_node<>* chunk_node, uint32_t chunk_index)
         if(mot_node)
         {
             parse_motion(mot_node, pmdl, chunk_index);
+        }
+
+        // Override
+        if(override_node)
+        {
+            bool can_cull = true;
+            if(xml::parse_node(override_node, "EnableCulling", can_cull))
+                pmdl->set_frustum_cull(can_cull);
         }
 
         // Should we save a reference so that the model can be accessed via a hash?
