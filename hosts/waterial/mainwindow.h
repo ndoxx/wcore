@@ -19,6 +19,7 @@ QT_FORWARD_DECLARE_CLASS(QFileDialog)
 QT_FORWARD_DECLARE_CLASS(QProgressBar)
 QT_FORWARD_DECLARE_CLASS(QStatusBar)
 QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QTabWidget)
 
 namespace waterial
 {
@@ -26,7 +27,7 @@ namespace waterial
 QT_FORWARD_DECLARE_CLASS(EditorModel)
 QT_FORWARD_DECLARE_CLASS(TexlistDelegate)
 QT_FORWARD_DECLARE_CLASS(NewProjectDialog)
-QT_FORWARD_DECLARE_CLASS(TexMapControl)
+QT_FORWARD_DECLARE_CLASS(TexmapControlPane)
 QT_FORWARD_DECLARE_CLASS(GLWidget)
 QT_FORWARD_DECLARE_CLASS(PreviewControlWidget)
 
@@ -39,11 +40,6 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     virtual ~MainWindow();
 
-    // Retrieve data from current texture entry and update view
-    void update_texture_view();
-    // Retrieve data from controls and update a given entry with this information
-    void update_entry(TextureEntry& entry);
-
     virtual bool eventFilter(QObject* object, QEvent* event) Q_DECL_OVERRIDE;
     virtual void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
 
@@ -52,8 +48,6 @@ public slots:
     void handle_delete_current_texture();
     void handle_rename_current_texture();
     void handle_clear_current_texture();
-    void handle_save_current_texture();
-    void handle_save_all_textures();
     void handle_texlist_selection_changed(const QItemSelection& selection);
     void handle_texlist_context_menu(const QPoint& pos);
     void handle_compile_current();
@@ -66,8 +60,6 @@ public slots:
     void handle_close_project();
     void handle_quit();
     void handle_project_needs_saving();
-    void handle_gen_normal_map();
-    void handle_gen_ao_map();
     void handle_material_swap();
 
 protected slots:
@@ -95,11 +87,13 @@ private:
 
     QLabel* pjname_label_;
 
+    QTabWidget* main_tab_widget_;
+
     // Preview
     GLWidget* gl_widget_;
-
-    std::vector<TexMapControl*> texmap_controls_;
     PreviewControlWidget* preview_controls_;
+
+    TexmapControlPane* texmap_pane_;
 
     // Status bar
     QLabel* status_label_;

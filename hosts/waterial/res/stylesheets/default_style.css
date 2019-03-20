@@ -4,6 +4,8 @@ QGroupBox
     background: rgb(150,150,150);
     color: rgb(255,204,0);
     padding-top: 8px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 QGroupBox::title
 {
@@ -14,6 +16,8 @@ QGroupBox::title
 QFrame#SidePanel
 {
     border: 2px solid rgb(170,170,170);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     background: rgb(150,150,150);
 }
 QFrame#Separator
@@ -51,6 +55,45 @@ QLabel#TBProjectLabel
     color: #ffffff;
     background: rgb(255,120,26);
     border: 1px dotted #ffffff;
+}
+QTabWidget::pane
+{
+    background: #66ccff;
+    border-top: 2px solid #C2C7CB;
+    margin: -5px -5px -5px -5px;
+}
+QTabWidget::tab-bar
+{
+    left: 5px;
+}
+QTabBar::tab
+{
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #999999,
+                                stop: 0.4 #a6a6a6,
+                                stop: 0.5 #b3b3b3,
+                                stop: 0.7 #999999,
+                                stop: 1.0 #66ccff);
+    color: white;
+    padding: 10px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+QTabBar::tab:selected, QTabBar::tab:hover
+{
+
+}
+QTabBar::tab:selected
+{
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #66ccff,
+                                stop: 0.4 #80d4ff,
+                                stop: 0.5 #99ddff,
+                                stop: 1.0 #66ccff);
+}
+QTabBar::tab:!selected
+{
+    margin-top: 2px;
 }
 QScrollArea#TexmapScroll
 {

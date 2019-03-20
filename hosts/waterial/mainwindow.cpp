@@ -25,13 +25,13 @@
 #include <QImage>
 #include <QFileInfo>
 #include <QApplication>
+#include <QTabWidget>
 
 #include "mainwindow.h"
 #include "editor_model.h"
 #include "texlist_delegate.h"
 #include "texmap_controls.h"
 #include "preview_controls.h"
-#include "texmap_generator.h"
 #include "new_project_dialog.h"
 #include "droplabel.h"
 #include "double_slider.h"
@@ -76,8 +76,10 @@ tex_list_(new QListView),
 texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
 pjname_label_(new QLabel),
+main_tab_widget_(new QTabWidget),
 gl_widget_(new GLWidget),
 preview_controls_(new PreviewControlWidget(gl_widget_)),
+texmap_pane_(new TexmapControlPane(this, editor_model_)),
 new_project_dialog_(new NewProjectDialog(this)),
 file_dialog_(new QFileDialog(this))
 {
@@ -123,7 +125,6 @@ file_dialog_(new QFileDialog(this))
     QHBoxLayout* hlayout_main = new QHBoxLayout();
     QVBoxLayout* vlayout_side_panel = new QVBoxLayout(side_panel);
     QHBoxLayout* hlayout_sp_nt = new QHBoxLayout();
-    QGridLayout* layout_main_panel = new QGridLayout();
 
     // * Setup side panel
     QPushButton* button_new_tex = new QPushButton(tr("New texture"));
@@ -139,31 +140,22 @@ file_dialog_(new QFileDialog(this))
     side_panel->setMaximumWidth(300);
 
     // * Setup main panel
-    // Texture maps
-    texmap_controls_.push_back(new AlbedoControl());
-    texmap_controls_.push_back(new RoughnessControl());
-    texmap_controls_.push_back(new MetallicControl());
-    texmap_controls_.push_back(new DepthControl());
-    texmap_controls_.push_back(new AOControl());
-    texmap_controls_.push_back(new NormalControl());
+    QGridLayout* layout_main_panel = new QGridLayout();
 
-    for(int ii=0; ii<texmap_controls_.size(); ++ii)
-    {
-        int col = ii%3;
-        int row = ii/3;
-        layout_main_panel->addWidget(texmap_controls_[ii], row, col);
-        layout_main_panel->setRowStretch(row, 1); // So that all texmap controls will stretch the same way
-        layout_main_panel->setColumnStretch(col, 1);
-        texmap_controls_[ii]->connect_all(this);
-    }
+    main_tab_widget_->addTab(texmap_pane_, "Texture maps");
+    main_tab_widget_->addTab(new QWidget(), "General");
+
+    layout_main_panel->addWidget(main_tab_widget_, 0, 0, 2, 1);
+    layout_main_panel->setColumnStretch(0, 8);
 
     // Preview
+    preview_controls_->setObjectName("PreviewControls");
     preview_controls_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     gl_widget_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
-    layout_main_panel->addWidget(preview_controls_, 0, 3);
-    layout_main_panel->addWidget(gl_widget_, 1, 3);
-    layout_main_panel->setColumnStretch(3, 3);
+    layout_main_panel->addWidget(preview_controls_, 0, 1);
+    layout_main_panel->addWidget(gl_widget_, 1, 1);
+    layout_main_panel->setColumnStretch(1, 7);
 
     // * Setup main layout
     hlayout_main->addWidget(side_panel);
@@ -491,33 +483,6 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     }*/
 }
 
-void MainWindow::update_entry(TextureEntry& entry)
-{
-    // Retrieve texture map info from controls and write to texture entry
-    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-        texmap_controls_[ii]->write_entry(entry);
-
-    // TMP Set dimensions to first defined texture dimensions
-    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-    {
-        if(entry.texture_maps[ii]->has_image)
-        {
-            entry.width  = texmap_controls_[ii]->get_droplabel()->getPixmap().width();
-            entry.height = texmap_controls_[ii]->get_droplabel()->getPixmap().height();
-            break;
-        }
-    }
-}
-
-void MainWindow::update_texture_view()
-{
-    // * Update drop labels
-    TextureEntry& entry = editor_model_->get_current_texture_entry();
-
-    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-        texmap_controls_[ii]->read_entry(entry);
-}
-
 void MainWindow::handle_new_texture()
 {
     QString newtex_name = texname_edit_->text();
@@ -544,24 +509,6 @@ void MainWindow::handle_new_texture()
         // Indicate Qt that project needs to be saved
         setWindowModified(true);
     }
-}
-
-void MainWindow::handle_save_current_texture()
-{
-    const QString& texname = editor_model_->get_current_texture_name();
-    if(!texname.isEmpty())
-    {
-        DLOGN("Saving texture <n>" + texname.toStdString() + "</n>", "waterial", Severity::LOW);
-
-        TextureEntry& entry = editor_model_->get_current_texture_entry();
-        entry.name = texname;
-        update_entry(entry);
-    }
-}
-
-void MainWindow::handle_save_all_textures()
-{
-    DLOGW("NOT IMPLEMENTED YET", "waterial", Severity::WARN);
 }
 
 void MainWindow::handle_delete_current_texture()
@@ -601,13 +548,13 @@ void MainWindow::handle_texlist_selection_changed(const QItemSelection& selectio
     if(!selection.indexes().isEmpty())
     {
         // First, save previously selected texture if any
-        handle_save_current_texture();
+        texmap_pane_->handle_save_current_texture();
         // Get newly selected item data as QString
         QString current_tex = selection.indexes().first().data(Qt::DisplayRole).toString();
         // Set editor model to work with this texture as current texture
         editor_model_->set_current_texture_name(current_tex);
         // Retrieve and display saved texture information
-        update_texture_view();
+        texmap_pane_->update_texture_view();
         // Swap texture in viewer if possible
         handle_material_swap();
     }
@@ -629,7 +576,7 @@ void MainWindow::handle_texlist_context_menu(const QPoint& pos)
 void MainWindow::handle_compile_current()
 {
     // First, save texture to editor model
-    handle_save_current_texture();
+    texmap_pane_->handle_save_current_texture();
 
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
@@ -643,7 +590,7 @@ void MainWindow::handle_compile_current()
 void MainWindow::handle_compile_all()
 {
     // First, save texture to editor model
-    handle_save_current_texture();
+    texmap_pane_->handle_save_current_texture();
 
     DLOGN("Compiling <h>all</h> textures.", "waterial", Severity::LOW);
     editor_model_->traverse_entries([&](TextureEntry& entry)
@@ -656,7 +603,7 @@ void MainWindow::handle_compile_all()
 
 void MainWindow::handle_serialize_project()
 {
-    handle_save_current_texture();
+    texmap_pane_->handle_save_current_texture();
 
     // If project is the unnamed project, use save as instead
     if(!editor_model_->get_current_project().isEmpty())
@@ -776,102 +723,6 @@ void MainWindow::handle_project_needs_saving()
     setWindowModified(true);
 }
 
-void MainWindow::handle_gen_normal_map()
-{
-    // Get current entry
-    const QString& texname = editor_model_->get_current_texture_name();
-    if(!texname.isEmpty())
-    {
-        handle_save_current_texture();
-        TextureEntry& entry = editor_model_->get_current_texture_entry();
-        // Get depth map if any
-        if(entry.texture_maps[DEPTH]->has_image && entry.texture_maps[DEPTH]->use_image)
-        {
-            QApplication::setOverrideCursor(Qt::WaitCursor);
-
-            QString depth_path(entry.texture_maps[DEPTH]->path);
-            QImage depthmap(depth_path);
-            QImage normalmap(entry.width, entry.height, QImage::Format_RGBA8888);
-
-            // Generate normal map
-            generator::NormalGenOptions options;
-            NormalControl* normal_control = static_cast<NormalControl*>(texmap_controls_[NORMAL]);
-            normal_control->get_options(options);
-            generator::normal_from_depth(depthmap, normalmap, options);
-            // Blur/Sharpen
-            generator::blur_sharp(normalmap, options.sigma);
-
-            // Get directory of depth map
-            QDir dir(QFileInfo(depth_path).absoluteDir());
-
-            // Generate filename and save normal map
-            QString filename = texname + "_norm_gen.png";
-            QString normal_path(dir.filePath(filename));
-
-            DLOGN("Saving generated <h>normal</h> map:", "waterial", Severity::LOW);
-            DLOGI("<p>" + normal_path.toStdString() + "</p>", "waterial", Severity::LOW);
-
-            normalmap.save(normal_path);
-
-            // Display newly generated normal map
-            entry.texture_maps[NORMAL]->has_image = true;
-            entry.texture_maps[NORMAL]->use_image = true;
-            entry.texture_maps[NORMAL]->path = normal_path;
-            update_texture_view();
-
-            QApplication::restoreOverrideCursor();
-        }
-    }
-}
-
-void MainWindow::handle_gen_ao_map()
-{
-    // Get current entry
-    const QString& texname = editor_model_->get_current_texture_name();
-    if(!texname.isEmpty())
-    {
-        handle_save_current_texture();
-        TextureEntry& entry = editor_model_->get_current_texture_entry();
-        // Get depth map if any
-        if(entry.texture_maps[DEPTH]->has_image && entry.texture_maps[DEPTH]->use_image)
-        {
-            QApplication::setOverrideCursor(Qt::WaitCursor);
-
-            QString depth_path(entry.texture_maps[DEPTH]->path);
-            QImage depthmap(depth_path);
-            QImage aomap(entry.width, entry.height, QImage::Format_RGBA8888);
-
-            // Generate normal map
-            generator::AOGenOptions options;
-            AOControl* ao_control = static_cast<AOControl*>(texmap_controls_[AO]);
-            ao_control->get_options(options);
-            generator::ao_from_depth(depthmap, aomap, options);
-            // Blur/Sharpen
-            generator::blur_sharp(aomap, options.sigma);
-
-            // Get directory of depth map
-            QDir dir(QFileInfo(depth_path).absoluteDir());
-
-            // Generate filename and save normal map
-            QString filename = texname + "_ao_gen.png";
-            QString ao_path(dir.filePath(filename));
-
-            DLOGN("Saving generated <h>AO</h> map:", "waterial", Severity::LOW);
-            DLOGI("<p>" + ao_path.toStdString() + "</p>", "waterial", Severity::LOW);
-
-            aomap.save(ao_path);
-
-            // Display newly generated normal map
-            entry.texture_maps[AO]->has_image = true;
-            entry.texture_maps[AO]->use_image = true;
-            entry.texture_maps[AO]->path = ao_path;
-            update_texture_view();
-
-            QApplication::restoreOverrideCursor();
-        }
-    }
-}
-
 void MainWindow::handle_material_swap()
 {
     const QString& texname = editor_model_->get_current_texture_name();
@@ -889,8 +740,7 @@ void MainWindow::update_window_title(const QString& project_name)
 void MainWindow::clear_view()
 {
     // Clear all texmap controls
-    for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-        texmap_controls_[ii]->clear();
+    texmap_pane_->clear_view();
 }
 
 

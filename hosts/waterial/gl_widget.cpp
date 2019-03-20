@@ -74,7 +74,7 @@ void GLWidget::initializeGL()
     engine_->SetFrameSize(800, 600);
     engine_->Init(0, nullptr, nullptr, context_);
     engine_->scene->LoadStart("mv");
-    engine_->scene->GetCamera().set_perspective(800,600,0.1f,20.f);
+    engine_->scene->GetCamera().set_perspective(800,600,0.1f,10.f);
 
     // Systems configuration
     engine_->pipeline->SetShadowMappingEnabled(false);

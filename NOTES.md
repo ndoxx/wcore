@@ -7408,29 +7408,17 @@ int main()
 
 
 
-
-    mat4 rx, ry, rz;
-
-      rx[0]  = 1.0f;   /*rx[1]   = 0.0f;*/  /*rx[2]  = 0.0f ;*/ /*rx[3]  = 0.0f;*/
-    /*rx[4]  = 0.0f;*/   rx[5]   = cos(x);    rx[6]  = sin(x);  /*rx[7]  = 0.0f;*/
-    /*rx[8]  = 0.0f;*/   rx[9]   = -sin(x);   rx[10] = cos(x);  /*rx[11] = 0.0f;*/
-    /*rx[12] = 0.0f;*/ /*rx[13]  = 0.0f;*/  /*rx[14] = 0.0f;*/    rx[15] = 1.0f;
-
-      ry[0]  = cos(y);  /*ry[1]  = 0.0f;*/    ry[2]  = -sin(y); /*ry[3]  = 0.0f;*/
-    /*ry[4]  = 0.0f;*/    ry[5]  = 1.0f;    /*ry[6]  = 0.0f;*/  /*ry[7]  = 0.0f;*/
-      ry[8]  = sin(y);  /*ry[9]  = 0.0f;*/    ry[10] = cos(y);  /*ry[11] = 0.0f;*/
-    /*ry[12] = 0.0f;*/  /*ry[13] = 0.0f;*/  /*ry[14] = 0.0f;*/    ry[15]  = 1.0f;
-
-      rz[0]  = cos(z);    rz[1]  = sin(z);  /*rz[2] = 0.0f;*/   /*rz[3]  = 0.0f;*/
-      rz[4]  = -sin(z);   rz[5]  = cos(z);  /*rz[6] = 0.0f;*/   /*rz[7]  = 0.0f;*/
-    /*rz[8]  = 0.0f;*/  /*rz[9]  = 0.0f;*/    rz[10] = 1.0f;    /*rz[11] = 0.0f;*/
-    /*rz[12] = 0.0f;*/  /*rz[13] = 0.0f;*/  /*rz[14] = 0.0f;*/    rz[15]  = 1.0f;
-
-    Matrix = rx * ry * rz;
+http://www.manpagez.com/man/3/glOrtho/
+http://www.manpagez.com/man/3/glFrustum/
+https://www.3dgep.com/understanding-the-view-matrix/
 
 
-
-
+TODO :
+    [ ] Texmap controls dans une page dans un QTabWidget
+    [ ] Faire une seconde page pour les propriétés générales
+        [ ] Texture scale
+        [ ] Options d'export
+        [ ] FX ?
 
 
 

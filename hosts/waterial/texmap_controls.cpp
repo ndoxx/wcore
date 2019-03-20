@@ -8,6 +8,7 @@
 #include <QGridLayout>
 #include <QComboBox>
 #include <QScrollArea>
+#include <QApplication>
 
 #include "texmap_controls.h"
 #include "editor_model.h"
@@ -16,6 +17,9 @@
 #include "color_picker_label.h"
 #include "mainwindow.h"
 #include "texmap_generator.h"
+#include "logger.h"
+
+using namespace wcore;
 
 namespace waterial
 {
@@ -70,13 +74,13 @@ texmap_index(index)
     this->setLayout(layout);
 }
 
-void TexMapControl::connect_all(MainWindow* main_window)
+void TexMapControl::connect_all(MainWindow* main_window, TexmapControlPane* texmap_pane)
 {
     connect(this,        &TexMapControl::sig_controls_changed,
             main_window, &MainWindow::handle_project_needs_saving);
 
     // Connect sub-controls
-    connect_controls(main_window);
+    connect_controls(texmap_pane);
 }
 
 
@@ -346,10 +350,10 @@ void AOControl::read_entry_additional(const TextureEntry& entry)
     blursharp_edit_->setValue(ao_map->gen_blursharp);
 }
 
-void AOControl::connect_controls(MainWindow* main_window)
+void AOControl::connect_controls(TexmapControlPane* texmap_pane)
 {
     connect(gen_from_depth_btn_, &QPushButton::clicked,
-            main_window,         &MainWindow::handle_gen_ao_map);
+            texmap_pane,         &TexmapControlPane::handle_gen_ao_map);
 }
 
 void AOControl::get_options(generator::AOGenOptions& options)
@@ -443,10 +447,10 @@ void NormalControl::read_entry_additional(const TextureEntry& entry)
     blursharp_edit_->setValue(normal_map->gen_blursharp);
 }
 
-void NormalControl::connect_controls(MainWindow* main_window)
+void NormalControl::connect_controls(TexmapControlPane* texmap_pane)
 {
     connect(gen_from_depth_btn_, &QPushButton::clicked,
-            main_window,         &MainWindow::handle_gen_normal_map);
+            texmap_pane,         &TexmapControlPane::handle_gen_normal_map);
 }
 
 void NormalControl::get_options(generator::NormalGenOptions& options)
@@ -460,5 +464,186 @@ void NormalControl::get_options(generator::NormalGenOptions& options)
     options.sigma    = (float)blursharp_edit_->value();
 }
 
+
+TexmapControlPane::TexmapControlPane(MainWindow* main_window, EditorModel* editor_model, QWidget* parent):
+QWidget(parent),
+editor_model_(editor_model)
+{
+    QGridLayout* layout_texmap_page = new QGridLayout();
+    setObjectName("pageWidget");
+
+    // Texture maps
+    texmap_controls_.push_back(new AlbedoControl());
+    texmap_controls_.push_back(new RoughnessControl());
+    texmap_controls_.push_back(new MetallicControl());
+    texmap_controls_.push_back(new DepthControl());
+    texmap_controls_.push_back(new AOControl());
+    texmap_controls_.push_back(new NormalControl());
+
+    for(int ii=0; ii<texmap_controls_.size(); ++ii)
+    {
+        int col = ii%3;
+        int row = ii/3;
+        layout_texmap_page->addWidget(texmap_controls_[ii], row, col);
+        layout_texmap_page->setRowStretch(row, 1); // So that all texmap controls will stretch the same way
+        layout_texmap_page->setColumnStretch(col, 1);
+        texmap_controls_[ii]->connect_all(main_window, this);
+    }
+
+    setLayout(layout_texmap_page);
+}
+
+void TexmapControlPane::update_entry(TextureEntry& entry)
+{
+    // Retrieve texture map info from controls and write to texture entry
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+        texmap_controls_[ii]->write_entry(entry);
+
+    // TMP Set dimensions to first defined texture dimensions
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+    {
+        if(entry.texture_maps[ii]->has_image)
+        {
+            entry.width  = texmap_controls_[ii]->get_droplabel()->getPixmap().width();
+            entry.height = texmap_controls_[ii]->get_droplabel()->getPixmap().height();
+            break;
+        }
+    }
+}
+
+void TexmapControlPane::update_texture_view()
+{
+    // * Update drop labels
+    TextureEntry& entry = editor_model_->get_current_texture_entry();
+
+    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+        texmap_controls_[ii]->read_entry(entry);
+}
+
+void TexmapControlPane::clear_view()
+{
+    // Clear all texmap controls
+    for(uint32_t ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+        texmap_controls_[ii]->clear();
+}
+
+void TexmapControlPane::get_options(generator::AOGenOptions& options)
+{
+    AOControl* ao_control = static_cast<AOControl*>(texmap_controls_[AO]);
+    ao_control->get_options(options);
+}
+
+void TexmapControlPane::get_options(generator::NormalGenOptions& options)
+{
+    NormalControl* normal_control = static_cast<NormalControl*>(texmap_controls_[NORMAL]);
+    normal_control->get_options(options);
+}
+
+void TexmapControlPane::handle_save_current_texture()
+{
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        DLOGN("Saving texture <n>" + texname.toStdString() + "</n>", "waterial", Severity::LOW);
+
+        TextureEntry& entry = editor_model_->get_current_texture_entry();
+        entry.name = texname;
+        update_entry(entry);
+    }
+}
+
+void TexmapControlPane::handle_gen_normal_map()
+{
+    // Get current entry
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        handle_save_current_texture();
+        TextureEntry& entry = editor_model_->get_current_texture_entry();
+        // Get depth map if any
+        if(entry.texture_maps[DEPTH]->has_image && entry.texture_maps[DEPTH]->use_image)
+        {
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+
+            QString depth_path(entry.texture_maps[DEPTH]->path);
+            QImage depthmap(depth_path);
+            QImage normalmap(entry.width, entry.height, QImage::Format_RGBA8888);
+
+            // Generate normal map
+            generator::NormalGenOptions options;
+            get_options(options);
+            generator::normal_from_depth(depthmap, normalmap, options);
+            // Blur/Sharpen
+            generator::blur_sharp(normalmap, options.sigma);
+
+            // Get directory of depth map
+            QDir dir(QFileInfo(depth_path).absoluteDir());
+
+            // Generate filename and save normal map
+            QString filename = texname + "_norm_gen.png";
+            QString normal_path(dir.filePath(filename));
+
+            DLOGN("Saving generated <h>normal</h> map:", "waterial", Severity::LOW);
+            DLOGI("<p>" + normal_path.toStdString() + "</p>", "waterial", Severity::LOW);
+
+            normalmap.save(normal_path);
+
+            // Display newly generated normal map
+            entry.texture_maps[NORMAL]->has_image = true;
+            entry.texture_maps[NORMAL]->use_image = true;
+            entry.texture_maps[NORMAL]->path = normal_path;
+            update_texture_view();
+
+            QApplication::restoreOverrideCursor();
+        }
+    }
+}
+
+void TexmapControlPane::handle_gen_ao_map()
+{
+    // Get current entry
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        handle_save_current_texture();
+        TextureEntry& entry = editor_model_->get_current_texture_entry();
+        // Get depth map if any
+        if(entry.texture_maps[DEPTH]->has_image && entry.texture_maps[DEPTH]->use_image)
+        {
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+
+            QString depth_path(entry.texture_maps[DEPTH]->path);
+            QImage depthmap(depth_path);
+            QImage aomap(entry.width, entry.height, QImage::Format_RGBA8888);
+
+            // Generate normal map
+            generator::AOGenOptions options;
+            get_options(options);
+            generator::ao_from_depth(depthmap, aomap, options);
+            // Blur/Sharpen
+            generator::blur_sharp(aomap, options.sigma);
+
+            // Get directory of depth map
+            QDir dir(QFileInfo(depth_path).absoluteDir());
+
+            // Generate filename and save normal map
+            QString filename = texname + "_ao_gen.png";
+            QString ao_path(dir.filePath(filename));
+
+            DLOGN("Saving generated <h>AO</h> map:", "waterial", Severity::LOW);
+            DLOGI("<p>" + ao_path.toStdString() + "</p>", "waterial", Severity::LOW);
+
+            aomap.save(ao_path);
+
+            // Display newly generated normal map
+            entry.texture_maps[AO]->has_image = true;
+            entry.texture_maps[AO]->use_image = true;
+            entry.texture_maps[AO]->path = ao_path;
+            update_texture_view();
+
+            QApplication::restoreOverrideCursor();
+        }
+    }
+}
 
 } // namespace waterial

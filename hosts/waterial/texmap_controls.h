@@ -1,6 +1,7 @@
 #ifndef TEXMAP_CONTROLS_H
 #define TEXMAP_CONTROLS_H
 
+#include <vector>
 #include <QGroupBox>
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
@@ -15,6 +16,7 @@ namespace waterial
 
 QT_FORWARD_DECLARE_CLASS(DropLabel)
 QT_FORWARD_DECLARE_CLASS(DoubleSpinBox)
+QT_FORWARD_DECLARE_CLASS(TexmapControlPane)
 struct TextureEntry;
 class MainWindow;
 // Groups all the controls for a given texture map
@@ -26,8 +28,8 @@ public:
     TexMapControl(const QString& title, int index);
     virtual ~TexMapControl() = default;
 
-    virtual void connect_controls(MainWindow* main_window) { }
-    void connect_all(MainWindow* main_window);
+    virtual void connect_controls(TexmapControlPane* texmap_pane) { }
+    void connect_all(MainWindow* main_window, TexmapControlPane* texmap_pane);
 
     void clear();
     void write_entry(TextureEntry& entry);
@@ -147,7 +149,7 @@ public:
     explicit AOControl();
     virtual ~AOControl() = default;
 
-    virtual void connect_controls(MainWindow* main_window) override;
+    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     void get_options(generator::AOGenOptions& options);
 
 protected:
@@ -174,7 +176,7 @@ public:
     explicit NormalControl();
     virtual ~NormalControl() = default;
 
-    virtual void connect_controls(MainWindow* main_window) override;
+    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     void get_options(generator::NormalGenOptions& options);
 
 protected:
@@ -191,6 +193,34 @@ private:
     DoubleSpinBox* level_edit_;
     DoubleSpinBox* strength_edit_;
     DoubleSpinBox* blursharp_edit_;
+};
+
+class EditorModel;
+class TexmapControlPane: public QWidget
+{
+    Q_OBJECT
+
+public:
+    TexmapControlPane(MainWindow* main_window, EditorModel* editor_model, QWidget* parent=nullptr);
+
+    // Retrieve data from current texture entry and update view
+    void update_entry(TextureEntry& entry);
+    // Retrieve data from controls and update a given entry with this information
+    void update_texture_view();
+    // Clear texmap views to default
+    void clear_view();
+
+    void get_options(generator::AOGenOptions& options);
+    void get_options(generator::NormalGenOptions& options);
+
+public slots:
+    void handle_gen_normal_map();
+    void handle_gen_ao_map();
+    void handle_save_current_texture();
+
+private:
+    std::vector<TexMapControl*> texmap_controls_;
+    EditorModel* editor_model_;
 };
 
 } // namespace waterial
