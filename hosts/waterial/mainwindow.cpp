@@ -133,6 +133,9 @@ file_dialog_(new QFileDialog(this))
     hlayout_sp_nt->addWidget(texname_edit_);
     hlayout_sp_nt->addWidget(button_new_tex);
 
+    tex_list_->setIconSize(QSize(50, 50));
+    tex_list_->setSpacing(2);
+
     vlayout_side_panel->addLayout(hlayout_sp_nt);
     vlayout_side_panel->addWidget(tex_list_);
     vlayout_side_panel->addWidget(dir_hierarchy_);
@@ -142,6 +145,7 @@ file_dialog_(new QFileDialog(this))
     // * Setup main panel
     QGridLayout* layout_main_panel = new QGridLayout();
 
+    // Main tab widget
     main_tab_widget_->addTab(texmap_pane_, "Texture maps");
     main_tab_widget_->addTab(new QWidget(), "General");
 
@@ -584,6 +588,13 @@ void MainWindow::handle_compile_current()
         editor_model_->compile(texname);
         // Swap material in preview
         handle_material_swap();
+        // Update thumbnail in list
+        const TextureEntry& entry = editor_model_->get_current_texture_entry();
+        if(entry.texture_maps[ALBEDO]->has_image)
+        {
+            QModelIndex index = tex_list_->currentIndex();
+            editor_model_->update_thumbnail_proxy(index, entry.texture_maps[ALBEDO]->path);
+        }
     }
 }
 

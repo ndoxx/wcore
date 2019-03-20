@@ -206,14 +206,16 @@ public:
     wcore::MaterialDescriptor get_current_material_descriptor();
     bool validate_descriptor(const wcore::MaterialDescriptor& descriptor);
 
+    void update_thumbnail_proxy(QModelIndex index, const QString& path);
+
 protected:
     QString project_path_from_name(const QString& name) const;
     QString project_file_from_name(const QString& name) const;
+    void update_thumbnail(QModelIndex index, const QString& path);
 
 private:
     QString current_texname_;
     QString current_project_;
-    QStringList texlist_;
     QDir output_folder_;
     QDir project_folder_;
     TexListModel* texlist_model_;

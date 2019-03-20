@@ -1,6 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
     <file>res/icons/waterial.ico</file>
+    <file>res/icons/waterial.png</file>
 
     <file>res/icons/rename.png</file>
     <file>res/icons/clear.png</file>

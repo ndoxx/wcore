@@ -387,7 +387,7 @@ void EditorModel::set_current_texture_name(const QString& name)
 void EditorModel::setup_list_model(QListView* listview)
 {
     // Custom model uses string list as data
-    texlist_model_->setStringList(texlist_);
+    //texlist_model_->setStringList(texlist_);
     // Proxy model for sorting the texture list view when a new item is added
     texlist_sort_proxy_model_->setDynamicSortFilter(true);
     texlist_sort_proxy_model_->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -396,10 +396,22 @@ void EditorModel::setup_list_model(QListView* listview)
     listview->setModel(texlist_sort_proxy_model_);
 }
 
+void EditorModel::update_thumbnail(QModelIndex index, const QString& path)
+{
+    texlist_model_->setData(index, QIcon(path), Qt::DecorationRole);
+}
+
+void EditorModel::update_thumbnail_proxy(QModelIndex index, const QString& path)
+{
+    update_thumbnail(texlist_sort_proxy_model_->mapToSource(index), path);
+}
+
 QModelIndex EditorModel::add_texture(const QString& name)
 {
     // Append texture name to list view data and sort
     QModelIndex index = texlist_model_->append(name);
+    update_thumbnail(index, ":/res/icons/waterial.png");
+
     texlist_sort_proxy_model_->sort(0);
 
     // Add texture descriptor
@@ -527,8 +539,7 @@ void EditorModel::clear()
     current_texname_ = "";
     current_project_ = "";
     texture_descriptors_.clear();
-    texlist_ = QStringList{};
-    texlist_model_->setStringList(texlist_);
+    texlist_model_->clear();
 }
 
 void EditorModel::set_project_folder(const QString& path)
@@ -585,6 +596,12 @@ void EditorModel::open_project(const QString& infile)
         texture_descriptors_.insert(std::pair(hentryname, entry));
         // Populate texture list
         texlist_model_->append(entry.name);
+        // Set thumbnail
+        QModelIndex index = texlist_model_->index(texlist_model_->rowCount() - 1, 0);
+        if(entry.texture_maps[ALBEDO]->has_image)
+            update_thumbnail(index, entry.texture_maps[ALBEDO]->path);
+        else
+            update_thumbnail(index, ":/res/icons/waterial.png");
     }
     texlist_sort_proxy_model_->sort(0);
 }
@@ -684,25 +701,6 @@ void EditorModel::traverse_entries(std::function<void(TextureEntry&)> func)
     for(auto&& [key, entry]: texture_descriptors_)
         func(entry);
 }
-
-/*
-Material::Material(const MaterialDescriptor& descriptor):
-texture_(nullptr),
-albedo_(descriptor.albedo),
-metallic_(descriptor.metallic),
-roughness_(descriptor.roughness),
-parallax_height_scale_(descriptor.parallax_height_scale),
-alpha_(descriptor.transparency),
-textured_(descriptor.is_textured),
-use_normal_map_(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL) && descriptor.enable_normal_mapping),
-use_parallax_map_(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH) && descriptor.enable_parallax_mapping),
-use_overlay_(false),
-blend_(descriptor.has_transparency)
-{
-    if(textured_)
-        texture_ = new Texture(descriptor.texture_descriptor);
-}
-*/
 
 /*
     [   Block0   ]  [     Block1   ]  [     Block2       ]

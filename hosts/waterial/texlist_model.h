@@ -1,12 +1,12 @@
 #ifndef TEXLIST_MODEL_H
 #define TEXLIST_MODEL_H
 
-#include <QStringListModel>
+#include <QStandardItemModel>
 
 namespace waterial
 {
 
-class TexListModel: public QStringListModel
+class TexListModel: public QStandardItemModel
 {
     Q_OBJECT
 
