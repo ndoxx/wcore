@@ -7406,27 +7406,65 @@ int main()
     An object changed its own value from within a const-qualified member function! Everything is const-correct!
 
 
+* Sources :
+    [1] https://wiki.wxwidgets.org/Valgrind_Suppression_File_Howto
+    [2] https://akrzemi1.wordpress.com/2014/06/02/ref-qualifiers/
+
+#[21-03-19]
+
+##Camera
+
+J'ai corrigé les WTF de la classe caméra. Jusque là, les raisons du fonctionnement correct de cette classe n'étaient pas totalement élucidées (!).
+
+J'ai remarqué des similarités entre les fonctions update() et look_at(). Ces fonctions mettent toutes les deux à jour la view matrix (et la model matrix), mais selon des stratégies différentes. J'ai donc implémenté des politiques d'initialisation en mode enum pour regrouper tout le code d'update dans la fonction update().
+```cpp
+void Camera::update(float dt)
+{
+    // * Update frame interval
+    dt_ = dt;
+
+    // * Update view matrix according to policy
+    if(view_policy_ == ViewPolicy::ANGULAR)
+        math::init_view_position_angles(view_, position_, math::vec3(0.0f, TORADIANS(yaw_), TORADIANS(pitch_)));
+    else if(view_policy_ == ViewPolicy::DIRECTIONAL)
+        math::init_look_at(view_, position_, lookat_, vec3(0,1,0));
+
+    // * Extract proper axes
+    right_   = vec3(view_.row(0));
+    up_      = vec3(view_.row(1));
+    forward_ = vec3(view_.row(2));
+
+    // * Update frustum bounding box
+    if(update_frustum_)
+        frusBox_.update(*this);
+}
+```
+
+L'ancienne fonction maths::init_rotation_euler() qui calculait une matrice de rotation depuis 3 angles utilisait en réalité des angles de Tait-Bryan dans la convention ZYX. Donc j'ai renommé la fonction en conséquence : init_rotation_tait_bryan(). On lui passe dans l'ordre le roll (Z) le yaw (Y) et le pitch (X). Cette fonction utilisait un produit matriciel en interne, je l'ai remplacée par une dérivation directe des termes de la matrice en me servant de [4], voir d'ailleurs la table euler_angles_to_matrix.png dans les figures.
+En politique ANGULAR (par défaut), update() appèle math::init_view_position_angles() qui calcule la matrice de rotation depuis les angles, puis translate celle-ci du vecteur position. La matrice de vue renvoyée est l'inverse affine de la matrice modèle (pourra être optimisé).
+En politique DIRECTIONAL, c'est la fonction math::init_look_at() qui est utilisée pour initialiser la matrice de vue.
+Les vecteurs right, up et forward sont les colonnes de la matrice modèle et donc les lignes de la matrice de vue. _Camera_ ne possède d'ailleurs plus de matrice modèle comme membre.
+
+Noter que forward pointe vers les z négatifs car j'utilise un repère indirect (lefty) à la OpenGL pour les matrices de vue. En revanche dans le repère monde c'est un repère direct qui est utilisé, le calcul de la frustum box doit changer le signe du vecteur forward renvoyé par la caméra pour produire des vertices dans le repère monde. A terme je vais probablement me foutre en direct partout. Voir [3] pour les détails. [1] et [2] m'ont servi à revérifier le calcul de mes matrices de projection via math::init_orthographic(), math::init_perspective() et math::init_frustum().
 
 
-http://www.manpagez.com/man/3/glOrtho/
-http://www.manpagez.com/man/3/glFrustum/
-https://www.3dgep.com/understanding-the-view-matrix/
+* Sources :
+    [1] http://www.manpagez.com/man/3/glOrtho/
+    [2] http://www.manpagez.com/man/3/glFrustum/
+    [3] https://www.3dgep.com/understanding-the-view-matrix/
+    [4] https://en.wikipedia.org/wiki/Euler_angles
 
 
-TODO :
-    [ ] Texmap controls dans une page dans un QTabWidget
+
+
+TODO (Waterial):
+    [X] Texmap controls dans une page dans un QTabWidget
     [ ] Faire une seconde page pour les propriétés générales
         [ ] Texture scale
         [ ] Options d'export
         [ ] FX ?
 
-
-
-* Sources :
-    [1] https://wiki.wxwidgets.org/Valgrind_Suppression_File_Howto
-    [2] https://akrzemi1.wordpress.com/2014/06/02/ref-qualifiers/
-
-* TODO:
+* TODO (WCore):
     [ ] New texture maps (possibly grouped in same Gbuffer chan):
         * Emissivity map
         * Reflection map

@@ -22,6 +22,7 @@ Camera::Camera(float scr_width, float scr_height):
 pitch_(0.0f),
 yaw_(0.0f),
 dt_(0.0f),
+view_policy_(ViewPolicy::ANGULAR),
 proj_(),
 position_(0.0f,0.0f,0.0f),
 lookat_(0.0f,0.0f,0.0f),
@@ -93,45 +94,21 @@ void Camera::set_hybrid_perspective(float scr_width, float scr_height, float alp
 
 void Camera::update(float dt)
 {
-    // Update frame interval
+    // * Update frame interval
     dt_ = dt;
 
-    // * Update frustum bounding box
-    if(update_frustum_)
-        frusBox_.update(*this);
-}
-
-void Camera::freefly_view()
-{
-    // * Update matrices
-    // First, compute camera model matrix
-    mat4 R,T;
-    init_rotation_tait_bryan(R, 0.0f, TORADIANS(yaw_), TORADIANS(pitch_));
-    init_translation(T, position_);
-    model_ = T*R;
-
-    // Invert it to obtain the view matrix
-    math::inverse_affine(model_, view_);
+    // * Update view matrix according to policy
+    if(view_policy_ == ViewPolicy::ANGULAR)
+        math::init_view_position_angles(view_, position_, math::vec3(0.0f, TORADIANS(yaw_), TORADIANS(pitch_)));
+    else if(view_policy_ == ViewPolicy::DIRECTIONAL)
+        math::init_look_at(view_, position_, lookat_, vec3(0,1,0));
 
     // * Extract proper axes
-    right_   = vec3(model_.col(0));
-    up_      = vec3(model_.col(1));
-    forward_ = vec3(model_.col(2));
-}
+    right_   = vec3(view_.row(0));
+    up_      = vec3(view_.row(1));
+    forward_ = vec3(view_.row(2));
 
-void Camera::look_at_view()
-{
-    // Initialize view matrix
-    math::init_look_at(view_, position_, lookat_, vec3(0,1,0));
-    // Invert it to obtain the model matrix
-    math::inverse_affine(view_, model_);
-
-    // Get each axis
-    right_   = vec3(model_.col(0));
-    up_      = vec3(model_.col(1));
-    forward_ = vec3(model_.col(2));
-
-    // Update frustum bounding box
+    // * Update frustum bounding box
     if(update_frustum_)
         frusBox_.update(*this);
 }
@@ -207,7 +184,6 @@ void Camera::get_truncated_frustum_corners(float ymin, std::array<vec3, 8>& dest
 }
 
 void Camera::set_orthographic_tight_fit(const Camera& other,
-                                        const math::vec3& view_dir,
                                         float texel_size_x,
                                         float texel_size_y)
 {
@@ -218,13 +194,6 @@ void Camera::set_orthographic_tight_fit(const Camera& other,
 
     // Get center of view frustum
     //vec3 frus_center(math::lerp(corners_world[0], corners_world[6], 0.5f));
-
-    // Move camera along view direction
-    set_position(100.0f*view_dir/*+other.position_*/);
-
-    // Look at target position
-    set_look_at(vec3(0)/*+other.position_*/);
-    look_at_view();
 
     // Transform corners from world to view space
     static std::array<vec3, 8> corners_lightspace;

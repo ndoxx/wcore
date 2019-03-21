@@ -32,9 +32,6 @@ namespace wcore
 
 using namespace math;
 
-uint32_t Scene::SHADOW_HEIGHT = 1024;
-uint32_t Scene::SHADOW_WIDTH  = 1024;
-
 Scene::Scene():
 instance_buffer_unit_(),
 instance_vertex_array_(instance_buffer_unit_),
@@ -44,12 +41,10 @@ light_camera_(std::make_shared<Camera>(1, 1)),
 chunk_size_m_(32),
 current_chunk_index_(0)
 {
-    // Disable light camera frustum update
+    // Disable light camera frustum update and make it a "look at" camera
     light_camera_->disable_frustum_update();
-
-    // Get shadow map size
-    CONFIG.get("root.render.shadowmap.width"_h, SHADOW_WIDTH);
-    CONFIG.get("root.render.shadowmap.height"_h, SHADOW_HEIGHT);
+    light_camera_->set_view_policy(Camera::ViewPolicy::DIRECTIONAL);
+    light_camera_->set_look_at(vec3(0));
 
     // Register debug info fields
     DINFO.register_text_slot("sdiPosition"_h, vec3(0.2,0.9,1.0));
@@ -435,12 +430,6 @@ void Scene::visibility_pass()
 void Scene::update(const GameClock& clock)
 {
     float scaled_dt = clock.get_scaled_frame_duration();
-
-    // Tightly fit light camera orthographic frustum to view frustum bounding box
-    light_camera_->set_orthographic_tight_fit(*camera_,
-                                              directional_light_->get_position(),
-                                              1.0f/SHADOW_WIDTH,
-                                              1.0f/SHADOW_HEIGHT);
 
     // Update current chunk coordinates
     const vec3& cam_pos = camera_->get_position();

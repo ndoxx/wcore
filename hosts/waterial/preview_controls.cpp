@@ -277,7 +277,7 @@ QGroupBox* PreviewControlWidget::create_camera_controls(GLWidget* preview)
 
     sld_cam_r_->setMaximumHeight(20);
     sld_cam_r_->set_range(0.0,5.0);
-    sld_cam_r_->set_value(2.0);
+    sld_cam_r_->set_value(1.5);
     sld_cam_theta_->setMaximumHeight(20);
     sld_cam_theta_->set_range(5.0*M_PI/180.f,M_PI);
     sld_cam_theta_->set_value(M_PI / 4.0f);

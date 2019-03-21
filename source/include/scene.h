@@ -62,9 +62,6 @@ private:
     math::i32vec2 current_chunk_coords_;       // Coordinates of the chunk the camera is in
     std::vector<uint32_t> chunks_order_;       // Permutation vector for chunk ordering
 
-    static uint32_t SHADOW_WIDTH;              // Width of shadow map
-    static uint32_t SHADOW_HEIGHT;             // Height of shadow map
-
 public:
     Scene();
    ~Scene();

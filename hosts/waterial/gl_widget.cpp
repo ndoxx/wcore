@@ -32,7 +32,7 @@ light_proxy_cooldown_(0),
 dphi_(0.0f),
 dtheta_(0.5f),
 dpsi_(0.0f),
-cam_coords_(2.0f,M_PI/4.0f,M_PI),
+cam_coords_(1.5f,M_PI/4.0f,M_PI),
 model_pos_(0.f),
 light_pos_(0.f,2.f,0.f),
 light_color_(1.f,1.f,1.f),
@@ -73,8 +73,14 @@ void GLWidget::initializeGL()
 
     engine_->SetFrameSize(800, 600);
     engine_->Init(0, nullptr, nullptr, context_);
+    // [HACK] Model is set not to be cullable in level mv, otherwise it will cull (strangely)
+    // for some values of azimuth and inclination
     engine_->scene->LoadStart("mv");
-    engine_->scene->GetCamera().set_perspective(800,600,0.1f,10.f);
+
+    Camera& cam = engine_->scene->GetCamera();
+    cam.set_perspective(800,600,0.1f,15.f);
+    cam.set_view_policy(Camera::ViewPolicy::DIRECTIONAL); // View matrix is a look_at matrix
+    cam.set_look_at(math::vec3(0.f));
 
     // Systems configuration
     engine_->pipeline->SetShadowMappingEnabled(false);
@@ -118,51 +124,42 @@ void GLWidget::paintGL()
     });
 
     // Update light
-    engine_->scene->VisitLightRef("the_point_light"_h, [&](Light& light)
+    if(light_type_==0) // Point light
     {
-        light.set_position(light_pos_);
-        light.set_radius(light_radius_);
-        light.set_color(light_color_);
-        light.set_ambient_strength(light_amb_);
-        light.set_brightness((light_type_==0) ? light_brightness_ : 0.f);
-    });
+        engine_->scene->VisitLightRef("the_point_light"_h, [&](Light& light)
+        {
+            light.set_position(light_pos_);
+            light.set_radius(light_radius_);
+            light.set_color(light_color_);
+            light.set_ambient_strength(light_amb_);
+            light.set_brightness(light_brightness_);
+        });
 
-    Light& dirlight = engine_->scene->GetDirectionalLight();
-    math::vec3 sun_pos(cos(light_inclination_),
-                       sin(light_inclination_)*sin(light_perihelion_),
-                       sin(light_inclination_)*cos(light_perihelion_));
-    sun_pos.normalize();
-    dirlight.set_position(sun_pos);
-    dirlight.set_color(light_color_);
-    dirlight.set_ambient_strength(light_amb_);
-    dirlight.set_brightness(light_brightness_);
-
-    if(--light_proxy_cooldown_>0)
-        engine_->pipeline->dShowLightProxy(1,0.1f);
-    else
-        engine_->pipeline->dShowLightProxy(0);
-
-    engine_->Update(16.67/1000.f);
+        if(--light_proxy_cooldown_>0)
+            engine_->pipeline->dShowLightProxy(1,0.1f);
+        else
+            engine_->pipeline->dShowLightProxy(0);
+    }
+    else if(light_type_==1) // Directional light
+    {
+        Light& dirlight = engine_->scene->GetDirectionalLight();
+        math::vec3 sun_pos(cos(light_inclination_),
+                           sin(light_inclination_)*sin(light_perihelion_),
+                           sin(light_inclination_)*cos(light_perihelion_));
+        sun_pos.normalize();
+        dirlight.set_position(sun_pos);
+        dirlight.set_color(light_color_);
+        dirlight.set_ambient_strength(light_amb_);
+        dirlight.set_brightness(light_brightness_);
+    }
 
     // Update camera
-    // [HACK] camera is updated once by the engine update
-    // reupdate camera to impose our spherical coordinates control
-    // [TODO] implement this in a camera controller state and
-    // allow to switch state from the API
     Camera& cam = engine_->scene->GetCamera();
     cam.set_position(math::vec3(cam_coords_.x()*sin(cam_coords_.y())*sin(cam_coords_.z()),
                                 cam_coords_.x()*cos(cam_coords_.y()),
                                 cam_coords_.x()*sin(cam_coords_.y())*cos(cam_coords_.z())));
-    cam.set_look_at(math::vec3(0.f));
-    cam.look_at_view();
-    // [HACK] Model is set not to be cullable, otherwise it will cull (strangely)
-    // for some values of azimuth and inclination
 
-    /*math::vec3 coords_deg(cam_coords_);
-    coords_deg[1] *= 180.f/M_PI;
-    coords_deg[2] *= 180.f/M_PI;
-    std::cout << coords_deg << std::endl;*/
-
+    engine_->Update(16.67/1000.f);
     engine_->RenderFrame();
     engine_->FinishFrame();
 }
@@ -325,6 +322,11 @@ void GLWidget::handle_light_type_changed(int newvalue)
     else if(light_type_ == 1) // Directional
     {
         engine_->pipeline->SetDirectionalLightEnabled(true);
+        // Shutdown point light
+        engine_->scene->VisitLightRef("the_point_light"_h, [&](Light& light)
+        {
+            light.set_brightness(0.f);
+        });
     }
 }
 

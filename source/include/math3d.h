@@ -108,8 +108,17 @@ float det(const mat3& Matrix);
 
 float det(const mat4& Matrix);
 
+// Make rotation matrix from ZYX-Tait-Bryan angles
 void init_rotation_tait_bryan(mat4& Matrix, float z, float y, float x);
+inline void init_rotation_tait_bryan(mat4& Matrix, const vec3& angles_zyx)
+{
+    init_rotation_tait_bryan(Matrix, angles_zyx[0], angles_zyx[1], angles_zyx[2]);
+}
 
+// Initialize view matrix, given camera position and Tait-Bryan angles
+void init_view_position_angles(mat4& Matrix, const vec3& eye, const vec3& angles);
+
+// Initialize view matrix, given camera position, target position and an up vector
 void init_look_at(mat4& Matrix, const vec3& eye, const vec3& target, const vec3& up);
 
 // Perspective projection matrix with symmetric viewing volume

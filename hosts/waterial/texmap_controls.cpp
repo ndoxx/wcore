@@ -382,6 +382,7 @@ blursharp_edit_(new DoubleSpinBox)
     QWidget* cboxes = new QWidget();
     QGridLayout* cboxes_layout = new QGridLayout();
 
+    cboxes_layout->setAlignment(Qt::AlignHCenter);
     cboxes_layout->addWidget(new QLabel(tr("R")), 0, 0);
     cboxes_layout->addWidget(new QLabel(tr("G")), 0, 1);
     cboxes_layout->addWidget(new QLabel(tr("H")), 0, 2);
@@ -390,6 +391,7 @@ blursharp_edit_(new DoubleSpinBox)
     cboxes_layout->addWidget(invert_h_cb_, 1, 2);
     cboxes->setLayout(cboxes_layout);
     cboxes->setMinimumWidth(50);
+    cboxes->setMaximumHeight(55);
     cboxes->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
 
     filter_combo_->addItems(QStringList()<<"Sobel"<<"Scharr");

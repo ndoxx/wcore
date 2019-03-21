@@ -14,11 +14,19 @@ class Camera
 {
 public:
 
-    inline float get_near() { return NEAR; }
-    inline float get_far()  { return FAR; }
+    enum ViewPolicy
+    {
+        ANGULAR,
+        DIRECTIONAL
+    };
 
     Camera() = delete;
     Camera(float scr_width, float scr_height);
+
+    inline void set_view_policy(ViewPolicy policy) { view_policy_ = policy; }
+
+    inline float get_near() { return NEAR; }
+    inline float get_far()  { return FAR; }
 
     void set_perspective(float scr_width, float scr_height, float z_near=0.1f, float z_far=100.0f);
     inline void set_perspective() { init_frustum(proj_, frustum_); }
@@ -43,7 +51,6 @@ public:
     inline float get_pitch() const { return pitch_; }
 
     inline const math::mat4& get_view_matrix() const;
-    inline const math::mat4& get_model_matrix() const;
     inline const math::mat4& get_projection_matrix() const;
     inline const std::array<math::vec2,4>& get_rays() const;
 
@@ -75,15 +82,11 @@ public:
     float get_frustum_diagonal() const;
     void get_truncated_frustum_corners(float ymin, std::array<math::vec3, 8>& destination) const;
     void set_orthographic_tight_fit(const Camera& other,
-                                    const math::vec3& view_dir,
                                     float texel_size_x = 0.0f,
                                     float texel_size_y = 0.0f);
 
     inline void set_look_at(const math::vec3& value) { lookat_ = value; }
-    // Update view matrix using position and target information
-    void look_at_view();
-    // Update view matrix using pitch/yaw and position information
-    void freefly_view();
+
     void update(float dt);
 
 #ifndef __DISABLE_EDITOR__
@@ -100,11 +103,11 @@ private:
     float           dt_;
     float           speed_;
     float           rot_speed_;
+    ViewPolicy      view_policy_;
 
     math::Frustum   frustum_;
     math::mat4      proj_;
     math::mat4      view_;
-    math::mat4      model_;
     math::vec3      position_;
     math::vec3      lookat_;
     math::vec3      right_;
@@ -214,11 +217,6 @@ inline bool Camera::frustum_collides_sphere(const math::vec3& center, float radi
 inline const math::mat4& Camera::get_view_matrix() const
 {
     return view_;
-}
-
-inline const math::mat4& Camera::get_model_matrix() const
-{
-    return model_;
 }
 
 inline const math::mat4& Camera::get_projection_matrix() const

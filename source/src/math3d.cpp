@@ -26,6 +26,15 @@ void init_rotation_tait_bryan(mat4& Matrix, float z, float y, float x)
                   0.f,            0.f,                               0.f,                                1.f);
 }
 
+// [TODO] Optimize -> use direct computation like in init_look_at()
+void init_view_position_angles(mat4& Matrix, const vec3& eye, const vec3& angles)
+{
+    mat4 model;
+    init_rotation_tait_bryan(model, angles);
+    translate_matrix(model, eye); // model = T*R
+    inverse_affine(model, Matrix);
+}
+
 void init_look_at(mat4& Matrix, const vec3& eye, const vec3& target, const vec3& up)
 {
     vec3 zaxis = (eye - target).normalized();     // "forward -z" vector.

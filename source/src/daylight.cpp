@@ -9,6 +9,8 @@
 #include "pipeline.h"
 #include "input_handler.h"
 #include "game_clock.h"
+#include "camera.h"
+#include "config.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -23,6 +25,8 @@ typedef std::shared_ptr<Light> pLight;
 
 static float SUN_INCLINATION = 85.0f * M_PI/180.0f;
 static float MOON_INCLINATION = 70.0f * M_PI/180.0f;
+static uint32_t SHADOW_HEIGHT = 1024;
+static uint32_t SHADOW_WIDTH  = 1024;
 
 DaylightSystem::DaylightSystem():
 active_(true),
@@ -39,6 +43,9 @@ ambient_strength_interpolator_(nullptr)
     // Register debug info fields
     DINFO.register_text_slot("sdiTime"_h, vec3(0.6,1.0,0.0));
     DINFO.register_text_slot("sdiSun"_h, vec3(1.0,0.5,0.0));
+
+    CONFIG.get("root.render.shadowmap.width"_h, SHADOW_WIDTH);
+    CONFIG.get("root.render.shadowmap.height"_h, SHADOW_HEIGHT);
 }
 
 DaylightSystem::~DaylightSystem()
@@ -171,6 +178,15 @@ void DaylightSystem::update(const GameClock& clock)
         dir_light->set_color(color_interpolator_->interpolate(daytime_));
         dir_light->set_brightness(fmax(brightness_interpolator_->interpolate(daytime_),0.f));
         dir_light->set_ambient_strength(ambient_strength_interpolator_->interpolate(daytime_));
+
+        // Control light camera
+        auto& light_camera = pscene->get_light_camera();
+        light_camera.set_position(100.0f*dir_light->get_position());
+        light_camera.update(dt); // Look at origin
+        // Tightly fit light camera orthographic frustum to view frustum bounding box
+        light_camera.set_orthographic_tight_fit(pscene->get_camera(),
+                                                1.0f/SHADOW_WIDTH,
+                                                1.0f/SHADOW_HEIGHT);
 
         // Post processing variables
         pipeline->set_pp_gamma(pp_gamma_interpolator_->interpolate(daytime_));
