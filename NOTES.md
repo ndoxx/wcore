@@ -7440,7 +7440,7 @@ void Camera::update(float dt)
 }
 ```
 
-L'ancienne fonction maths::init_rotation_euler() qui calculait une matrice de rotation depuis 3 angles utilisait en réalité des angles de Tait-Bryan dans la convention ZYX. Donc j'ai renommé la fonction en conséquence : init_rotation_tait_bryan(). On lui passe dans l'ordre le roll (Z) le yaw (Y) et le pitch (X). Cette fonction utilisait un produit matriciel en interne, je l'ai remplacée par une dérivation directe des termes de la matrice en me servant de [4], voir d'ailleurs la table euler_angles_to_matrix.png dans les figures.
+L'ancienne fonction maths::init_rotation_euler() qui calculait une matrice de rotation depuis 3 angles utilisait en réalité des angles de Tait-Bryan dans la convention ZYX. Donc j'ai renommé la fonction en conséquence : init_rotation_tait_bryan(). On lui passe dans l'ordre le roll (Z) le yaw (Y) et le pitch (X). Cette fonction utilisait un produit matriciel en interne, je l'ai remplacée par une dérivation directe des termes de la matrice en me servant de [4], voir d'ailleurs la table [euler_angles_to_matrix.png] dans les figures.
 En politique ANGULAR (par défaut), update() appèle math::init_view_position_angles() qui calcule la matrice de rotation depuis les angles, puis translate celle-ci du vecteur position. La matrice de vue renvoyée est l'inverse affine de la matrice modèle (pourra être optimisé).
 En politique DIRECTIONAL, c'est la fonction math::init_look_at() qui est utilisée pour initialiser la matrice de vue.
 Les vecteurs right, up et forward sont les colonnes de la matrice modèle et donc les lignes de la matrice de vue. _Camera_ ne possède d'ailleurs plus de matrice modèle comme membre.

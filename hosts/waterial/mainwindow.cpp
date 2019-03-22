@@ -531,7 +531,7 @@ void MainWindow::handle_delete_current_texture()
 
 void MainWindow::handle_clear_current_texture()
 {
-    DLOGW("NOT IMPLEMENTED YET", "waterial", Severity::WARN);
+    texmap_pane_->clear_view();
     setWindowModified(true);
 }
 
@@ -554,13 +554,16 @@ void MainWindow::handle_texlist_selection_changed(const QItemSelection& selectio
         // First, save previously selected texture if any
         texmap_pane_->handle_save_current_texture();
         // Get newly selected item data as QString
-        QString current_tex = selection.indexes().first().data(Qt::DisplayRole).toString();
-        // Set editor model to work with this texture as current texture
-        editor_model_->set_current_texture_name(current_tex);
-        // Retrieve and display saved texture information
-        texmap_pane_->update_texture_view();
-        // Swap texture in viewer if possible
-        handle_material_swap();
+        if(selection.indexes().first().isValid())
+        {
+            QString current_tex = selection.indexes().first().data(Qt::DisplayRole).toString();
+            // Set editor model to work with this texture as current texture
+            editor_model_->set_current_texture_name(current_tex);
+            // Retrieve and display saved texture information
+            texmap_pane_->update_texture_view();
+            // Swap texture in viewer if possible
+            handle_material_swap();
+        }
     }
 }
 
@@ -593,7 +596,7 @@ void MainWindow::handle_compile_current()
         if(entry.texture_maps[ALBEDO]->has_image)
         {
             QModelIndex index = tex_list_->currentIndex();
-            editor_model_->update_thumbnail_proxy(index, entry.texture_maps[ALBEDO]->path);
+            editor_model_->update_thumbnail_proxy(index, entry.texture_maps[ALBEDO]->source_path);
         }
     }
 }

@@ -53,7 +53,8 @@ static std::map<hash_t, int> filter_names_to_index =
 
 TextureMap::TextureMap():
 has_image(false),
-use_image(false)
+use_image(false),
+has_tweak(false)
 {
 
 }
@@ -65,27 +66,27 @@ void TextureMap::debug_display()
 }
 void AlbedoMap::debug_display()
 {
-    if(has_image) DLOGI("albedo: <p>"    + path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("albedo: <p>"    + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
 }
 void RoughnessMap::debug_display()
 {
-    if(has_image) DLOGI("roughness: <p>" + path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("roughness: <p>" + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
 }
 void MetallicMap::debug_display()
 {
-    if(has_image) DLOGI("metallic: <p>"  + path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("metallic: <p>"  + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
 }
 void AOMap::debug_display()
 {
-    if(has_image) DLOGI("ao: <p>"        + path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("ao: <p>"        + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
 }
 void DepthMap::debug_display()
 {
-    if(has_image) DLOGI("depth: <p>"     + path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("depth: <p>"     + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
 }
 void NormalMap::debug_display()
 {
-    if(has_image) DLOGI("normal: <p>"    + path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("normal: <p>"    + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
 }
 void TextureEntry::debug_display()
 {
@@ -144,13 +145,18 @@ hash_t TextureEntry::parse_node(xml_node<>* mat_node)
             texmap_node;
             texmap_node=texmap_node->next_sibling("TextureMap"))
         {
-            std::string texmap_name, texmap_path;
+            std::string texmap_name, texmap_path, tweak_path;
             xml::parse_attribute(texmap_node, "name", texmap_name);
             int index = texmap_names_to_index[H_(texmap_name.c_str())];
-            if(xml::parse_attribute(texmap_node, "path", texmap_path))
+            if(xml::parse_node(texmap_node, "Source", texmap_path))
             {
                 texture_maps[index]->has_image = true;
-                texture_maps[index]->path = QString::fromStdString(texmap_path);
+                texture_maps[index]->source_path = QString::fromStdString(texmap_path);
+            }
+            if(xml::parse_node(texmap_node, "Tweak", tweak_path))
+            {
+                texture_maps[index]->has_tweak = true;
+                texture_maps[index]->source_path = QString::fromStdString(tweak_path);
             }
             // Parse common per-map properties
             xml::parse_node(texmap_node, "TextureMapEnabled", texture_maps[index]->use_image);
@@ -191,7 +197,17 @@ void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materia
         xml_node<>* tex_node = doc.allocate_node(node_element, "TextureMap");
         node_add_attribute(doc, tex_node, "name", texmap_names[ii].c_str());
         if(texture_maps[ii]->has_image)
-            node_add_attribute(doc, tex_node, "path", texture_maps[ii]->path.toUtf8().constData());
+        {
+            xml_node<>* path_node = doc.allocate_node(node_element, "Source");
+            node_set_value(doc, path_node, texture_maps[ii]->source_path.toUtf8().constData());
+            tex_node->append_node(path_node);
+        }
+        if(texture_maps[ii]->has_tweak)
+        {
+            xml_node<>* tweak_node = doc.allocate_node(node_element, "Tweak");
+            node_set_value(doc, tweak_node, texture_maps[ii]->tweak_path.toUtf8().constData());
+            tex_node->append_node(tweak_node);
+        }
 
         // Save uniform value even if not used
         texture_maps[ii]->write(doc, tex_node);
@@ -386,8 +402,6 @@ void EditorModel::set_current_texture_name(const QString& name)
 
 void EditorModel::setup_list_model(QListView* listview)
 {
-    // Custom model uses string list as data
-    //texlist_model_->setStringList(texlist_);
     // Proxy model for sorting the texture list view when a new item is added
     texlist_sort_proxy_model_->setDynamicSortFilter(true);
     texlist_sort_proxy_model_->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -406,19 +420,24 @@ void EditorModel::update_thumbnail_proxy(QModelIndex index, const QString& path)
     update_thumbnail(texlist_sort_proxy_model_->mapToSource(index), path);
 }
 
-QModelIndex EditorModel::add_texture(const QString& name)
+QModelIndex EditorModel::add_texture(const QString& name, const TextureEntry& entry)
 {
     // Append texture name to list view data and sort
-    QModelIndex index = texlist_model_->append(name);
-    update_thumbnail(index, ":/res/icons/waterial.png");
+    QModelIndex source_index = texlist_model_->append(name);
+
+    // Update thumbnail
+    if(entry.texture_maps[ALBEDO]->has_image)
+        update_thumbnail(source_index, entry.texture_maps[ALBEDO]->source_path);
+    else
+        update_thumbnail(source_index, ":/res/icons/waterial.png");
 
     texlist_sort_proxy_model_->sort(0);
 
     // Add texture descriptor
-    texture_descriptors_.insert(std::pair(H_(name.toUtf8().constData()), TextureEntry()));
+    texture_descriptors_.insert(std::pair(H_(name.toUtf8().constData()), entry));
 
-    // index is a source index and needs to be remapped to proxy sorted index
-    return texlist_sort_proxy_model_->mapFromSource(index);
+    // source index needs to be remapped to proxy sorted index
+    return texlist_sort_proxy_model_->mapFromSource(source_index);
 }
 
 bool EditorModel::has_entry(wcore::hash_t name)
@@ -436,7 +455,9 @@ void EditorModel::delete_current_texture(QListView* tex_list)
         {
             current_texname_ = "";
             texture_descriptors_.erase(it);
-            texlist_model_->removeRow(texlist_sort_proxy_model_->mapToSource(tex_list->currentIndex()).row());
+            QModelIndex index = tex_list->currentIndex();
+            QModelIndex source_index = texlist_sort_proxy_model_->mapToSource(index);
+            texlist_model_->removeRow(source_index.row());
         }
     }
 }
@@ -473,8 +494,10 @@ void EditorModel::compile(const QString& texname)
         QImage** texmaps = new QImage*[TexMapControlIndex::N_CONTROLS];
         for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
         {
-            if(entry.texture_maps[ii]->has_image)
-                texmaps[ii] = new QImage(entry.texture_maps[ii]->path);
+            if(entry.texture_maps[ii]->has_tweak)
+                texmaps[ii] = new QImage(entry.texture_maps[ii]->tweak_path);
+            else if(entry.texture_maps[ii]->has_image)
+                texmaps[ii] = new QImage(entry.texture_maps[ii]->source_path);
             else
                 texmaps[ii] = nullptr;
         }
@@ -591,17 +614,9 @@ void EditorModel::open_project(const QString& infile)
     {
 
         TextureEntry entry;
-        hash_t hentryname = entry.parse_node(mat_node);
+        entry.parse_node(mat_node);
         // Insert descriptor
-        texture_descriptors_.insert(std::pair(hentryname, entry));
-        // Populate texture list
-        texlist_model_->append(entry.name);
-        // Set thumbnail
-        QModelIndex index = texlist_model_->index(texlist_model_->rowCount() - 1, 0);
-        if(entry.texture_maps[ALBEDO]->has_image)
-            update_thumbnail(index, entry.texture_maps[ALBEDO]->path);
-        else
-            update_thumbnail(index, ":/res/icons/waterial.png");
+        add_texture(entry.name, entry);
     }
     texlist_sort_proxy_model_->sort(0);
 }

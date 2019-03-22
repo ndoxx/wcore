@@ -83,11 +83,13 @@ void TexMapControl::connect_all(MainWindow* main_window, TexmapControlPane* texm
     connect_controls(texmap_pane);
 }
 
-
 void TexMapControl::write_entry(TextureEntry& entry)
 {
-    entry.texture_maps[texmap_index]->path = droplabel->get_path();
-    entry.texture_maps[texmap_index]->has_image = !entry.texture_maps[texmap_index]->path.isEmpty();
+    entry.texture_maps[texmap_index]->tweak_path = droplabel->get_tweak_path();
+    entry.texture_maps[texmap_index]->has_tweak = !entry.texture_maps[texmap_index]->tweak_path.isEmpty();
+
+    entry.texture_maps[texmap_index]->source_path = droplabel->get_path();
+    entry.texture_maps[texmap_index]->has_image = !entry.texture_maps[texmap_index]->source_path.isEmpty();
     entry.texture_maps[texmap_index]->use_image = map_enabled->checkState() == Qt::Checked;
 
     write_entry_additional(entry);
@@ -97,9 +99,9 @@ void TexMapControl::read_entry(const TextureEntry& entry)
 {
     droplabel->clear();
     if(entry.texture_maps[texmap_index]->has_image)
-    {
-        droplabel->setPixmap(entry.texture_maps[texmap_index]->path);
-    }
+        droplabel->setPixmap(entry.texture_maps[texmap_index]->source_path,
+                             entry.texture_maps[texmap_index]->tweak_path);
+
     map_enabled->setEnabled(entry.texture_maps[texmap_index]->has_image);
     map_enabled->setCheckState(entry.texture_maps[texmap_index]->use_image ? Qt::Checked : Qt::Unchecked);
 
@@ -516,10 +518,15 @@ void TexmapControlPane::update_entry(TextureEntry& entry)
 void TexmapControlPane::update_texture_view()
 {
     // * Update drop labels
-    TextureEntry& entry = editor_model_->get_current_texture_entry();
+    if(!editor_model_->get_current_texture_name().isEmpty())
+    {
+        TextureEntry& entry = editor_model_->get_current_texture_entry();
 
-    for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
-        texmap_controls_[ii]->read_entry(entry);
+        for(int ii=0; ii<TexMapControlIndex::N_CONTROLS; ++ii)
+            texmap_controls_[ii]->read_entry(entry);
+    }
+    else
+        clear_view();
 }
 
 void TexmapControlPane::clear_view()
@@ -567,7 +574,7 @@ void TexmapControlPane::handle_gen_normal_map()
         {
             QApplication::setOverrideCursor(Qt::WaitCursor);
 
-            QString depth_path(entry.texture_maps[DEPTH]->path);
+            QString depth_path(entry.texture_maps[DEPTH]->source_path);
             QImage depthmap(depth_path);
             QImage normalmap(entry.width, entry.height, QImage::Format_RGBA8888);
 
@@ -593,7 +600,7 @@ void TexmapControlPane::handle_gen_normal_map()
             // Display newly generated normal map
             entry.texture_maps[NORMAL]->has_image = true;
             entry.texture_maps[NORMAL]->use_image = true;
-            entry.texture_maps[NORMAL]->path = normal_path;
+            entry.texture_maps[NORMAL]->source_path = normal_path;
             update_texture_view();
 
             QApplication::restoreOverrideCursor();
@@ -614,7 +621,7 @@ void TexmapControlPane::handle_gen_ao_map()
         {
             QApplication::setOverrideCursor(Qt::WaitCursor);
 
-            QString depth_path(entry.texture_maps[DEPTH]->path);
+            QString depth_path(entry.texture_maps[DEPTH]->source_path);
             QImage depthmap(depth_path);
             QImage aomap(entry.width, entry.height, QImage::Format_RGBA8888);
 
@@ -640,7 +647,7 @@ void TexmapControlPane::handle_gen_ao_map()
             // Display newly generated normal map
             entry.texture_maps[AO]->has_image = true;
             entry.texture_maps[AO]->use_image = true;
-            entry.texture_maps[AO]->path = ao_path;
+            entry.texture_maps[AO]->source_path = ao_path;
             update_texture_view();
 
             QApplication::restoreOverrideCursor();

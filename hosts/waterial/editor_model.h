@@ -45,9 +45,11 @@ struct TextureMap
     virtual void debug_display();
 #endif
 
-    QString path;
+    QString source_path;
+    QString tweak_path;
     bool has_image;
     bool use_image;
+    bool has_tweak;
 };
 
 struct AlbedoMap: public TextureMap
@@ -175,7 +177,7 @@ public:
 
     // texture list access
     void setup_list_model(QListView* listview);
-    QModelIndex add_texture(const QString& name);
+    QModelIndex add_texture(const QString& name, const TextureEntry& entry=TextureEntry());
 
     inline TextureEntry& get_texture_entry(wcore::hash_t name) { return texture_descriptors_.at(name); }
     inline TextureEntry& get_current_texture_entry()           { return get_texture_entry(wcore::H_(current_texname_.toUtf8().constData())); }

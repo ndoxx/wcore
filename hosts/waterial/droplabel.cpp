@@ -54,18 +54,36 @@ void DropLabel::setPixmap(const QPixmap& pixmap)
     emit sig_texmap_changed(initialized_);
 }
 
-void DropLabel::setPixmap(const QString& pix_path)
+void DropLabel::setPixmap(const QString& pix_path, const QString& tweak_path)
 {
-    setPixmap(QPixmap(pix_path));
     current_path_ = pix_path;
+    current_tweak_path_ = tweak_path;
+    if(!current_tweak_path_.isEmpty())
+        setPixmap(QPixmap(current_tweak_path_));
+    else
+        setPixmap(QPixmap(current_path_));
 }
 
 void DropLabel::clear()
 {
     QLabel::clear();
     current_path_ = "";
+    current_tweak_path_ = "";
     initialized_ = false;
     emit sig_texmap_changed(initialized_);
+}
+
+void DropLabel::clear_tweaks()
+{
+    current_tweak_path_ = "";
+    // Fallback to source image if possible
+    if(!current_path_.isEmpty())
+        setPixmap(current_path_);
+    else
+    {
+        initialized_ = false;
+        emit sig_texmap_changed(initialized_);
+    }
 }
 
 void DropLabel::resizeEvent(QResizeEvent* event)
