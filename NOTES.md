@@ -6679,21 +6679,21 @@ Les sampler groups ne comporteront plus que 3 samplers au lieu de 6 et on divise
 
 Mais générer de telles images nécessite un outil, sans quoi ce serait une galère sans nom. Donc il faut que je bosse sur un material editor. On peut imaginer les features suivants :
 
-* Génération assistée de la normal map depuis la depth map
-    -> Par filtrage (Sobel, Scharr...)
-* Possibilité de spécifier des valeurs uniformes au lieu d'images
-* Compilation des textures
-* Export des materials en XML
-* Visualisation d'objets texturés sous wcore
-    -> Avec choix des sources de lumière
-    -> Et choix des objets (cube, plane, sphere, .obj)
-* Opérations de base sur chaque texture map
+[X] Génération assistée de la normal map depuis la depth map
+    [X] Par filtrage (Sobel, Scharr...)
+[X] Possibilité de spécifier des valeurs uniformes au lieu d'images
+[X] Compilation des textures
+[ ] Export des materials en XML
+[X] Visualisation d'objets texturés sous wcore
+    [X] Avec choix des sources de lumière
+    [ ] Et choix des objets (cube, plane, sphere, .obj)
+[ ] Opérations de base sur chaque texture map
     -> Invert, Bias, Curve...
-* Export sous différentes résolutions
+[ ] Export sous différentes résolutions
 
 Et un peu de fluff quand j'aurai le temps :
-* Drag & drop de fichiers image
-* Batch mode
+[X] Drag & drop de fichiers image
+[X] Batch mode
 
 
 Peut-être que pour se simplifier la vie -je sens que je vais regretter le début de cette phrase- et étendre le nombre de formats pris en charge en entrée, on pourrait utiliser une grosse lib image loader genre Assimp.
@@ -6711,7 +6711,7 @@ Une barre d'outils QToolBar regroupe les contrôles les plus utilisés : la sér
 
 Le workflow consiste à créer une nouvelle texture, puis à initialiser les champs qui doivent l'être (les images, mais aussi plus tard les grandeurs uniformes), puis à compiler cette dernière dans 3 images composites (qui plus tard seront concaténées dans une archive). De telles textures composites seront nommées __Blocks__.
 
-Le paradigme de programmation suivi est Modèle/Vue, afin de rester cohérent avec la façon dont fonctionne Qt. La classe _EditorModel_ représente le comportement de l'application et implémente les algos effectifs sur les données à traîter. _MainWindow_ intéragit avec cette classe dans ses slots. _EditorModel_ possède une map de descripteurs vers les textures en cours d'édition. Ces descripteurs sont des structures _TextureEntry_ qui possèdent en outre des chemins d'accès vers les images sources. Ces descripteurs sont ordonnés par hash du nom de texture.
+Le paradigme de programmation suivi est Modèle/Vue, afin de rester cohérent avec la façon dont fonctionne Qt. La classe _EditorModel_ représente les données de l'application et implémente les algos effectifs pour les traîter. _MainWindow_ intéragit avec cette classe dans ses slots. _EditorModel_ possède une map de descripteurs vers les textures en cours d'édition. Ces descripteurs sont des structures _TextureEntry_ qui possèdent en outre des chemins d'accès vers les images sources. Ces descripteurs sont ordonnés par hash du nom de texture.
 
 ## Utilisation d'un modèle proxy pour le tri d'une liste
 Qt propose des widgets qui opèrent une séparation modèle/vue. QListView est l'un d'entre eux (son alternative plus simple est QListWidget de mémoire). Une QListView est construite avec un modèle par défaut mais ce modèle peut être remplacé par une implémentation custom si besoin. Le modèle a besoin d'une source de données pour fonctionner (en l'occurrence une QStringList dans mon cas). Si l'on veut trier dynamiquement les données d'une QListView une possibilité est d'utiliser deux modèles. Le premier est un *modèle source* qui intéragit avec les données directement, et le deuxième est un proxy qui va remapper les indices du modèle source de sorte à réordonner les entrées de la liste dans la vue. Les indices de la vue sont donc ceux du modèle proxy. Ainsi on n'opère jamais sur les données directement pour trier leur représentation :
@@ -6962,7 +6962,7 @@ J'avais besoin d'inverser les couleurs d'un ensemble d'icones noires, j'ai utili
 #[09-03-19]
 
 ## Stretch bitch
-J'ai une classe de base _TexMapControl_ qui définit les contrôles de base pour la modification des champs d'une texture map. Je spécialise cette classe par héritage pour chaque type de texmap afin de rajouter des contrôles spécifiques (édition de la valeur uniforme...). Les contrôles additionnels sont rangés dans une QFrame avec un layout QFormLayout, qui range les contrôles en face de labels.
+J'ai une classe de base _TexMapControl_ qui définit les contrôles de base pour la modification des champs d'une texture map. Je spécialise cette classe par héritage pour chaque type de texmap afin de rajouter des contrôles spécifiques (édition de la valeur uniforme...). Les contrôles additionnels sont rangés dans une QFrame avec un layout QFormLayout, qui place les contrôles en face de labels.
 J'ai donc créé une classe spécialisée pour l'albédo _AlbedoControl_, avec comme seul contrôle additionnel un _ColorPickerLabel_, qui dérive de QLabel, mais réagit au click, ouvre un color picker dialog et change sa couleur de fond quand une nouvelle couleur est sélectionnée. Tout se passe bien.
 Je crée une classe spécialisée pour la roughness _RoughnessControl_, et je rajoute comme contrôle additionnel un QLineEdit (maintenant c'est un QDoubleSpinBox beaucoup plus pratique, mais le principe reste le même), et là, surprise, le comportement de changement de taille du _DropLabel_ correspondant est modifié, celui-ci s'élargit de manière prioritaire par rapport aux autres quand la fenêtre est redimensionnée. 3h de galère pour biter ce qui m'arrive.
 
@@ -6978,7 +6978,7 @@ En fait c'est simple, il faut fixer les stretch factors pour chaque élément du
 ```
 Noter que j'ai organisé mes contrôles dans un layout QGridLayout, on a donc 2 types de facteurs de stretch à modifier, un pour les lignes et un pour les colonnes. Avec un box layout c'est la fonction setStretch() tout court qu'il faut utiliser.
 
-Tant qu'on en est à parler de trucs qui s'étirent, j'ai aussi découvert que pour éviter d'avoir des contrôles qui flottent au milieu de la frame quand on les veux gentiment packés en haut, il faut rajouter un "stretch" après ceux-ci dans le layout qui les contient via :
+Tant qu'on en est à parler de trucs qui s'étirent, j'ai aussi découvert que pour éviter d'avoir des contrôles qui flottent au milieu de la frame quand on les veut gentiment packés en haut, il faut rajouter un "stretch" après ceux-ci dans le layout qui les contient via :
 
 ```cpp
 layout->addStretch();
@@ -7063,12 +7063,7 @@ Cloner mon git et compiler :
 >> git submodule init
 >> git submodule update
     - Copier à la main le dossier des headers "freetype" dans vendor
-    - Copier à la main les fichiers suivants de vendor/imgui/examples :
-        - imgui_impl_glfw.cpp
-        - imgui_impl_glfw.h
-        - imgui_impl_opengl3.cpp
-        - imgui_impl_opengl3.h
-    vers le dossier parent vendor/imgui/
+
 >> mkdir build; cd build
 >> cmake [-DCLANG6=1] ..
 >> make wcore
@@ -7445,7 +7440,7 @@ En politique ANGULAR (par défaut), update() appèle math::init_view_position_an
 En politique DIRECTIONAL, c'est la fonction math::init_look_at() qui est utilisée pour initialiser la matrice de vue.
 Les vecteurs right, up et forward sont les colonnes de la matrice modèle et donc les lignes de la matrice de vue. _Camera_ ne possède d'ailleurs plus de matrice modèle comme membre.
 
-Noter que forward pointe vers les z négatifs car j'utilise un repère indirect (lefty) à la OpenGL pour les matrices de vue. En revanche dans le repère monde c'est un repère direct qui est utilisé, le calcul de la frustum box doit changer le signe du vecteur forward renvoyé par la caméra pour produire des vertices dans le repère monde. A terme je vais probablement me foutre en direct partout. Voir [3] pour les détails. [1] et [2] m'ont servi à revérifier le calcul de mes matrices de projection via math::init_orthographic(), math::init_perspective() et math::init_frustum().
+Noter que forward pointe vers les z négatifs car j'utilise un repère indirect (lefty) à la OpenGL pour les matrices de vue. En revanche dans le repère monde c'est un repère direct qui est utilisé, le calcul de la frustum box doit changer le signe du vecteur forward renvoyé par la caméra pour produire des vertices dans le repère monde. A terme je vais probablement me foutre en direct partout. Voir [3] pour les détails. [1] et [2] m'ont servi à re-re-revérifier le calcul de mes matrices de projection via math::init_orthographic(), math::init_perspective() et math::init_frustum().
 
 
 * Sources :

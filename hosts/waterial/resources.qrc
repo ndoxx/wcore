@@ -16,5 +16,8 @@
     <file>res/icons/save_all.png</file>
 
     <file>res/stylesheets/default_style.css</file>
+
+    <file>res/shaders/tweaks.vert</file>
+    <file>res/shaders/tweaks.frag</file>
 </qresource>
 </RCC>

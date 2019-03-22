@@ -710,6 +710,7 @@ void TexmapControlPane::handle_tweak_albedo()
     TextureEntry& entry = editor_model_->get_current_texture_entry();
     if(entry.texture_maps[ALBEDO]->has_image)
     {
+        tweaks_dialog_->reset();
         tweaks_dialog_->set_source_image(entry.texture_maps[ALBEDO]->source_path);
 
         std::cout << "Tweaking albedo" << std::endl;

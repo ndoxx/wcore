@@ -28,6 +28,11 @@ public:
     inline void set_clear_color(const wcore::math::vec3& value) { clear_color_ = value; }
     void set_source_image(const QString& path);
 
+public slots:
+    void handle_hue_changed(double newvalue);
+    void handle_saturation_changed(double newvalue);
+    void handle_value_changed(double newvalue);
+
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
     void paintGL() Q_DECL_OVERRIDE;
@@ -45,6 +50,11 @@ private:
 
     unsigned int attr_position_;
     bool initialized_;
+
+    // uniforms
+    float hue_;
+    float saturation_;
+    float value_;
 };
 
 } // namespace waterial

@@ -9,6 +9,7 @@ namespace waterial
 {
 
 QT_FORWARD_DECLARE_CLASS(TweaksGLWidget)
+QT_FORWARD_DECLARE_CLASS(DoubleSlider)
 
 class TweaksDialog: public QDialog
 {
@@ -20,9 +21,13 @@ public:
 
     void set_clear_color(const wcore::math::vec3& value);
     void set_source_image(const QString& path);
+    void reset();
 
 private:
     TweaksGLWidget* preview_;
+    DoubleSlider* sld_hue_;
+    DoubleSlider* sld_saturation_;
+    DoubleSlider* sld_value_;
 };
 
 } // namespace waterial
