@@ -514,7 +514,7 @@ void NormalControl::get_options(generator::NormalGenOptions& options)
 TexmapControlPane::TexmapControlPane(MainWindow* main_window, EditorModel* editor_model, QWidget* parent):
 QWidget(parent),
 editor_model_(editor_model),
-tweaks_dialog_(new TweaksDialog())
+tweaks_dialog_(new TweaksDialog(main_window))
 {
     QGridLayout* layout_texmap_page = new QGridLayout();
     setObjectName("pageWidget");
@@ -538,6 +538,9 @@ tweaks_dialog_(new TweaksDialog())
     }
 
     setLayout(layout_texmap_page);
+
+    connect(tweaks_dialog_, SIGNAL(finished(int)),
+            this,           SLOT(handle_tweak_finished(int)));
 }
 
 void TexmapControlPane::update_entry(TextureEntry& entry)
@@ -710,39 +713,32 @@ void TexmapControlPane::handle_tweak_albedo()
         tweaks_dialog_->set_source_image(entry.texture_maps[ALBEDO]->source_path);
 
         std::cout << "Tweaking albedo" << std::endl;
-        auto ret = tweaks_dialog_->exec();
-        if(ret == QDialog::Accepted)
-        {
-            std::cout << "Accepted" << std::endl;
-        }
+        tweaks_dialog_->open();
     }
 }
 void TexmapControlPane::handle_tweak_roughness()
 {
     std::cout << "Tweaking roughness" << std::endl;
-    auto ret = tweaks_dialog_->exec();
-    if(ret == QDialog::Accepted)
-    {
-        std::cout << "Accepted" << std::endl;
-    }
+    tweaks_dialog_->open();
 }
 void TexmapControlPane::handle_tweak_metallic()
 {
     std::cout << "Tweaking metallic" << std::endl;
-    auto ret = tweaks_dialog_->exec();
-    if(ret == QDialog::Accepted)
-    {
-        std::cout << "Accepted" << std::endl;
-    }
+    tweaks_dialog_->open();
 }
 void TexmapControlPane::handle_tweak_depth()
 {
     std::cout << "Tweaking depth" << std::endl;
-    auto ret = tweaks_dialog_->exec();
-    if(ret == QDialog::Accepted)
-    {
-        std::cout << "Accepted" << std::endl;
-    }
+    tweaks_dialog_->open();
 }
+
+void TexmapControlPane::handle_tweak_finished(int result)
+{
+    if(result == QDialog::Accepted)
+        std::cout << "Accepted" << std::endl;
+    else
+        std::cout << "Rejected" << std::endl;
+}
+
 
 } // namespace waterial

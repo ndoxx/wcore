@@ -232,6 +232,7 @@ public slots:
     void handle_tweak_roughness();
     void handle_tweak_metallic();
     void handle_tweak_depth();
+    void handle_tweak_finished(int result);
 
 private:
     std::vector<TexMapControl*> texmap_controls_;

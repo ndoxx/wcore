@@ -3,6 +3,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
+#include <QOpenGLVertexArrayObject>
 
 #include "tweaks_gl_widget.h"
 
@@ -14,7 +15,10 @@ QOpenGLWidget(parent),
 clear_color_(0.f,0.f,0.f),
 source_tex_(nullptr),
 program_(new QOpenGLShaderProgram),
-vbo_(new QOpenGLBuffer)
+vbo_(new QOpenGLBuffer),
+vao_(new QOpenGLVertexArrayObject),
+attr_position_(0),
+initialized_(false)
 {
 
 }
@@ -24,7 +28,8 @@ TweaksGLWidget::~TweaksGLWidget()
     makeCurrent();
     delete source_tex_;
     delete program_;
-    delete vbo_;
+    vbo_->destroy();
+    vao_->destroy();
     doneCurrent();
 }
 
@@ -48,11 +53,18 @@ std::vector<GLfloat> v_data =
 
 void TweaksGLWidget::initializeGL()
 {
+    std::cout << "initializeGL" << std::endl;
     initializeOpenGLFunctions();
 
+    vao_->create();
+    vao_->bind();
+
     vbo_->create();
+    vbo_->setUsagePattern(QOpenGLBuffer::StaticDraw);
     vbo_->bind();
     vbo_->allocate(v_data.data(), v_data.size() * sizeof(GLfloat));
+
+    source_tex_ = new QOpenGLTexture(QImage(source_path_).mirrored());
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -60,12 +72,12 @@ void TweaksGLWidget::initializeGL()
     QOpenGLShader* vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     const char* vsrc =
         "const vec2 madd=vec2(0.5,0.5);\n"
-        "attribute highp vec4 vertex;\n"
+        "attribute highp vec4 position;\n"
         "varying mediump vec4 texc;\n"
         "void main(void)\n"
         "{\n"
-        "    gl_Position = vertex;\n"
-        "    texc.st = vertex.xy*madd+madd;\n"
+        "    gl_Position = position;\n"
+        "    texc.st = position.xy*madd+madd;\n"
         "}\n";
     vshader->compileSourceCode(vsrc);
 
@@ -75,22 +87,28 @@ void TweaksGLWidget::initializeGL()
         "varying mediump vec4 texc;\n"
         "void main(void)\n"
         "{\n"
-        "    gl_FragColor = vec4(texc.st,0,1)/*texture2D(texture, texc.st)*/;\n"
+        "    gl_FragColor = texture2D(texture, texc.st);\n"
         "}\n";
     fshader->compileSourceCode(fsrc);
 
     program_->addShader(vshader);
     program_->addShader(fshader);
 
-    #define PROGRAM_VERTEX_ATTRIBUTE 0
-    program_->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
     if(!program_->link())
     {
         std::cout << program_->log().toStdString() << std::endl;
     }
+    attr_position_ = program_->attributeLocation("position");
+    std::cout << "attr pos " << attr_position_ << std::endl;
 
     program_->bind();
+
+    program_->enableAttributeArray(attr_position_);
+    program_->setAttributeBuffer(attr_position_, GL_FLOAT, 0, 3);
+
     program_->setUniformValue("texture", 0);
+
+    initialized_ = true;
 }
 
 void TweaksGLWidget::paintGL()
@@ -101,11 +119,10 @@ void TweaksGLWidget::paintGL()
     if(source_tex_==nullptr)
         return;
 
-    program_->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-    program_->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3);
-
+    vao_->bind();
     source_tex_->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    vao_->release();
 }
 
 void TweaksGLWidget::resizeGL(int width, int height)
@@ -126,11 +143,17 @@ void TweaksGLWidget::mouseMoveEvent(QMouseEvent* event)
 
 void TweaksGLWidget::set_source_image(const QString& path)
 {
+    makeCurrent();
     source_path_ = path;
-    if(source_tex_)
+    if(initialized_)
+    {
+        source_tex_->release();
+        source_tex_->destroy();
         delete source_tex_;
-    source_tex_ = new QOpenGLTexture(QImage(path)/*.mirrored()*/);
-    update();
+        source_tex_ = new QOpenGLTexture(QImage(source_path_).mirrored());
+        source_tex_->bind();
+    }
+    doneCurrent();
 }
 
 } // namespace waterial

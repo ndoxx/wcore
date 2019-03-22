@@ -10,6 +10,7 @@
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 QT_FORWARD_DECLARE_CLASS(QOpenGLBuffer)
+QT_FORWARD_DECLARE_CLASS(QOpenGLVertexArrayObject)
 
 namespace waterial
 {
@@ -40,6 +41,10 @@ private:
     QOpenGLTexture* source_tex_;
     QOpenGLShaderProgram* program_;
     QOpenGLBuffer* vbo_;
+    QOpenGLVertexArrayObject* vao_;
+
+    unsigned int attr_position_;
+    bool initialized_;
 };
 
 } // namespace waterial
