@@ -17,6 +17,7 @@
 #include "color_picker_label.h"
 #include "mainwindow.h"
 #include "texmap_generator.h"
+#include "tweaks_dialog.h"
 #include "logger.h"
 
 using namespace wcore;
@@ -150,6 +151,10 @@ color_picker_(new ColorPickerLabel)
     QFormLayout* addc_layout = new QFormLayout();
     addc_layout->addRow(tr("Uniform value:"), color_picker_);
 
+    btn_tweak_ = new QPushButton(tr("Tweak"));
+    btn_tweak_->setMaximumHeight(20);
+    addc_layout->addRow(btn_tweak_);
+
     additional_controls->setLayout(addc_layout);
 
     // Add stretchable area at the bottom so that all controls are neatly packed to the top
@@ -181,6 +186,12 @@ void AlbedoControl::read_entry_additional(const TextureEntry& entry)
                                     255));
 }
 
+void AlbedoControl::connect_controls(TexmapControlPane* texmap_pane)
+{
+    connect(btn_tweak_,  &QPushButton::clicked,
+            texmap_pane, &TexmapControlPane::handle_tweak_albedo);
+}
+
 RoughnessControl::RoughnessControl():
 TexMapControl(tr("Roughness"), ROUGHNESS),
 roughness_edit_(new DoubleSpinBox)
@@ -188,6 +199,10 @@ roughness_edit_(new DoubleSpinBox)
     QFormLayout* addc_layout = new QFormLayout();
     addc_layout->addRow(tr("Uniform value:"), roughness_edit_);
     roughness_edit_->set_constrains(0.0, 1.0, 0.1, 0.0);
+
+    btn_tweak_ = new QPushButton(tr("Tweak"));
+    btn_tweak_->setMaximumHeight(20);
+    addc_layout->addRow(btn_tweak_);
 
     additional_controls->setLayout(addc_layout);
 
@@ -212,6 +227,11 @@ void RoughnessControl::read_entry_additional(const TextureEntry& entry)
     roughness_edit_->setValue(rough_map->u_roughness);
 }
 
+void RoughnessControl::connect_controls(TexmapControlPane* texmap_pane)
+{
+    connect(btn_tweak_,  &QPushButton::clicked,
+            texmap_pane, &TexmapControlPane::handle_tweak_roughness);
+}
 
 MetallicControl::MetallicControl():
 TexMapControl(tr("Metallic"), METALLIC),
@@ -220,6 +240,10 @@ metallic_edit_(new DoubleSpinBox)
     QFormLayout* addc_layout = new QFormLayout();
     addc_layout->addRow(tr("Uniform value:"), metallic_edit_);
     metallic_edit_->set_constrains(0.0, 1.0, 0.1, 0.0);
+
+    btn_tweak_ = new QPushButton(tr("Tweak"));
+    btn_tweak_->setMaximumHeight(20);
+    addc_layout->addRow(btn_tweak_);
 
     additional_controls->setLayout(addc_layout);
 
@@ -244,6 +268,11 @@ void MetallicControl::read_entry_additional(const TextureEntry& entry)
     metallic_edit_->setValue(metal_map->u_metallic);
 }
 
+void MetallicControl::connect_controls(TexmapControlPane* texmap_pane)
+{
+    connect(btn_tweak_,  &QPushButton::clicked,
+            texmap_pane, &TexmapControlPane::handle_tweak_metallic);
+}
 
 DepthControl::DepthControl():
 TexMapControl(tr("Depth"), DEPTH),
@@ -252,6 +281,10 @@ parallax_scale_edit_(new DoubleSpinBox)
     QFormLayout* addc_layout = new QFormLayout();
     addc_layout->addRow(tr("Parallax Scale:"), parallax_scale_edit_);
     parallax_scale_edit_->set_constrains(0.0, 1.0, 0.1, 0.0);
+
+    btn_tweak_ = new QPushButton(tr("Tweak"));
+    btn_tweak_->setMaximumHeight(20);
+    addc_layout->addRow(btn_tweak_);
 
     additional_controls->setLayout(addc_layout);
 
@@ -276,11 +309,16 @@ void DepthControl::read_entry_additional(const TextureEntry& entry)
     parallax_scale_edit_->setValue(depth_map->u_parallax_scale);
 }
 
+void DepthControl::connect_controls(TexmapControlPane* texmap_pane)
+{
+    connect(btn_tweak_,  &QPushButton::clicked,
+            texmap_pane, &TexmapControlPane::handle_tweak_depth);
+}
 
 AOControl::AOControl():
 TexMapControl(tr("AO"), AO),
 ao_edit_(new DoubleSpinBox),
-gen_from_depth_btn_(new QPushButton(tr("From depthmap"))),
+btn_gen_from_depth_(new QPushButton(tr("From depthmap"))),
 invert_cb_(new QCheckBox),
 strength_edit_(new DoubleSpinBox),
 mean_edit_(new DoubleSpinBox),
@@ -303,7 +341,9 @@ blursharp_edit_(new DoubleSpinBox)
     addc_layout->addRow(tr("Mean:"), mean_edit_);
     addc_layout->addRow(tr("Range:"), range_edit_);
     addc_layout->addRow(tr("Blur/Sharp:"), blursharp_edit_);
-    addc_layout->addRow(gen_from_depth_btn_);
+
+    btn_gen_from_depth_->setMaximumHeight(20);
+    addc_layout->addRow(btn_gen_from_depth_);
 
     ao_edit_->set_constrains(0.0, 1.0, 0.1, 0.0);
     strength_edit_->set_constrains(0.0, 1.0, 0.1, 0.5);
@@ -354,7 +394,7 @@ void AOControl::read_entry_additional(const TextureEntry& entry)
 
 void AOControl::connect_controls(TexmapControlPane* texmap_pane)
 {
-    connect(gen_from_depth_btn_, &QPushButton::clicked,
+    connect(btn_gen_from_depth_, &QPushButton::clicked,
             texmap_pane,         &TexmapControlPane::handle_gen_ao_map);
 }
 
@@ -370,7 +410,7 @@ void AOControl::get_options(generator::AOGenOptions& options)
 
 NormalControl::NormalControl():
 TexMapControl(tr("Normal"), NORMAL),
-gen_from_depth_btn_(new QPushButton(tr("From depthmap"))),
+btn_gen_from_depth_(new QPushButton(tr("From depthmap"))),
 filter_combo_(new QComboBox()),
 invert_r_cb_(new QCheckBox()),
 invert_g_cb_(new QCheckBox()),
@@ -404,7 +444,9 @@ blursharp_edit_(new DoubleSpinBox)
     addc_layout->addRow(tr("Level:"), level_edit_);
     addc_layout->addRow(tr("Strength:"), strength_edit_);
     addc_layout->addRow(tr("Blur/Sharp:"), blursharp_edit_);
-    addc_layout->addRow(gen_from_depth_btn_);
+
+    btn_gen_from_depth_->setMaximumHeight(20);
+    addc_layout->addRow(btn_gen_from_depth_);
 
     level_edit_->set_constrains(4.0, 10.0, 0.1, 7.0);
     strength_edit_->set_constrains(0.01, 5.0, 0.1, 0.6);
@@ -453,7 +495,7 @@ void NormalControl::read_entry_additional(const TextureEntry& entry)
 
 void NormalControl::connect_controls(TexmapControlPane* texmap_pane)
 {
-    connect(gen_from_depth_btn_, &QPushButton::clicked,
+    connect(btn_gen_from_depth_, &QPushButton::clicked,
             texmap_pane,         &TexmapControlPane::handle_gen_normal_map);
 }
 
@@ -471,7 +513,8 @@ void NormalControl::get_options(generator::NormalGenOptions& options)
 
 TexmapControlPane::TexmapControlPane(MainWindow* main_window, EditorModel* editor_model, QWidget* parent):
 QWidget(parent),
-editor_model_(editor_model)
+editor_model_(editor_model),
+tweaks_dialog_(new TweaksDialog())
 {
     QGridLayout* layout_texmap_page = new QGridLayout();
     setObjectName("pageWidget");
@@ -652,6 +695,43 @@ void TexmapControlPane::handle_gen_ao_map()
 
             QApplication::restoreOverrideCursor();
         }
+    }
+}
+
+void TexmapControlPane::handle_tweak_albedo()
+{
+    std::cout << "Tweaking albedo" << std::endl;
+    auto ret = tweaks_dialog_->exec();
+    if(ret == QDialog::Accepted)
+    {
+        std::cout << "Accepted" << std::endl;
+    }
+}
+void TexmapControlPane::handle_tweak_roughness()
+{
+    std::cout << "Tweaking roughness" << std::endl;
+    auto ret = tweaks_dialog_->exec();
+    if(ret == QDialog::Accepted)
+    {
+        std::cout << "Accepted" << std::endl;
+    }
+}
+void TexmapControlPane::handle_tweak_metallic()
+{
+    std::cout << "Tweaking metallic" << std::endl;
+    auto ret = tweaks_dialog_->exec();
+    if(ret == QDialog::Accepted)
+    {
+        std::cout << "Accepted" << std::endl;
+    }
+}
+void TexmapControlPane::handle_tweak_depth()
+{
+    std::cout << "Tweaking depth" << std::endl;
+    auto ret = tweaks_dialog_->exec();
+    if(ret == QDialog::Accepted)
+    {
+        std::cout << "Accepted" << std::endl;
     }
 }
 

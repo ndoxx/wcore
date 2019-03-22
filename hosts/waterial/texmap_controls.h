@@ -72,12 +72,14 @@ public:
     virtual ~AlbedoControl() = default;
 
 protected:
+    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
 private:
     ColorPickerLabel* color_picker_;
+    QPushButton* btn_tweak_;
 };
 
 // Specialized controls for roughness map
@@ -90,12 +92,14 @@ public:
     virtual ~RoughnessControl() = default;
 
 protected:
+    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
 private:
     DoubleSpinBox* roughness_edit_;
+    QPushButton* btn_tweak_;
 };
 
 // Specialized controls for metallic map
@@ -108,12 +112,14 @@ public:
     virtual ~MetallicControl() = default;
 
 protected:
+    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
 private:
     DoubleSpinBox* metallic_edit_;
+    QPushButton* btn_tweak_;
 };
 
 // Specialized controls for depth map
@@ -126,12 +132,14 @@ public:
     virtual ~DepthControl() = default;
 
 protected:
+    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
 private:
     DoubleSpinBox* parallax_scale_edit_;
+    QPushButton* btn_tweak_;
 };
 
 namespace generator
@@ -149,17 +157,17 @@ public:
     explicit AOControl();
     virtual ~AOControl() = default;
 
-    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     void get_options(generator::AOGenOptions& options);
 
 protected:
+    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
 private:
     DoubleSpinBox* ao_edit_;
-    QPushButton* gen_from_depth_btn_;
+    QPushButton* btn_gen_from_depth_;
     QCheckBox* invert_cb_;
     DoubleSpinBox* strength_edit_;
     DoubleSpinBox* mean_edit_;
@@ -176,16 +184,16 @@ public:
     explicit NormalControl();
     virtual ~NormalControl() = default;
 
-    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     void get_options(generator::NormalGenOptions& options);
 
 protected:
+    virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     virtual void clear_additional() override;
     virtual void write_entry_additional(TextureEntry& entry) override;
     virtual void read_entry_additional(const TextureEntry& entry) override;
 
 private:
-    QPushButton* gen_from_depth_btn_;
+    QPushButton* btn_gen_from_depth_;
     QComboBox* filter_combo_;
     QCheckBox* invert_r_cb_;
     QCheckBox* invert_g_cb_;
@@ -194,6 +202,8 @@ private:
     DoubleSpinBox* strength_edit_;
     DoubleSpinBox* blursharp_edit_;
 };
+
+QT_FORWARD_DECLARE_CLASS(TweaksDialog)
 
 class EditorModel;
 class TexmapControlPane: public QWidget
@@ -218,9 +228,15 @@ public slots:
     void handle_gen_ao_map();
     void handle_save_current_texture();
 
+    void handle_tweak_albedo();
+    void handle_tweak_roughness();
+    void handle_tweak_metallic();
+    void handle_tweak_depth();
+
 private:
     std::vector<TexMapControl*> texmap_controls_;
     EditorModel* editor_model_;
+    TweaksDialog* tweaks_dialog_;
 };
 
 } // namespace waterial

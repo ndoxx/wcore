@@ -4,7 +4,7 @@
 #include <QCheckBox>
 #include <QFileInfo>
 
-#include "gl_widget.h"
+#include "preview_gl_widget.h"
 #include "qt_context.h"
 #include "wcore.h"
 #include "logger.h"
@@ -20,7 +20,7 @@ using namespace wcore;
 namespace waterial
 {
 
-GLWidget::GLWidget(QWidget* parent):
+PreviewGLWidget::PreviewGLWidget(QWidget* parent):
 QOpenGLWidget(parent),
 engine_(new wcore::Engine),
 context_(new QtContext),
@@ -47,21 +47,21 @@ new_material_(nullptr)
 
 }
 
-GLWidget::~GLWidget()
+PreviewGLWidget::~PreviewGLWidget()
 {
     if(new_material_)
         delete new_material_;
     delete engine_;
 }
 
-QSize GLWidget::minimumSizeHint() const
+QSize PreviewGLWidget::minimumSizeHint() const
 {
     return QSize(320, 240);
 }
 
-void GLWidget::initializeGL()
+void PreviewGLWidget::initializeGL()
 {
-    //connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &GLWidget::cleanup);
+    //connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &PreviewGLWidget::cleanup);
 
     // Initialize GLEW
     glewExperimental = GL_TRUE; // If not set, segfault at glGenVertexArrays()
@@ -91,7 +91,7 @@ void GLWidget::initializeGL()
     frame_timer_->start(16);
 }
 
-void GLWidget::paintGL()
+void PreviewGLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     if(!active_) return;
@@ -164,28 +164,28 @@ void GLWidget::paintGL()
     engine_->FinishFrame();
 }
 
-void GLWidget::resizeGL(int width, int height)
+void PreviewGLWidget::resizeGL(int width, int height)
 {
     engine_->SetWindowSize(width, height);
 }
 
-void GLWidget::mousePressEvent(QMouseEvent* event)
+void PreviewGLWidget::mousePressEvent(QMouseEvent* event)
 {
 
 }
 
-void GLWidget::mouseMoveEvent(QMouseEvent* event)
+void PreviewGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
 
 }
 
-void GLWidget::reset_light_proxy_cooldown()
+void PreviewGLWidget::reset_light_proxy_cooldown()
 {
     light_proxy_cooldown_ = 60;
 }
 
 // Slots
-void GLWidget::cleanup()
+void PreviewGLWidget::cleanup()
 {
     makeCurrent();
 
@@ -194,124 +194,124 @@ void GLWidget::cleanup()
     doneCurrent();
 }
 
-void GLWidget::handle_active_changed(int newstate)
+void PreviewGLWidget::handle_active_changed(int newstate)
 {
     active_ = (newstate == Qt::Checked);
 }
 
-void GLWidget::handle_rotate_changed(int newstate)
+void PreviewGLWidget::handle_rotate_changed(int newstate)
 {
     rotate_model_ = (newstate == Qt::Checked);
 }
 
-void GLWidget::handle_dphi_changed(double newvalue)
+void PreviewGLWidget::handle_dphi_changed(double newvalue)
 {
     dphi_ = (float)newvalue;
 }
 
-void GLWidget::handle_dtheta_changed(double newvalue)
+void PreviewGLWidget::handle_dtheta_changed(double newvalue)
 {
     dtheta_ = (float)newvalue;
 }
 
-void GLWidget::handle_dpsi_changed(double newvalue)
+void PreviewGLWidget::handle_dpsi_changed(double newvalue)
 {
     dpsi_ = (float)newvalue;
 }
 
-void GLWidget::handle_reset_orientation()
+void PreviewGLWidget::handle_reset_orientation()
 {
     reset_orientation_ = true;
 }
 
-void GLWidget::handle_cam_radius_changed(double newvalue)
+void PreviewGLWidget::handle_cam_radius_changed(double newvalue)
 {
     cam_coords_[0] = (float)newvalue;
 }
 
-void GLWidget::handle_cam_inclination_changed(double newvalue)
+void PreviewGLWidget::handle_cam_inclination_changed(double newvalue)
 {
     cam_coords_[1] = (float)newvalue;
 }
 
-void GLWidget::handle_cam_azimuth_changed(double newvalue)
+void PreviewGLWidget::handle_cam_azimuth_changed(double newvalue)
 {
     cam_coords_[2] = (float)newvalue;
 }
 
-void GLWidget::handle_x_changed(double newvalue)
+void PreviewGLWidget::handle_x_changed(double newvalue)
 {
     model_pos_[0] = -(float)newvalue;
 }
 
-void GLWidget::handle_y_changed(double newvalue)
+void PreviewGLWidget::handle_y_changed(double newvalue)
 {
     model_pos_[1] = (float)newvalue;
 }
 
-void GLWidget::handle_z_changed(double newvalue)
+void PreviewGLWidget::handle_z_changed(double newvalue)
 {
     model_pos_[2] = (float)newvalue;
 }
 
-void GLWidget::handle_material_swap(EditorModel* edmodel)
+void PreviewGLWidget::handle_material_swap(EditorModel* edmodel)
 {
     const wcore::MaterialDescriptor descriptor = edmodel->get_current_material_descriptor();
     if(edmodel->validate_descriptor(descriptor))
         new_material_ = new Material(descriptor);
 }
 
-void GLWidget::handle_light_x_changed(double newvalue)
+void PreviewGLWidget::handle_light_x_changed(double newvalue)
 {
     light_pos_[0] = -(float)newvalue;
     reset_light_proxy_cooldown();
 }
 
-void GLWidget::handle_light_y_changed(double newvalue)
+void PreviewGLWidget::handle_light_y_changed(double newvalue)
 {
     light_pos_[1] = (float)newvalue;
     reset_light_proxy_cooldown();
 }
 
-void GLWidget::handle_light_z_changed(double newvalue)
+void PreviewGLWidget::handle_light_z_changed(double newvalue)
 {
     light_pos_[2] = (float)newvalue;
     reset_light_proxy_cooldown();
 }
 
-void GLWidget::handle_light_radius_changed(double newvalue)
+void PreviewGLWidget::handle_light_radius_changed(double newvalue)
 {
     light_radius_ = (float)newvalue;
 }
 
-void GLWidget::handle_light_brightness_changed(double newvalue)
+void PreviewGLWidget::handle_light_brightness_changed(double newvalue)
 {
     light_brightness_ = (float)newvalue;
 }
 
-void GLWidget::handle_light_ambient_changed(double newvalue)
+void PreviewGLWidget::handle_light_ambient_changed(double newvalue)
 {
     light_amb_ = (float)newvalue;
 }
 
-void GLWidget::handle_light_inclination_changed(double newvalue)
+void PreviewGLWidget::handle_light_inclination_changed(double newvalue)
 {
     light_inclination_ = (float)newvalue;
 }
 
-void GLWidget::handle_light_perihelion_changed(double newvalue)
+void PreviewGLWidget::handle_light_perihelion_changed(double newvalue)
 {
     light_perihelion_ = (float)newvalue;
 }
 
-void GLWidget::handle_light_color_changed(QColor newvalue)
+void PreviewGLWidget::handle_light_color_changed(QColor newvalue)
 {
     light_color_ = math::vec3(newvalue.red()/255.f,
                               newvalue.green()/255.f,
                               newvalue.blue()/255.f);
 }
 
-void GLWidget::handle_light_type_changed(int newvalue)
+void PreviewGLWidget::handle_light_type_changed(int newvalue)
 {
     light_type_ = newvalue;
 
@@ -330,7 +330,7 @@ void GLWidget::handle_light_type_changed(int newvalue)
     }
 }
 
-void GLWidget::handle_bloom_changed(int newvalue)
+void PreviewGLWidget::handle_bloom_changed(int newvalue)
 {
     engine_->pipeline->SetBloomEnabled(newvalue == Qt::Checked);
 }

@@ -132,6 +132,10 @@ void DropLabel::handle_context_menu(const QPoint& pos)
 
     QMenu context_menu;
     context_menu.addAction(QIcon(":/res/icons/clear.png"), tr("&Clear"), this, SLOT(clear()));
+    if(!current_tweak_path_.isEmpty())
+    {
+        context_menu.addAction(tr("Clear &tweaks"), this, SLOT(clear_tweaks()));
+    }
 
     context_menu.exec(globalPos);
 }

@@ -28,7 +28,7 @@ QT_FORWARD_DECLARE_CLASS(EditorModel)
 QT_FORWARD_DECLARE_CLASS(TexlistDelegate)
 QT_FORWARD_DECLARE_CLASS(NewProjectDialog)
 QT_FORWARD_DECLARE_CLASS(TexmapControlPane)
-QT_FORWARD_DECLARE_CLASS(GLWidget)
+QT_FORWARD_DECLARE_CLASS(PreviewGLWidget)
 QT_FORWARD_DECLARE_CLASS(PreviewControlWidget)
 
 struct TextureEntry;
@@ -90,7 +90,7 @@ private:
     QTabWidget* main_tab_widget_;
 
     // Preview
-    GLWidget* gl_widget_;
+    PreviewGLWidget* gl_widget_;
     PreviewControlWidget* preview_controls_;
 
     TexmapControlPane* texmap_pane_;

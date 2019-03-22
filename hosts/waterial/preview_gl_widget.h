@@ -19,13 +19,13 @@ namespace waterial
 QT_FORWARD_DECLARE_CLASS(EditorModel)
 
 class QtContext;
-class GLWidget : public QOpenGLWidget
+class PreviewGLWidget: public QOpenGLWidget
 {
     Q_OBJECT
 
 public:
-    explicit GLWidget(QWidget* parent = 0);
-    ~GLWidget();
+    explicit PreviewGLWidget(QWidget* parent=nullptr);
+    ~PreviewGLWidget();
 
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 

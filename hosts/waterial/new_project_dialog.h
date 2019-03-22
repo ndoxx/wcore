@@ -13,7 +13,7 @@ class NewProjectDialog: public QDialog
     Q_OBJECT
 
 public:
-    NewProjectDialog(QWidget* parent=0);
+    NewProjectDialog(QWidget* parent=nullptr);
 
     QString get_project_name() const;
 

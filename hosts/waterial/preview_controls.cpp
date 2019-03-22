@@ -9,14 +9,14 @@
 #include <QComboBox>
 
 #include "preview_controls.h"
-#include "gl_widget.h"
+#include "preview_gl_widget.h"
 #include "double_slider.h"
 #include "color_picker_label.h"
 
 namespace waterial
 {
 
-PreviewControlWidget::PreviewControlWidget(GLWidget* preview, QWidget* parent):
+PreviewControlWidget::PreviewControlWidget(PreviewGLWidget* preview, QWidget* parent):
 QGroupBox(parent)
 {
     QGridLayout* layout = new QGridLayout();
@@ -47,7 +47,7 @@ QGroupBox(parent)
     setLayout(layout);
 }
 
-QGroupBox* PreviewControlWidget::create_general_controls(GLWidget* preview)
+QGroupBox* PreviewControlWidget::create_general_controls(PreviewGLWidget* preview)
 {
     QHBoxLayout* layout_gen = new QHBoxLayout();
     QGroupBox* gb_general = new QGroupBox(tr("General"));
@@ -64,7 +64,7 @@ QGroupBox* PreviewControlWidget::create_general_controls(GLWidget* preview)
     return gb_general;
 }
 
-QGroupBox* PreviewControlWidget::create_model_controls(GLWidget* preview)
+QGroupBox* PreviewControlWidget::create_model_controls(PreviewGLWidget* preview)
 {
     QFormLayout* layout_model = new QFormLayout();
     QGroupBox* gb_model = new QGroupBox(tr("Model"));
@@ -141,7 +141,7 @@ QGroupBox* PreviewControlWidget::create_model_controls(GLWidget* preview)
     return gb_model;
 }
 
-QGroupBox* PreviewControlWidget::create_light_controls(GLWidget* preview)
+QGroupBox* PreviewControlWidget::create_light_controls(PreviewGLWidget* preview)
 {
     QFormLayout* layout_light = new QFormLayout();
     QGroupBox* gb_light = new QGroupBox(tr("Light"));
@@ -259,7 +259,7 @@ QGroupBox* PreviewControlWidget::create_light_controls(GLWidget* preview)
     return gb_light;
 }
 
-QGroupBox* PreviewControlWidget::create_camera_controls(GLWidget* preview)
+QGroupBox* PreviewControlWidget::create_camera_controls(PreviewGLWidget* preview)
 {
     QFormLayout* layout_camera = new QFormLayout();
     QGroupBox* gb_camera = new QGroupBox(tr("Camera"));

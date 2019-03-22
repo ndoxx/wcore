@@ -35,7 +35,7 @@
 #include "new_project_dialog.h"
 #include "droplabel.h"
 #include "double_slider.h"
-#include "gl_widget.h"
+#include "preview_gl_widget.h"
 #include "settings.h"
 
 // wcore
@@ -77,7 +77,7 @@ texname_edit_(new QLineEdit),
 tex_list_delegate_(new TexlistDelegate),
 pjname_label_(new QLabel),
 main_tab_widget_(new QTabWidget),
-gl_widget_(new GLWidget),
+gl_widget_(new PreviewGLWidget),
 preview_controls_(new PreviewControlWidget(gl_widget_)),
 texmap_pane_(new TexmapControlPane(this, editor_model_)),
 new_project_dialog_(new NewProjectDialog(this)),

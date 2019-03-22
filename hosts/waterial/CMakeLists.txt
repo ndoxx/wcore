@@ -41,11 +41,13 @@ set(waterial_SRCS
     preview_controls.cpp
     mainwindow.cpp
     new_project_dialog.cpp
+    tweaks_dialog.cpp
     droplabel.cpp
     double_slider.cpp
     spinbox.cpp
     color_picker_label.cpp
-    gl_widget.cpp
+    preview_gl_widget.cpp
+    tweaks_gl_widget.cpp
     qt_context.cpp
     settings.cpp
     main.cpp

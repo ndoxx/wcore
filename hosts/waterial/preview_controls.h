@@ -8,7 +8,7 @@ QT_FORWARD_DECLARE_CLASS(QComboBox)
 namespace waterial
 {
 
-QT_FORWARD_DECLARE_CLASS(GLWidget)
+QT_FORWARD_DECLARE_CLASS(PreviewGLWidget)
 QT_FORWARD_DECLARE_CLASS(DoubleSlider)
 
 class PreviewControlWidget: public QGroupBox
@@ -16,7 +16,7 @@ class PreviewControlWidget: public QGroupBox
     Q_OBJECT
 
 public:
-    explicit PreviewControlWidget(GLWidget* preview, QWidget* parent = 0);
+    explicit PreviewControlWidget(PreviewGLWidget* preview, QWidget* parent = 0);
 
 signals:
     void sig_light_type_changed(int newvalue);
@@ -27,10 +27,10 @@ protected slots:
     void handle_reset_model_position();
 
 protected:
-    QGroupBox* create_general_controls(GLWidget* preview);
-    QGroupBox* create_model_controls(GLWidget* preview);
-    QGroupBox* create_light_controls(GLWidget* preview);
-    QGroupBox* create_camera_controls(GLWidget* preview);
+    QGroupBox* create_general_controls(PreviewGLWidget* preview);
+    QGroupBox* create_model_controls(PreviewGLWidget* preview);
+    QGroupBox* create_light_controls(PreviewGLWidget* preview);
+    QGroupBox* create_camera_controls(PreviewGLWidget* preview);
 
 private:
     QComboBox* combo_light_type_;
