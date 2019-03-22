@@ -25,7 +25,7 @@ QOpenGLWidget(parent),
 engine_(new wcore::Engine),
 context_(new QtContext),
 frame_timer_(new QTimer(this)),
-active_(true),
+active_(false),
 rotate_model_(true),
 reset_orientation_(false),
 light_proxy_cooldown_(0),
@@ -49,9 +49,11 @@ new_material_(nullptr)
 
 PreviewGLWidget::~PreviewGLWidget()
 {
+    makeCurrent();
     if(new_material_)
         delete new_material_;
     delete engine_;
+    doneCurrent();
 }
 
 QSize PreviewGLWidget::minimumSizeHint() const

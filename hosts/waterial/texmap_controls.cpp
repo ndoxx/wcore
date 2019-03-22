@@ -700,11 +700,21 @@ void TexmapControlPane::handle_gen_ao_map()
 
 void TexmapControlPane::handle_tweak_albedo()
 {
-    std::cout << "Tweaking albedo" << std::endl;
-    auto ret = tweaks_dialog_->exec();
-    if(ret == QDialog::Accepted)
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(texname.isEmpty())
+        return;
+
+    TextureEntry& entry = editor_model_->get_current_texture_entry();
+    if(entry.texture_maps[ALBEDO]->has_image)
     {
-        std::cout << "Accepted" << std::endl;
+        tweaks_dialog_->set_source_image(entry.texture_maps[ALBEDO]->source_path);
+
+        std::cout << "Tweaking albedo" << std::endl;
+        auto ret = tweaks_dialog_->exec();
+        if(ret == QDialog::Accepted)
+        {
+            std::cout << "Accepted" << std::endl;
+        }
     }
 }
 void TexmapControlPane::handle_tweak_roughness()

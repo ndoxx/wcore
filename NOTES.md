@@ -7339,7 +7339,7 @@ On veut pouvoir faire les choses suivantes depuis l'API :
         [ ] Une sphère
         [ ] Un .obj quelconque
     [X] Modifier le mouvement d'un objet référencé, même si c'est complètement hacky dans un premier temps.
-    [/] Activer/Désactiver plusieurs systèmes de rendu de la pipeline. Basiquement, j'aimerais pouvoir faire une passe géométrique, une passe lighting et puis c'est marre.
+    [X] Activer/Désactiver plusieurs systèmes de rendu de la pipeline. Basiquement, j'aimerais pouvoir faire une passe géométrique, une passe lighting et puis c'est marre.
     [X] Intéragir dynamiquement avec les sources lumineuses.
 
 Le moteur doit aussi pouvoir :

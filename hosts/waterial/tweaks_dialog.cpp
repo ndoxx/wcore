@@ -46,6 +46,16 @@ TweaksDialog::~TweaksDialog()
 
 }
 
+void TweaksDialog::set_clear_color(const wcore::math::vec3& value)
+{
+    preview_->set_clear_color(value);
+}
+
+void TweaksDialog::set_source_image(const QString& path)
+{
+    preview_->set_source_image(path);
+}
+
 } // namespace waterial
 
 

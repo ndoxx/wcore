@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "math3d.h"
+
 namespace waterial
 {
 
@@ -15,6 +17,9 @@ class TweaksDialog: public QDialog
 public:
     explicit TweaksDialog(QWidget* parent=nullptr);
     ~TweaksDialog();
+
+    void set_clear_color(const wcore::math::vec3& value);
+    void set_source_image(const QString& path);
 
 private:
     TweaksGLWidget* preview_;
