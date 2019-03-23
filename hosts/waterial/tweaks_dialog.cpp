@@ -1,5 +1,3 @@
-#include <thread>
-#include <chrono>
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -15,7 +13,7 @@ namespace waterial
 
 TweaksDialog::TweaksDialog(QWidget* parent):
 QDialog(parent),
-preview_(new TweaksGLWidget()),
+preview_(new TweaksGLWidget(this)),
 sld_hue_(new DoubleSlider),
 sld_saturation_(new DoubleSlider),
 sld_value_(new DoubleSlider)
@@ -98,6 +96,11 @@ void TweaksDialog::set_source_image(const QString& path)
     preview_->set_source_image(path);
 }
 
+void TweaksDialog::set_output_image(const QString& path)
+{
+    preview_->set_output_image(path);
+}
+
 void TweaksDialog::reset()
 {
     sld_hue_->set_value(0.0);
@@ -105,9 +108,9 @@ void TweaksDialog::reset()
     sld_value_->set_value(0.0);
 }
 
-const QString& TweaksDialog::get_tweaked_image_path() const
+const QString& TweaksDialog::get_output_image_path() const
 {
-    return preview_->get_tweaked_image_path();
+    return preview_->get_output_image_path();
 }
 
 

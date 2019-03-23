@@ -729,34 +729,34 @@ void TexmapControlPane::handle_tweak_albedo()
     TextureEntry& entry = editor_model_->get_current_texture_entry();
     if(entry.texture_maps[ALBEDO]->has_image)
     {
-        tweaks_dialog_->reset();
-        tweaks_dialog_->set_source_image(entry.texture_maps[ALBEDO]->source_path);
+        const QString& source = entry.texture_maps[ALBEDO]->source_path;
+        QDir out_dir = QFileInfo(source).absoluteDir();
+        QString output = out_dir.filePath(texname + "_albedo_twk.png");
 
-        std::cout << "Tweaking albedo" << std::endl;
+        tweaks_dialog_->reset();
+        tweaks_dialog_->set_source_image(source);
+        tweaks_dialog_->set_output_image(output);
         tweaks_dialog_->open();
     }
 }
 void TexmapControlPane::handle_tweak_roughness()
 {
-    std::cout << "Tweaking roughness" << std::endl;
-    tweaks_dialog_->open();
+    //tweaks_dialog_->open();
 }
 void TexmapControlPane::handle_tweak_metallic()
 {
-    std::cout << "Tweaking metallic" << std::endl;
-    tweaks_dialog_->open();
+    //tweaks_dialog_->open();
 }
 void TexmapControlPane::handle_tweak_depth()
 {
-    std::cout << "Tweaking depth" << std::endl;
-    tweaks_dialog_->open();
+    //tweaks_dialog_->open();
 }
 
 void TexmapControlPane::handle_tweak_finished(int result)
 {
     if(result == QDialog::Accepted)
     {
-        const QString& tweak_path = tweaks_dialog_->get_tweaked_image_path();
+        const QString& tweak_path = tweaks_dialog_->get_output_image_path();
         texmap_controls_[ALBEDO]->set_tweak(tweak_path);
     }
 }

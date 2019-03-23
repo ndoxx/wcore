@@ -19,10 +19,11 @@ public:
     explicit TweaksDialog(QWidget* parent=nullptr);
     ~TweaksDialog();
 
-    const QString& get_tweaked_image_path() const;
+    const QString& get_output_image_path() const;
 
     void set_clear_color(const wcore::math::vec3& value);
     void set_source_image(const QString& path);
+    void set_output_image(const QString& path);
     void reset();
 
 public slots:

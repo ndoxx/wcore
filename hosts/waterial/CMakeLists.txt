@@ -42,12 +42,17 @@ set(waterial_SRCS
     mainwindow.cpp
     new_project_dialog.cpp
     tweaks_dialog.cpp
+    normal_gen_dialog.cpp
+    ao_gen_dialog.cpp
     droplabel.cpp
     double_slider.cpp
     spinbox.cpp
     color_picker_label.cpp
     preview_gl_widget.cpp
+    shader_gen_gl_widget.cpp
     tweaks_gl_widget.cpp
+    ao_gen_gl_widget.cpp
+    normal_gen_gl_widget.cpp
     qt_context.cpp
     settings.cpp
     main.cpp
