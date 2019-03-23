@@ -37,6 +37,8 @@ public:
 
     void add_stretch();
 
+    void set_tweak(const QString& tweak_path);
+
     // TMP
     inline DropLabel* get_droplabel() { return droplabel; }
 

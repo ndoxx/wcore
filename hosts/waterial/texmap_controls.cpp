@@ -109,6 +109,11 @@ void TexMapControl::read_entry(const TextureEntry& entry)
     read_entry_additional(entry);
 }
 
+void TexMapControl::set_tweak(const QString& tweak_path)
+{
+    droplabel->setPixmap(droplabel->get_path(), tweak_path);
+}
+
 void TexMapControl::clear()
 {
     droplabel->clear();
@@ -736,9 +741,10 @@ void TexmapControlPane::handle_tweak_depth()
 void TexmapControlPane::handle_tweak_finished(int result)
 {
     if(result == QDialog::Accepted)
-        std::cout << "Accepted" << std::endl;
-    else
-        std::cout << "Rejected" << std::endl;
+    {
+        const QString& tweak_path = tweaks_dialog_->get_tweaked_image_path();
+        texmap_controls_[ALBEDO]->set_tweak(tweak_path);
+    }
 }
 
 

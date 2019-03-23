@@ -711,10 +711,11 @@ QString EditorModel::project_file_from_name(const QString& name) const
     return name + ".wmp";
 }
 
-void EditorModel::traverse_entries(std::function<void(TextureEntry&)> func)
+void EditorModel::traverse_entries(std::function<bool(TextureEntry&)> func)
 {
     for(auto&& [key, entry]: texture_descriptors_)
-        func(entry);
+        if(!func(entry))
+            break;
 }
 
 /*

@@ -26,12 +26,14 @@ public:
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     inline void set_clear_color(const wcore::math::vec3& value) { clear_color_ = value; }
+    inline const QString& get_tweaked_image_path() const { return out_path_; }
     void set_source_image(const QString& path);
 
 public slots:
     void handle_hue_changed(double newvalue);
     void handle_saturation_changed(double newvalue);
     void handle_value_changed(double newvalue);
+    void handle_export();
 
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
@@ -40,15 +42,21 @@ protected:
     void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
+    void draw();
+    QString make_out_path(const QString& in_path);
+
 private:
     wcore::math::vec3 clear_color_;
     QString source_path_;
+    QString out_path_;
     QOpenGLTexture* source_tex_;
     QOpenGLShaderProgram* program_;
     QOpenGLBuffer* vbo_;
     QOpenGLVertexArrayObject* vao_;
 
     unsigned int attr_position_;
+    int img_width_;
+    int img_height_;
     bool initialized_;
 
     // uniforms

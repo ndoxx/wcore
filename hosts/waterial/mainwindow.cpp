@@ -9,7 +9,6 @@
 #include <QPushButton>
 #include <QTreeView>
 #include <QListView>
-#include <QSpacerItem>
 #include <QLineEdit>
 #include <QKeyEvent>
 #include <QMenu>
@@ -17,15 +16,11 @@
 #include <QToolBar>
 #include <QFile>
 #include <QTextStream>
-#include <QCoreApplication>
 #include <QFileDialog>
-#include <QCheckBox>
-#include <QProgressBar>
 #include <QStatusBar>
-#include <QImage>
-#include <QFileInfo>
 #include <QApplication>
 #include <QTabWidget>
+#include <QProgressDialog>
 
 #include "mainwindow.h"
 #include "editor_model.h"
@@ -607,11 +602,25 @@ void MainWindow::handle_compile_all()
     texmap_pane_->handle_save_current_texture();
 
     DLOGN("Compiling <h>all</h> textures.", "waterial", Severity::LOW);
+    QProgressDialog progress(this);
+    progress.setRange(0, editor_model_->get_num_entries());
+    progress.setModal(true);
+    progress.setValue(0);
+    progress.show();
+    int count = 0;
     editor_model_->traverse_entries([&](TextureEntry& entry)
     {
         const QString& texname = entry.name;
         if(!texname.isEmpty())
+        {
+            qApp->processEvents();
+            if(progress.wasCanceled())
+                return false;
+            progress.setLabelText(tr("Compiling %1").arg(texname));
             editor_model_->compile(texname);
+            progress.setValue(++count);
+        }
+        return true;
     });
 }
 

@@ -71,13 +71,19 @@ sld_value_(new DoubleSlider)
     btn_layout->addWidget(cancel_btn);
     main_layout->addLayout(btn_layout);
 
-    connect(ok_btn,     SIGNAL(clicked()), this, SLOT(accept()));
+    connect(ok_btn,     SIGNAL(clicked()), this, SLOT(handle_accept()));
     connect(cancel_btn, SIGNAL(clicked()), this, SLOT(reject()));
 }
 
 TweaksDialog::~TweaksDialog()
 {
 
+}
+
+void TweaksDialog::handle_accept()
+{
+    preview_->handle_export();
+    accept();
 }
 
 void TweaksDialog::set_clear_color(const wcore::math::vec3& value)
@@ -96,6 +102,12 @@ void TweaksDialog::reset()
     sld_saturation_->set_value(0.0);
     sld_value_->set_value(0.0);
 }
+
+const QString& TweaksDialog::get_tweaked_image_path() const
+{
+    return preview_->get_tweaked_image_path();
+}
+
 
 } // namespace waterial
 

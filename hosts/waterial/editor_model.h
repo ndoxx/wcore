@@ -202,7 +202,7 @@ public:
     inline const QString& get_current_project() const { return current_project_; }
     inline QString get_current_project_path() const   { return project_path_from_name(current_project_); }
 
-    void traverse_entries(std::function<void(TextureEntry&)> func);
+    void traverse_entries(std::function<bool(TextureEntry&)> func);
 
     // Get engine material descriptor for current material
     wcore::MaterialDescriptor get_current_material_descriptor();

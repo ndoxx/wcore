@@ -1,10 +1,13 @@
 #include <vector>
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
+#include <QOpenGLFramebufferObject>
 
 #include "tweaks_gl_widget.h"
 #include "logger.h"
@@ -22,6 +25,8 @@ program_(new QOpenGLShaderProgram),
 vbo_(new QOpenGLBuffer),
 vao_(new QOpenGLVertexArrayObject),
 attr_position_(0),
+img_width_(0),
+img_height_(0),
 initialized_(false),
 hue_(0.f),
 saturation_(0.f),
@@ -72,7 +77,10 @@ void TweaksGLWidget::initializeGL()
     vbo_->allocate(v_data.data(), v_data.size() * sizeof(GLfloat));
 
     // Texture from source image
-    source_tex_ = new QOpenGLTexture(QImage(source_path_).mirrored());
+    QImage source_image = QImage(source_path_).mirrored();
+    img_width_ = source_image.width();
+    img_height_ = source_image.height();
+    source_tex_ = new QOpenGLTexture(source_image);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -106,13 +114,18 @@ void TweaksGLWidget::initializeGL()
 
 void TweaksGLWidget::paintGL()
 {
-    glClearColor(clear_color_.x(),clear_color_.y(),clear_color_.z(),1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // Update uniforms
     program_->setUniformValue("f_hue", hue_);
     program_->setUniformValue("f_saturation", saturation_);
     program_->setUniformValue("f_value", value_);
+
+    draw();
+}
+
+void TweaksGLWidget::draw()
+{
+    glClearColor(clear_color_.x(),clear_color_.y(),clear_color_.z(),1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw texture to quad
     vao_->bind();
@@ -140,6 +153,7 @@ void TweaksGLWidget::mouseMoveEvent(QMouseEvent* event)
 void TweaksGLWidget::set_source_image(const QString& path)
 {
     source_path_ = path;
+    out_path_ = make_out_path(source_path_);
     if(initialized_)
     {
         // If initializeGL() already called, we need to replace texture
@@ -147,10 +161,21 @@ void TweaksGLWidget::set_source_image(const QString& path)
         source_tex_->release();
         source_tex_->destroy();
         delete source_tex_;
-        source_tex_ = new QOpenGLTexture(QImage(source_path_).mirrored());
+        QImage source_image = QImage(source_path_).mirrored();
+        img_width_ = source_image.width();
+        img_height_ = source_image.height();
+        source_tex_ = new QOpenGLTexture(source_image);
         source_tex_->bind();
         doneCurrent();
     }
+}
+
+QString TweaksGLWidget::make_out_path(const QString& in_path)
+{
+    QFileInfo info(in_path);
+    QString out_name = info.completeBaseName() + "_twk.png";
+    QDir out_dir = info.absoluteDir();
+    return out_dir.filePath(out_name);
 }
 
 void TweaksGLWidget::handle_hue_changed(double newvalue)
@@ -169,6 +194,27 @@ void TweaksGLWidget::handle_value_changed(double newvalue)
 {
     value_ = float(newvalue);
     update();
+}
+
+void TweaksGLWidget::handle_export()
+{
+    makeCurrent();
+
+    glPushAttrib(GL_VIEWPORT_BIT);
+    glViewport(0, 0, img_width_, img_height_);
+    QOpenGLFramebufferObject fbo(img_width_, img_height_, QOpenGLFramebufferObject::CombinedDepthStencil);
+    fbo.bind();
+
+    draw();
+
+    fbo.release();
+    glPopAttrib();
+
+    QImage fbo_img(fbo.toImage());
+    QImage image(fbo_img.constBits(), fbo_img.width(), fbo_img.height(), QImage::Format_ARGB32);
+    image.save(out_path_);
+
+    doneCurrent();
 }
 
 
