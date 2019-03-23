@@ -21,6 +21,7 @@ TweaksGLWidget::TweaksGLWidget(QWidget* parent):
 QOpenGLWidget(parent),
 clear_color_(0.f,0.f,0.f),
 source_tex_(nullptr),
+fbo_(nullptr),
 program_(new QOpenGLShaderProgram),
 vbo_(new QOpenGLBuffer),
 vao_(new QOpenGLVertexArrayObject),
@@ -28,6 +29,7 @@ attr_position_(0),
 img_width_(0),
 img_height_(0),
 initialized_(false),
+export_(false),
 hue_(0.f),
 saturation_(0.f),
 value_(0.f)
@@ -40,6 +42,7 @@ TweaksGLWidget::~TweaksGLWidget()
     makeCurrent();
     delete source_tex_;
     delete program_;
+    delete fbo_;
     vbo_->destroy();
     vao_->destroy();
     doneCurrent();
@@ -81,6 +84,7 @@ void TweaksGLWidget::initializeGL()
     img_width_ = source_image.width();
     img_height_ = source_image.height();
     source_tex_ = new QOpenGLTexture(source_image);
+    fbo_ = new QOpenGLFramebufferObject(img_width_, img_height_, QOpenGLFramebufferObject::CombinedDepthStencil);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -114,24 +118,37 @@ void TweaksGLWidget::initializeGL()
 
 void TweaksGLWidget::paintGL()
 {
+    if(export_)
+    {
+        glPushAttrib(GL_VIEWPORT_BIT);
+        glViewport(0, 0, img_width_, img_height_);
+        fbo_->bind();
+    }
+
+    glClearColor(clear_color_.x(),clear_color_.y(),clear_color_.z(),1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // Update uniforms
     program_->setUniformValue("f_hue", hue_);
     program_->setUniformValue("f_saturation", saturation_);
     program_->setUniformValue("f_value", value_);
-
-    draw();
-}
-
-void TweaksGLWidget::draw()
-{
-    glClearColor(clear_color_.x(),clear_color_.y(),clear_color_.z(),1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw texture to quad
     vao_->bind();
     source_tex_->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
     vao_->release();
+
+    if(export_)
+    {
+        fbo_->release();
+        glPopAttrib();
+        glFinish();
+        QImage fbo_img(fbo_->toImage());
+        QImage image(fbo_img.constBits(), fbo_img.width(), fbo_img.height(), QImage::Format_ARGB32);
+        image.save(out_path_);
+        export_ = false;
+    }
 }
 
 void TweaksGLWidget::resizeGL(int width, int height)
@@ -198,22 +215,9 @@ void TweaksGLWidget::handle_value_changed(double newvalue)
 
 void TweaksGLWidget::handle_export()
 {
+    export_ = true;
     makeCurrent();
-
-    glPushAttrib(GL_VIEWPORT_BIT);
-    glViewport(0, 0, img_width_, img_height_);
-    QOpenGLFramebufferObject fbo(img_width_, img_height_, QOpenGLFramebufferObject::CombinedDepthStencil);
-    fbo.bind();
-
-    draw();
-
-    fbo.release();
-    glPopAttrib();
-
-    QImage fbo_img(fbo.toImage());
-    QImage image(fbo_img.constBits(), fbo_img.width(), fbo_img.height(), QImage::Format_ARGB32);
-    image.save(out_path_);
-
+    paintGL(); // calling update() would fail
     doneCurrent();
 }
 

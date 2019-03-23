@@ -11,6 +11,7 @@ QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 QT_FORWARD_DECLARE_CLASS(QOpenGLBuffer)
 QT_FORWARD_DECLARE_CLASS(QOpenGLVertexArrayObject)
+QT_FORWARD_DECLARE_CLASS(QOpenGLFramebufferObject)
 
 namespace waterial
 {
@@ -42,7 +43,6 @@ protected:
     void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
-    void draw();
     QString make_out_path(const QString& in_path);
 
 private:
@@ -50,6 +50,7 @@ private:
     QString source_path_;
     QString out_path_;
     QOpenGLTexture* source_tex_;
+    QOpenGLFramebufferObject* fbo_;
     QOpenGLShaderProgram* program_;
     QOpenGLBuffer* vbo_;
     QOpenGLVertexArrayObject* vao_;
@@ -58,6 +59,7 @@ private:
     int img_width_;
     int img_height_;
     bool initialized_;
+    bool export_;
 
     // uniforms
     float hue_;

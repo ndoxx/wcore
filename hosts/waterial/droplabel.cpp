@@ -17,6 +17,8 @@ static QString ssHoverDnD = "border-radius: 5px; border: none; background: rgb(0
 
 DropLabel::DropLabel(QWidget* parent, Qt::WindowFlags f):
 QLabel(parent, f),
+current_path_(""),
+current_tweak_path_(""),
 initialized_(false)
 {
     // Set style
@@ -118,7 +120,7 @@ void DropLabel::dropEvent(QDropEvent* event)
     // Get path to file from mime data in event
     current_path_ = event->mimeData()->urls().first().toLocalFile();
     // Generate a pixmap and set label to use it (but rescaled)
-    setPixmap(QPixmap(current_path_));
+    setPixmap(current_path_);
     setStyleSheet(ssIdle);
 
 }

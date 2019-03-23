@@ -7,7 +7,7 @@
     Custom label widget that:
     - handles drop actions with mime type "text/uri-list",
     - displays an image pointed to by said uri
-    - preserves image aspect ratio during resize operations
+    - stays square during resize operations
 */
 
 namespace waterial

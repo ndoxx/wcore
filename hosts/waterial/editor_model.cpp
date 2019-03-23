@@ -156,7 +156,7 @@ hash_t TextureEntry::parse_node(xml_node<>* mat_node)
             if(xml::parse_node(texmap_node, "Tweak", tweak_path))
             {
                 texture_maps[index]->has_tweak = true;
-                texture_maps[index]->source_path = QString::fromStdString(tweak_path);
+                texture_maps[index]->tweak_path = QString::fromStdString(tweak_path);
             }
             // Parse common per-map properties
             xml::parse_node(texmap_node, "TextureMapEnabled", texture_maps[index]->use_image);
@@ -201,12 +201,13 @@ void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materia
             xml_node<>* path_node = doc.allocate_node(node_element, "Source");
             node_set_value(doc, path_node, texture_maps[ii]->source_path.toUtf8().constData());
             tex_node->append_node(path_node);
-        }
-        if(texture_maps[ii]->has_tweak)
-        {
-            xml_node<>* tweak_node = doc.allocate_node(node_element, "Tweak");
-            node_set_value(doc, tweak_node, texture_maps[ii]->tweak_path.toUtf8().constData());
-            tex_node->append_node(tweak_node);
+
+            if(texture_maps[ii]->has_tweak)
+            {
+                xml_node<>* tweak_node = doc.allocate_node(node_element, "Tweak");
+                node_set_value(doc, tweak_node, texture_maps[ii]->tweak_path.toUtf8().constData());
+                tex_node->append_node(tweak_node);
+            }
         }
 
         // Save uniform value even if not used

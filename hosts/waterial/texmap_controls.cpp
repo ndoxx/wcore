@@ -94,6 +94,13 @@ void TexMapControl::write_entry(TextureEntry& entry)
     entry.texture_maps[texmap_index]->use_image = map_enabled->checkState() == Qt::Checked;
 
     write_entry_additional(entry);
+
+    /*std::cout << "--- write to entry ---" << std::endl;
+    std::cout << entry.name.toStdString() << ":" << std::endl;
+    std::cout << entry.texture_maps[texmap_index]->has_image << std::endl;
+    std::cout << entry.texture_maps[texmap_index]->source_path.toStdString() << std::endl;
+    std::cout << entry.texture_maps[texmap_index]->has_tweak << std::endl;
+    std::cout << entry.texture_maps[texmap_index]->tweak_path.toStdString() << std::endl;*/
 }
 
 void TexMapControl::read_entry(const TextureEntry& entry)
@@ -107,6 +114,13 @@ void TexMapControl::read_entry(const TextureEntry& entry)
     map_enabled->setCheckState(entry.texture_maps[texmap_index]->use_image ? Qt::Checked : Qt::Unchecked);
 
     read_entry_additional(entry);
+
+    /*std::cout << "--- read from entry ---" << std::endl;
+    std::cout << entry.name.toStdString() << ":" << std::endl;
+    std::cout << entry.texture_maps[texmap_index]->has_image << std::endl;
+    std::cout << entry.texture_maps[texmap_index]->source_path.toStdString() << std::endl;
+    std::cout << entry.texture_maps[texmap_index]->has_tweak << std::endl;
+    std::cout << entry.texture_maps[texmap_index]->tweak_path.toStdString() << std::endl;*/
 }
 
 void TexMapControl::set_tweak(const QString& tweak_path)

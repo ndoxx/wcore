@@ -1,3 +1,5 @@
+#include <thread>
+#include <chrono>
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
