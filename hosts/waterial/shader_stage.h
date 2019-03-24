@@ -19,10 +19,10 @@ public:
                 const QString& fshader_path,
                 int width,
                 int height,
+                bool is_output,
                 QObject* parent=nullptr);
     ~ShaderStage();
 
-    void init(bool is_input, bool is_output);
     inline void set_uniform_updater(UniformUpdater func) { update_uniforms_ = func; }
     void bind_as_source();
     void bind_as_target();

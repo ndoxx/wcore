@@ -13,6 +13,7 @@ ShaderStage::ShaderStage(const QString& vshader_path,
                          const QString& fshader_path,
                          int width,
                          int height,
+                         bool is_output,
                          QObject* parent):
 program_(new QOpenGLShaderProgram),
 fbo_(nullptr),
@@ -41,20 +42,15 @@ height_(height)
     program_->enableAttributeArray(attr_position);
     program_->setAttributeBuffer(attr_position, GL_FLOAT, 0, 3);
 
-    // Texture is unit 0
-    program_->setUniformValue("texture", 0);
+    // Generate intermediate FBO if current stage is not end stage
+    if(!is_output)
+        fbo_ = new QOpenGLFramebufferObject(width_, height_, QOpenGLFramebufferObject::CombinedDepthStencil);
 }
 
 ShaderStage::~ShaderStage()
 {
     delete program_;
     delete fbo_;
-}
-
-void ShaderStage::init(bool is_input, bool is_output)
-{
-    if(!is_output)
-        fbo_ = new QOpenGLFramebufferObject(width_, height_, QOpenGLFramebufferObject::CombinedDepthStencil);
 }
 
 void ShaderStage::bind_as_source()
@@ -68,6 +64,8 @@ void ShaderStage::bind_as_target()
 {
     program_->bind();
     update_uniforms_(program_);
+    // Texture is unit 0
+    program_->setUniformValue("texture", 0);
     if(fbo_)
         fbo_->bind();
 }

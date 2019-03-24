@@ -17,16 +17,13 @@ using namespace wcore;
 namespace waterial
 {
 
-ShaderGenGLWidget::ShaderGenGLWidget(const QString& vshader_path,
-                                     const QString& fshader_path,
+ShaderGenGLWidget::ShaderGenGLWidget(std::initializer_list<std::pair<QString,QString>> shader_sources,
                                      QWidget* parent):
 QOpenGLWidget(parent),
 pipeline_(nullptr),
 clear_color_(0.f,0.f,0.f),
-vshader_path_(vshader_path),
-fshader_path_(fshader_path),
+shader_sources_(shader_sources),
 source_tex_(nullptr),
-fbo_(nullptr),
 vbo_(new QOpenGLBuffer),
 vao_(new QOpenGLVertexArrayObject),
 attr_position_(0),
@@ -42,7 +39,6 @@ ShaderGenGLWidget::~ShaderGenGLWidget()
     makeCurrent();
     delete source_tex_;
     delete pipeline_;
-    delete fbo_;
     delete vbo_;
     delete vao_;
     doneCurrent();
@@ -84,16 +80,11 @@ void ShaderGenGLWidget::initializeGL()
     img_width_ = source_image.width();
     img_height_ = source_image.height();
     source_tex_ = new QOpenGLTexture(source_image);
-    fbo_ = new QOpenGLFramebufferObject(img_width_, img_height_, QOpenGLFramebufferObject::CombinedDepthStencil);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    pipeline_ = new LinearPipeline({
-                                    {vshader_path_, fshader_path_},
-                                    //{":/res/shaders/passthrough.vert", ":/res/shaders/passthrough.frag"}
-                                   },
-                                   img_width_, img_height_, this);
+    pipeline_ = new LinearPipeline(shader_sources_, img_width_, img_height_, this);
 
     init();
 }
@@ -101,15 +92,16 @@ void ShaderGenGLWidget::initializeGL()
 void ShaderGenGLWidget::paintGL()
 {
     glClearColor(clear_color_.x(),clear_color_.y(),clear_color_.z(),1);
-    // Draw texture to quad
+    // Geometry is a simple quad
     vao_->bind();
     source_tex_->bind();
 
     pipeline_->render(width(), height(), export_);
 
+    // If export is needed, get end pipeline FBO as image and save it
     if(export_)
     {
-        QImage fbo_img(pipeline_->get_fbo()->toImage());
+        QImage fbo_img(pipeline_->get_image());
         QImage image(fbo_img.constBits(), fbo_img.width(), fbo_img.height(), QImage::Format_ARGB32);
         image.save(out_path_);
         export_ = false;

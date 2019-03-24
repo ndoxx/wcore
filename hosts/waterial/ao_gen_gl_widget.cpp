@@ -13,8 +13,9 @@ namespace waterial
 {
 
 AOGenGLWidget::AOGenGLWidget(QWidget* parent):
-ShaderGenGLWidget(":/res/shaders/gen_ao.vert",
-                  ":/res/shaders/gen_ao.frag",
+ShaderGenGLWidget({
+                    {":/res/shaders/gen_ao.vert", ":/res/shaders/gen_ao.frag"},
+                  },
                   parent)
 {
 

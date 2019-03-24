@@ -1,6 +1,7 @@
 #ifndef SHADER_GEN_GL_WIDGET_H
 #define SHADER_GEN_GL_WIDGET_H
 
+#include <initializer_list>
 #include <QString>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_0_Core>
@@ -21,8 +22,7 @@ class ShaderGenGLWidget: public QOpenGLWidget, protected QOpenGLFunctions_4_0_Co
     Q_OBJECT
 
 public:
-    explicit ShaderGenGLWidget(const QString& vshader_path,
-                               const QString& fshader_path,
+    explicit ShaderGenGLWidget(std::initializer_list<std::pair<QString,QString>> shader_sources,
                                QWidget* parent=nullptr);
     virtual ~ShaderGenGLWidget();
 
@@ -50,12 +50,11 @@ protected:
 
 private:
     wcore::math::vec3 clear_color_;
-    QString vshader_path_;
-    QString fshader_path_;
+    std::vector<std::pair<QString,QString>> shader_sources_;
+
     QString source_path_;
     QString out_path_;
     QOpenGLTexture* source_tex_;
-    QOpenGLFramebufferObject* fbo_;
     QOpenGLBuffer* vbo_;
     QOpenGLVertexArrayObject* vao_;
 

@@ -13,8 +13,9 @@ namespace waterial
 {
 
 TweaksGLWidget::TweaksGLWidget(QWidget* parent):
-ShaderGenGLWidget(":/res/shaders/tweaks.vert",
-                  ":/res/shaders/tweaks.frag",
+ShaderGenGLWidget({
+                    {":/res/shaders/tweaks.vert", ":/res/shaders/tweaks.frag"}, // Stage 0
+                  },
                   parent),
 hue_(0.f),
 saturation_(0.f),

@@ -13,8 +13,9 @@ namespace waterial
 {
 
 NormalGenGLWidget::NormalGenGLWidget(QWidget* parent):
-ShaderGenGLWidget(":/res/shaders/gen_normal.vert",
-                  ":/res/shaders/gen_normal.frag",
+ShaderGenGLWidget({
+                    {":/res/shaders/gen_normal.vert", ":/res/shaders/gen_normal.frag"},
+                  },
                   parent)
 {
 

@@ -1,12 +1,14 @@
 #ifndef LINEAR_PIPELINE_H
 #define LINEAR_PIPELINE_H
 
-#include <initializer_list>
+#include <vector>
 #include <QString>
+#include <QImage>
 
 #include "shader_stage.h"
 
 QT_FORWARD_DECLARE_CLASS(QObject)
+QT_FORWARD_DECLARE_CLASS(QOpenGLFramebufferObject)
 
 namespace waterial
 {
@@ -15,7 +17,7 @@ class ShaderStage;
 class LinearPipeline
 {
 public:
-    LinearPipeline(std::initializer_list<std::pair<QString,QString>> shader_sources,
+    LinearPipeline(const std::vector<std::pair<QString,QString>>& shader_sources,
                    int width,
                    int height,
                    QObject* parent=nullptr);
@@ -23,16 +25,15 @@ public:
     ~LinearPipeline();
 
     void set_uniform_updater(int stage, ShaderStage::UniformUpdater func);
-
     void render(int out_width, int out_height, bool is_export);
-
-    inline QOpenGLFramebufferObject* get_fbo() { return fbo_; }
+    QImage get_image();
 
 private:
-    QOpenGLFramebufferObject* fbo_;
-    std::vector<ShaderStage*> stages_;
     int width_;
     int height_;
+
+    QOpenGLFramebufferObject* fbo_;
+    std::vector<ShaderStage*> stages_;
 };
 
 } // namespace waterial

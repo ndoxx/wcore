@@ -5,12 +5,15 @@
 namespace waterial
 {
 
-LinearPipeline::LinearPipeline(std::initializer_list<std::pair<QString,QString>> shader_sources,
+LinearPipeline::LinearPipeline(const std::vector<std::pair<QString,QString>>& shader_sources,
                                int width,
                                int height,
                                QObject* parent):
 width_(width),
-height_(height)
+height_(height),
+fbo_(new QOpenGLFramebufferObject(width_,
+                                  height_,
+                                  QOpenGLFramebufferObject::CombinedDepthStencil))
 {
     int stage = 0;
     int nstages = shader_sources.size();
@@ -20,18 +23,18 @@ height_(height)
                                           shader_source.second,
                                           width,
                                           height,
+                                          stage==(nstages-1),
                                           parent));
-        stages_[stage]->init(stage==0, stage==(nstages-1));
         ++stage;
     }
 
-    fbo_ = new QOpenGLFramebufferObject(width_, height_, QOpenGLFramebufferObject::CombinedDepthStencil);
 }
 
 LinearPipeline::~LinearPipeline()
 {
     for(auto* stage: stages_)
         delete stage;
+    delete fbo_;
 }
 
 void LinearPipeline::set_uniform_updater(int stage, ShaderStage::UniformUpdater func)
@@ -72,6 +75,11 @@ void LinearPipeline::render(int out_width, int out_height, bool is_export)
         }
     }
     glPopAttrib();
+}
+
+QImage LinearPipeline::get_image()
+{
+    return fbo_->toImage();
 }
 
 
