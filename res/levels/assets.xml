@@ -257,7 +257,7 @@
                 <ymax>2.0</ymax>
                 <zmin>-1.0</zmin>
                 <zmax>1.0</zmax>
-                <TextureScale>3.0f</TextureScale>
+                <TextureScale>2.0f</TextureScale>
             </Generator>
         </Mesh>
         <Mesh name=".earthSquare01" type="box">

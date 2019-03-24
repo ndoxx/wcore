@@ -96,13 +96,6 @@ void TexMapControl::write_entry(TextureEntry& entry)
     entry.texture_maps[texmap_index]->use_image = map_enabled->checkState() == Qt::Checked;
 
     write_entry_additional(entry);
-
-    /*std::cout << "--- write to entry ---" << std::endl;
-    std::cout << entry.name.toStdString() << ":" << std::endl;
-    std::cout << entry.texture_maps[texmap_index]->has_image << std::endl;
-    std::cout << entry.texture_maps[texmap_index]->source_path.toStdString() << std::endl;
-    std::cout << entry.texture_maps[texmap_index]->has_tweak << std::endl;
-    std::cout << entry.texture_maps[texmap_index]->tweak_path.toStdString() << std::endl;*/
 }
 
 void TexMapControl::read_entry(const TextureEntry& entry)
@@ -116,13 +109,6 @@ void TexMapControl::read_entry(const TextureEntry& entry)
     map_enabled->setCheckState(entry.texture_maps[texmap_index]->use_image ? Qt::Checked : Qt::Unchecked);
 
     read_entry_additional(entry);
-
-    /*std::cout << "--- read from entry ---" << std::endl;
-    std::cout << entry.name.toStdString() << ":" << std::endl;
-    std::cout << entry.texture_maps[texmap_index]->has_image << std::endl;
-    std::cout << entry.texture_maps[texmap_index]->source_path.toStdString() << std::endl;
-    std::cout << entry.texture_maps[texmap_index]->has_tweak << std::endl;
-    std::cout << entry.texture_maps[texmap_index]->tweak_path.toStdString() << std::endl;*/
 }
 
 void TexMapControl::set_tweak(const QString& tweak_path)
@@ -507,6 +493,7 @@ void TexmapControlPane::handle_gen_ao_map_gpu()
         return;
 
     TextureEntry& entry = editor_model_->get_current_texture_entry();
+    update_entry(entry);
     if(entry.texture_maps[DEPTH]->has_image)
     {
         const QString& source = entry.texture_maps[DEPTH]->source_path;
@@ -529,6 +516,7 @@ void TexmapControlPane::handle_gen_normal_map_gpu()
         return;
 
     TextureEntry& entry = editor_model_->get_current_texture_entry();
+    update_entry(entry);
     if(entry.texture_maps[DEPTH]->has_image)
     {
         const QString& source = entry.texture_maps[DEPTH]->source_path;
@@ -551,6 +539,7 @@ void TexmapControlPane::handle_tweak_albedo()
         return;
 
     TextureEntry& entry = editor_model_->get_current_texture_entry();
+    update_entry(entry);
     if(entry.texture_maps[ALBEDO]->has_image)
     {
         const QString& source = entry.texture_maps[ALBEDO]->source_path;

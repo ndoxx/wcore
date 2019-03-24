@@ -7450,6 +7450,18 @@ Noter que forward pointe vers les z négatifs car j'utilise un repère indirect 
     [4] https://en.wikipedia.org/wiki/Euler_angles
 
 
+#[24-03-19]
+
+## LinearPipeline
+J'ai implémenté une petite abstraction sympa pour Waterial. J'ai eu un cas fréquent à gérer : une fenêtre de dialogue avec des contrôles et une zone de rendu OpenGL. Les contrôles intéragissent dynamiquement avec le rendu.
+C'est le cas des "image tweaks" qui permettent d'apporter quelques modifications sommaires à une image source (pour l'instant des ajustements HSV) et d'utiliser l'image modifiée au lieu de l'originale. C'est le cas également de la génération d'AO et normal maps que j'ai entièrement retapé pour la faire avec des shaders (donc la boucle est bouclée, si on se souvient que j'avais traduit des shaders en C++ pour faire la première version).
+
+Ces différents cas de traîtement d'image nécessitent une pipeline minimaliste pour organiser des passes de rendu. C'est là qu'interviennent les classes _ShaderStage_ et _LinearPipeline_. Un _ShaderStage_ représente une passe de rendu. Il contient un shader program et un FBO. Une _LinearPipeline_ chaîne plusieurs _ShaderStage_, de sorte que le color attachment du FBO d'un étage est samplé par l'étage suivant. Le dernier étage n'a pas de FBO initialisé, c'est la pipeline qui choisit le FBO de sortie : soit le FBO par défaut du contexte, soit un FBO membre utilisé pour récupérer l'image de sortie et l'enregistrer dans un fichier png. Le nombre d'étages est une conséquence de l'initialisation. On passe au constructeur un vecteur de paires de QString contenant les chemins d'accès vers les shaders (paire vertex/fragment pour chaque étage). L'initialisation des étages se fait alors automatiquement.
+
+Une telle pipeline est instanciée dans _ShaderGenGLWidget_. Cette dernière classe hérite de QOpenGLWidget et de QOpenGLFunctions_4_0_Core, et définit toutes les fonctionnalités nécessaires à un traîtement multi-étage avec possibilité d'export du rendu. Les classes _TweaksGLWidget_, _AOGenGLWidget_ et _NormalGenGLWidget_ héritent toutes de cette classe abstraite, et définissent des chaînes de traitement pour les image tweaks, la génération d'AO maps, et la génération de normal maps respectivement. Ces widgets embarquent des membres correspondant aux uniformes à envoyer à GL, plus des slots pour les updater. Ces trois widgets sont embarqués dans trois dialogues : _TweaksDialog_, _AOGenDialog_ et _NormalGenDialog_.
+Chaque contrôle de chaque dialogue est connecté au slot qui va bien, de sorte qu'une modification de valeur entraîne un update du rendu.
+
+Note : Les dialogues __doivent__ être détruits (delete) à leur fermeture et créés (new) avant leur réouverture. Il ne m'a pas été possible de les réinitialiser, basiquement j'avais besoin de changer la taille des FBOs à chaud, et donc de les détruire et recréer, mais un thread de Qt essaye d'intéragir avec ceux-ci, donc à moins d'arriver à foutre un mutex sur le FBO (je ne sais même pas si Qt permet ça), y a juste pas moyen. Ca ne change rien du tout au final, c'est juste beaucoup plus simple.
 
 
 TODO (Waterial):
@@ -7458,7 +7470,6 @@ TODO (Waterial):
         [ ] Texture scale
         [ ] Options d'export
         [ ] FX ?
-    [ ] Fix -> save entry on drop label change
 
 * TODO (WCore):
     [ ] New texture maps (possibly grouped in same Gbuffer chan):

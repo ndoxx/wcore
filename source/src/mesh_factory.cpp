@@ -84,10 +84,10 @@ std::shared_ptr<FaceMesh> make_cube_uniface(bool finalize)
     //                  /--------POSITION------  /----------UV----------
     //Front 1          |                        |
     //Front 1          |                        |
-    pmesh->emplace_vertex(vec3( 0.5f, -0.5f, 0.5f), vec2(1.0f, 0.0f));
-    pmesh->emplace_vertex(vec3( 0.5f,  0.5f, 0.5f), vec2(1.0f, 1.0f));
-    pmesh->emplace_vertex(vec3(-0.5f,  0.5f, 0.5f), vec2(0.0f, 1.0f));
-    pmesh->emplace_vertex(vec3(-0.5f, -0.5f, 0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, -0.5f, 0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f,  0.5f, 0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f,  0.5f, 0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, -0.5f, 0.5f), vec2(0.0f, 1.0f));
 
     //Right 2
     pmesh->emplace_vertex(vec3( 0.5f, -0.5f,-0.5f), vec2(1.0f, 0.0f));
@@ -96,10 +96,10 @@ std::shared_ptr<FaceMesh> make_cube_uniface(bool finalize)
     pmesh->emplace_vertex(vec3( 0.5f, -0.5f, 0.5f), vec2(0.0f, 0.0f));
 
     //Back 4
-    pmesh->emplace_vertex(vec3(-0.5f, -0.5f,-0.5f), vec2(1.0f, 0.0f));
-    pmesh->emplace_vertex(vec3(-0.5f,  0.5f,-0.5f), vec2(1.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( 0.5f,  0.5f,-0.5f), vec2(0.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( 0.5f, -0.5f,-0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f, -0.5f,-0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3(-0.5f,  0.5f,-0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f,  0.5f,-0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( 0.5f, -0.5f,-0.5f), vec2(0.0f, 1.0f));
 
     //Left 5
     pmesh->emplace_vertex(vec3(-0.5f, -0.5f, 0.5f), vec2(1.0f, 0.0f));
@@ -141,47 +141,45 @@ std::shared_ptr<FaceMesh> make_cube_uniface(bool finalize)
     return pmesh;
 }
 
-
-// TODO: Fix UVs
 std::shared_ptr<FaceMesh> make_box(const math::extent_t& extent, float texture_scale)
 {
     std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
 
     //Front 1
-    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[5]), texture_scale*vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[5]), texture_scale*vec2(1.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[5]), texture_scale*vec2(0.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[5]), texture_scale*vec2(0.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[5]), texture_scale*vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[5]), texture_scale*vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[5]), texture_scale*vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[5]), texture_scale*vec2(0.0f, 1.0f));
 
     //Right 2
-    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[4]), texture_scale*vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[4]), texture_scale*vec2(2.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[5]), texture_scale*vec2(1.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[5]), texture_scale*vec2(1.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[4]), texture_scale*vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[4]), texture_scale*vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[5]), texture_scale*vec2(0.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[5]), texture_scale*vec2(0.0f, 0.0f));
 
     //Back 4
-    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[4]), texture_scale*vec2(1.0f/3.0f, 0.0f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[4]), texture_scale*vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[4]), texture_scale*vec2(0.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[4]), texture_scale*vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[4]), texture_scale*vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[4]), texture_scale*vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[4]), texture_scale*vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[4]), texture_scale*vec2(0.0f, 1.0f));
 
     //Left 5
-    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[5]), texture_scale*vec2(2.0f/3.0f, 0.0f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[5]), texture_scale*vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[4]), texture_scale*vec2(1.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[4]), texture_scale*vec2(1.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[5]), texture_scale*vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[5]), texture_scale*vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[4]), texture_scale*vec2(0.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[4]), texture_scale*vec2(0.0f, 0.0f));
 
     //Top 3
-    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[5]), texture_scale*vec2(1.0f,0.5f));
-    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[4]), texture_scale*vec2(1.0f,1.0f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[4]), texture_scale*vec2(2.0f/3.0f, 1.0f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[5]), texture_scale*vec2(2.0f/3.0f, 0.5f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[5]), texture_scale*vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[3], extent[4]), texture_scale*vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[4]), texture_scale*vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[3], extent[5]), texture_scale*vec2(0.0f, 1.0f));
 
     //Bottom 6
-    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[4]), texture_scale*vec2(1.0f,0.0f));
-    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[5]), texture_scale*vec2(1.0f,0.5f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[5]), texture_scale*vec2(2.0f/3.0f, 0.5f));
-    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[4]), texture_scale*vec2(2.0f/3.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[4]), texture_scale*vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( extent[1], extent[2], extent[5]), texture_scale*vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[5]), texture_scale*vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3( extent[0], extent[2], extent[4]), texture_scale*vec2(0.0f, 1.0f));
 
     pmesh->push_triangle(0,  1,  2);
     pmesh->push_triangle(0,  2,  3);

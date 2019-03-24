@@ -1,6 +1,7 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QFrame>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -58,13 +59,17 @@ preview_(new NormalGenGLWidget(this))
     level_edit->set_constrains(4.0, 10.0, 0.1, 7.0);
     blursharp_edit->set_constrains(-10.0, 10.0, 1.0, 0.0);
 
-    ctl_layout->addRow(new QLabel(tr("Filtering")));
     ctl_layout->addRow(tr("Invert:"), cboxes);
     ctl_layout->addRow(tr("Kernel:"), filter_combo);
     ctl_layout->addRow(tr("Level:"), level_edit);
     ctl_layout->addRow(tr("Strength:"), strength_edit);
 
-    ctl_layout->addRow(new QLabel(tr("Blur")));
+    auto sep = new QFrame;
+    sep->setObjectName("Separator");
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Sunken);
+    ctl_layout->addRow(sep);
+
     ctl_layout->addRow(tr("Blur/Sharp:"), blursharp_edit);
 
     connect(invert_r_cb, SIGNAL(stateChanged(int)),

@@ -1,3 +1,5 @@
+// OBSOLETE: Texture map generation moved to GPU
+
 // Normal map generation algorithm inspired from the work of Christian Petry
 // Licence:
 /*

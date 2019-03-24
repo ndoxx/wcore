@@ -35,13 +35,17 @@ preview_(new AOGenGLWidget(this))
     range_edit->set_constrains(0.0, 1.0, 0.05, 1.0);
     blursharp_edit->set_constrains(-10.0, 10.0, 1.0, 0.0);
 
-    ctl_layout->addRow(new QLabel(tr("Thresholding")));
     ctl_layout->addRow(tr("Invert:"), invert_cb);
     ctl_layout->addRow(tr("Strength:"), strength_edit);
     ctl_layout->addRow(tr("Mean:"), mean_edit);
     ctl_layout->addRow(tr("Range:"), range_edit);
 
-    ctl_layout->addRow(new QLabel(tr("Blur")));
+    auto sep = new QFrame;
+    sep->setObjectName("Separator");
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Sunken);
+    ctl_layout->addRow(sep);
+
     ctl_layout->addRow(tr("Blur/Sharp:"), blursharp_edit);
 
     connect(invert_cb, SIGNAL(stateChanged(int)),
