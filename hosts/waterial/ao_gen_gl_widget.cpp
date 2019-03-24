@@ -15,6 +15,8 @@ namespace waterial
 AOGenGLWidget::AOGenGLWidget(QWidget* parent):
 ShaderGenGLWidget({
                     {":/res/shaders/passthrough.vert", ":/res/shaders/gen_ao.frag"},
+                    {":/res/shaders/passthrough.vert", ":/res/shaders/blur_h.frag"},
+                    {":/res/shaders/passthrough.vert", ":/res/shaders/blur_v.frag"},
                   },
                   parent),
 invert_(true),
@@ -39,6 +41,14 @@ void AOGenGLWidget::init()
         program->setUniformValue("f_strength", strength_);
         program->setUniformValue("f_mean", mean_);
         program->setUniformValue("f_range", range_);
+    });
+    pipeline_->set_uniform_updater(1, [&](QOpenGLShaderProgram* program)
+    {
+        program->setUniformValue("f_sigma", (1.f/5.f) * (sigma_/img_width_));
+    });
+    pipeline_->set_uniform_updater(2, [&](QOpenGLShaderProgram* program)
+    {
+        program->setUniformValue("f_sigma", (1.f/5.f) * (sigma_/img_height_));
     });
 }
 

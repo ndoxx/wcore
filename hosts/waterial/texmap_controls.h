@@ -170,13 +170,13 @@ protected:
 
 private:
     DoubleSpinBox* ao_edit_;
-    QPushButton* btn_gen_from_depth_;
+    //QPushButton* btn_gen_from_depth_;
     QPushButton* btn_generate_;
-    QCheckBox* invert_cb_;
+    /*QCheckBox* invert_cb_;
     DoubleSpinBox* strength_edit_;
     DoubleSpinBox* mean_edit_;
     DoubleSpinBox* range_edit_;
-    DoubleSpinBox* blursharp_edit_;
+    DoubleSpinBox* blursharp_edit_;*/
 };
 
 // Specialized controls for normal map

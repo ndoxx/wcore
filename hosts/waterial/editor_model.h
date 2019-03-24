@@ -98,11 +98,11 @@ struct AOMap: public TextureMap
 #endif
 
     float u_ao;
-    bool gen_invert;
+    /*bool gen_invert;
     float gen_strength;
     float gen_mean;
     float gen_range;
-    float gen_blursharp;
+    float gen_blursharp;*/
 };
 
 struct DepthMap: public TextureMap

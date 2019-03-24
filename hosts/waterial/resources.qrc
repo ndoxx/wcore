@@ -22,5 +22,7 @@
     <file>res/shaders/passthrough.vert</file>
     <file>res/shaders/passthrough.frag</file>
     <file>res/shaders/gen_ao.frag</file>
+    <file>res/shaders/blur_h.frag</file>
+    <file>res/shaders/blur_v.frag</file>
 </qresource>
 </RCC>

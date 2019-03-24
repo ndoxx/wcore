@@ -249,7 +249,7 @@ void AOMap::parse(rapidxml::xml_node<>* node)
 {
     xml::parse_attribute(node, "value", u_ao);
 
-    xml_node<>* gen_node = node->first_node("Generator");
+    /*xml_node<>* gen_node = node->first_node("Generator");
     if(gen_node)
     {
         xml::parse_node(gen_node, "Invert", gen_invert);
@@ -257,7 +257,7 @@ void AOMap::parse(rapidxml::xml_node<>* node)
         xml::parse_node(gen_node, "Mean", gen_mean);
         xml::parse_node(gen_node, "Range", gen_range);
         xml::parse_node(gen_node, "BlurSharp", gen_blursharp);
-    }
+    }*/
 }
 
 void NormalMap::parse(rapidxml::xml_node<>* node)
@@ -318,7 +318,7 @@ void AOMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
         node_add_attribute(doc, node, "value", value_str.c_str());
 
     // Generator options
-    xml_node<>* gen_node = doc.allocate_node(node_element, "Generator");
+    /*xml_node<>* gen_node = doc.allocate_node(node_element, "Generator");
 
     xml_node<>* inv_node = doc.allocate_node(node_element, "Invert");
     xml_node<>* strength_node = doc.allocate_node(node_element, "Strength");
@@ -338,7 +338,7 @@ void AOMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
     gen_node->append_node(range_node);
     gen_node->append_node(blursharp_node);
 
-    node->append_node(gen_node);
+    node->append_node(gen_node);*/
 }
 
 void NormalMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)

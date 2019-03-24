@@ -343,22 +343,23 @@ void DepthControl::connect_controls(TexmapControlPane* texmap_pane)
 AOControl::AOControl():
 TexMapControl(tr("AO"), AO),
 ao_edit_(new DoubleSpinBox),
-btn_gen_from_depth_(new QPushButton(tr("From depthmap"))),
-btn_generate_(new QPushButton(tr("Generate"))),
-invert_cb_(new QCheckBox),
-strength_edit_(new DoubleSpinBox),
-mean_edit_(new DoubleSpinBox),
-range_edit_(new DoubleSpinBox),
-blursharp_edit_(new DoubleSpinBox)
+//btn_gen_from_depth_(new QPushButton(tr("From depthmap"))),
+btn_generate_(new QPushButton(tr("Generate")))
+//invert_cb_(new QCheckBox),
+//strength_edit_(new DoubleSpinBox),
+//mean_edit_(new DoubleSpinBox),
+//range_edit_(new DoubleSpinBox),
+//blursharp_edit_(new DoubleSpinBox)
 {
     QFormLayout* addc_layout = new QFormLayout();
     addc_layout->addRow(tr("Uniform value:"), ao_edit_);
+    ao_edit_->set_constrains(0.0, 1.0, 0.1, 0.0);
 
     btn_generate_->setMaximumHeight(20);
     addc_layout->addRow(btn_generate_);
 
     // Add separator
-    auto sep = new QFrame;
+    /*auto sep = new QFrame;
     sep->setObjectName("Separator");
     sep->setFrameShape(QFrame::HLine);
     sep->setFrameShadow(QFrame::Sunken);
@@ -374,11 +375,10 @@ blursharp_edit_(new DoubleSpinBox)
     btn_gen_from_depth_->setMaximumHeight(20);
     addc_layout->addRow(btn_gen_from_depth_);
 
-    ao_edit_->set_constrains(0.0, 1.0, 0.1, 0.0);
     strength_edit_->set_constrains(0.0, 1.0, 0.1, 0.5);
     mean_edit_->set_constrains(0.0, 1.0, 0.1, 1.0);
     range_edit_->set_constrains(0.0, 1.0, 0.1, 1.0);
-    blursharp_edit_->set_constrains(-10.0, 10.0, 1.0, 0.0);
+    blursharp_edit_->set_constrains(-10.0, 10.0, 1.0, 0.0);*/
 
     additional_controls->setLayout(addc_layout);
 
@@ -389,10 +389,10 @@ blursharp_edit_(new DoubleSpinBox)
 void AOControl::clear_additional()
 {
     ao_edit_->setValue(0);
-    strength_edit_->setValue(0.5);
+    /*strength_edit_->setValue(0.5);
     range_edit_->setValue(1.0);
     blursharp_edit_->setValue(0.0);
-    invert_cb_->setCheckState(Qt::Unchecked);
+    invert_cb_->setCheckState(Qt::Unchecked);*/
 }
 
 void AOControl::write_entry_additional(TextureEntry& entry)
@@ -401,11 +401,11 @@ void AOControl::write_entry_additional(TextureEntry& entry)
     ao_map->u_ao = (float)ao_edit_->value();
 
     // Generator options
-    ao_map->gen_invert    = invert_cb_->checkState() == Qt::Checked;
+    /*ao_map->gen_invert    = invert_cb_->checkState() == Qt::Checked;
     ao_map->gen_strength  = (float)strength_edit_->value();
     ao_map->gen_mean      = (float)mean_edit_->value();
     ao_map->gen_range     = (float)range_edit_->value();
-    ao_map->gen_blursharp = (float)blursharp_edit_->value();
+    ao_map->gen_blursharp = (float)blursharp_edit_->value();*/
 }
 
 void AOControl::read_entry_additional(const TextureEntry& entry)
@@ -414,28 +414,28 @@ void AOControl::read_entry_additional(const TextureEntry& entry)
     ao_edit_->setValue(ao_map->u_ao);
 
     // Generator options
-    invert_cb_->setCheckState(ao_map->gen_invert ? Qt::Checked : Qt::Unchecked);
+    /*invert_cb_->setCheckState(ao_map->gen_invert ? Qt::Checked : Qt::Unchecked);
     strength_edit_->setValue(ao_map->gen_strength);
     mean_edit_->setValue(ao_map->gen_mean);
     range_edit_->setValue(ao_map->gen_range);
-    blursharp_edit_->setValue(ao_map->gen_blursharp);
+    blursharp_edit_->setValue(ao_map->gen_blursharp);*/
 }
 
 void AOControl::connect_controls(TexmapControlPane* texmap_pane)
 {
-    connect(btn_gen_from_depth_, &QPushButton::clicked,
-            texmap_pane,         &TexmapControlPane::handle_gen_ao_map);
+    /*connect(btn_gen_from_depth_, &QPushButton::clicked,
+            texmap_pane,         &TexmapControlPane::handle_gen_ao_map);*/
     connect(btn_generate_, &QPushButton::clicked,
             texmap_pane,   &TexmapControlPane::handle_gen_ao_map_gpu);
 }
 
 void AOControl::get_options(generator::AOGenOptions& options)
 {
-    options.range    = (float)range_edit_->value();
+    /*options.range    = (float)range_edit_->value();
     options.mean     = (float)mean_edit_->value();
     options.strength = (float)strength_edit_->value();
     options.sigma    = (float)blursharp_edit_->value();
-    options.invert   = invert_cb_->checkState() == Qt::Checked;;
+    options.invert   = invert_cb_->checkState() == Qt::Checked;;*/
 }
 
 

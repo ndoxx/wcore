@@ -47,6 +47,8 @@ protected:
 
 protected:
     LinearPipeline* pipeline_;
+    int img_width_;
+    int img_height_;
 
 private:
     wcore::math::vec3 clear_color_;
@@ -59,8 +61,6 @@ private:
     QOpenGLVertexArrayObject* vao_;
 
     unsigned int attr_position_;
-    int img_width_;
-    int img_height_;
     bool export_;
 };
 

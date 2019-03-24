@@ -21,14 +21,14 @@ ShaderGenGLWidget::ShaderGenGLWidget(std::initializer_list<std::pair<QString,QSt
                                      QWidget* parent):
 QOpenGLWidget(parent),
 pipeline_(nullptr),
+img_width_(0),
+img_height_(0),
 clear_color_(0.f,0.f,0.f),
 shader_sources_(shader_sources),
 source_tex_(nullptr),
 vbo_(new QOpenGLBuffer),
 vao_(new QOpenGLVertexArrayObject),
 attr_position_(0),
-img_width_(0),
-img_height_(0),
 export_(false)
 {
 
@@ -80,6 +80,7 @@ void ShaderGenGLWidget::initializeGL()
     img_width_ = source_image.width();
     img_height_ = source_image.height();
     source_tex_ = new QOpenGLTexture(source_image);
+    source_tex_->setWrapMode(QOpenGLTexture::Repeat);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
