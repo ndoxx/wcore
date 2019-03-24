@@ -5,6 +5,7 @@
 
 namespace waterial
 {
+
 QT_FORWARD_DECLARE_CLASS(AOGenGLWidget)
 
 class AOGenDialog: public QDialog

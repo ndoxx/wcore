@@ -7458,6 +7458,7 @@ TODO (Waterial):
         [ ] Texture scale
         [ ] Options d'export
         [ ] FX ?
+    [ ] Fix -> save entry on drop label change
 
 * TODO (WCore):
     [ ] New texture maps (possibly grouped in same Gbuffer chan):

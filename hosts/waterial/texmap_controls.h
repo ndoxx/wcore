@@ -160,8 +160,6 @@ public:
     explicit AOControl();
     virtual ~AOControl() = default;
 
-    void get_options(generator::AOGenOptions& options);
-
 protected:
     virtual void connect_controls(TexmapControlPane* texmap_pane) override;
     virtual void clear_additional() override;
@@ -170,13 +168,7 @@ protected:
 
 private:
     DoubleSpinBox* ao_edit_;
-    //QPushButton* btn_gen_from_depth_;
     QPushButton* btn_generate_;
-    /*QCheckBox* invert_cb_;
-    DoubleSpinBox* strength_edit_;
-    DoubleSpinBox* mean_edit_;
-    DoubleSpinBox* range_edit_;
-    DoubleSpinBox* blursharp_edit_;*/
 };
 
 // Specialized controls for normal map
@@ -188,27 +180,16 @@ public:
     explicit NormalControl();
     virtual ~NormalControl() = default;
 
-    void get_options(generator::NormalGenOptions& options);
-
 protected:
     virtual void connect_controls(TexmapControlPane* texmap_pane) override;
-    virtual void clear_additional() override;
-    virtual void write_entry_additional(TextureEntry& entry) override;
-    virtual void read_entry_additional(const TextureEntry& entry) override;
 
 private:
-    QPushButton* btn_gen_from_depth_;
-    QComboBox* filter_combo_;
-    QCheckBox* invert_r_cb_;
-    QCheckBox* invert_g_cb_;
-    QCheckBox* invert_h_cb_;
-    DoubleSpinBox* level_edit_;
-    DoubleSpinBox* strength_edit_;
-    DoubleSpinBox* blursharp_edit_;
+    QPushButton* btn_generate_;
 };
 
 QT_FORWARD_DECLARE_CLASS(TweaksDialog)
 QT_FORWARD_DECLARE_CLASS(AOGenDialog)
+QT_FORWARD_DECLARE_CLASS(NormalGenDialog)
 
 class EditorModel;
 class TexmapControlPane: public QWidget
@@ -218,19 +199,17 @@ class TexmapControlPane: public QWidget
 public:
     TexmapControlPane(MainWindow* main_window, EditorModel* editor_model, QWidget* parent=nullptr);
 
-    // Retrieve data from current texture entry and update view
-    void update_entry(TextureEntry& entry);
     // Retrieve data from controls and update a given entry with this information
+    void update_entry(TextureEntry& entry);
+    // Retrieve data from controls and update current texture entry
+    void update_current_entry();
+    // Retrieve data from current texture entry and update view
     void update_texture_view();
     // Clear texmap views to default
     void clear_view();
 
-    void get_options(generator::AOGenOptions& options);
-    void get_options(generator::NormalGenOptions& options);
-
 public slots:
-    void handle_gen_normal_map();
-    void handle_gen_ao_map();
+    void handle_gen_normal_map_gpu();
     void handle_gen_ao_map_gpu();
     void handle_save_current_texture();
 
@@ -240,12 +219,14 @@ public slots:
     void handle_tweak_depth();
     void handle_tweak_finished(int result);
     void handle_ao_finished(int result);
+    void handle_normal_finished(int result);
 
 private:
     std::vector<TexMapControl*> texmap_controls_;
     EditorModel* editor_model_;
     TweaksDialog* tweaks_dialog_;
     AOGenDialog* ao_gen_dialog_;
+    NormalGenDialog* normal_gen_dialog_;
 
     MainWindow* main_window_;
 };

@@ -262,7 +262,7 @@ void AOMap::parse(rapidxml::xml_node<>* node)
 
 void NormalMap::parse(rapidxml::xml_node<>* node)
 {
-    xml_node<>* gen_node = node->first_node("Generator");
+    /*xml_node<>* gen_node = node->first_node("Generator");
     if(gen_node)
     {
         std::string filter_str;
@@ -275,7 +275,7 @@ void NormalMap::parse(rapidxml::xml_node<>* node)
         xml::parse_node(gen_node, "Level", gen_level);
         xml::parse_node(gen_node, "Strength", gen_strength);
         xml::parse_node(gen_node, "BlurSharp", gen_blursharp);
-    }
+    }*/
 }
 
 
@@ -343,7 +343,7 @@ void AOMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 
 void NormalMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 {
-    xml_node<>* gen_node = doc.allocate_node(node_element, "Generator");
+    /*xml_node<>* gen_node = doc.allocate_node(node_element, "Generator");
 
     xml_node<>* filter_node = doc.allocate_node(node_element, "Filter");
     xml_node<>* invr_node = doc.allocate_node(node_element, "InvertR");
@@ -369,7 +369,7 @@ void NormalMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
     gen_node->append_node(strength_node);
     gen_node->append_node(blursharp_node);
 
-    node->append_node(gen_node);
+    node->append_node(gen_node);*/
 }
 
 EditorModel::EditorModel():

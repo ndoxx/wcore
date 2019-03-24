@@ -16,6 +16,11 @@ public:
     explicit NormalGenDialog(QWidget* parent=nullptr);
     ~NormalGenDialog();
 
+    const QString& get_output_image_path() const;
+
+    void set_source_image(const QString& path);
+    void set_output_image(const QString& path);
+
 public slots:
     void handle_accept();
 

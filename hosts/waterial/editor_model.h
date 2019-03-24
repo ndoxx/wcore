@@ -129,12 +129,12 @@ struct NormalMap: public TextureMap
 #endif
 
     int gen_filter;
-    bool gen_invert_r;
+    /*bool gen_invert_r;
     bool gen_invert_g;
     bool gen_invert_h;
     float gen_level;
     float gen_strength;
-    float gen_blursharp;
+    float gen_blursharp;*/
 };
 
 struct TextureEntry

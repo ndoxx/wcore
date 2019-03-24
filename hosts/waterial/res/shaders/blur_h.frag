@@ -7,7 +7,7 @@ uniform float f_sigma;
 
 out vec4 out_color;
 
-const float SHARPEN_AMT = 0.2f;
+const float SHARPEN_AMT = 1.0f;
 
 void main(void)
 {
