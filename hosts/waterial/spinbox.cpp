@@ -34,8 +34,8 @@ void DoubleSpinBox::set_constrains(double minval, double maxval, double step, do
     assert(value>=minval && "DoubleSpinBox: initial value should be greater than minimum value");
 
     setRange(minval, maxval);
-    setSingleStep(0.1);
-    setValue(7.0);
+    setSingleStep(step);
+    setValue(value);
 }
 
 

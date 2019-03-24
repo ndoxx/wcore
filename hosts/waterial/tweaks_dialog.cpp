@@ -51,11 +51,11 @@ sld_value_(new DoubleSlider)
     ctl_layout->addRow(sep);
 
     connect(sld_hue_, SIGNAL(doubleValueChanged(double)),
-            preview_, SLOT(handle_hue_changed(double)));
+            preview_, SLOT(set_hue(double)));
     connect(sld_saturation_, SIGNAL(doubleValueChanged(double)),
-            preview_,        SLOT(handle_saturation_changed(double)));
+            preview_,        SLOT(set_saturation(double)));
     connect(sld_value_, SIGNAL(doubleValueChanged(double)),
-            preview_,   SLOT(handle_value_changed(double)));
+            preview_,   SLOT(set_value(double)));
 
     ctl_view_layout->addLayout(ctl_layout);
 

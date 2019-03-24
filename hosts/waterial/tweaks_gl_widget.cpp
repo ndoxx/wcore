@@ -39,19 +39,19 @@ void TweaksGLWidget::init()
     });
 }
 
-void TweaksGLWidget::handle_hue_changed(double newvalue)
+void TweaksGLWidget::set_hue(double newvalue)
 {
     hue_ = float(newvalue);
     update();
 }
 
-void TweaksGLWidget::handle_saturation_changed(double newvalue)
+void TweaksGLWidget::set_saturation(double newvalue)
 {
     saturation_ = float(newvalue);
     update();
 }
 
-void TweaksGLWidget::handle_value_changed(double newvalue)
+void TweaksGLWidget::set_value(double newvalue)
 {
     value_ = float(newvalue);
     update();

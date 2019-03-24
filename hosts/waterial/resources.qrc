@@ -21,5 +21,6 @@
     <file>res/shaders/tweaks.frag</file>
     <file>res/shaders/passthrough.vert</file>
     <file>res/shaders/passthrough.frag</file>
+    <file>res/shaders/gen_ao.frag</file>
 </qresource>
 </RCC>

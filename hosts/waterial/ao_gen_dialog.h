@@ -15,6 +15,11 @@ public:
     explicit AOGenDialog(QWidget* parent=nullptr);
     ~AOGenDialog();
 
+    const QString& get_output_image_path() const;
+
+    void set_source_image(const QString& path);
+    void set_output_image(const QString& path);
+
 public slots:
     void handle_accept();
 

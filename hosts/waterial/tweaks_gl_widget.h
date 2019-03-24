@@ -15,9 +15,9 @@ public:
     virtual ~TweaksGLWidget() override;
 
 public slots:
-    void handle_hue_changed(double newvalue);
-    void handle_saturation_changed(double newvalue);
-    void handle_value_changed(double newvalue);
+    void set_hue(double newvalue);
+    void set_saturation(double newvalue);
+    void set_value(double newvalue);
 
 protected:
     virtual void init() override;

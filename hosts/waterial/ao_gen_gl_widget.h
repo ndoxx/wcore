@@ -15,13 +15,22 @@ public:
     virtual ~AOGenGLWidget() override;
 
 public slots:
+    void set_invert(int state);
+    void set_strength(double value);
+    void set_mean(double value);
+    void set_range(double value);
+    void set_sigma(double value);
 
 protected:
     virtual void init() override;
 
 private:
     // uniforms
-
+    bool invert_;
+    float strength_;
+    float mean_;
+    float range_;
+    float sigma_;
 };
 
 

@@ -18,6 +18,7 @@
 #include "mainwindow.h"
 #include "texmap_generator.h"
 #include "tweaks_dialog.h"
+#include "ao_gen_dialog.h"
 #include "logger.h"
 
 using namespace wcore;
@@ -126,6 +127,11 @@ void TexMapControl::read_entry(const TextureEntry& entry)
 void TexMapControl::set_tweak(const QString& tweak_path)
 {
     droplabel->setPixmap(droplabel->get_path(), tweak_path);
+}
+
+void TexMapControl::set_source(const QString& source_path)
+{
+    droplabel->setPixmap(source_path);
 }
 
 void TexMapControl::clear()
@@ -338,6 +344,7 @@ AOControl::AOControl():
 TexMapControl(tr("AO"), AO),
 ao_edit_(new DoubleSpinBox),
 btn_gen_from_depth_(new QPushButton(tr("From depthmap"))),
+btn_generate_(new QPushButton(tr("Generate"))),
 invert_cb_(new QCheckBox),
 strength_edit_(new DoubleSpinBox),
 mean_edit_(new DoubleSpinBox),
@@ -346,6 +353,9 @@ blursharp_edit_(new DoubleSpinBox)
 {
     QFormLayout* addc_layout = new QFormLayout();
     addc_layout->addRow(tr("Uniform value:"), ao_edit_);
+
+    btn_generate_->setMaximumHeight(20);
+    addc_layout->addRow(btn_generate_);
 
     // Add separator
     auto sep = new QFrame;
@@ -415,6 +425,8 @@ void AOControl::connect_controls(TexmapControlPane* texmap_pane)
 {
     connect(btn_gen_from_depth_, &QPushButton::clicked,
             texmap_pane,         &TexmapControlPane::handle_gen_ao_map);
+    connect(btn_generate_, &QPushButton::clicked,
+            texmap_pane,   &TexmapControlPane::handle_gen_ao_map_gpu);
 }
 
 void AOControl::get_options(generator::AOGenOptions& options)
@@ -533,7 +545,8 @@ void NormalControl::get_options(generator::NormalGenOptions& options)
 TexmapControlPane::TexmapControlPane(MainWindow* main_window, EditorModel* editor_model, QWidget* parent):
 QWidget(parent),
 editor_model_(editor_model),
-tweaks_dialog_(nullptr/*new TweaksDialog(main_window)*/),
+tweaks_dialog_(nullptr),
+ao_gen_dialog_(nullptr),
 main_window_(main_window)
 {
     QGridLayout* layout_texmap_page = new QGridLayout();
@@ -718,6 +731,28 @@ void TexmapControlPane::handle_gen_ao_map()
     }
 }
 
+void TexmapControlPane::handle_gen_ao_map_gpu()
+{
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(texname.isEmpty())
+        return;
+
+    TextureEntry& entry = editor_model_->get_current_texture_entry();
+    if(entry.texture_maps[DEPTH]->has_image)
+    {
+        const QString& source = entry.texture_maps[DEPTH]->source_path;
+        QDir out_dir = QFileInfo(source).absoluteDir();
+        QString output = out_dir.filePath(texname + "_ao_gen.png");
+
+        ao_gen_dialog_ = new AOGenDialog(main_window_);
+        connect(ao_gen_dialog_, SIGNAL(finished(int)),
+                this,           SLOT(handle_ao_finished(int)));
+        ao_gen_dialog_->set_source_image(source);
+        ao_gen_dialog_->set_output_image(output);
+        ao_gen_dialog_->open();
+    }
+}
+
 void TexmapControlPane::handle_tweak_albedo()
 {
     const QString& texname = editor_model_->get_current_texture_name();
@@ -761,6 +796,16 @@ void TexmapControlPane::handle_tweak_finished(int result)
         texmap_controls_[ALBEDO]->set_tweak(tweak_path);
     }
     delete tweaks_dialog_;
+}
+
+void TexmapControlPane::handle_ao_finished(int result)
+{
+    if(result == QDialog::Accepted)
+    {
+        const QString& source_path = ao_gen_dialog_->get_output_image_path();
+        texmap_controls_[AO]->set_source(source_path);
+    }
+    delete ao_gen_dialog_;
 }
 
 

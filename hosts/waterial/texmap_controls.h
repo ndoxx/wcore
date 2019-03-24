@@ -38,6 +38,7 @@ public:
     void add_stretch();
 
     void set_tweak(const QString& tweak_path);
+    void set_source(const QString& source_path);
 
     // TMP
     inline DropLabel* get_droplabel() { return droplabel; }
@@ -170,6 +171,7 @@ protected:
 private:
     DoubleSpinBox* ao_edit_;
     QPushButton* btn_gen_from_depth_;
+    QPushButton* btn_generate_;
     QCheckBox* invert_cb_;
     DoubleSpinBox* strength_edit_;
     DoubleSpinBox* mean_edit_;
@@ -206,6 +208,7 @@ private:
 };
 
 QT_FORWARD_DECLARE_CLASS(TweaksDialog)
+QT_FORWARD_DECLARE_CLASS(AOGenDialog)
 
 class EditorModel;
 class TexmapControlPane: public QWidget
@@ -228,6 +231,7 @@ public:
 public slots:
     void handle_gen_normal_map();
     void handle_gen_ao_map();
+    void handle_gen_ao_map_gpu();
     void handle_save_current_texture();
 
     void handle_tweak_albedo();
@@ -235,11 +239,14 @@ public slots:
     void handle_tweak_metallic();
     void handle_tweak_depth();
     void handle_tweak_finished(int result);
+    void handle_ao_finished(int result);
 
 private:
     std::vector<TexMapControl*> texmap_controls_;
     EditorModel* editor_model_;
     TweaksDialog* tweaks_dialog_;
+    AOGenDialog* ao_gen_dialog_;
+
     MainWindow* main_window_;
 };
 
