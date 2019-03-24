@@ -19,5 +19,7 @@
 
     <file>res/shaders/tweaks.vert</file>
     <file>res/shaders/tweaks.frag</file>
+    <file>res/shaders/passthrough.vert</file>
+    <file>res/shaders/passthrough.frag</file>
 </qresource>
 </RCC>

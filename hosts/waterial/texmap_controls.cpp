@@ -533,7 +533,8 @@ void NormalControl::get_options(generator::NormalGenOptions& options)
 TexmapControlPane::TexmapControlPane(MainWindow* main_window, EditorModel* editor_model, QWidget* parent):
 QWidget(parent),
 editor_model_(editor_model),
-tweaks_dialog_(new TweaksDialog(main_window))
+tweaks_dialog_(nullptr/*new TweaksDialog(main_window)*/),
+main_window_(main_window)
 {
     QGridLayout* layout_texmap_page = new QGridLayout();
     setObjectName("pageWidget");
@@ -557,9 +558,6 @@ tweaks_dialog_(new TweaksDialog(main_window))
     }
 
     setLayout(layout_texmap_page);
-
-    connect(tweaks_dialog_, SIGNAL(finished(int)),
-            this,           SLOT(handle_tweak_finished(int)));
 }
 
 void TexmapControlPane::update_entry(TextureEntry& entry)
@@ -733,12 +731,15 @@ void TexmapControlPane::handle_tweak_albedo()
         QDir out_dir = QFileInfo(source).absoluteDir();
         QString output = out_dir.filePath(texname + "_albedo_twk.png");
 
-        tweaks_dialog_->reset();
+        tweaks_dialog_ = new TweaksDialog(main_window_);
+        connect(tweaks_dialog_, SIGNAL(finished(int)),
+                this,           SLOT(handle_tweak_finished(int)));
         tweaks_dialog_->set_source_image(source);
         tweaks_dialog_->set_output_image(output);
         tweaks_dialog_->open();
     }
 }
+
 void TexmapControlPane::handle_tweak_roughness()
 {
     //tweaks_dialog_->open();
@@ -759,6 +760,7 @@ void TexmapControlPane::handle_tweak_finished(int result)
         const QString& tweak_path = tweaks_dialog_->get_output_image_path();
         texmap_controls_[ALBEDO]->set_tweak(tweak_path);
     }
+    delete tweaks_dialog_;
 }
 
 

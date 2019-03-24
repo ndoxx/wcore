@@ -8,7 +8,6 @@
 #include "math3d.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
-QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 QT_FORWARD_DECLARE_CLASS(QOpenGLBuffer)
 QT_FORWARD_DECLARE_CLASS(QOpenGLVertexArrayObject)
 QT_FORWARD_DECLARE_CLASS(QOpenGLFramebufferObject)
@@ -16,6 +15,7 @@ QT_FORWARD_DECLARE_CLASS(QOpenGLFramebufferObject)
 namespace waterial
 {
 
+class LinearPipeline;
 class ShaderGenGLWidget: public QOpenGLWidget, protected QOpenGLFunctions_4_0_Core
 {
     Q_OBJECT
@@ -43,11 +43,10 @@ protected:
     virtual void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
     virtual void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
-    virtual void update_uniforms() = 0;
+    virtual void init() = 0;
 
 protected:
-    QOpenGLShaderProgram* program_;
-
+    LinearPipeline* pipeline_;
 
 private:
     wcore::math::vec3 clear_color_;
@@ -63,7 +62,6 @@ private:
     unsigned int attr_position_;
     int img_width_;
     int img_height_;
-    bool initialized_;
     bool export_;
 };
 

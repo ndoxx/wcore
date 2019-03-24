@@ -240,6 +240,7 @@ private:
     std::vector<TexMapControl*> texmap_controls_;
     EditorModel* editor_model_;
     TweaksDialog* tweaks_dialog_;
+    MainWindow* main_window_;
 };
 
 } // namespace waterial

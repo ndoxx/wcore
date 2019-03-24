@@ -17,8 +17,7 @@ public:
 public slots:
 
 protected:
-    //virtual QString make_out_path(const QString& in_path) override;
-    virtual void update_uniforms() override;
+    virtual void init() override;
 
 private:
     // uniforms

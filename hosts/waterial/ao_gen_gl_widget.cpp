@@ -4,6 +4,7 @@
 #include <QOpenGLShaderProgram>
 
 #include "ao_gen_gl_widget.h"
+#include "shader_stage.h"
 #include "logger.h"
 
 using namespace wcore;
@@ -24,7 +25,7 @@ AOGenGLWidget::~AOGenGLWidget()
 
 }
 
-void AOGenGLWidget::update_uniforms()
+void AOGenGLWidget::init()
 {
 
 }

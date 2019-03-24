@@ -48,6 +48,8 @@ set(waterial_SRCS
     double_slider.cpp
     spinbox.cpp
     color_picker_label.cpp
+    shader_stage.cpp
+    linear_pipeline.cpp
     preview_gl_widget.cpp
     shader_gen_gl_widget.cpp
     tweaks_gl_widget.cpp

@@ -17,7 +17,7 @@ public:
 public slots:
 
 protected:
-    virtual void update_uniforms() override;
+    virtual void init() override;
 
 private:
     // uniforms

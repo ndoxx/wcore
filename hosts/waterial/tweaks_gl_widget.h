@@ -20,7 +20,7 @@ public slots:
     void handle_value_changed(double newvalue);
 
 protected:
-    virtual void update_uniforms() override;
+    virtual void init() override;
 
 private:
     // uniforms

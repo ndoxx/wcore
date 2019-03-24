@@ -4,6 +4,7 @@
 #include <QOpenGLShaderProgram>
 
 #include "tweaks_gl_widget.h"
+#include "linear_pipeline.h"
 #include "logger.h"
 
 using namespace wcore;
@@ -27,11 +28,14 @@ TweaksGLWidget::~TweaksGLWidget()
 
 }
 
-void TweaksGLWidget::update_uniforms()
+void TweaksGLWidget::init()
 {
-    program_->setUniformValue("f_hue", hue_);
-    program_->setUniformValue("f_saturation", saturation_);
-    program_->setUniformValue("f_value", value_);
+    pipeline_->set_uniform_updater(0, [&](QOpenGLShaderProgram* program)
+    {
+        program->setUniformValue("f_hue", hue_);
+        program->setUniformValue("f_saturation", saturation_);
+        program->setUniformValue("f_value", value_);
+    });
 }
 
 void TweaksGLWidget::handle_hue_changed(double newvalue)
