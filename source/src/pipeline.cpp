@@ -20,11 +20,11 @@
 #include "debug_info.h"
 #include "logger.h"
 #include "input_handler.h"
+#include "scene.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
     #include "gui_utils.h"
-    #include "scene.h"
     #include "editor_tweaks.h"
 #endif
 
@@ -76,6 +76,10 @@ RenderPipeline::~RenderPipeline()
     delete lighting_renderer_;
     delete shadow_map_renderer_;
     delete geometry_renderer_;
+
+    SSAOBuffer::Kill();
+    LBuffer::Kill();
+    GBuffer::Kill();
 }
 
 void RenderPipeline::init_events(InputHandler& handler)
@@ -120,10 +124,12 @@ void RenderPipeline::init_self()
 #endif
 }
 
+#ifdef __DEBUG__
 void RenderPipeline::perform_test()
 {
 
 }
+#endif
 
 void RenderPipeline::set_shadow_mapping_enabled(bool value)    { lighting_renderer_->set_shadow_mapping_enabled(value); }
 void RenderPipeline::set_directional_light_enabled(bool value) { lighting_renderer_->set_directional_light_enabled(value); }
@@ -185,9 +191,11 @@ bool RenderPipeline::onKeyboardEvent(const WData& data)
         case "k_tg_wireframe"_h:
     		geometry_renderer_->toggle_wireframe();
     		break;
+#ifdef __DEBUG__
         case "k_test_key"_h:
             perform_test();
             break;
+#endif
         case "k_show_neighbors"_h:
             debug_renderer_->show_selection_neighbors(locate<Scene>("Scene"_h), neighbors_search_eadius);
             break;

@@ -86,6 +86,7 @@ void DebugRenderer::load_geometry()
 
 void DebugRenderer::render(Scene* pscene)
 {
+#ifdef __DEBUG__
     // Get camera matrices
     mat4 V = pscene->get_camera().get_view_matrix();       // Camera View matrix
     mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
@@ -265,6 +266,7 @@ void DebugRenderer::render(Scene* pscene)
 
     if(enable_depth_test_)
         GFX::disable_depth_testing();
+#endif
 }
 
 void DebugRenderer::show_selection_neighbors(Scene* pscene, float radius)

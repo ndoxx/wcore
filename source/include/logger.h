@@ -327,6 +327,7 @@ namespace dbg
     #define DLOGT( ... )                do { } while(0)
     #define DLOGN( ... )                do { } while(0)
     #define DLOGS( ... )                do { } while(0)
+    #define DLOGES( ... )               do { } while(0)
     #define DLOGW( ... )                do { } while(0)
     #define DLOGE( ... )                do { } while(0)
     #define DLOGF( ... )                do { } while(0)

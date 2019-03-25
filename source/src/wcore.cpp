@@ -23,6 +23,7 @@
 #include "pipeline.h"
 #include "daylight.h"
 #include "ray_caster.h"
+#include "debug_info.h"
 #ifndef __DISABLE_EDITOR__
     #include "editor.h"
     #include "editor_tweaks.h"
@@ -76,7 +77,9 @@ struct Engine::EngineImpl
 {
     EngineImpl():
     engine_core(nullptr),
+#ifndef __DISABLE_EDITOR__
     ed_tweaks(nullptr),
+#endif
     scene(nullptr),
     entity_system(nullptr),
     camera_controller(nullptr),
@@ -117,11 +120,13 @@ struct Engine::EngineImpl
         delete engine_core;
 
         // Kill singletons
+        DebugInfo::Kill();
 #ifdef __DEBUG__
         InternStringLocator::Kill();
 #endif
         FileSystem::Kill();
         Config::Kill();
+        Logger::Kill();
     }
 
     void init(AbstractContext* context=nullptr)
@@ -239,7 +244,8 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-
+    delete scene;
+    delete pipeline;
 }
 
 void Engine::SetFrameSize(uint32_t width, uint32_t height, bool fullscreen)

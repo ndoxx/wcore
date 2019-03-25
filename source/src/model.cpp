@@ -39,8 +39,10 @@ has_reference_(false)
 
 Model::~Model()
 {
+#ifndef __DISABLE_EDITOR__
     if(selection_reset_)
         (editor_->*selection_reset_)();
+#endif
 
     delete pmaterial_;
 }

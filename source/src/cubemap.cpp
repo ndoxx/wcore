@@ -31,8 +31,6 @@ Cubemap::Cubemap(const CubemapDescriptor& descriptor)
     glGenTextures(1, &texture_id_);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id_);
 
-    // Array of 6 pixel buffers to hold texture data for each face
-    PixelBuffer** px_bufs = new PixelBuffer*[6];
     // Load texture data
     for(GLuint ii=0; ii<6; ++ii)
     {
@@ -43,25 +41,27 @@ Cubemap::Cubemap(const CubemapDescriptor& descriptor)
             DLOGF("[Cubemap] Invalid stream.", "io", Severity::CRIT);
             fatal();
         }
-        px_bufs[ii] = PNG_LOADER.load_png(*stream);
+        PixelBuffer* px_buf = PNG_LOADER.load_png(*stream);
 
 #ifdef __DEBUG__
         DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
         if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
-            px_bufs[ii]->debug_display();
+            px_buf->debug_display();
 #endif
 
         glTexImage2D(
             GL_TEXTURE_CUBE_MAP_POSITIVE_X + ii,
             0,
             GL_RGB,
-            px_bufs[ii]->get_width(),
-            px_bufs[ii]->get_height(),
+            px_buf->get_width(),
+            px_buf->get_height(),
             0,
             GL_RGB,
             GL_UNSIGNED_BYTE,
-            px_bufs[ii]->get_data_pointer()
+            px_buf->get_data_pointer()
         );
+
+        delete px_buf;
     }
 
     // Texture parameters
@@ -70,8 +70,6 @@ Cubemap::Cubemap(const CubemapDescriptor& descriptor)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    delete [] px_bufs;
 }
 
 Cubemap::~Cubemap()

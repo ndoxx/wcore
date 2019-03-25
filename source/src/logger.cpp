@@ -308,12 +308,13 @@ void Logger::end_section(hash_t channel, uint32_t severity)
 
 bool Logger::onTrack(const WData& data)
 {
+#ifdef __DEBUG__
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
     LogMessage LM("Informer: " + std::to_string(data.sender_) + " >> " + data.to_string(),
                   timestamp,
                   MsgType::TRACK);
     operator()(LM);
-
+#endif
     return true; // Do NOT consume event
 }
 

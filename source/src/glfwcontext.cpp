@@ -98,11 +98,9 @@ GLFWContext::GLFWImpl::~GLFWImpl()
     // Close OpenGL window and terminate GLFW
     glfwDestroyWindow(window_);
     glfwTerminate();
-
     // call XkbFreeKeyboard(desc, 0, True) to suppress memory leak caused
     // by XkbGetMap in glfwInit for GLFW3.1. Leak corrected in 3.2.
 }
-
 
 GLFWContext::GLFWContext():
 pimpl_(new GLFWImpl()),

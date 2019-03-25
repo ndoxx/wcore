@@ -65,7 +65,7 @@ set_target_properties(fmod PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/vendor/fmod"
 )
 
-# add_definitions(-D__DISABLE_EDITOR__)
+#add_definitions(-D__DISABLE_EDITOR__)
 add_definitions(-D__DEBUG__)
 add_definitions(-D__PROFILE__)
 # add_definitions(-D__PRESERVE_STRS__)

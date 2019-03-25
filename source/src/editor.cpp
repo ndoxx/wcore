@@ -1,4 +1,6 @@
 #include "editor.h"
+
+#ifndef __DISABLE_EDITOR__
 #include "input_handler.h"
 #include "model.h"
 
@@ -81,3 +83,5 @@ bool Editor::onKeyboardEvent(const WData& data)
 }
 
 } // namespace wcore
+
+#endif

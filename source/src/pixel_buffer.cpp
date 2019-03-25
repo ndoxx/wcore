@@ -47,6 +47,7 @@ PixelBuffer::~PixelBuffer()
     delete [] p_data_;
 }
 
+#ifdef __DEBUG__
 void PixelBuffer::debug_display()
 {
     std::stringstream stream;
@@ -73,6 +74,6 @@ void PixelBuffer::debug_display()
     DLOGI(stream.str(), "texture", Severity::DET);
     stream.str("");
 }
-
+#endif
 
 }

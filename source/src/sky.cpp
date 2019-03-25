@@ -20,7 +20,7 @@ vertex_array_(buffer_unit_)
 
 SkyBox::~SkyBox()
 {
-
+    delete cubemap_;
 }
 
 void SkyBox::bind() const
