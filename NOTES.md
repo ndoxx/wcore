@@ -6687,7 +6687,7 @@ Mais générer de telles images nécessite un outil, sans quoi ce serait une gal
 [X] Visualisation d'objets texturés sous wcore
     [X] Avec choix des sources de lumière
     [ ] Et choix des objets (cube, plane, sphere, .obj)
-[ ] Opérations de base sur chaque texture map
+[/] Opérations de base sur chaque texture map
     -> Invert, Bias, Curve...
 [ ] Export sous différentes résolutions
 
@@ -7458,6 +7458,17 @@ C'est le cas des "image tweaks" qui permettent d'apporter quelques modifications
 
 Ces différents cas de traîtement d'image nécessitent une pipeline minimaliste pour organiser des passes de rendu. C'est là qu'interviennent les classes _ShaderStage_ et _LinearPipeline_. Un _ShaderStage_ représente une passe de rendu. Il contient un shader program et un FBO. Une _LinearPipeline_ chaîne plusieurs _ShaderStage_, de sorte que le color attachment du FBO d'un étage est samplé par l'étage suivant. Le dernier étage n'a pas de FBO initialisé, c'est la pipeline qui choisit le FBO de sortie : soit le FBO par défaut du contexte, soit un FBO membre utilisé pour récupérer l'image de sortie et l'enregistrer dans un fichier png. Le nombre d'étages est une conséquence de l'initialisation. On passe au constructeur un vecteur de paires de QString contenant les chemins d'accès vers les shaders (paire vertex/fragment pour chaque étage). L'initialisation des étages se fait alors automatiquement.
 
+```cpp
+NormalGenGLWidget::NormalGenGLWidget(QWidget* parent):
+ShaderGenGLWidget({
+                    {":/res/shaders/passthrough.vert", ":/res/shaders/gen_normal.frag"},
+                    {":/res/shaders/passthrough.vert", ":/res/shaders/blur_h.frag"},
+                    {":/res/shaders/passthrough.vert", ":/res/shaders/blur_v.frag"},
+                  },
+                  parent),
+// ...
+```
+
 Une telle pipeline est instanciée dans _ShaderGenGLWidget_. Cette dernière classe hérite de QOpenGLWidget et de QOpenGLFunctions_4_0_Core, et définit toutes les fonctionnalités nécessaires à un traîtement multi-étage avec possibilité d'export du rendu. Les classes _TweaksGLWidget_, _AOGenGLWidget_ et _NormalGenGLWidget_ héritent toutes de cette classe abstraite, et définissent des chaînes de traitement pour les image tweaks, la génération d'AO maps, et la génération de normal maps respectivement. Ces widgets embarquent des membres correspondant aux uniformes à envoyer à GL, plus des slots pour les updater. Ces trois widgets sont embarqués dans trois dialogues : _TweaksDialog_, _AOGenDialog_ et _NormalGenDialog_.
 Chaque contrôle de chaque dialogue est connecté au slot qui va bien, de sorte qu'une modification de valeur entraîne un update du rendu.
 
@@ -7470,6 +7481,14 @@ TODO (Waterial):
         [ ] Texture scale
         [ ] Options d'export
         [ ] FX ?
+    [ ] Export des materials en XML
+    [/] Choix des meshes (cube, plane, sphere, .obj)
+    [/] Opérations de base sur chaque texture map
+        [ ] Invert
+        [ ] Bias
+        [ ] Curve
+        [X] HSV
+    [ ] Export sous différentes résolutions
 
 * TODO (WCore):
     [ ] New texture maps (possibly grouped in same Gbuffer chan):

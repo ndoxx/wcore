@@ -141,6 +141,27 @@ std::shared_ptr<FaceMesh> make_cube_uniface(bool finalize)
     return pmesh;
 }
 
+std::shared_ptr<FaceMesh> make_plane(bool finalize)
+{
+    std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
+
+    pmesh->emplace_vertex(vec3( 0.5f,  0.f,  0.5f), vec2(1.0f, 1.0f));
+    pmesh->emplace_vertex(vec3( 0.5f,  0.f, -0.5f), vec2(1.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f,  0.f, -0.5f), vec2(0.0f, 0.0f));
+    pmesh->emplace_vertex(vec3(-0.5f,  0.f,  0.5f), vec2(0.0f, 1.0f));
+
+    pmesh->push_triangle(0,  1,  2);
+    pmesh->push_triangle(0,  2,  3);
+
+    if(finalize)
+    {
+        pmesh->build_normals_and_tangents();
+        pmesh->compute_dimensions();
+    }
+
+    return pmesh;
+}
+
 std::shared_ptr<FaceMesh> make_box(const math::extent_t& extent, float texture_scale)
 {
     std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
@@ -333,8 +354,8 @@ MeshP* make_cube_NDC_3P()
 
 // Create a unit sphere centered around (0,0,0)
 MeshP* make_uv_sphere_3P(uint32_t nRings,
-                                  uint32_t nRingPoints,
-                                  bool lines)
+                         uint32_t nRingPoints,
+                         bool lines)
 {
     MeshP* pmesh = new MeshP;
 
@@ -431,7 +452,7 @@ MeshP* make_uv_sphere_3P(uint32_t nRings,
 }
 
 std::shared_ptr<FaceMesh> make_uv_sphere(uint32_t nRings,
-                         uint32_t nRingPoints)
+                                         uint32_t nRingPoints)
 {
     std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
 

@@ -69,6 +69,14 @@ QGroupBox* PreviewControlWidget::create_model_controls(PreviewGLWidget* preview)
     QFormLayout* layout_model = new QFormLayout();
     QGroupBox* gb_model = new QGroupBox(tr("Model"));
 
+    // Mesh type
+    QComboBox* combo_mesh_type = new QComboBox();
+    combo_mesh_type->addItems(QStringList()<<"Cube"<<"Plane");
+    combo_mesh_type->setMaximumHeight(22);
+    connect(combo_mesh_type, SIGNAL(currentIndexChanged(int)),
+            preview,         SLOT(handle_mesh_swap(int)));
+    layout_model->addRow(tr("Mesh"), combo_mesh_type);
+
     // Enable rotation
     QCheckBox* cb_rotate = new QCheckBox();
     cb_rotate->setCheckState(Qt::Checked);

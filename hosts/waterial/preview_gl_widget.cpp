@@ -14,6 +14,8 @@
 #include "lights.h"
 #include "camera.h"
 #include "editor_model.h"
+#include "mesh_factory.h"
+#include "surface_mesh.h"
 
 using namespace wcore;
 
@@ -261,6 +263,24 @@ void PreviewGLWidget::handle_material_swap(EditorModel* edmodel)
     const wcore::MaterialDescriptor descriptor = edmodel->get_current_material_descriptor();
     if(edmodel->validate_descriptor(descriptor))
         new_material_ = new Material(descriptor);
+}
+
+void PreviewGLWidget::handle_mesh_swap(int newvalue)
+{
+    engine_->scene->VisitModelRef("the_model"_h, [&](Model& model)
+    {
+        switch(newvalue)
+        {
+            case 0: // Cube
+                model.set_mesh(factory::make_cube_uniface());
+                break;
+            case 1: // Plane
+                model.set_mesh(factory::make_plane());
+                model.set_orientation(math::vec3(270,0,0)); // WTF? otherwise plane is vertical
+                break;
+        }
+        model.update_bounding_boxes();
+    });
 }
 
 void PreviewGLWidget::handle_light_x_changed(double newvalue)

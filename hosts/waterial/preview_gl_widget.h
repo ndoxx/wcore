@@ -50,6 +50,7 @@ public slots:
     void handle_y_changed(double newvalue);
     void handle_z_changed(double newvalue);
     void handle_material_swap(EditorModel* edmodel);
+    void handle_mesh_swap(int newvalue);
 
     void handle_light_radius_changed(double newvalue);
     void handle_light_brightness_changed(double newvalue);

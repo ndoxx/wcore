@@ -96,6 +96,7 @@ public:
     inline const Material& get_material() const                 { return *pmaterial_; }
     inline Material& get_material()                             { return *pmaterial_; }
     void set_material(Material* material);
+    void set_mesh(std::shared_ptr<SurfaceMesh> pmesh);
 
     inline const math::vec3& get_position() const               { return trans_.get_position(); }
 

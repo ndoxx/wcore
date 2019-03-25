@@ -52,6 +52,11 @@ void Model::set_material(Material* material)
     DLOGN("[Model] Swapped material.", "model", Severity::LOW);
 }
 
+void Model::set_mesh(std::shared_ptr<SurfaceMesh> pmesh)
+{
+    pmesh_ = pmesh;
+    DLOGN("[Model] Swapped mesh.", "model", Severity::LOW);
+}
 
 LineModel::LineModel(Mesh<Vertex3P>* pmesh, Material* material):
 pmesh_(pmesh),

@@ -40,6 +40,7 @@ namespace factory
     // 3D primitives
     extern std::shared_ptr<FaceMesh> make_cube(bool finalize=true);
     extern std::shared_ptr<FaceMesh> make_cube_uniface(bool finalize=true);
+    extern std::shared_ptr<FaceMesh> make_plane(bool finalize=true);
     extern std::shared_ptr<FaceMesh> make_box(const math::extent_t& extent, float texture_scale=1.0f);
     extern std::shared_ptr<FaceMesh> make_terrain(const HeightMap& hm,
                                                   float latScale=1.0f,
