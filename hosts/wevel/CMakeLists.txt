@@ -35,6 +35,7 @@ qt5_add_resources(RCC_SOURCES resources.qrc)
 set(wevel_SRCS
     main.cpp
 )
+
 # Tell CMake to create the wevel executable
 add_executable(wevel ${wevel_SRCS} ${RCC_SOURCES})
 
@@ -57,3 +58,18 @@ set_target_properties(iwcore PROPERTIES
 # Use the Widgets module from Qt 5
 target_link_libraries(wevel GL GLEW iwcore Qt5::Widgets)
 cotire(waterial)
+
+
+
+# UNIT TESTS
+set(test_wevel_SRCS
+    tests/catch_app.cpp
+    tests/transaction_test.cpp
+)
+
+add_executable(test_wevel ${test_wevel_SRCS})
+target_include_directories(test_wevel PRIVATE "${CMAKE_SOURCE_DIR}/hosts/wevel/")
+set_target_properties(test_wevel
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+)
