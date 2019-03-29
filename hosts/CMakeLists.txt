@@ -5,5 +5,6 @@ subdirs(ecs_test)
 subdirs(nuclear)
 subdirs(internstr)
 subdirs(waterial)
+subdirs(wevel)
 
 include_directories(${CMAKE_SOURCE_DIR}/source)

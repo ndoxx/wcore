@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
         engine.Update(16.67/1000.f);
         engine.RenderFrame();
         engine.FinishFrame();
-    }
+    }*/
 
-    return 0;*/
+    return 0;
 }
