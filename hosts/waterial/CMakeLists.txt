@@ -81,4 +81,4 @@ set_target_properties(iwcore PROPERTIES
 
 # Use the Widgets module from Qt 5
 target_link_libraries(waterial GL GLEW iwcore Qt5::Widgets)
-cotire(waterial)
+#cotire(waterial)

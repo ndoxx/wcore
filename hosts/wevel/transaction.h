@@ -11,18 +11,17 @@ namespace wevel
 class AbstractTransaction
 {
 public:
-    virtual void undo() = 0;
-    virtual void redo() = 0;
+    virtual void execute() = 0;
+    virtual void unexecute() = 0;
 };
 
 // Concrete transaction on object of type T, using action policy defined
 // by the type ActionImplementerT
-template <typename T, typename ActionImplementerT>
+template <typename ActionImplementerT>
 class Transaction: public AbstractTransaction
 {
 public:
-    Transaction(T& target, ActionImplementerT&& impl):
-    target_(target),
+    Transaction(ActionImplementerT&& impl):
     impl_(std::move(impl))
     {
 
@@ -30,11 +29,10 @@ public:
 
     virtual ~Transaction() {}
 
-    virtual void undo() override { impl_.undo(target_); }
-    virtual void redo() override { impl_.redo(target_); }
+    virtual void execute() override   { impl_.execute(); }
+    virtual void unexecute() override { impl_.unexecute(); }
 
 private:
-    T& target_;
     ActionImplementerT impl_;
 };
 
@@ -55,7 +53,7 @@ public:
     // Will clear the redo stack
     void push(transaction_ptr trans)
     {
-        trans->redo();
+        trans->execute();
         undo_stack_.push_front(trans);
         redo_stack_.clear();
         // Limit number of transactions
@@ -64,29 +62,29 @@ public:
     }
 
     // Construct transaction in place given its arguments, then push it
-    template <typename T, typename ActionImplementerT>
-    void push(T& target, ActionImplementerT&& implementer)
+    template <typename ActionImplementerT>
+    void push(ActionImplementerT&& implementer)
     {
-        push(transaction_ptr(new Transaction(target, std::forward<ActionImplementerT>(implementer))));
+        push(transaction_ptr(new Transaction(std::forward<ActionImplementerT>(implementer))));
     }
 
-    // Roll-back to previous state
+    // Roll back to previous state
     void undo()
     {
         if(!undo_stack_.empty())
         {
-            undo_stack_.front()->undo();
+            undo_stack_.front()->unexecute();
             redo_stack_.push_front(undo_stack_.front());
             undo_stack_.pop_front();
         }
     }
 
-    // Cancel last undo()
+    // Roll forward to previously undone state
     void redo()
     {
         if(!redo_stack_.empty())
         {
-            redo_stack_.front()->redo();
+            redo_stack_.front()->execute();
             undo_stack_.push_front(redo_stack_.front());
             redo_stack_.pop_front();
         }

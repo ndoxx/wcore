@@ -10,7 +10,7 @@
 #include "wecs.h"
 #include "wcontext.h"
 
-#include "include/math3d.h"
+#include "math3d.h"
 
 using wcore::H_;
 
@@ -20,6 +20,8 @@ namespace wcore
 extern "C" void WAPI SetGlobal(hash_t name, const void* data);
 
 class Model;
+class Light;
+class Camera;
 class WAPI Engine
 {
 private:
@@ -71,6 +73,7 @@ class WAPI Engine::SceneControl
 public:
     SceneControl(std::shared_ptr<EngineImpl> impl);
 
+    // * Level control
     // Set a level name to load with LoadStart
     void SetStartLevel(const char* level_name);
     // Load first level, load and send chunk geometry near to camera start position
@@ -81,20 +84,27 @@ public:
     uint32_t LoadChunk(uint32_t xx, uint32_t zz, bool send_geometry=true);
     // Send chunk geometry to graphics driver
     void SendChunk(uint32_t xx, uint32_t zz);
+
+    // * Game object creation
+    // Load a model given an instance name, a chunk index, and an optional reference
+    void LoadModel(hash_t name, uint32_t chunk_index, hash_t href=0);
+    // Add a point light given a chunk index and an optional reference
+    void LoadPointLight(uint32_t chunk_index, hash_t href=0);
+
+    // * Game object visitors / accessors
+    // Get scene camera
+    Camera& GetCamera();
+    // Get referenced model in scene by hash name, hash name MUST exist
+    Model& GetModelRef(hash_t href);
+    // Get referenced light in scene by hash name, hash name MUST exist
+    Light& GetLightRef(hash_t href);
+    // Get directionnal light
+    Light& GetDirectionalLight();
+    // Visit referenced light in scene by hash name
+    bool VisitLightRef(hash_t href, std::function<void(Light& light)> visit);
     // Visit referenced model in scene by hash name
     bool VisitModelRef(hash_t href, std::function<void(Model& model)> visit);
 
-    // * The following functions will likely be deprecated soon
-    void LoadModel(hash_t name, uint32_t chunk_index, hash_t href=0);
-    /*void SetModelPosition(uint32_t model_index, const math::vec3& position);
-    void SetModelOrientation(uint32_t model_index, const math::vec3& orientation);
-    void SetModelScale(uint32_t model_index, float scale);*/
-
-    uint32_t LoadPointLight(uint32_t chunk_index);
-    void SetLightPosition(uint32_t light_index, const math::vec3& value);
-    void SetLightColor(uint32_t light_index, const math::vec3& value);
-    void SetLightRadius(uint32_t light_index, float value);
-    void SetLightBrightness(uint32_t light_index, float value);
 
 private:
     std::shared_ptr<EngineImpl> eimpl_; // opaque pointer
@@ -115,6 +125,8 @@ public:
     void SetFogEnabled(bool value);
     // Enable/Disable FXAA
     void SetFXAAEnabled(bool value);
+    // Enable/Disable Daylight system
+    void SetDaylightSystemEnabled(bool value);
 
     // * Lighting control
     // Set the amount of light necessary to trigger the bloom effect locally
@@ -127,6 +139,8 @@ public:
     void SetShadowBias(float value);
     // Set the amout of normal offset to be used with shadow mapping
     void SetShadowNormalOffset(float value);
+    // Set whether the directional light is active
+    void SetDirectionalLightEnabled(bool value);
 
     // * Post processing control
     // Set exposure tone mapping parameter
@@ -152,6 +166,8 @@ public:
 
     // * Debug / Editor helper functions
 #ifdef __DEBUG__
+    void dShowLightProxy(int mode, float scale=1.f);
+
     void dDrawSegment(const math::vec3& world_start,
                       const math::vec3& world_end,
                       int ttl = 60,
