@@ -54,7 +54,7 @@ public:
     {
 #ifdef __DEBUG__
         DLOG("New <g>component factory</g> for: ", "entity", Severity::LOW);
-        DLOGI(std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "entity", Severity::LOW);
+        DLOGI(std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "entity");
 #endif
         entity_factory_->register_component_factory(name, func);
     }

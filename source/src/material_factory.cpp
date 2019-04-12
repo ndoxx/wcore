@@ -24,8 +24,8 @@ MaterialFactory::MaterialFactory(const char* xml_file)
     auto pstream = FILESYSTEM.get_file_as_stream(xml_file, "root.folders.level"_h, "pack0"_h);
     if(pstream == nullptr)
     {
-        DLOGE("[MaterialFactory] Unable to open file:", "material", Severity::CRIT);
-        DLOGI(xml_file, "material", Severity::CRIT);
+        DLOGE("[MaterialFactory] Unable to open file:", "material");
+        DLOGI(xml_file, "material");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);
@@ -105,8 +105,8 @@ void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* mater
 #ifdef __DEBUG__
             if(material_descriptors_.find(H_(material_name.c_str())) != material_descriptors_.end())
             {
-                DLOGW("[MaterialFactory] Material redefinition or collision: ", "material", Severity::WARN);
-                DLOGI(material_name, "material", Severity::WARN);
+                DLOGW("[MaterialFactory] Material redefinition or collision: ", "material");
+                DLOGI(material_name, "material");
             }
 #endif
 
@@ -134,8 +134,8 @@ void MaterialFactory::retrieve_cubemap_descriptions(rapidxml::xml_node<>* cubema
 #ifdef __DEBUG__
             if(cubemap_descriptors_.find(resource_id) != cubemap_descriptors_.end())
             {
-                DLOGW("[MaterialFactory] Cubemap redefinition or collision: ", "material", Severity::WARN);
-                DLOGI(cubemap_name, "material", Severity::WARN);
+                DLOGW("[MaterialFactory] Cubemap redefinition or collision: ", "material");
+                DLOGI(cubemap_name, "material");
             }
 #endif
 
@@ -308,9 +308,9 @@ void MaterialFactory::parse_cubemap_descriptor(rapidxml::xml_node<>* node,
         std::string tex_name;
         if(!xml::parse_node(node, CubeMapFaces[ii].c_str(), tex_name))
         {
-            DLOGW("[MaterialFactory] Cubemap texture ill-declared:", "material", Severity::WARN);
-            DLOGI("Missing node <x>" + CubeMapFaces[ii] + "</x>", "material", Severity::WARN);
-            DLOGI("Descriptor will be incomplete.", "material", Severity::WARN);
+            DLOGW("[MaterialFactory] Cubemap texture ill-declared:", "material");
+            DLOGI("Missing node <x>" + CubeMapFaces[ii] + "</x>", "material");
+            DLOGI("Descriptor will be incomplete.", "material");
             return;
         }
         descriptor.locations.push_back(tex_name);

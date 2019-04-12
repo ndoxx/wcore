@@ -19,7 +19,7 @@ text_shader_(ShaderResource("text.vert;text.frag"))
 {
     if (FT_Init_FreeType(&ft_))
     {
-        DLOGF("[TextRenderer] Could not init FreeType Library.", "text", Severity::CRIT);
+        DLOGF("[TextRenderer] Could not init FreeType Library.", "text");
         fatal("Could not init FreeType Library.");
     }
 
@@ -63,15 +63,15 @@ void TextRenderer::load_face(const char* fontname,
     auto pstream = FILESYSTEM.get_file_as_stream(font_file.c_str(), "root.folders.font"_h, "pack0"_h);
     if(pstream == nullptr)
     {
-        DLOGE("[TextRenderer] Cannot get stream to file: ", "text", Severity::CRIT);
-        DLOGI(font_file, "text", Severity::CRIT);
+        DLOGE("[TextRenderer] Cannot get stream to file: ", "text");
+        DLOGI(font_file, "text");
         return;
     }
     std::vector<char> buffer((std::istreambuf_iterator<char>(*pstream)), std::istreambuf_iterator<char>());
     FT_Face face;
     if(FT_New_Memory_Face(ft_, reinterpret_cast<FT_Byte*>(&buffer[0]), buffer.size(), 0, &face))
     {
-        DLOGE("[TextRenderer] Failed to load font: <p>" + font_file + "</p>", "text", Severity::CRIT);
+        DLOGE("[TextRenderer] Failed to load font: <p>" + font_file + "</p>", "text");
         return;
     }
 
@@ -87,7 +87,7 @@ void TextRenderer::load_face(const char* fontname,
         // Load character glyph
         if (FT_Load_Char(face, cc, FT_LOAD_RENDER))
         {
-            DLOGW(std::string("[TextRenderer] Failed to load Glyph: \'") + std::to_string(cc) + "\'", "text", Severity::WARN);
+            DLOGW(std::string("[TextRenderer] Failed to load Glyph: \'") + std::to_string(cc) + "\'", "text");
             continue;
         }
         // Generate texture
@@ -131,8 +131,8 @@ void TextRenderer::load_face(const char* fontname,
     set_face(hname);
 
 #ifdef __DEBUG__
-    DLOGN("[TextRenderer] New face: <n>" + std::string(fontname) + "</n>", "text", Severity::LOW);
-    DLOGI("from file: <p>" + font_file + "</p>", "text", Severity::LOW);
+    DLOGN("[TextRenderer] New face: <n>" + std::string(fontname) + "</n>", "text");
+    DLOGI("from file: <p>" + font_file + "</p>", "text");
 #endif
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4); // Restore byte-alignment state

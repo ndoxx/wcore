@@ -42,8 +42,8 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
                                              int smooth_func)
 {
 #ifdef __DEBUG__
-    DLOGN("[ObjLoader] Loading obj file from stream.", "model", Severity::LOW);
-    //DLOGI("<p>" + std::string(objfile) + "</p>", "model", Severity::LOW);
+    DLOGN("[ObjLoader] Loading obj file from stream.", "model");
+    //DLOGI("<p>" + std::string(objfile) + "</p>", "model");
 #endif
 
     // Setup temporary variables
@@ -72,7 +72,7 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
             // Read first line and detect Blender exports
             if(!line_view.substr(0,9).compare("# Blender"))
             {
-                DLOGI("<h>Blender</h> export detected.", "model", Severity::LOW);
+                DLOGI("<h>Blender</h> export detected.", "model");
                 is_blender_export = true;
             }
             first_line = false;
@@ -168,8 +168,8 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
             }
             else
             {
-                DLOGE("Unrecognized sequence during face extraction: ", "model", Severity::CRIT);
-                DLOGI(line, "model", Severity::CRIT);
+                DLOGE("Unrecognized sequence during face extraction: ", "model");
+                DLOGI(line, "model");
                 return nullptr;
             }
 
@@ -206,10 +206,10 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
         }
     }
 
-    DLOGI("#triangles: <v>" + std::to_string(triangles.size()) + "</v>", "model", Severity::LOW);
-    DLOGI("#vertices:  <v>" + std::to_string(positions.size()) + "</v>", "model", Severity::LOW);
-    DLOGI("#normals:   <v>" + std::to_string(normals.size())   + "</v>", "model", Severity::LOW);
-    DLOGI("#UVs:       <v>" + std::to_string(uvs.size())       + "</v>", "model", Severity::LOW);
+    DLOGI("#triangles: <v>" + std::to_string(triangles.size()) + "</v>", "model");
+    DLOGI("#vertices:  <v>" + std::to_string(positions.size()) + "</v>", "model");
+    DLOGI("#normals:   <v>" + std::to_string(normals.size())   + "</v>", "model");
+    DLOGI("#UVs:       <v>" + std::to_string(uvs.size())       + "</v>", "model");
 
     // TODO Refactor this shyte
     if(!process_normals)
@@ -265,7 +265,7 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(const char* objfile,
     std::ifstream stream(objfile);
     if(!stream.is_open())
     {
-        DLOGE(std::string("Unable to open file: ") + objfile, "model", Severity::CRIT);
+        DLOGE(std::string("Unable to open file: ") + objfile, "model");
         return nullptr;
     }
 

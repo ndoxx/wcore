@@ -29,11 +29,11 @@ has_reference_(false)
 #endif
 {
     #ifdef __DEBUG__
-        DLOGN("[Model] New static model.", "model", Severity::DET);
+        DLOGN("[Model] New static model.", "model");
         std::stringstream ss;
         ss << "Mesh: n_indices=" << pmesh->get_ni() << " n_vertices="
            << pmesh->get_nv();
-        DLOGI(ss.str(), "model", Severity::DET);
+        DLOGI(ss.str(), "model");
     #endif
 }
 
@@ -51,13 +51,13 @@ void Model::set_material(Material* material)
 {
     delete pmaterial_;
     pmaterial_ = material;
-    DLOGN("[Model] Swapped material.", "model", Severity::LOW);
+    DLOGN("[Model] Swapped material.", "model");
 }
 
 void Model::set_mesh(std::shared_ptr<SurfaceMesh> pmesh)
 {
     pmesh_ = pmesh;
-    DLOGN("[Model] Swapped mesh.", "model", Severity::LOW);
+    DLOGN("[Model] Swapped mesh.", "model");
 }
 
 LineModel::LineModel(Mesh<Vertex3P>* pmesh, Material* material):
@@ -66,11 +66,11 @@ pmaterial_(material),
 trans_()
 {
     #ifdef __DEBUG__
-        DLOGN("[LineModel] New static line model.", "model", Severity::LOW);
+        DLOGN("[LineModel] New static line model.", "model");
         std::stringstream ss;
         ss << "Mesh: n_indices=" << pmesh->get_ni() << " n_vertices="
            << pmesh->get_nv();
-        DLOGI(ss.str(), "model", Severity::DET);
+        DLOGI(ss.str(), "model");
     #endif
 }
 

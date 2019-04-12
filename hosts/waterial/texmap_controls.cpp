@@ -478,7 +478,7 @@ void TexmapControlPane::handle_save_current_texture()
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
     {
-        DLOGN("Saving texture <n>" + texname.toStdString() + "</n>", "waterial", Severity::LOW);
+        DLOGN("Saving texture <n>" + texname.toStdString() + "</n>", "waterial");
 
         TextureEntry& entry = editor_model_->get_current_texture_entry();
         entry.name = texname;
@@ -573,8 +573,8 @@ void TexmapControlPane::handle_tweak_finished(int result)
     if(result == QDialog::Accepted)
     {
         const QString& tweak_path = tweaks_dialog_->get_output_image_path();
-        DLOGN("Saved generated <h>tweak</h> :", "waterial", Severity::LOW);
-        DLOGI("<p>" + tweak_path.toStdString() + "</p>", "waterial", Severity::LOW);
+        DLOGN("Saved generated <h>tweak</h> :", "waterial");
+        DLOGI("<p>" + tweak_path.toStdString() + "</p>", "waterial");
         texmap_controls_[ALBEDO]->set_tweak(tweak_path);
         update_current_entry();
     }
@@ -586,8 +586,8 @@ void TexmapControlPane::handle_ao_finished(int result)
     if(result == QDialog::Accepted)
     {
         const QString& source_path = ao_gen_dialog_->get_output_image_path();
-        DLOGN("Saved generated <h>AO</h> map:", "waterial", Severity::LOW);
-        DLOGI("<p>" + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
+        DLOGN("Saved generated <h>AO</h> map:", "waterial");
+        DLOGI("<p>" + source_path.toStdString() + "</p>", "waterial");
         texmap_controls_[AO]->set_source(source_path);
         update_current_entry();
     }
@@ -599,8 +599,8 @@ void TexmapControlPane::handle_normal_finished(int result)
     if(result == QDialog::Accepted)
     {
         const QString& source_path = normal_gen_dialog_->get_output_image_path();
-        DLOGN("Saved generated <h>normal</h> map:", "waterial", Severity::LOW);
-        DLOGI("<p>" + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
+        DLOGN("Saved generated <h>normal</h> map:", "waterial");
+        DLOGI("<p>" + source_path.toStdString() + "</p>", "waterial");
         texmap_controls_[NORMAL]->set_source(source_path);
         update_current_entry();
     }

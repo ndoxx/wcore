@@ -56,10 +56,11 @@ enum class LogMode : std::uint8_t
 
 enum Severity : std::uint32_t
 {
-    DET  = 0, // Detail
-    LOW  = 1, // Informative stuff
-    WARN = 2, // Warning (can recover)
-    CRIT = 3  // Critical (error and fatal error)
+    DET    = 0, // Detail
+    LOW    = 1, // Informative stuff
+    WARN   = 2, // Warning (can recover)
+    CRIT   = 3, // Critical (error and fatal error)
+    REPEAT = 4  // Repeat last severity
 };
 
 // Holds a log message together with type and timestamp
@@ -135,6 +136,7 @@ private:
     bool backtrace_on_error_;
     LogMessage::TimePoint start_time_; // Start time for timestamp handling
     uint32_t last_section_size_;       // Size of last section message
+    Severity last_severity_;
 
     std::vector<LogMessage> messages_;         // List of logged messages
     std::map<hash_t, LogChannel> channels_; // Map of debugging channels
@@ -281,29 +283,29 @@ namespace dbg
     #define DLOGR(MESSAGE, CHANNEL, SEVERITY) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::RAW,     LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
-    #define DLOGI(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::ITEM,    LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
+    #define DLOGI(MESSAGE, CHANNEL) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::ITEM,    LogMode::CANONICAL, Severity::REPEAT, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGT(MESSAGE, CHANNEL, SEVERITY) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::TRACK,   LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
         } while(0)
-    #define DLOGN(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::NOTIFY,  LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
+    #define DLOGN(MESSAGE, CHANNEL) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::NOTIFY,  LogMode::CANONICAL, Severity::LOW, H_( CHANNEL ) ); \
         } while(0)
-    #define DLOGW(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::WARNING, LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
+    #define DLOGW(MESSAGE, CHANNEL) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, H_( CHANNEL ) ); \
         } while(0)
-    #define DLOGE(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::ERROR,   LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
+    #define DLOGE(MESSAGE, CHANNEL) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::ERROR,   LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ) ); \
         } while(0)
-    #define DLOGF(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::FATAL,   LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
+    #define DLOGF(MESSAGE, CHANNEL) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::FATAL,   LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ) ); \
         } while(0)
-    #define DLOGG(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::GOOD,    LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
+    #define DLOGG(MESSAGE, CHANNEL) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::GOOD,    LogMode::CANONICAL, Severity::LOW, H_( CHANNEL ) ); \
         } while(0)
-    #define DLOGB(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::BAD,     LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
+    #define DLOGB(MESSAGE, CHANNEL) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::BAD,     LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGS(MESSAGE, CHANNEL, SEVERITY) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::SECTION, LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \

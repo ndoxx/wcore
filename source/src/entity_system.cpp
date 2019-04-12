@@ -28,7 +28,7 @@ void EntitySystem::init_self()
     s_game_object_factory = locate<GameObjectFactory>("GameObjectFactory"_h);
     s_scene               = locate<Scene>("Scene"_h);
 
-    DLOGN("Registering component factories.", "entity", Severity::LOW);
+    DLOGN("Registering component factories.", "entity");
     // Register component factory methods in entity factory
     s_game_object_factory->register_component_factory("SoundEmitter"_h, [&](WEntity& target, rapidxml::xml_node<>* cmp_node)
     {

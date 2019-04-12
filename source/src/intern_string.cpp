@@ -26,9 +26,9 @@ void InternStringLocator::init()
     auto pstream = FILESYSTEM.get_file_as_stream("dbg_intern_strings.xml", "root.folders.config"_h, "pack0"_h);
     if(pstream == nullptr)
     {
-        DLOGE("[InternStringLocator] Cannot find intern string hash table file.", "core", Severity::WARN);
-        DLOGI("<p>config/dbg_intern_strings.xml</p>", "core", Severity::WARN);
-        DLOGI("Run the \"internstr\" utility.", "core", Severity::WARN);
+        DLOGE("[InternStringLocator] Cannot find intern string hash table file.", "core");
+        DLOGI("<p>config/dbg_intern_strings.xml</p>", "core");
+        DLOGI("Run the \"internstr\" utility.", "core");
         return;
     }
     xml_parser_->load_file_xml(*pstream);

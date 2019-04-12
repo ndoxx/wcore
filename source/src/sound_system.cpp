@@ -59,9 +59,9 @@ static fs::path get_sound_path(const SoundSystem::SoundDescriptor& desc)
     {
         if(result != FMOD_OK)
         {
-            DLOGE("[SoundSystem] FMOD error " + std::to_string(result) + ":", "sound", Severity::CRIT);
-            DLOGI("file: " + std::string(file) + " line " + std::to_string(line), "sound", Severity::CRIT);
-            DLOGI(FMOD_ErrorString(result), "sound", Severity::CRIT);
+            DLOGE("[SoundSystem] FMOD error " + std::to_string(result) + ":", "sound");
+            DLOGI("file: " + std::string(file) + " line " + std::to_string(line), "sound");
+            DLOGI(FMOD_ErrorString(result), "sound");
         }
     }
     #define ERRCHECK( result ) ERRCHECK_fn( result, __FILE__, __LINE__ )
@@ -181,8 +181,8 @@ void SoundSystem::SoundEngineImpl::Channel::update(float dt, const math::vec3& c
     {
         case State::INITIALIZING:
         {
-            DLOGN("New sound channel.", "sound", Severity::LOW);
-            DLOGI("sound id: " + std::to_string(sound_id) + " -> <n>" + HRESOLVE(sound_id) + "</n>", "sound", Severity::LOW);
+            DLOGN("New sound channel.", "sound");
+            DLOGI("sound id: " + std::to_string(sound_id) + " -> <n>" + HRESOLVE(sound_id) + "</n>", "sound");
             // Any randomization/adjustment of pitch/volume... goes here
             state = State::LOADING;
             [[fallthrough]];
@@ -285,7 +285,7 @@ void SoundSystem::SoundEngineImpl::Channel::load_sound()
 {
     fs::path filepath = get_sound_path(descriptor);
 
-    DLOGI("load: <p>" + filepath.string() + "</p>", "sound", Severity::LOW);
+    DLOGI("load: <p>" + filepath.string() + "</p>", "sound");
 
     FMOD::Sound* out_sound = nullptr;
     FMOD_MODE mode = FMOD_DEFAULT;
@@ -307,19 +307,19 @@ bool SoundSystem::SoundEngineImpl::Channel::prepare_play()
         #ifdef __DEBUG__
             std::stringstream ss;
             ss << "streamed: " << (descriptor.stream?"true":"false");
-            DLOGI(ss.str(), "sound", Severity::DET);
+            DLOGI(ss.str(), "sound");
             ss.str("");
 
             ss << "position: " << position;
-            DLOGI(ss.str(), "sound", Severity::DET);
+            DLOGI(ss.str(), "sound");
             ss.str("");
 
             ss << "velocity: " << velocity;
-            DLOGI(ss.str(), "sound", Severity::DET);
+            DLOGI(ss.str(), "sound");
             ss.str("");
 
             ss << "volume: " << volume_dB << "dB";
-            DLOGI(ss.str(), "sound", Severity::DET);
+            DLOGI(ss.str(), "sound");
             ss.str("");
         #endif
 
@@ -364,28 +364,28 @@ mute_(false),
 last_campos_(0.f)
 {
     DLOGS("[SoundSystem] Initializing.", "sound", Severity::LOW);
-    DLOGN("Retrieving config data.", "sound", Severity::LOW);
+    DLOGN("Retrieving config data.", "sound");
 
     // * Retrieve config data
     // Mandatory stuff
     if(!CONFIG.get("root.folders.soundfx"_h, SOUND_FX_PATH))
     {
-        DLOGE("[SoundSystem] Cannot find config path 'soundfx'.", "sound", Severity::CRIT);
+        DLOGE("[SoundSystem] Cannot find config path 'soundfx'.", "sound");
         fatal();
     }
     if(!CONFIG.get("root.folders.soundbgm"_h, SOUND_BGM_PATH))
     {
-        DLOGE("[SoundSystem] Cannot find config path 'soundbgm'.", "sound", Severity::CRIT);
+        DLOGE("[SoundSystem] Cannot find config path 'soundbgm'.", "sound");
         fatal();
     }
     if(!fs::exists(SOUND_FX_PATH))
     {
-        DLOGE("[SoundSystem] Cannot find 'soundfx' folder.", "sound", Severity::CRIT);
+        DLOGE("[SoundSystem] Cannot find 'soundfx' folder.", "sound");
         fatal();
     }
     if(!fs::exists(SOUND_BGM_PATH))
     {
-        DLOGE("[SoundSystem] Cannot find 'soundbgm' folder.", "sound", Severity::CRIT);
+        DLOGE("[SoundSystem] Cannot find 'soundbgm' folder.", "sound");
         fatal();
     }
 
@@ -399,7 +399,7 @@ last_campos_(0.f)
     vol_master_ = math::clamp(vol_master_, 0.f, 100.f);
 
     // * Initialize FMOD
-    DLOGN("Initializing FMOD.", "sound", Severity::LOW);
+    DLOGN("Initializing FMOD.", "sound");
     void* extradriverdata = nullptr;
     unsigned int version;
     ERRCHECK(FMOD::System_Create(&pimpl_->fmodsys));
@@ -458,8 +458,8 @@ void SoundSystem::parse_asset_file(const char* xmlfile)
     auto pstream = FILESYSTEM.get_file_as_stream(xmlfile, "root.folders.level"_h, "pack0"_h);
     if(pstream == nullptr)
     {
-        DLOGE("[SoundSystem] Unable to open file:", "sound", Severity::CRIT);
-        DLOGI(xmlfile, "sound", Severity::CRIT);
+        DLOGE("[SoundSystem] Unable to open file:", "sound");
+        DLOGI(xmlfile, "sound");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);
@@ -597,8 +597,8 @@ void SoundSystem::register_sound(const SoundDescriptor& descriptor, hash_t name)
     fs::path filepath = get_sound_path(descriptor);
     if(!fs::exists(filepath))
     {
-        DLOGE("[SoundSystem] Cannot find sound fx: ", "sound", Severity::CRIT);
-        DLOGI(filepath.string(), "sound", Severity::CRIT);
+        DLOGE("[SoundSystem] Cannot find sound fx: ", "sound");
+        DLOGI(filepath.string(), "sound");
         return;
     }
 
@@ -607,14 +607,14 @@ void SoundSystem::register_sound(const SoundDescriptor& descriptor, hash_t name)
 
     if(descriptors_.find(name) != descriptors_.end())
     {
-        DLOGE("[SoundSystem] Already loaded descriptor (or possible collision): ", "sound", Severity::WARN);
-        DLOGI(filepath.string(), "sound", Severity::WARN);
-        DLOGI("Skipping.", "sound", Severity::WARN);
+        DLOGE("[SoundSystem] Already loaded descriptor (or possible collision): ", "sound");
+        DLOGI(filepath.string(), "sound");
+        DLOGI("Skipping.", "sound");
         return;
     }
 
-    DLOGN("[SoundSystem] Loading descriptor: ", "sound", Severity::LOW);
-    DLOGI("<p>" + filepath.string() + "</p>", "sound", Severity::LOW);
+    DLOGN("[SoundSystem] Loading descriptor: ", "sound");
+    DLOGI("<p>" + filepath.string() + "</p>", "sound");
 
     descriptors_.insert(std::pair(name, descriptor));
     // Multiply min_dist & max_dist by distance_factor here if needed
@@ -625,17 +625,17 @@ bool SoundSystem::load_sound(hash_t name)
     auto it = descriptors_.find(name);
     if(it == descriptors_.end())
     {
-        DLOGE("[SoundSystem] Cannot find sound descriptor: ", "sound", Severity::WARN);
-        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "sound", Severity::WARN);
-        DLOGI("Skipping.", "sound", Severity::WARN);
+        DLOGE("[SoundSystem] Cannot find sound descriptor: ", "sound");
+        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "sound");
+        DLOGI("Skipping.", "sound");
         return false;
     }
 
     auto& desc = it->second;
     fs::path filepath = get_sound_path(desc);
 
-    DLOGN("[SoundSystem] Loading sound: ", "sound", Severity::LOW);
-    DLOGI(filepath.string(), "sound", Severity::LOW);
+    DLOGN("[SoundSystem] Loading sound: ", "sound");
+    DLOGI(filepath.string(), "sound");
 
     FMOD::Sound* out_sound = nullptr;
     FMOD_MODE mode = FMOD_DEFAULT;
@@ -655,8 +655,8 @@ bool SoundSystem::unload_sound(hash_t name)
     auto it = pimpl_->sounds.find(name);
     if(it == pimpl_->sounds.end())
     {
-        DLOGE("[SoundSystem] Cannot unload unknown sounds: ", "sound", Severity::WARN);
-        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "sound", Severity::WARN);
+        DLOGE("[SoundSystem] Cannot unload unknown sounds: ", "sound");
+        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "sound");
         return false;
     }
     pimpl_->sounds.erase(it);
@@ -671,7 +671,7 @@ int SoundSystem::play_sound(hash_t name,
 {
     if(mute_) return 0;
 
-    DLOGN("Playing sound: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::LOW);
+    DLOGN("Playing sound: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound");
 
     int channel_id = pimpl_->next_channel_id++;
     auto it = descriptors_.find(name);
@@ -687,12 +687,12 @@ int SoundSystem::play_sound(hash_t name,
             volume_dB,
             dist_filter
         );
-        DLOGI("Channel id: <v>" + std::to_string(channel_id) + "</v>", "sound", Severity::DET);
+        DLOGI("Channel id: <v>" + std::to_string(channel_id) + "</v>", "sound");
     }
     else
     {
-        DLOGW("Unable to find sound: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::WARN);
-        DLOGI("Skipping.", "sound", Severity::WARN);
+        DLOGW("Unable to find sound: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound");
+        DLOGI("Skipping.", "sound");
     }
     return channel_id;
 }
@@ -701,7 +701,7 @@ int SoundSystem::play_bgm(hash_t name, float volume_dB)
 {
     if(mute_) return 0;
 
-    DLOGN("Playing background music: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::LOW);
+    DLOGN("Playing background music: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound");
 
     int channel_id = pimpl_->next_channel_id++;
     auto it = descriptors_.find(name);
@@ -716,12 +716,12 @@ int SoundSystem::play_bgm(hash_t name, float volume_dB)
             math::vec3(0),
             volume_dB
         );
-        DLOGI("Channel id: <v>" + std::to_string(channel_id) + "</v>", "sound", Severity::DET);
+        DLOGI("Channel id: <v>" + std::to_string(channel_id) + "</v>", "sound");
     }
     else
     {
-        DLOGW("Unable to find background music: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound", Severity::WARN);
-        DLOGI("Skipping.", "sound", Severity::WARN);
+        DLOGW("Unable to find background music: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "sound");
+        DLOGI("Skipping.", "sound");
     }
     return channel_id;
 }

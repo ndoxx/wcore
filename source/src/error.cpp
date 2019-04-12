@@ -23,9 +23,9 @@ void show_driver_error(const char* line)
     ss << line << ": " << std::to_string(error);
 
     if(error)
-        DLOGB(ss.str(), "core", Severity::CRIT);
+        DLOGB(ss.str(), "core");
     else
-        DLOGG(ss.str(), "core", Severity::LOW);
+        DLOGG(ss.str(), "core");
 }
 
 

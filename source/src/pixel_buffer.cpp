@@ -53,15 +53,15 @@ void PixelBuffer::debug_display()
     std::stringstream stream;
     stream << "WxH= " << width_ << "x" << height_
            << " -> aspect ratio= " << aspect_ratio_;
-    DLOGI(stream.str(), "texture", Severity::DET);
+    DLOGI(stream.str(), "texture");
     stream.str("");
 
     stream << channels_ << " color channels, bitdepth= " << bit_depth_;
-    DLOGI(stream.str(), "texture", Severity::DET);
+    DLOGI(stream.str(), "texture");
     stream.str("");
 
     stream << "stride= " << stride_ << ", total size= " << size_/1024.0f << "kB";
-    DLOGI(stream.str(), "texture", Severity::DET);
+    DLOGI(stream.str(), "texture");
     stream.str("");
 
     stream << "first 10 bytes: [";
@@ -71,7 +71,7 @@ void PixelBuffer::debug_display()
         stream << " ";
     }
     stream << "...]" << std::dec;
-    DLOGI(stream.str(), "texture", Severity::DET);
+    DLOGI(stream.str(), "texture");
     stream.str("");
 }
 #endif

@@ -29,8 +29,8 @@ void InputHandler::import_key_bindings()
     auto pstream = FILESYSTEM.get_file_as_stream(keybindingsfile, "root.folders.config"_h, "pack0"_h);
     if(pstream == nullptr)
     {
-        DLOGE("[InputHandler] Unable to open file:", "input", Severity::CRIT);
-        DLOGI(keybindingsfile, "input", Severity::CRIT);
+        DLOGE("[InputHandler] Unable to open file:", "input");
+        DLOGI(keybindingsfile, "input");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);
@@ -40,7 +40,7 @@ void InputHandler::import_key_bindings()
     {
         std::string category;
         xml::parse_attribute(cat, "name", category);
-        DLOGI("Parsing category: <x>" + category + "</x>", "input", Severity::LOW);
+        DLOGI("Parsing category: <x>" + category + "</x>", "input");
 
         for (xml_node<>* kb=cat->first_node("KB");
              kb; kb=kb->next_sibling("KB"))
@@ -60,8 +60,8 @@ void InputHandler::import_key_bindings()
             auto it = keymap::NAMES.find(H_(str_key.c_str()));
             if(it == keymap::NAMES.end())
             {
-                DLOGW("[InputHandler] Unknown key name:", "input", Severity::WARN);
-                DLOGI(str_key, "input", Severity::WARN);
+                DLOGW("[InputHandler] Unknown key name:", "input");
+                DLOGI(str_key, "input");
                 continue;
             }
             key = it->second;
@@ -113,7 +113,7 @@ void InputHandler::set_key_binding(hash_t name,
         std::stringstream ss;
         ss << "[InputHandler] Ignoring duplicate key binding:"
            << "<n>" << name << "</n>";
-        DLOGW(ss.str(), "input", Severity::WARN);
+        DLOGW(ss.str(), "input");
 #endif
         return;
     }

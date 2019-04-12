@@ -66,27 +66,27 @@ void TextureMap::debug_display()
 }
 void AlbedoMap::debug_display()
 {
-    if(has_image) DLOGI("albedo: <p>"    + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("albedo: <p>"    + source_path.toStdString() + "</p>", "waterial");
 }
 void RoughnessMap::debug_display()
 {
-    if(has_image) DLOGI("roughness: <p>" + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("roughness: <p>" + source_path.toStdString() + "</p>", "waterial");
 }
 void MetallicMap::debug_display()
 {
-    if(has_image) DLOGI("metallic: <p>"  + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("metallic: <p>"  + source_path.toStdString() + "</p>", "waterial");
 }
 void AOMap::debug_display()
 {
-    if(has_image) DLOGI("ao: <p>"        + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("ao: <p>"        + source_path.toStdString() + "</p>", "waterial");
 }
 void DepthMap::debug_display()
 {
-    if(has_image) DLOGI("depth: <p>"     + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("depth: <p>"     + source_path.toStdString() + "</p>", "waterial");
 }
 void NormalMap::debug_display()
 {
-    if(has_image) DLOGI("normal: <p>"    + source_path.toStdString() + "</p>", "waterial", Severity::LOW);
+    if(has_image) DLOGI("normal: <p>"    + source_path.toStdString() + "</p>", "waterial");
 }
 void TextureEntry::debug_display()
 {
@@ -390,15 +390,15 @@ void EditorModel::set_output_folder(const QString& path)
     output_folder_ = QDir(path);
     if(!output_folder_.exists())
     {
-        DLOGE("Output texture folder does not exist:", "waterial", Severity::CRIT);
-        DLOGI(path.toStdString(), "waterial", Severity::CRIT);
+        DLOGE("Output texture folder does not exist:", "waterial");
+        DLOGI(path.toStdString(), "waterial");
     }
 }
 
 void EditorModel::set_current_texture_name(const QString& name)
 {
     current_texname_ = name;
-    DLOGN("Working on texture <n>" + current_texname_.toStdString() + "</n>", "waterial", Severity::LOW);
+    DLOGN("Working on texture <n>" + current_texname_.toStdString() + "</n>", "waterial");
 }
 
 void EditorModel::setup_list_model(QListView* listview)
@@ -479,14 +479,14 @@ void EditorModel::rename_texture(const QString& old_name, const QString& new_nam
 
 void EditorModel::compile(const QString& texname)
 {
-    DLOGN("Compiling texture <n>" + texname.toStdString() + "</n>", "waterial", Severity::LOW);
+    DLOGN("Compiling texture <n>" + texname.toStdString() + "</n>", "waterial");
 
     hash_t hname = H_(texname.toUtf8().constData());
     TextureEntry& entry = get_texture_entry(hname);
 
     if(entry.width && entry.height)
     {
-        DLOGI("Size: WxH= <v>" + std::to_string(entry.width) + "x" + std::to_string(entry.height) + "</v>", "waterial", Severity::LOW);
+        DLOGI("Size: WxH= <v>" + std::to_string(entry.width) + "x" + std::to_string(entry.height) + "</v>", "waterial");
 
         QImage block0(entry.width, entry.height, QImage::Format_RGBA8888);
         QImage block1(entry.width, entry.height, QImage::Format_RGBA8888);
@@ -546,9 +546,9 @@ void EditorModel::compile(const QString& texname)
         QString block1_name = texname + "_block1.png";
         QString block2_name = texname + "_block2.png";
 
-        DLOGI("block0: <p>" + block0_name.toStdString() + "</p>", "waterial", Severity::LOW);
-        DLOGI("block1: <p>" + block1_name.toStdString() + "</p>", "waterial", Severity::LOW);
-        DLOGI("block2: <p>" + block2_name.toStdString() + "</p>", "waterial", Severity::LOW);
+        DLOGI("block0: <p>" + block0_name.toStdString() + "</p>", "waterial");
+        DLOGI("block1: <p>" + block1_name.toStdString() + "</p>", "waterial");
+        DLOGI("block2: <p>" + block2_name.toStdString() + "</p>", "waterial");
 
         block0.save(output_folder_.filePath(block0_name));
         block1.save(output_folder_.filePath(block1_name));
@@ -571,8 +571,8 @@ void EditorModel::set_project_folder(const QString& path)
     project_folder_ = QDir(path);
     if(!project_folder_.exists())
     {
-        DLOGE("Project folder does not exist:", "waterial", Severity::CRIT);
-        DLOGI(path.toStdString(), "waterial", Severity::CRIT);
+        DLOGE("Project folder does not exist:", "waterial");
+        DLOGI(path.toStdString(), "waterial");
     }
 }
 
@@ -587,14 +587,14 @@ void EditorModel::new_project(const QString& project_name)
         // Else, unnamed project became named
 
         current_project_ = project_name;
-        DLOGN("New project: <n>" + project_name.toStdString() + "</n>", "waterial", Severity::LOW);
+        DLOGN("New project: <n>" + project_name.toStdString() + "</n>", "waterial");
     }
 }
 
 void EditorModel::open_project(const QString& infile)
 {
-    DLOGN("Opening project:", "waterial", Severity::LOW);
-    DLOGI("<p>" + infile.toStdString() + "</p>", "waterial", Severity::LOW);
+    DLOGN("Opening project:", "waterial");
+    DLOGI("<p>" + infile.toStdString() + "</p>", "waterial");
 
     // * Open and parse project file
     std::ifstream ifs(infile.toStdString());
@@ -626,7 +626,7 @@ void EditorModel::save_project_as(const QString& project_name)
 {
     if(!project_name.isEmpty())
     {
-        DLOGN("Saving project: <n>" + project_name.toStdString() + "</n>", "waterial", Severity::LOW);
+        DLOGN("Saving project: <n>" + project_name.toStdString() + "</n>", "waterial");
         QString filepath = project_path_from_name(project_name);
 
         // * Generate XML output from descriptors and write to file
@@ -669,7 +669,7 @@ void EditorModel::save_project_as(const QString& project_name)
 void EditorModel::close_project()
 {
     save_project();
-    DLOGN("Closing project: <n>" + current_project_.toStdString() + "</n>", "waterial", Severity::LOW);
+    DLOGN("Closing project: <n>" + current_project_.toStdString() + "</n>", "waterial");
     clear();
 }
 
@@ -695,8 +695,8 @@ bool EditorModel::validate_project_name(const QString& name)
 
     if(!ret)
     {
-        DLOGW("Invalid project name.", "waterial", Severity::WARN);
-        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores are allowed.", "waterial", Severity::WARN);
+        DLOGW("Invalid project name.", "waterial");
+        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores allowed.", "waterial");
     }
 
     return ret;

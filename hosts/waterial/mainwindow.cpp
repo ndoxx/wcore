@@ -54,8 +54,8 @@ static bool validate_texture_name(const QString& name)
 
     if(!ret)
     {
-        DLOGW("Invalid texture name.", "waterial", Severity::WARN);
-        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores are allowed.", "waterial", Severity::WARN);
+        DLOGW("Invalid texture name.", "waterial");
+        DLOGI("<h>Rules</h>: alphanumeric, no space, underscores allowed.", "waterial");
     }
 
     return ret;
@@ -101,8 +101,8 @@ file_dialog_(new QFileDialog(this))
         config_folder_ = QDir(QString::fromStdString(conf_path.string()));
     else
     {
-        DLOGW("Unable to locate config directory.", "waterial", Severity::WARN);
-        DLOGI("Using current directory to store configuration", "waterial", Severity::WARN);
+        DLOGW("Unable to locate config directory.", "waterial");
+        DLOGI("Using current directory to store configuration", "waterial");
         config_folder_ = QDir::currentPath();
     }
 
@@ -170,14 +170,14 @@ file_dialog_(new QFileDialog(this))
     QString work_path_qstr;
     if(!CONFIG.get<fs::path>("root.folders.texwork"_h, work_path))
     {
-        DLOGW("Unable to read root.folders.texwork node in config.", "waterial", Severity::WARN);
-        DLOGI("Using current directory instead.", "waterial", Severity::WARN);
+        DLOGW("Unable to read root.folders.texwork node in config.", "waterial");
+        DLOGI("Using current directory instead.", "waterial");
         work_path_qstr = QDir::currentPath();
     }
     else
     {
-        DLOGN("Detected texture work directory:", "waterial", Severity::LOW);
-        DLOGI("<p>" + work_path.string() + "</p>", "waterial", Severity::LOW);
+        DLOGN("Detected texture work directory:", "waterial");
+        DLOGI("<p>" + work_path.string() + "</p>", "waterial");
         work_path_qstr = QString::fromStdString(work_path.string());
     }
     editor_model_->set_project_folder(work_path_qstr);
@@ -191,14 +191,14 @@ file_dialog_(new QFileDialog(this))
     fs::path tex_path;
     if(!CONFIG.get<fs::path>("root.folders.texture"_h, tex_path))
     {
-        DLOGW("Unable to read root.folders.texture node in config.", "waterial", Severity::WARN);
-        DLOGI("Using current directory instead.", "waterial", Severity::WARN);
+        DLOGW("Unable to read root.folders.texture node in config.", "waterial");
+        DLOGI("Using current directory instead.", "waterial");
         editor_model_->set_output_folder(QDir::currentPath());
     }
     else
     {
-        DLOGN("Detected texture output directory:", "waterial", Severity::LOW);
-        DLOGI("<p>" + tex_path.string() + "</p>", "waterial", Severity::LOW);
+        DLOGN("Detected texture output directory:", "waterial");
+        DLOGI("<p>" + tex_path.string() + "</p>", "waterial");
         editor_model_->set_output_folder(QString::fromStdString(tex_path.string()));
     }
 
@@ -276,7 +276,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     handle_close_project();
 
     // Save settings before closing
-    DLOGN("Saving settings.", "waterial", Severity::LOW);
+    DLOGN("Saving settings.", "waterial");
     WSettings settings(config_folder_);
     settings.setValue("window/geometry", saveGeometry());
     settings.setValue("window/windowState", saveState());
@@ -490,14 +490,14 @@ void MainWindow::handle_new_texture()
     // First, check that no texture of the same name exists already
     if(editor_model_->has_entry(H_(newtex_name.toUtf8().constData())))
     {
-        DLOGW("Texture <n>" + newtex_name.toStdString() + "</n> already exists.", "waterial", Severity::WARN);
+        DLOGW("Texture <n>" + newtex_name.toStdString() + "</n> already exists.", "waterial");
         return;
     }
 
     // If name is valid, add texture to editor model
     if(validate_texture_name(newtex_name))
     {
-        DLOGN("New texture: <n>" + newtex_name.toStdString() + "</n>", "waterial", Severity::LOW);
+        DLOGN("New texture: <n>" + newtex_name.toStdString() + "</n>", "waterial");
         QModelIndex index = editor_model_->add_texture(newtex_name);
         // Select newly created item in list view
         if(index.isValid())
@@ -515,7 +515,7 @@ void MainWindow::handle_delete_current_texture()
     const QString& texname = editor_model_->get_current_texture_name();
     if(!texname.isEmpty())
     {
-        DLOGN("Deleting texture <n>" + texname.toStdString() + "</n>", "waterial", Severity::LOW);
+        DLOGN("Deleting texture <n>" + texname.toStdString() + "</n>", "waterial");
         // Remove from editor model
         editor_model_->delete_current_texture(tex_list_);
         if(editor_model_->get_num_entries() == 0)
@@ -601,7 +601,7 @@ void MainWindow::handle_compile_all()
     // First, save texture to editor model
     texmap_pane_->handle_save_current_texture();
 
-    DLOGN("Compiling <h>all</h> textures.", "waterial", Severity::LOW);
+    DLOGN("Compiling <h>all</h> textures.", "waterial");
     QProgressDialog progress(this);
     progress.setRange(0, editor_model_->get_num_entries());
     progress.setModal(true);

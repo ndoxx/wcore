@@ -27,12 +27,12 @@ static fs::path get_selfpath()
     }
     else
     {
-        DLOGE("Cannot read self path using readlink.", "core", Severity::CRIT);
+        DLOGE("Cannot read self path using readlink.", "core");
         return fs::path();
     }
 #elif _WIN32
 
-    DLOGE("get_selfpath() not yet implemented.", "core", Severity::CRIT);
+    DLOGE("get_selfpath() not yet implemented.", "core");
     return fs::path();
 
 #endif
@@ -48,19 +48,19 @@ void Config::init()
     // Deduce path to root directory
     set_root_directory(self_path_.parent_path().parent_path());
 
-    DLOGI("Self path: <p>" + self_path_.string() + "</p>", "core", Severity::LOW);
-    DLOGI("Root path: <p>" + root_path_.string() + "</p>", "core", Severity::LOW);
+    DLOGI("Self path: <p>" + self_path_.string() + "</p>", "core");
+    DLOGI("Root path: <p>" + root_path_.string() + "</p>", "core");
 
     // Deduce path to config folder
     conf_path_ = root_path_ / "config";
     if(!fs::exists(conf_path_))
     {
-        DLOGE("[Config] Missing 'config' folder in root directory.", "core", Severity::CRIT);
+        DLOGE("[Config] Missing 'config' folder in root directory.", "core");
         return;
     }
-    DLOGI("Config path: <p>" + conf_path_.string() + "</p>", "core", Severity::LOW);
+    DLOGI("Config path: <p>" + conf_path_.string() + "</p>", "core");
 
-    DLOGN("[Config] Parsing xml configuration file.", "core", Severity::LOW);
+    DLOGN("[Config] Parsing xml configuration file.", "core");
     parse_xml_file(conf_path_ / "config.xml");
 
 #ifdef __DEBUG__

@@ -157,10 +157,10 @@ void Texture::register_named_texture(hash_t name, pTexture ptex)
         std::stringstream ss;
         ss << "[Texture] Registering new named texture: "
            << "<n>" << HRESOLVE(name) << "</n>";
-        DLOGN(ss.str(), "texture", Severity::DET);
-        DLOGI("width:  <v>" + std::to_string(ptex->get_width()) + "</v>", "texture", Severity::DET);
-        DLOGI("height: <v>" + std::to_string(ptex->get_height()) + "</v>", "texture", Severity::DET);
-        DLOGI("units:  <v>" + std::to_string(ptex->get_num_textures()) + "</v>", "texture", Severity::DET);
+        DLOGN(ss.str(), "texture");
+        DLOGI("width:  <v>" + std::to_string(ptex->get_width()) + "</v>", "texture");
+        DLOGI("height: <v>" + std::to_string(ptex->get_height()) + "</v>", "texture");
+        DLOGI("units:  <v>" + std::to_string(ptex->get_num_textures()) + "</v>", "texture");
 
     }
     #endif
@@ -174,7 +174,7 @@ void Texture::register_named_texture(hash_t name, pTexture ptex)
         #if __DEBUG__
             std::stringstream ss;
             ss << "[Texture] Ignored duplicate named texture registration for: <n>" << name << "</n>";
-            DLOGW(ss.str(), "texture", Severity::WARN);
+            DLOGW(ss.str(), "texture");
         #endif
     }
 }
@@ -186,7 +186,7 @@ Texture::wpTexture Texture::get_named_texture(hash_t name)
     {
         std::stringstream ss;
         ss << "[Texture] Couldn't find named texture: <n>" << name << "</n>";
-        DLOGF(ss.str(), "texture", Severity::CRIT);
+        DLOGF(ss.str(), "texture");
         fatal("Couldn't find named texture.");
         return wpTexture(); // Never gets here
     }
@@ -238,7 +238,7 @@ ID_(++Ninst)
         {
             data[ii] = px_bufs[ii]->get_data_pointer();
             #if __DEBUG__
-                DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
+                DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture");
                 if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
                     px_bufs[ii]->debug_display();
                     //std::cout << *px_bufs[ii] << std::endl;
@@ -246,7 +246,7 @@ ID_(++Ninst)
         }
         else
         {
-            DLOGF("[Texture] Unable to load Texture.", "texture", Severity::CRIT);
+            DLOGF("[Texture] Unable to load Texture.", "texture");
             for (uint32_t jj=0; jj<=ii; ++jj)
                 if(px_bufs[jj])
                     delete px_bufs[jj];
@@ -321,14 +321,14 @@ ID_(++Ninst)
 {
     if(!stream.good())
     {
-        DLOGE("[Texture] Failed to create texture from stream: stream is bad.", "texture", Severity::CRIT);
+        DLOGE("[Texture] Failed to create texture from stream: stream is bad.", "texture");
         return;
     }
 
     PixelBuffer* px_buf = png_loader_.load_png(stream);
 
 #if __DEBUG__
-    DLOGN("[PixelBuffer]", "texture", Severity::DET);
+    DLOGN("[PixelBuffer]", "texture");
     if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
         px_buf->debug_display();
 #endif
@@ -497,7 +497,7 @@ units_(descriptor.units)
     {
         std::stringstream ss;
         ss << "[Texture] New texture from asset: <n>" << HRESOLVE(resourceID_) << "</n>";
-        DLOGN(ss.str(), "texture", Severity::DET);
+        DLOGN(ss.str(), "texture");
     }
     #endif
 
@@ -521,7 +521,7 @@ units_(descriptor.units)
                     std::stringstream ss;
                     ss << "<v>" << sampler_name << "</v> <- <p>"
                        << descriptor.locations.at(key) << "</p>";
-                    DLOGI(ss.str(), "texture", Severity::DET);
+                    DLOGI(ss.str(), "texture");
                 }
             #endif
         }
@@ -532,7 +532,7 @@ units_(descriptor.units)
     {
         internal_ = it->second;
         #if __DEBUG__
-            DLOGI("<i>Using cache.</i>", "texture", Severity::DET);
+            DLOGI("<i>Using cache.</i>", "texture");
         #endif
     }
     // Else, create new texture internal using parameters
@@ -567,7 +567,7 @@ Texture::~Texture()
             #ifdef __DEBUG__
             std::stringstream ss;
             ss << "[Texture] Destroying cached texture: <n>" << HRESOLVE(resourceID_) << "</n>";
-            DLOGN(ss.str(), "texture", Severity::LOW);
+            DLOGN(ss.str(), "texture");
             #endif
         }
     }

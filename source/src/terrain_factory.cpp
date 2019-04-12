@@ -27,7 +27,7 @@ HeightMap* TerrainFactory::make_heightmap(const TerrainPatchDescriptor& desc)
         xml::parse_attribute(desc.generator_node, "seed", seed);
         if(!xml::parse_attribute(desc.generator_node, "type", type))
         {
-            DLOGE("[ModelFactory] Terrain Generator node must have a 'type' attribute initialized.", "parsing", Severity::CRIT);
+            DLOGE("[ModelFactory] Terrain Generator node must have a 'type' attribute initialized.", "parsing");
             delete heightmap;
             return nullptr;
         }

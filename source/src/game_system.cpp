@@ -11,8 +11,8 @@ GameSystem* GameSystemContainer::get_game_system_by_name(hash_t name)
     auto it = game_systems_map_.find(name);
     if(it == game_systems_map_.end())
     {
-        DLOGE("[GameSystemContainer] Unknown game system:", "core", Severity::CRIT);
-        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "core", Severity::CRIT);
+        DLOGE("[GameSystemContainer] Unknown game system:", "core");
+        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "core");
         return nullptr;
     }
     else
@@ -24,8 +24,8 @@ InitializerSystem* GameSystemContainer::get_initializer_system_by_name(hash_t na
     auto it = initializer_systems_map_.find(name);
     if(it == initializer_systems_map_.end())
     {
-        DLOGE("[GameSystemContainer] Unknown initializer system:", "core", Severity::CRIT);
-        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "core", Severity::CRIT);
+        DLOGE("[GameSystemContainer] Unknown initializer system:", "core");
+        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "core");
         return nullptr;
     }
     else

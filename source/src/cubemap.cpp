@@ -20,10 +20,10 @@ Cubemap::Cubemap(const CubemapDescriptor& descriptor)
     assert(descriptor.locations.size() == 6 && "CubemapDescriptor is not initialized.");
 
 #ifdef __DEBUG__
-    DLOGN("[Cubemap] New cubemap.", "texture", Severity::LOW);
+    DLOGN("[Cubemap] New cubemap.", "texture");
     for(GLuint ii=0; ii<6; ++ii)
     {
-        DLOGI("<p>" + descriptor.locations[ii] + "</p>", "texture", Severity::LOW);
+        DLOGI("<p>" + descriptor.locations[ii] + "</p>", "texture");
     }
 #endif
 
@@ -38,13 +38,13 @@ Cubemap::Cubemap(const CubemapDescriptor& descriptor)
         // Sanity check
         if(stream == nullptr)
         {
-            DLOGF("[Cubemap] Invalid stream.", "io", Severity::CRIT);
+            DLOGF("[Cubemap] Invalid stream.", "io");
             fatal();
         }
         PixelBuffer* px_buf = PNG_LOADER.load_png(*stream);
 
 #ifdef __DEBUG__
-        DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture", Severity::DET);
+        DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture");
         if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
             px_buf->debug_display();
 #endif

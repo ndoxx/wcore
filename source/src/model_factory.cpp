@@ -58,9 +58,9 @@ std::shared_ptr<SurfaceMesh> ModelFactory::preload_mesh_model_instance(hash_t na
     }
     else
     {
-        DLOGW("[ModelFactory] No model instance named: ", "model", Severity::WARN);
-        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "model", Severity::WARN);
-        DLOGI("Skipping.", "model", Severity::WARN);
+        DLOGW("[ModelFactory] No model instance named: ", "model");
+        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "model");
+        DLOGI("Skipping.", "model");
     }
     return nullptr;
 }
@@ -70,8 +70,8 @@ void ModelFactory::parse_asset_file(const char* xmlfile)
     auto pstream = FILESYSTEM.get_file_as_stream(xmlfile, "root.folders.level"_h, "pack0"_h);
     if(pstream == nullptr)
     {
-        DLOGE("[ModelFactory] Unable to open file:", "model", Severity::CRIT);
-        DLOGI(xmlfile, "model", Severity::CRIT);
+        DLOGE("[ModelFactory] Unable to open file:", "model");
+        DLOGI(xmlfile, "model");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);
@@ -89,8 +89,8 @@ void ModelFactory::retrieve_asset_descriptions(rapidxml::xml_node<>* models_node
 #ifdef __DEBUG__
             if(instance_descriptors_.find(H_(model_name.c_str())) != instance_descriptors_.end())
             {
-                DLOGW("[ModelFactory] Model redefinition or collision: ", "model", Severity::WARN);
-                DLOGI(model_name, "model", Severity::WARN);
+                DLOGW("[ModelFactory] Model redefinition or collision: ", "model");
+                DLOGI(model_name, "model");
             }
 #endif
 
@@ -118,14 +118,14 @@ std::shared_ptr<Model> ModelFactory::make_model_instance(hash_t name)
         std::shared_ptr<SurfaceMesh> pmesh = mesh_factory_->make_instance(desc.mesh_name);
         if(!pmesh)
         {
-            DLOGE("[ModelFactory] Incomplete mesh declaration.", "parsing", Severity::CRIT);
+            DLOGE("[ModelFactory] Incomplete mesh declaration.", "parsing");
             return nullptr;
         }
 
         Material* pmat = material_factory_->make_material(desc.material_name);
         if(!pmat)
         {
-            DLOGE("[ModelFactory] Incomplete material declaration.", "parsing", Severity::CRIT);
+            DLOGE("[ModelFactory] Incomplete material declaration.", "parsing");
             delete pmat;
             return nullptr;
         }
@@ -144,14 +144,14 @@ std::shared_ptr<Model> ModelFactory::make_model(rapidxml::xml_node<>* mesh_node,
     std::shared_ptr<SurfaceMesh> pmesh = mesh_factory_->make_surface_mesh(mesh_node, mesh_is_instance, opt_rng);
     if(!pmesh)
     {
-        DLOGW("[ModelFactory] Incomplete mesh declaration.", "parsing", Severity::WARN);
+        DLOGW("[ModelFactory] Incomplete mesh declaration.", "parsing");
         return nullptr;
     }
 
     Material* pmat = material_factory_->make_material(mat_node, 1, opt_rng);
     if(!pmat)
     {
-        DLOGW("[ModelFactory] Incomplete material declaration.", "parsing", Severity::WARN);
+        DLOGW("[ModelFactory] Incomplete material declaration.", "parsing");
         delete pmat;
         return nullptr;
     }
@@ -170,7 +170,7 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
     Material* pmat = material_factory_->make_material(desc.material_nodes[0], 1);
     if(!pmat)
     {
-        DLOGW("[ModelFactory] Incomplete material declaration.", "parsing", Severity::WARN);
+        DLOGW("[ModelFactory] Incomplete material declaration.", "parsing");
         delete pmat;
         return nullptr;
     }
@@ -205,8 +205,8 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
                 Material* pmat2 = material_factory_->make_material(desc.material_nodes[1], 2);
                 if(pmat2)
                 {
-                    DLOGN("[ModelFactory] Using splat map:", "parsing", Severity::LOW);
-                    DLOGI("<p>" + splatmap_name + "</p>", "parsing", Severity::LOW);
+                    DLOGN("[ModelFactory] Using splat map:", "parsing");
+                    DLOGI("<p>" + splatmap_name + "</p>", "parsing");
 
                     // Add them to the terrain chunk
                     ret->add_alternative_material(pmat2);
@@ -214,15 +214,15 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
                 }
                 else
                 {
-                    DLOGW("[ModelFactory] Incomplete splat material declaration.", "parsing", Severity::WARN);
+                    DLOGW("[ModelFactory] Incomplete splat material declaration.", "parsing");
                     delete splatmap;
                 }
             }
         }
         else
         {
-            DLOGE("[ModelFactory] Stream error while loading splat map.", "io", Severity::CRIT);
-            DLOGI("Skipping", "io", Severity::CRIT);
+            DLOGE("[ModelFactory] Stream error while loading splat map.", "io");
+            DLOGI("Skipping", "io");
         }
     }
 

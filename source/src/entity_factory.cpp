@@ -21,8 +21,8 @@ void EntityFactory::parse_entity_file(const char* xmlfile)
     auto pstream = FILESYSTEM.get_file_as_stream(xmlfile, "root.folders.level"_h, "pack0"_h);
     if(pstream == nullptr)
     {
-        DLOGE("[EntityFactory] Unable to open file:", "entity", Severity::CRIT);
-        DLOGI(xmlfile, "entity", Severity::CRIT);
+        DLOGE("[EntityFactory] Unable to open file:", "entity");
+        DLOGI(xmlfile, "entity");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);
@@ -40,8 +40,8 @@ void EntityFactory::parse_blueprints(rapidxml::xml_node<>* blueprints_node)
 #ifdef __DEBUG__
             if(blueprints_.find(H_(ent_name.c_str())) != blueprints_.end())
             {
-                DLOGW("[EntityFactory] Entity redefinition or collision: ", "entity", Severity::WARN);
-                DLOGI(ent_name, "entity", Severity::WARN);
+                DLOGW("[EntityFactory] Entity redefinition or collision: ", "entity");
+                DLOGI(ent_name, "entity");
             }
 #endif
             blueprints_[H_(ent_name.c_str())] = ent_node;
@@ -57,8 +57,8 @@ void EntityFactory::register_component_factory(hash_t name, ComponentCreatorFunc
 #ifdef __DEBUG__
     if(component_factories_.find(name) != component_factories_.end())
     {
-        DLOGW("[EntityFactory] Component creator function redefinition or collision: ", "entity", Severity::WARN);
-        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "entity", Severity::WARN);
+        DLOGW("[EntityFactory] Component creator function redefinition or collision: ", "entity");
+        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "entity");
     }
 #endif
     component_factories_[name] = func;
@@ -69,8 +69,8 @@ std::shared_ptr<WEntity> EntityFactory::make_entity_blueprint(hash_t name)
     auto it = blueprints_.find(name);
     if(it == blueprints_.end())
     {
-        DLOGE("[EntityFactory] Entity blueprint name not found: ", "entity", Severity::CRIT);
-        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "entity", Severity::CRIT);
+        DLOGE("[EntityFactory] Entity blueprint name not found: ", "entity");
+        DLOGI(std::to_string(name) + " -> " + HRESOLVE(name), "entity");
         return nullptr;
     }
 
@@ -87,16 +87,16 @@ std::shared_ptr<WEntity> EntityFactory::make_entity_blueprint(hash_t name)
         auto fac_it = component_factories_.find(cmp_name);
         if(fac_it == component_factories_.end())
         {
-            DLOGE("[EntityFactory] Component creator function not found: ", "entity", Severity::WARN);
-            DLOGI(cmp_node->name(), "entity", Severity::WARN);
-            DLOGI("Skipping.", "entity", Severity::WARN);
+            DLOGE("[EntityFactory] Component creator function not found: ", "entity");
+            DLOGI(cmp_node->name(), "entity");
+            DLOGI("Skipping.", "entity");
             continue;
         }
         if(!(fac_it->second)(*entity, cmp_node))
         {
-            DLOGW("[EntityFactory] Component creation failed: ", "entity", Severity::WARN);
-            DLOGI(cmp_node->name(), "entity", Severity::WARN);
-            DLOGI("Skipping.", "entity", Severity::WARN);
+            DLOGW("[EntityFactory] Component creation failed: ", "entity");
+            DLOGI(cmp_node->name(), "entity");
+            DLOGI("Skipping.", "entity");
         }
     }
 

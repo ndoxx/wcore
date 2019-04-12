@@ -36,9 +36,9 @@ namespace wcore
 
 static void warn_global_not_found(hash_t name)
 {
-    DLOGW("Global name not found:", "core", Severity::WARN);
-    DLOGI(std::to_string(name), "core", Severity::WARN);
-    DLOGW("Skipping.", "core", Severity::WARN);
+    DLOGW("Global name not found:", "core");
+    DLOGI(std::to_string(name), "core");
+    DLOGW("Skipping.", "core");
 }
 
 void SetGlobal(hash_t name, const void* data)
@@ -219,8 +219,8 @@ Engine::Engine()
     }
     catch (const std::ifstream::failure& e)
     {
-        DLOGE("[Engine] Stream exception while initializing CONFIG singleton.", "core", Severity::CRIT);
-        DLOGI(e.what(), "core", Severity::CRIT);
+        DLOGE("[Engine] Stream exception while initializing CONFIG singleton.", "core");
+        DLOGI(e.what(), "core");
     }
 
     // Parse intern string hash table file
@@ -232,8 +232,8 @@ Engine::Engine()
     }
     catch (const std::ifstream::failure& e)
     {
-        DLOGE("[Engine] Stream exception while initializing intern string solver HRESOLVE.", "core", Severity::CRIT);
-        DLOGI(e.what(), "core", Severity::CRIT);
+        DLOGE("[Engine] Stream exception while initializing intern string solver HRESOLVE.", "core");
+        DLOGI(e.what(), "core");
     }
 #endif
 
@@ -268,20 +268,20 @@ bool Engine::UseResourceArchive(const char* filename, hash_t key)
     fs::path filepath;
     if(!CONFIG.get("root.folders.res"_h, filepath))
     {
-        DLOGE("[Engine] Config node folders.res is not set.", "core", Severity::CRIT);
+        DLOGE("[Engine] Config node folders.res is not set.", "core");
         return false;
     }
 
     filepath /= filename;
     if(!fs::exists(filepath))
     {
-        DLOGE("[Engine] Cannot open esource archive:", "core", Severity::CRIT);
-        DLOGI("<p>" + filepath.string() + "</p>", "core", Severity::CRIT);
+        DLOGE("[Engine] Cannot open esource archive:", "core");
+        DLOGI("<p>" + filepath.string() + "</p>", "core");
         return false;
     }
 
-    DLOGN("[Engine] Opening resource archive: ", "core", Severity::LOW);
-    DLOGI("<p>" + filepath.string() + "</p>", "core", Severity::LOW);
+    DLOGN("[Engine] Opening resource archive: ", "core");
+    DLOGI("<p>" + filepath.string() + "</p>", "core");
     FILESYSTEM.open_archive(filepath, key);
     return true;
 }
@@ -324,9 +324,9 @@ void Engine::Init(int argc, char const *argv[],
     }
     catch (const std::ifstream::failure& e)
     {
-        DLOGE("[Engine] Stream exception while initializing system parameters.", "core", Severity::CRIT);
-        DLOGI(e.what(), "core", Severity::CRIT);
-        DLOGI("Initializer systems may use default state.", "core", Severity::CRIT);
+        DLOGE("[Engine] Stream exception while initializing system parameters.", "core");
+        DLOGI(e.what(), "core");
+        DLOGI("Initializer systems may use default state.", "core");
     }
 
     // * Register game systems (init events, register editor widgets, add to update list)
@@ -374,8 +374,8 @@ int Engine::Run()
     }
     catch (const std::ofstream::failure& e)
     {
-        DLOGF("[Engine] Stream exception while serializing system parameters.", "core", Severity::CRIT);
-        DLOGI(e.what(), "core", Severity::CRIT);
+        DLOGF("[Engine] Stream exception while serializing system parameters.", "core");
+        DLOGI(e.what(), "core");
     }
     DLOG("<s>--- WCore: Meow! ---</s>", "core", Severity::LOW);
     return ret;

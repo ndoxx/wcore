@@ -313,13 +313,13 @@ int EngineCore::run()
     FinalStatistics idle_stats   = idle_time_fifo.get_stats();
     uint32_t n_iter = render_time_fifo.get_size();
 
-    DLOGN("Render time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile", Severity::DET);
+    DLOGN("Render time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile");
     render_stats.debug_print(1e6, "µs", "profile");
 
-    DLOGN("Update time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile", Severity::DET);
+    DLOGN("Update time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile");
     update_stats.debug_print(1e6, "µs", "profile");
 
-    DLOGN("Idle time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile", Severity::DET);
+    DLOGN("Idle time statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile");
     idle_stats.debug_print(1e6, "µs", "profile");
 #endif //__PROFILING_EngineCore__
 

@@ -21,7 +21,7 @@ void WEntity::warn_duplicate_component(const char* name)
 {
     std::stringstream ss;
     ss << "Ignoring duplicate component: " << name;
-    DLOGW(ss.str(), "entity", Severity::WARN);
+    DLOGW(ss.str(), "entity");
 }
 #endif
 

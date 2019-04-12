@@ -23,28 +23,28 @@ void EditorTweaksInitializer::init_self()
     auto pstream = FILESYSTEM.get_file_as_stream(tweaksfile, "root.folders.config"_h, "pack0"_h);
     if(pstream == nullptr)
     {
-        DLOGE("[EditorTweaksInitializer] Cannot open file: " + std::string(tweaksfile), "editor", Severity::CRIT);
+        DLOGE("[EditorTweaksInitializer] Cannot open file: " + std::string(tweaksfile), "editor");
         return;
     }
 
     // Parse tweaks file
-    DLOGN("[EditorTweaksInitializer] Parsing tweaks file:", "editor", Severity::LOW);
-    DLOGI("<p>" + std::string(tweaksfile) + "</p>", "core", Severity::LOW);
+    DLOGN("[EditorTweaksInitializer] Parsing tweaks file:", "editor");
+    DLOGI("<p>" + std::string(tweaksfile) + "</p>", "core");
     value_map_.parse_xml_file(*pstream);
 
-    DLOGI("done.", "editor", Severity::LOW);
+    DLOGI("done.", "editor");
 }
 
 void EditorTweaksInitializer::serialize()
 {
-    DLOGN("[EditorTweaksInitializer] Saving tweaks file.", "editor", Severity::LOW);
+    DLOGN("[EditorTweaksInitializer] Saving tweaks file.", "editor");
 
     for(auto&& [name, serializer]: serializers_)
         serializer();
 
     value_map_.write_xml();
 
-    DLOGI("done.", "editor", Severity::LOW);
+    DLOGI("done.", "editor");
 }
 
 

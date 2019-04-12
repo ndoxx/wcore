@@ -56,10 +56,10 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
     // * Compute ray in world space
 
 #ifdef __DEBUG__
-    DLOGN("Casting ray:", "collision", Severity::LOW);
+    DLOGN("Casting ray:", "collision");
     std::stringstream ss;
     ss << "Screen: " << screen_coords;
-    DLOGI(ss.str(), "collision", Severity::LOW);
+    DLOGI(ss.str(), "collision");
     ss.str("");
 #endif
 
@@ -74,7 +74,7 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
 
 #ifdef __DEBUG__
     ss << "NDC: " << coords_near;
-    DLOGI(ss.str(), "collision", Severity::LOW);
+    DLOGI(ss.str(), "collision");
     ss.str("");
 #endif
 
@@ -89,15 +89,15 @@ Ray RayCaster::cast_ray_from_screen(const math::vec2& screen_coords)
 
 #ifdef __DEBUG__
     ss << "Origin (world): " << ray.origin_w;
-    DLOGI(ss.str(), "collision", Severity::LOW);
+    DLOGI(ss.str(), "collision");
     ss.str("");
 
     ss << "End (world): " << ray.end_w;
-    DLOGI(ss.str(), "collision", Severity::LOW);
+    DLOGI(ss.str(), "collision");
     ss.str("");
 
     ss << "Direction: " << ray.direction;
-    DLOGI(ss.str(), "collision", Severity::LOW);
+    DLOGI(ss.str(), "collision");
     ss.str("");
 
     if(show_ray_)

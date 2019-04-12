@@ -30,15 +30,15 @@ void XMLParser::load_file_xml(const fs::path& filepath)
 {
     if(!fs::exists(filepath))
     {
-        DLOGE("Wrong path: ", "core", Severity::CRIT);
-        DLOGI(filepath.string(), "core", Severity::CRIT);
+        DLOGE("Wrong path: ", "core");
+        DLOGI(filepath.string(), "core");
         return;
     }
     filepath_ = filepath;
 
 #ifdef __DEBUG__
-    DLOGN("[XML] Parsing xml file:", "core", Severity::LOW);
-    DLOGI("<p>" + filepath.string() + "</p>", "core", Severity::LOW);
+    DLOGN("[XML] Parsing xml file:", "core");
+    DLOGI("<p>" + filepath.string() + "</p>", "core");
 #endif
 
     // Read the xml file into a vector
@@ -52,7 +52,7 @@ void XMLParser::load_file_xml(const fs::path& filepath)
     if(!root_)
     {
 #ifdef __DEBUG__
-        DLOGE("[XML] No root node.", "core", Severity::CRIT);
+        DLOGE("[XML] No root node.", "core");
 #endif
         return;
     }
@@ -63,12 +63,12 @@ void XMLParser::load_file_xml(std::istream& stream)
     // Sanity check
     if(!stream.good())
     {
-        DLOGE("[XML] Input stream error.", "core", Severity::CRIT);
+        DLOGE("[XML] Input stream error.", "core");
         return;
     }
 
 #ifdef __DEBUG__
-    DLOGN("[XML] Parsing xml file from stream.", "core", Severity::LOW);
+    DLOGN("[XML] Parsing xml file from stream.", "core");
 #endif
 
     // Read the xml file into a vector
@@ -84,7 +84,7 @@ void XMLParser::load_file_xml(std::istream& stream)
     if(!root_)
     {
 #ifdef __DEBUG__
-        DLOGE("[XML] No root node.", "core", Severity::CRIT);
+        DLOGE("[XML] No root node.", "core");
 #endif
         return;
     }

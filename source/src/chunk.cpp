@@ -54,10 +54,10 @@ Chunk::~Chunk()
         delete cr;
 
 #ifdef __DEBUG__
-    DLOGN("[Chunk] Destroying chunk: <n>" + std::to_string(index_) + "</n>.", "chunk", Severity::LOW);
+    DLOGN("[Chunk] Destroying chunk: <n>" + std::to_string(index_) + "</n>.", "chunk");
 #endif
 #ifdef __PROFILING_CHUNKS__
-    DLOGN("[Chunk] <n>" + std::to_string(index_) + "</n> statistics:", "profile", Severity::LOW);
+    DLOGN("[Chunk] <n>" + std::to_string(index_) + "</n> statistics:", "profile");
     dbg_show_statistics();
 #endif
 }
@@ -385,11 +385,11 @@ void Chunk::dbg_show_statistics()
     FinalStatistics lights_traversal_stats = lights_traversal_fifo_.get_stats();
     FinalStatistics sorting_stats          = sorting_fifo_.get_stats();
 
-    DLOGN("Models traversal (over <z>" + std::to_string(models_traversal_fifo_.get_size()) + "</z> points): ", "profile", Severity::LOW);
+    DLOGN("Models traversal (over <z>" + std::to_string(models_traversal_fifo_.get_size()) + "</z> points): ", "profile");
     models_traversal_stats.debug_print(1e6, "µs", "profile");
-    DLOGN("Lights traversal (over <z>" + std::to_string(lights_traversal_fifo_.get_size()) + "</z> points): ", "profile", Severity::LOW);
+    DLOGN("Lights traversal (over <z>" + std::to_string(lights_traversal_fifo_.get_size()) + "</z> points): ", "profile");
     lights_traversal_stats.debug_print(1e6, "µs", "profile");
-    DLOGN("Sorting (over <z>" + std::to_string(sorting_fifo_.get_size()) + "</z> points): ", "profile", Severity::LOW);
+    DLOGN("Sorting (over <z>" + std::to_string(sorting_fifo_.get_size()) + "</z> points): ", "profile");
     sorting_stats.debug_print(1e6, "µs", "profile");
 #endif
 }

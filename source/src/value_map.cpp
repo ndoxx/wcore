@@ -46,8 +46,8 @@ void ValueMap::retrieve_configuration(rapidxml::xml_node<>* node,
             }
             else // Node is invalid
             {
-                DLOGW("[ValueMap] Ignoring ill-formed property node.", "core", Severity::WARN);
-                DLOGI("At: " + name_chain + ": " + cur_node->name(), "core", Severity::WARN);
+                DLOGW("[ValueMap] Ignoring ill-formed property node.", "core");
+                DLOGI("At: " + name_chain + ": " + cur_node->name(), "core");
             }
         }
     }
@@ -119,9 +119,9 @@ hash_t ValueMap::parse_xml_property(rapidxml::xml_node<>* node,
                 this->set(full_name_hash, std::cref(dir));
             else
             {
-                DLOGE("[ValueMap] Directory does not exist: ", "core", Severity::CRIT);
-                DLOGI(dir.string(), "core", Severity::CRIT);
-                DLOGI("Skipping.", "core", Severity::CRIT);
+                DLOGE("[ValueMap] Directory does not exist: ", "core");
+                DLOGI(dir.string(), "core");
+                DLOGI("Skipping.", "core");
                 return 0;
             }
             break;

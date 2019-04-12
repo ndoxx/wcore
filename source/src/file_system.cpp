@@ -33,21 +33,21 @@ FileSystem::~FileSystem()
 
 bool FileSystem::open_archive(const fs::path& file_path, hash_t key)
 {
-    DLOGN("[FileSystem] Opening archive:", "io", Severity::LOW);
-    DLOGI("path: <p>" + file_path.string() + "</p>", "io", Severity::CRIT);
-    DLOGI("key:  " + std::to_string(key) + " -> <n>" + HRESOLVE(key) + "</n>", "io", Severity::CRIT);
+    DLOGN("[FileSystem] Opening archive:", "io");
+    DLOGI("path: <p>" + file_path.string() + "</p>", "io");
+    DLOGI("key:  " + std::to_string(key) + " -> <n>" + HRESOLVE(key) + "</n>", "io");
 
     // Locate archive
     if(pimpl_->archives.find(key) != pimpl_->archives.end())
     {
-        DLOGW("Ignoring already loaded archive.", "io", Severity::CRIT);
+        DLOGW("Ignoring already loaded archive.", "io");
         return false;
     }
 
     // Sanity check
     if(!fs::exists(file_path))
     {
-        DLOGE("Archive does not exist.", "io", Severity::CRIT);
+        DLOGE("Archive does not exist.", "io");
         return false;
     }
 
@@ -55,13 +55,13 @@ bool FileSystem::open_archive(const fs::path& file_path, hash_t key)
     pimpl_->archives.insert(std::pair(key, zipios::ZipFile(file_path.string().c_str())));
 
     // * Parse manifest inside archive
-    DLOGI("<i>Reading manifest.</i>", "io", Severity::LOW);
+    DLOGI("<i>Reading manifest.</i>", "io");
     auto stream = get_file_as_stream("MANIFEST.xml", key);
 
     // Check that a manifest is indeed present
     if(stream == nullptr)
     {
-        DLOGE("Could not find MANIFEST.xml in archive.", "io", Severity::CRIT);
+        DLOGE("Could not find MANIFEST.xml in archive.", "io");
         return false;
     }
 
@@ -79,7 +79,7 @@ bool FileSystem::open_archive(const fs::path& file_path, hash_t key)
         std::string vpath_name, vpath_value;
         if(!xml::parse_attribute(cur_node, "name", vpath_name)) continue;
         if(!xml::parse_attribute(cur_node, "value", vpath_value)) continue;
-        DLOGI("<h>vpath</h>: " + vpath_name + " -> <p>" + vpath_value + "</p>", "io", Severity::LOW);
+        DLOGI("<h>vpath</h>: " + vpath_name + " -> <p>" + vpath_value + "</p>", "io");
         pimpl_->vpaths[key][H_(vpath_name.c_str())] = vpath_value;
     }
 
@@ -92,8 +92,8 @@ bool FileSystem::close_archive(hash_t key)
     auto it = pimpl_->archives.find(key);
     if(it == pimpl_->archives.end())
     {
-        DLOGE("Cannot close unknown archive:", "io", Severity::CRIT);
-        DLOGI(std::to_string(key) + " -> <n>" + HRESOLVE(key) + "</n>", "io", Severity::CRIT);
+        DLOGE("Cannot close unknown archive:", "io");
+        DLOGI(std::to_string(key) + " -> <n>" + HRESOLVE(key) + "</n>", "io");
         return false;
     }
 
@@ -111,14 +111,14 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const fs::path& fil
     // Sanity check
     if(!ifs->is_open())
     {
-        DLOGE("Unable to open file:", "io", Severity::CRIT);
-        DLOGI("<p>" + file_path.string() + "</p>", "io", Severity::CRIT);
+        DLOGE("Unable to open file:", "io");
+        DLOGI("<p>" + file_path.string() + "</p>", "io");
 
         return nullptr;
     }
 
-    DLOGN("[FileSystem] Getting stream from file path:", "io", Severity::LOW);
-    DLOGI("<p>" + file_path.string() + "</p>", "io", Severity::LOW);
+    DLOGN("[FileSystem] Getting stream from file path:", "io");
+    DLOGI("<p>" + file_path.string() + "</p>", "io");
 
     return ifs;
 }
@@ -129,8 +129,8 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* virtual
     auto it = pimpl_->archives.find(archive);
     if(it == pimpl_->archives.end())
     {
-        DLOGE("Cannot find unknown archive:", "io", Severity::CRIT);
-        DLOGI(std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io", Severity::CRIT);
+        DLOGE("Cannot find unknown archive:", "io");
+        DLOGI(std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io");
         return nullptr;
     }
 
@@ -144,16 +144,16 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* virtual
         // Sanity check
         if(!in_stream->good())
         {
-            DLOGE("Unable to form stream:", "io", Severity::CRIT);
-            DLOGI("from archive: " + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io", Severity::CRIT);
-            DLOGI("virtual path: <p>" + std::string(virtual_path) + "</p>", "io", Severity::CRIT);
+            DLOGE("Unable to form stream:", "io");
+            DLOGI("from archive: " + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io");
+            DLOGI("virtual path: <p>" + std::string(virtual_path) + "</p>", "io");
 
             return nullptr;
         }
 
-        DLOGN("[FileSystem] Getting stream from archive:", "io", Severity::LOW);
-        DLOGI(std::string("archive: ") + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io", Severity::LOW);
-        DLOGI(std::string("<h>vpath</h>:   <p>") + virtual_path + "</p>", "io", Severity::LOW);
+        DLOGN("[FileSystem] Getting stream from archive:", "io");
+        DLOGI(std::string("archive: ") + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io");
+        DLOGI(std::string("<h>vpath</h>:   <p>") + virtual_path + "</p>", "io");
 
         return in_stream;
     }
@@ -196,10 +196,10 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* filenam
         }
     }
 
-    DLOGE("[FileSystem] File couldn't be reached:", "io", Severity::CRIT);
-    DLOGI("filename: <p>" + std::string(filename) + "</p>", "io", Severity::CRIT);
-    DLOGI("folder node: " + std::to_string(folder_node) + " -> <x>" + HRESOLVE(folder_node) + "</x>", "io", Severity::CRIT);
-    DLOGI("archive:     " + std::to_string(archive) + " -> <h>" + HRESOLVE(archive) + "</h>", "io", Severity::CRIT);
+    DLOGE("[FileSystem] File couldn't be reached:", "io");
+    DLOGI("filename: <p>" + std::string(filename) + "</p>", "io");
+    DLOGI("folder node: " + std::to_string(folder_node) + " -> <x>" + HRESOLVE(folder_node) + "</x>", "io");
+    DLOGI("archive:     " + std::to_string(archive) + " -> <h>" + HRESOLVE(archive) + "</h>", "io");
 
     return nullptr;
 }

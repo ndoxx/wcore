@@ -62,7 +62,7 @@ bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node)
                 smooth_func = Smooth::COMPRESS_QUADRATIC;
                 break;
             default:
-                DLOGW("[SurfaceMeshFactory] Unknown smooth function: " + smooth_func_str, "model", Severity::WARN);
+                DLOGW("[SurfaceMeshFactory] Unknown smooth function: " + smooth_func_str, "model");
                 break;
         }
     }
@@ -72,8 +72,8 @@ bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node)
     {
         if(!xml::parse_node(mesh_node, "Location", file_name))
         {
-            DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.", "parsing", Severity::WARN);
-            DLOGI("Missing <n>Location</n> node.", "parsing", Severity::WARN);
+            DLOGW("[SceneLoader] Ignoring incomplete .obj mesh declaration.", "parsing");
+            DLOGI("Missing <n>Location</n> node.", "parsing");
             return false;
         }
 
@@ -148,8 +148,8 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_surface_mesh(rapidxml::xml
 
     if(pmesh == nullptr)
     {
-        DLOGW("Couldn't create mesh: name= ", "parsing", Severity::WARN);
-        DLOGI(mesh, "parsing", Severity::WARN);
+        DLOGW("Couldn't create mesh: name= ", "parsing");
+        DLOGI(mesh, "parsing");
     }
 
     return pmesh;
@@ -157,12 +157,12 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_surface_mesh(rapidxml::xml
 
 std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
 {
-    DLOGN("Instance mesh from name: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "model", Severity::LOW);
+    DLOGN("Instance mesh from name: " + std::to_string(name) + " -> <n>" + HRESOLVE(name) + "</n>", "model");
     // First, try to find in cache
     auto it = cache_.find(name);
     if(it != cache_.end())
     {
-        DLOGI("Using cache.", "model", Severity::LOW);
+        DLOGI("Using cache.", "model");
         return it->second;
     }
     else
@@ -175,7 +175,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
             const SurfaceMeshDescriptor& desc = it_d->second;
             if(desc.type=="obj"_h)
             {
-                DLOGI("From obj file.", "model", Severity::LOW);
+                DLOGI("From obj file.", "model");
                 pmesh = make_obj(desc.file_name.c_str(),
                                  desc.process_uv,
                                  desc.process_normals,
@@ -184,7 +184,7 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
             }
             else
             {
-                DLOGI("Procedural.", "model", Severity::LOW);
+                DLOGI("Procedural.", "model");
                 std::mt19937 rng(0);
                 pmesh = make_procedural(desc.type, desc.generator_node, &rng);
             }

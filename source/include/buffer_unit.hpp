@@ -42,16 +42,16 @@ public:
     primitive_(primitive)
     {
 #ifdef __DEBUG__
-        DLOGN("Generating Buffer Unit:", "buffer", Severity::LOW);
+        DLOGN("Generating Buffer Unit:", "buffer");
 #endif
         glGenBuffers(1, &VBO_);
 #ifdef __DEBUG__
-        DLOGI("VBO created. id=" + std::to_string(VBO_), "buffer", Severity::LOW);
+        DLOGI("VBO created. id=" + std::to_string(VBO_), "buffer");
 #endif
         glGenBuffers(1, &IBO_);
 #ifdef __DEBUG__
-        DLOGI("IBO created. id=" + std::to_string(IBO_), "buffer", Severity::LOW);
-        DLOGI("dimensionality= " + std::to_string(dimensionality(primitive_)), "buffer", Severity::DET);
+        DLOGI("IBO created. id=" + std::to_string(IBO_), "buffer");
+        DLOGI("dimensionality= " + std::to_string(dimensionality(primitive_)), "buffer");
 #endif
     }
 
@@ -60,7 +60,7 @@ public:
         // BufferUnit objects are life-bound to their server-side counterparts
         // When they die, the OpenGL object dies as well
 #ifdef __DEBUG__
-        DLOGN("Destroying Buffer Unit:", "buffer", Severity::LOW);
+        DLOGN("Destroying Buffer Unit:", "buffer");
 #endif
         // First unbind
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -69,11 +69,11 @@ public:
         // Then delete buffers
         glDeleteBuffers(1,&IBO_);
 #ifdef __DEBUG__
-        DLOGI("IBO destroyed. id=" + std::to_string(IBO_), "buffer", Severity::LOW);
+        DLOGI("IBO destroyed. id=" + std::to_string(IBO_), "buffer");
 #endif
         glDeleteBuffers(1,&VBO_);
 #ifdef __DEBUG__
-        DLOGI("VBO destroyed. id=" + std::to_string(VBO_), "buffer", Severity::LOW);
+        DLOGI("VBO destroyed. id=" + std::to_string(VBO_), "buffer");
 #endif
         //check_gl_error();
     }

@@ -22,8 +22,8 @@ static void glfw_error_callback(int error, const char* description)
 {
     std::stringstream ss;
     ss << "GLFW error code <v>" << error << "</v> :";
-    DLOGE(ss.str(), "core", Severity::CRIT);
-    DLOGI(description, "core", Severity::CRIT);
+    DLOGE(ss.str(), "core");
+    DLOGI(description, "core");
 }
 
 class GLFWContext::GLFWImpl
@@ -44,7 +44,7 @@ window_(nullptr)
     // Initialise GLFW
     if( !glfwInit() )
     {
-        DLOGF("Failed to initialize GLFW.", "core", Severity::CRIT);
+        DLOGF("Failed to initialize GLFW.", "core");
         fatal("Failed to initialize GLFW.");
     }
 
@@ -63,7 +63,7 @@ window_(nullptr)
 
     if( window_ == NULL )
     {
-        DLOGF("Failed to open GLFW window.", "core", Severity::CRIT);
+        DLOGF("Failed to open GLFW window.", "core");
         fatal("Failed to open GLFW window.");
     }
 
@@ -76,7 +76,7 @@ window_(nullptr)
     // Initialize GLEW
     glewExperimental = GL_TRUE; // If not set, segfault at glGenVertexArrays()
     if (glewInit() != GLEW_OK) {
-        DLOGF("Failed to initialize GLEW.", "core", Severity::CRIT);
+        DLOGF("Failed to initialize GLEW.", "core");
         fatal("Failed to initialize GLEW.");
     }
     glGetError();   // Mask an unavoidable error caused by GLEW

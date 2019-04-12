@@ -16,14 +16,14 @@ fs::path get_file(hash_t folder_node, const fs::path& file_name)
     fs::path file_path;
     if(!CONFIG.get(folder_node, file_path))
     {
-        DLOGE("Missing folder config node: <n>" + std::to_string(folder_node) + "</n>", "io", Severity::CRIT);
+        DLOGE("Missing folder config node: <n>" + std::to_string(folder_node) + "</n>", "io");
         return fs::path();
     }
 
     file_path /= file_name;
     if(!fs::exists(file_path))
     {
-        DLOGE("File not found: <p>" + file_name.string() + "</p>", "io", Severity::CRIT);
+        DLOGE("File not found: <p>" + file_name.string() + "</p>", "io");
         return fs::path();
     }
 
@@ -37,10 +37,10 @@ std::string get_file_as_string(hash_t folder_node, const fs::path& file_name)
 
     if(!ifs.is_open())
     {
-        DLOGE("Unable to open file:", "io", Severity::CRIT);
-        DLOGI("node= " + std::to_string(folder_node), "io", Severity::CRIT);
-        DLOGI("file name= " + file_name.string(), "io", Severity::CRIT);
-        DLOGI("void string returned.", "io", Severity::CRIT);
+        DLOGE("Unable to open file:", "io");
+        DLOGI("node= " + std::to_string(folder_node), "io");
+        DLOGI("file name= " + file_name.string(), "io");
+        DLOGI("void string returned.", "io");
 
         return std::string("");
     }
@@ -56,9 +56,9 @@ std::vector<char> get_file_as_vector(const fs::path& file_path)
 
     if(!ifs.is_open())
     {
-        DLOGE("Unable to open file:", "io", Severity::CRIT);
-        DLOGI("file name= " + file_path.string(), "io", Severity::CRIT);
-        DLOGI("void vector returned.", "io", Severity::CRIT);
+        DLOGE("Unable to open file:", "io");
+        DLOGI("file name= " + file_path.string(), "io");
+        DLOGI("void vector returned.", "io");
 
         return std::vector<char>();
     }
@@ -77,9 +77,9 @@ std::vector<char> get_binary_file_as_vector(const fs::path& file_path)
 
     if(!ifs.is_open())
     {
-        DLOGE("Unable to open binary file:", "io", Severity::CRIT);
-        DLOGI("file name= " + file_path.string(), "io", Severity::CRIT);
-        DLOGI("void vector returned.", "io", Severity::CRIT);
+        DLOGE("Unable to open binary file:", "io");
+        DLOGI("file name= " + file_path.string(), "io");
+        DLOGI("void vector returned.", "io");
 
         return std::vector<char>();
     }

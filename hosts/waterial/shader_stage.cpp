@@ -31,7 +31,7 @@ height_(height)
 
     if(!program_->link())
     {
-        DLOGE("Shader failed to link:", "waterial", Severity::CRIT);
+        DLOGE("Shader failed to link:", "waterial");
         std::cout << program_->log().toStdString() << std::endl;
     }
     unsigned int attr_position = program_->attributeLocation("position");

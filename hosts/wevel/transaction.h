@@ -90,7 +90,7 @@ public:
         }
     }
 
-    // Revert back to first known state
+    // Revert back to initial state
     void revert()
     {
         while(!undo_stack_.empty())

@@ -82,6 +82,7 @@ Logger::Logger()
 , file_mode_(FileMode::OVERWRITE)
 , backtrace_on_error_(false)
 , start_time_(std::chrono::high_resolution_clock::now())
+, last_severity_(Severity::DET)
 , messages_()
 {
     // Create a default debugging channel
@@ -200,6 +201,7 @@ void Logger::operator ()(const std::string& message,
                          uint32_t severity,
                          hash_t channel)
 {
+    if(severity == Severity::REPEAT) severity = last_severity_;
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
     LogMessage logm(message, timestamp, type, mode, severity, channel);
     operator ()(logm);
@@ -211,6 +213,7 @@ void Logger::operator ()(std::string&& message,
                          uint32_t severity,
                          hash_t channel)
 {
+    if(severity == Severity::REPEAT) severity = last_severity_;
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
     LogMessage logm(message, timestamp, type, mode, severity, channel);
     operator ()(logm);
