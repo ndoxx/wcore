@@ -38,7 +38,7 @@ Cubemap::Cubemap(const CubemapDescriptor& descriptor)
         // Sanity check
         if(stream == nullptr)
         {
-            DLOGF("[Cubemap] Invalid stream.", "io");
+            DLOGF("[Cubemap] Invalid stream.", "ios");
             fatal();
         }
         PixelBuffer* px_buf = PNG_LOADER.load_png(*stream);

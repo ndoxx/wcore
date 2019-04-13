@@ -113,7 +113,7 @@ void SceneLoader::load_level(const char* level_name)
     if(pstream == nullptr)
     {
         DLOGF("Cannot access level file:", "scene");
-        DLOGI(levelfilename, "scene");
+        DLOGI("<p>" + levelfilename + "</p>", "scene");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);

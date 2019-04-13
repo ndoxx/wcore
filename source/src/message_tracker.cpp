@@ -17,7 +17,7 @@ bool MessageTracker::display(hash_t channel, const WData& wdata)
     std::string dataStr(wdata.to_string());
     std::stringstream ss;
     ss << channel << " -> " << ((dataStr.size()>0)?dataStr:"[NODATA]");
-    DLOGT(ss.str(), "default", Severity::LOW);
+    DLOGT(ss.str(), "default");
 #endif
     return true; // Do NOT consume event
 }

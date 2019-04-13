@@ -71,7 +71,7 @@ void ModelFactory::parse_asset_file(const char* xmlfile)
     if(pstream == nullptr)
     {
         DLOGE("[ModelFactory] Unable to open file:", "model");
-        DLOGI(xmlfile, "model");
+        DLOGI("<p>" + std::string(xmlfile) + "</p>", "model");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);
@@ -221,8 +221,8 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
         }
         else
         {
-            DLOGE("[ModelFactory] Stream error while loading splat map.", "io");
-            DLOGI("Skipping", "io");
+            DLOGE("[ModelFactory] Stream error while loading splat map.", "ios");
+            DLOGI("Skipping", "ios");
         }
     }
 

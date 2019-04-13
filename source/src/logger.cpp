@@ -63,7 +63,7 @@ static std::map<MsgType, std::string> ICON =
     {MsgType::BAD,       "\033[1;48;2;50;10;10m \u2054 \033[1;49m "},
 };
 
-static const uint32_t CHANNEL_STYLE_PALETTE = 3u;
+static const uint32_t CHANNEL_STYLE_PALETTE = 4u;
 
 LogChannel::LogChannel(std::string&& name,
                        std::array<float,3>&& color,
@@ -170,6 +170,11 @@ void Logger::print_console(const LogMessage& log_message)
 
     // Output message
     std::cout << final << "\033[0m" << std::endl;
+
+    // Display file and line if any
+    if(log_message.file_.size()!=0)
+        std::cout << "@ " << log_message.file_ << ": " << log_message.line_ << std::endl;
+
     widget_scroll_required_ = true;
 }
 
@@ -199,11 +204,14 @@ void Logger::operator ()(const std::string& message,
                          MsgType type,
                          LogMode mode,
                          uint32_t severity,
-                         hash_t channel)
+                         hash_t channel,
+                         const char* file,
+                         int line)
 {
     if(severity == Severity::REPEAT) severity = last_severity_;
+    else last_severity_ = Severity(severity);
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
-    LogMessage logm(message, timestamp, type, mode, severity, channel);
+    LogMessage logm(message, timestamp, type, mode, severity, channel, file, line);
     operator ()(logm);
 }
 
@@ -211,11 +219,14 @@ void Logger::operator ()(std::string&& message,
                          MsgType type,
                          LogMode mode,
                          uint32_t severity,
-                         hash_t channel)
+                         hash_t channel,
+                         const char* file,
+                         int line)
 {
     if(severity == Severity::REPEAT) severity = last_severity_;
+    else last_severity_ = Severity(severity);
     auto timestamp = std::chrono::high_resolution_clock::now() - start_time_;
-    LogMessage logm(message, timestamp, type, mode, severity, channel);
+    LogMessage logm(std::forward<std::string>(message), timestamp, type, mode, severity, channel, file, line);
     operator ()(logm);
 }
 

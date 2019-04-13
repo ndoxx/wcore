@@ -28,8 +28,7 @@ void EditorTweaksInitializer::init_self()
     }
 
     // Parse tweaks file
-    DLOGN("[EditorTweaksInitializer] Parsing tweaks file:", "editor");
-    DLOGI("<p>" + std::string(tweaksfile) + "</p>", "core");
+    DLOGN("[EditorTweaksInitializer] Parsing tweaks file", "editor");
     value_map_.parse_xml_file(*pstream);
 
     DLOGI("done.", "editor");

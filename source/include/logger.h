@@ -75,11 +75,15 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hash_t channel="core"_h)
+               hash_t channel="core"_h,
+               const char* file="",
+               int line=0)
     : message_(message)
+    , file_(file)
     , mode_(mode)
     , type_(type)
     , channel_(channel)
+    , line_(line)
     , timestamp_(timestamp)
     {
         init(severity);
@@ -90,21 +94,27 @@ public:
                MsgType type=MsgType::CANONICAL,
                LogMode mode=LogMode::CANONICAL,
                uint32_t severity=0,
-               hash_t channel="core"_h)
+               hash_t channel="core"_h,
+               const char* file="",
+               int line=0)
     : message_(std::move(message))
+    , file_(file)
     , mode_(mode)
     , type_(type)
     , channel_(channel)
+    , line_(line)
     , timestamp_(timestamp)
     {
         init(severity);
     }
 
     std::string message_;
+    std::string file_;
     LogMode     mode_;
     MsgType     type_;
-    hash_t   channel_;
+    hash_t      channel_;
     uint32_t    verbosity_level;
+    int         line_;
 
     const TimeStamp timestamp_;
 
@@ -192,12 +202,16 @@ public:
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hash_t channel="core"_h);
+                     hash_t channel="core"_h,
+                     const char* file="",
+                     int line=0);
     void operator ()(std::string&& message,
                      MsgType type=MsgType::CANONICAL,
                      LogMode mode=LogMode::CANONICAL,
                      uint32_t severity=0u,
-                     hash_t channel="core"_h);
+                     hash_t channel="core"_h,
+                     const char* file="",
+                     int line=0);
     void operator ()(const LogMessage& log_message);
 
     template <typename ...Args>
@@ -286,26 +300,26 @@ namespace dbg
     #define DLOGI(MESSAGE, CHANNEL) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::ITEM,    LogMode::CANONICAL, Severity::REPEAT, H_( CHANNEL ) ); \
         } while(0)
-    #define DLOGT(MESSAGE, CHANNEL, SEVERITY) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::TRACK,   LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \
+    #define DLOGT(MESSAGE, CHANNEL) do { \
+        wcore::dbg::LOG( MESSAGE, MsgType::TRACK,   LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGN(MESSAGE, CHANNEL) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::NOTIFY,  LogMode::CANONICAL, Severity::LOW, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGW(MESSAGE, CHANNEL) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, H_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::WARNING, LogMode::CANONICAL, Severity::WARN, H_( CHANNEL ), __FILE__, __LINE__ ); \
         } while(0)
     #define DLOGE(MESSAGE, CHANNEL) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::ERROR,   LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::ERROR,   LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ), __FILE__, __LINE__ ); \
         } while(0)
     #define DLOGF(MESSAGE, CHANNEL) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::FATAL,   LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::FATAL,   LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ), __FILE__, __LINE__ ); \
         } while(0)
     #define DLOGG(MESSAGE, CHANNEL) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::GOOD,    LogMode::CANONICAL, Severity::LOW, H_( CHANNEL ) ); \
         } while(0)
     #define DLOGB(MESSAGE, CHANNEL) do { \
-        wcore::dbg::LOG( MESSAGE, MsgType::BAD,     LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ) ); \
+        wcore::dbg::LOG( MESSAGE, MsgType::BAD,     LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ), __FILE__, __LINE__ ); \
         } while(0)
     #define DLOGS(MESSAGE, CHANNEL, SEVERITY) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::SECTION, LogMode::CANONICAL, SEVERITY, H_( CHANNEL ) ); \

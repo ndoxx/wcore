@@ -33,21 +33,21 @@ FileSystem::~FileSystem()
 
 bool FileSystem::open_archive(const fs::path& file_path, hash_t key)
 {
-    DLOGN("[FileSystem] Opening archive:", "io");
-    DLOGI("path: <p>" + file_path.string() + "</p>", "io");
-    DLOGI("key:  " + std::to_string(key) + " -> <n>" + HRESOLVE(key) + "</n>", "io");
+    DLOGN("[FileSystem] Opening archive:", "ios");
+    DLOGI("path: <p>" + file_path.string() + "</p>", "ios");
+    DLOGI("key:  " + std::to_string(key) + " -> <n>" + HRESOLVE(key) + "</n>", "ios");
 
     // Locate archive
     if(pimpl_->archives.find(key) != pimpl_->archives.end())
     {
-        DLOGW("Ignoring already loaded archive.", "io");
+        DLOGW("Ignoring already loaded archive.", "ios");
         return false;
     }
 
     // Sanity check
     if(!fs::exists(file_path))
     {
-        DLOGE("Archive does not exist.", "io");
+        DLOGE("Archive does not exist.", "ios");
         return false;
     }
 
@@ -55,13 +55,13 @@ bool FileSystem::open_archive(const fs::path& file_path, hash_t key)
     pimpl_->archives.insert(std::pair(key, zipios::ZipFile(file_path.string().c_str())));
 
     // * Parse manifest inside archive
-    DLOGI("<i>Reading manifest.</i>", "io");
+    DLOGI("<i>Reading manifest.</i>", "ios");
     auto stream = get_file_as_stream("MANIFEST.xml", key);
 
     // Check that a manifest is indeed present
     if(stream == nullptr)
     {
-        DLOGE("Could not find MANIFEST.xml in archive.", "io");
+        DLOGE("Could not find MANIFEST.xml in archive.", "ios");
         return false;
     }
 
@@ -79,7 +79,7 @@ bool FileSystem::open_archive(const fs::path& file_path, hash_t key)
         std::string vpath_name, vpath_value;
         if(!xml::parse_attribute(cur_node, "name", vpath_name)) continue;
         if(!xml::parse_attribute(cur_node, "value", vpath_value)) continue;
-        DLOGI("<h>vpath</h>: " + vpath_name + " -> <p>" + vpath_value + "</p>", "io");
+        DLOGI("<h>vpath</h>: " + vpath_name + " -> <p>" + vpath_value + "</p>", "ios");
         pimpl_->vpaths[key][H_(vpath_name.c_str())] = vpath_value;
     }
 
@@ -92,8 +92,8 @@ bool FileSystem::close_archive(hash_t key)
     auto it = pimpl_->archives.find(key);
     if(it == pimpl_->archives.end())
     {
-        DLOGE("Cannot close unknown archive:", "io");
-        DLOGI(std::to_string(key) + " -> <n>" + HRESOLVE(key) + "</n>", "io");
+        DLOGE("Cannot close unknown archive:", "ios");
+        DLOGI(std::to_string(key) + " -> <n>" + HRESOLVE(key) + "</n>", "ios");
         return false;
     }
 
@@ -111,14 +111,14 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const fs::path& fil
     // Sanity check
     if(!ifs->is_open())
     {
-        DLOGE("Unable to open file:", "io");
-        DLOGI("<p>" + file_path.string() + "</p>", "io");
+        DLOGE("Unable to open file:", "ios");
+        DLOGI("<p>" + file_path.string() + "</p>", "ios");
 
         return nullptr;
     }
 
-    DLOGN("[FileSystem] Getting stream from file path:", "io");
-    DLOGI("<p>" + file_path.string() + "</p>", "io");
+    DLOGN("[FileSystem] Getting stream from file path:", "ios");
+    DLOGI("<p>" + file_path.string() + "</p>", "ios");
 
     return ifs;
 }
@@ -129,8 +129,8 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* virtual
     auto it = pimpl_->archives.find(archive);
     if(it == pimpl_->archives.end())
     {
-        DLOGE("Cannot find unknown archive:", "io");
-        DLOGI(std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io");
+        DLOGE("Cannot find unknown archive:", "ios");
+        DLOGI(std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "ios");
         return nullptr;
     }
 
@@ -144,16 +144,16 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* virtual
         // Sanity check
         if(!in_stream->good())
         {
-            DLOGE("Unable to form stream:", "io");
-            DLOGI("from archive: " + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io");
-            DLOGI("virtual path: <p>" + std::string(virtual_path) + "</p>", "io");
+            DLOGE("Unable to form stream:", "ios");
+            DLOGI("from archive: " + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "ios");
+            DLOGI("virtual path: <p>" + std::string(virtual_path) + "</p>", "ios");
 
             return nullptr;
         }
 
-        DLOGN("[FileSystem] Getting stream from archive:", "io");
-        DLOGI(std::string("archive: ") + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "io");
-        DLOGI(std::string("<h>vpath</h>:   <p>") + virtual_path + "</p>", "io");
+        DLOGN("[FileSystem] Getting stream from archive:", "ios");
+        DLOGI(std::string("archive: ") + std::to_string(archive) + " -> <n>" + HRESOLVE(archive) + "</n>", "ios");
+        DLOGI(std::string("<h>vpath</h>:   <p>") + virtual_path + "</p>", "ios");
 
         return in_stream;
     }
@@ -196,10 +196,10 @@ std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const char* filenam
         }
     }
 
-    DLOGE("[FileSystem] File couldn't be reached:", "io");
-    DLOGI("filename: <p>" + std::string(filename) + "</p>", "io");
-    DLOGI("folder node: " + std::to_string(folder_node) + " -> <x>" + HRESOLVE(folder_node) + "</x>", "io");
-    DLOGI("archive:     " + std::to_string(archive) + " -> <h>" + HRESOLVE(archive) + "</h>", "io");
+    DLOGE("[FileSystem] File couldn't be reached:", "ios");
+    DLOGI("filename: <p>" + std::string(filename) + "</p>", "ios");
+    DLOGI("folder node: " + std::to_string(folder_node) + " -> <x>" + HRESOLVE(folder_node) + "</x>", "ios");
+    DLOGI("archive:     " + std::to_string(archive) + " -> <h>" + HRESOLVE(archive) + "</h>", "ios");
 
     return nullptr;
 }

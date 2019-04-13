@@ -22,7 +22,7 @@ void EntityFactory::parse_entity_file(const char* xmlfile)
     if(pstream == nullptr)
     {
         DLOGE("[EntityFactory] Unable to open file:", "entity");
-        DLOGI(xmlfile, "entity");
+        DLOGI("<p>" + std::string(xmlfile) + "</p>", "entity");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);

@@ -81,7 +81,7 @@ static std::vector<std::string> LOGGER_CHANNELS
 {
     "texture", "material",  "model",  "shader",
     "text",    "input",     "buffer", "chunk",
-    "parsing", "entity",    "scene",  "io",
+    "parsing", "entity",    "scene",  "ios",
     "profile", "collision", "sound",  "editor"
 };
 

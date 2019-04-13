@@ -30,7 +30,7 @@ void InputHandler::import_key_bindings()
     if(pstream == nullptr)
     {
         DLOGE("[InputHandler] Unable to open file:", "input");
-        DLOGI(keybindingsfile, "input");
+        DLOGI("<p>" + std::string(keybindingsfile) + "</p>", "input");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);

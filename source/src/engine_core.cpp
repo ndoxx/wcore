@@ -214,7 +214,7 @@ int EngineCore::run()
 #endif //__PROFILING_STOP_AFTER_X_SAMPLES__
 
 #ifdef __DEBUG__
-    DLOGT("-------- Game loop start --------", "profile", Severity::LOW);
+    DLOGT("-------- Game loop start --------", "profile");
 #endif
     do
     {
@@ -304,7 +304,7 @@ int EngineCore::run()
     while(context_->window_required());
 
 #ifdef __DEBUG__
-    DLOGT("-------- Game loop stop ---------", "profile", Severity::LOW);
+    DLOGT("-------- Game loop stop ---------", "profile");
 #endif
 
 #ifdef __PROFILING_EngineCore__

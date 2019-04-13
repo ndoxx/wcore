@@ -25,7 +25,7 @@ MaterialFactory::MaterialFactory(const char* xml_file)
     if(pstream == nullptr)
     {
         DLOGE("[MaterialFactory] Unable to open file:", "material");
-        DLOGI(xml_file, "material");
+        DLOGI("<p>" + std::string(xml_file) + "</p>", "material");
         fatal();
     }
     xml_parser_.load_file_xml(*pstream);

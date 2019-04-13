@@ -52,18 +52,18 @@ static void stream_read_data(png_structp p_png, png_bytep data, png_size_t lengt
 
 PixelBuffer* PngLoader::load_png(std::istream& stream)
 {
-    DLOGN("[PngLoader] Loading png image from stream.", "io");
+    DLOGN("[PngLoader] Loading png image from stream.", "ios");
 
     if(!stream)
     {
-        DLOGE("[PngLoader] Stream error.", "io");
+        DLOGE("[PngLoader] Stream error.", "ios");
         return nullptr;
     }
 
     // Validate file as a png by checking signature
     if(!is_valid_png(stream))
     {
-        DLOGE("[PngLoader] Invalid PNG file.", "io");
+        DLOGE("[PngLoader] Invalid PNG file.", "ios");
         return nullptr;
     }
 
@@ -71,7 +71,7 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
     png_structp p_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if(!p_png)
     {
-        DLOGE("[PngLoader] Couldn't initialize png read struct.", "io");
+        DLOGE("[PngLoader] Couldn't initialize png read struct.", "ios");
         return nullptr;
     }
 
@@ -79,7 +79,7 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
     png_infop p_info = png_create_info_struct(p_png);
     if(!p_info)
     {
-        DLOGE("[PngLoader] Couldn't initialize png info struct.", "io");
+        DLOGE("[PngLoader] Couldn't initialize png info struct.", "ios");
         png_destroy_read_struct(&p_png, (png_infopp)0, (png_infopp)0);
         return nullptr;
     }
@@ -92,7 +92,7 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
         //An error occured, so clean up what we have allocated so far...
         png_destroy_read_struct(&p_png, &p_info,(png_infopp)0);
         if (px_buf != nullptr) delete px_buf;
-        DLOGE("[PngLoader] An error occured while reading file.", "io");
+        DLOGE("[PngLoader] An error occured while reading file.", "ios");
         return nullptr;
     }
 
@@ -159,8 +159,8 @@ PixelBuffer* PngLoader::load_png(std::istream& stream)
 
 PixelBuffer* PngLoader::load_png(const fs::path& file_path)
 {
-    DLOGN("[PngLoader] Loading png image:", "io");
-    DLOGI("<p>" + file_path.string() + "</p>", "io");
+    DLOGN("[PngLoader] Loading png image:", "ios");
+    DLOGI("<p>" + file_path.string() + "</p>", "ios");
 
     // Try to open file
     std::ifstream stream;
