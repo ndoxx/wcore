@@ -14,6 +14,7 @@
 #include "g_buffer.h"
 #include "l_buffer.h"
 #include "SSAO_buffer.h"
+#include "SSR_buffer.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -39,6 +40,7 @@ text_renderer_(text_renderer)
     auto psbuffer = Texture::get_named_texture("shadowmap"_h).lock();
     auto pbloom   = Texture::get_named_texture("bloom"_h).lock();
     auto pssao    = Texture::get_named_texture("SSAObuffer"_h).lock();
+    auto pssr     = Texture::get_named_texture("SSRbuffer"_h).lock();
 
     register_debug_pane(GBuffer::Instance());
 
@@ -53,6 +55,7 @@ text_renderer_(text_renderer)
 
     register_debug_pane(LBuffer::Instance());
     register_debug_pane(SSAOBuffer::Instance());
+    register_debug_pane(SSRBuffer::Instance());
 
     register_debug_pane({(*plbuffer)[1], (*pbloom)[0]},
                         {"screenTex", "bloomTex"},

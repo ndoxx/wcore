@@ -12,6 +12,7 @@ class ShadowMapRenderer;
 class LightingRenderer;
 class ForwardRenderer;
 class SSAORenderer;
+class SSRRenderer;
 class BloomRenderer;
 class PostProcessingRenderer;
 class TextRenderer;
@@ -28,6 +29,7 @@ private:
     LightingRenderer*        lighting_renderer_;
     ForwardRenderer*         forward_renderer_;
     SSAORenderer*            SSAO_renderer_;
+    SSRRenderer*             SSR_renderer_;
     BloomRenderer*           bloom_renderer_;
     PostProcessingRenderer*  post_processing_renderer_;
     TextRenderer*            text_renderer_;

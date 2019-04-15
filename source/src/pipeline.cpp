@@ -7,6 +7,7 @@
 #include "forward_renderer.h"
 #include "bloom_renderer.h"
 #include "SSAO_renderer.h"
+#include "SSR_renderer.h"
 #include "post_processing_renderer.h"
 #include "text_renderer.h"
 #include "debug_renderer.h"
@@ -52,6 +53,7 @@ bloom_enabled_(true)
     lighting_renderer_        = new LightingRenderer(*shadow_map_renderer_);
     forward_renderer_         = new ForwardRenderer();
     SSAO_renderer_            = new SSAORenderer();
+    SSR_renderer_             = new SSRRenderer();
     bloom_renderer_           = new BloomRenderer();
     post_processing_renderer_ = new PostProcessingRenderer();
     text_renderer_            = new TextRenderer();
@@ -71,6 +73,7 @@ RenderPipeline::~RenderPipeline()
     delete text_renderer_;
     delete post_processing_renderer_;
     delete bloom_renderer_;
+    delete SSR_renderer_;
     delete SSAO_renderer_;
     delete forward_renderer_;
     delete lighting_renderer_;
@@ -220,6 +223,7 @@ static nanoClock frame_clock_;
 static nanoClock profile_clock_;
 static MovingAverage geometry_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage SSAO_dt_fifo_(PROFILING_MAX_SAMPLES);
+static MovingAverage SSR_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage lighting_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage forward_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage bloom_dt_fifo_(PROFILING_MAX_SAMPLES);
@@ -301,11 +305,15 @@ void RenderPipeline::generate_widget()
         ImGui::Columns(2, nullptr, false);
         ImGui::Checkbox("Lighting",       &lighting_renderer_->get_lighting_enabled_nc());
         ImGui::Checkbox("Shadow Mapping", &lighting_renderer_->get_shadow_enabled_nc());
-        if(ImGui::Checkbox("SSAO", &SSAO_renderer_->get_active()))
+        if(ImGui::Checkbox("SSAO", &SSAO_renderer_->get_enabled()))
         {
-            lighting_renderer_->set_SSAO_enabled(SSAO_renderer_->is_active());
+            lighting_renderer_->set_SSAO_enabled(SSAO_renderer_->is_enabled());
         }
         ImGui::NextColumn();
+        if(ImGui::Checkbox("SSR", &SSR_renderer_->get_enabled()))
+        {
+            //lighting_renderer_->set_SSR_enabled(SSR_renderer_->is_enabled());
+        }
         if(ImGui::Checkbox("Bloom", &bloom_enabled_))
         {
             post_processing_renderer_->set_bloom_enabled(bloom_enabled_);
@@ -319,7 +327,7 @@ void RenderPipeline::generate_widget()
     }
 
     // SSAO OPTIONS
-    if(SSAO_renderer_->is_active())
+    if(SSAO_renderer_->is_enabled())
     {
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("SSAO control"))
@@ -352,6 +360,16 @@ void RenderPipeline::generate_widget()
                 ImGui::SliderFloat("Compression", &SSAO_renderer_->get_blur_policy_nc().gamma_r_, 0.5f, 2.0f);
                 ImGui::TreePop();
             }
+        }
+    }
+
+    // SSR OPTIONS
+    if(SSR_renderer_->is_enabled())
+    {
+        ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
+        if(ImGui::CollapsingHeader("SSR control"))
+        {
+
         }
     }
 
@@ -489,8 +507,10 @@ void RenderPipeline::generate_widget()
         {
             ImGui::PlotVar("Draw time", 1e3*last_render_time_, 0.0f, 16.66f);
             ImGui::PlotVar("Geometry pass", 1e3*geometry_dt_fifo_.last_element(), 0.0f, 16.66f);
-            if(SSAO_renderer_->is_active())
+            if(SSAO_renderer_->is_enabled())
                 ImGui::PlotVar("SSAO", 1e3*SSAO_dt_fifo_.last_element(), 0.0f, 16.66f);
+            if(SSR_renderer_->is_enabled())
+                ImGui::PlotVar("SSR", 1e3*SSR_dt_fifo_.last_element(), 0.0f, 16.66f);
             ImGui::PlotVar("Lighting pass", 1e3*lighting_dt_fifo_.last_element(), 0.0f, 16.66f);
             ImGui::PlotVar("Forward pass", 1e3*forward_dt_fifo_.last_element(), 0.0f, 16.66f);
             if(bloom_enabled_)
@@ -560,6 +580,27 @@ void RenderPipeline::render()
         period = profile_clock_.get_elapsed_time();
         dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
         SSAO_dt_fifo_.push(dt);
+    }
+    #endif
+
+// ------- SSR (draw on texture "SSRbuffer") ----------------------------------
+    #ifdef __PROFILE__
+    if(profile_renderers)
+    {
+        GFX::finish();
+        profile_clock_.restart();
+    }
+    #endif
+
+    SSR_renderer_->render(pscene);
+
+    #ifdef __PROFILE__
+    if(profile_renderers)
+    {
+        GFX::finish();
+        period = profile_clock_.get_elapsed_time();
+        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
+        SSR_dt_fifo_.push(dt);
     }
     #endif
 

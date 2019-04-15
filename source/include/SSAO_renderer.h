@@ -19,7 +19,7 @@ private:
     math::vec2 noise_scale_;
 
     unsigned int noise_texture_;
-    bool active_;
+    bool enabled_;
 
     float SSAO_radius_;
     float SSAO_bias_;
@@ -39,10 +39,10 @@ public:
 
     virtual void render(Scene* pscene) override;
 
-    inline void toggle() { active_ = !active_; }
-    inline void set_enabled(bool value) { active_ = value; }
-    inline bool is_active() const { return active_; }
-    inline bool& get_active() { return active_; }
+    inline void toggle() { enabled_ = !enabled_; }
+    inline void set_enabled(bool value) { enabled_ = value; }
+    inline bool is_enabled() const { return enabled_; }
+    inline bool& get_enabled() { return enabled_; }
 
     inline void set_radius(float value)      { SSAO_radius_ = value; }
     inline void set_scalar_bias(float value) { SSAO_bias_ = value; }

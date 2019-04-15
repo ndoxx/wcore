@@ -86,12 +86,14 @@ set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/l_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/shadow_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/SSAO_buffer.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/SSR_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/bounding_boxes.cpp
     ${CMAKE_SOURCE_DIR}/source/src/ray.cpp
     ${CMAKE_SOURCE_DIR}/source/src/ray_caster.cpp
     ${CMAKE_SOURCE_DIR}/source/src/geometry_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/shadow_map_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/SSAO_renderer.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/SSR_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/lighting_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/forward_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/bloom_renderer.cpp

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Scene>
+    <Audio>
+        <BGM>maze_bgm</BGM>
+    </Audio>
+    <Skybox disable="false">
+        <CubemapTexture name="skybox01"/>
+    </Skybox>
+    <Terrain chunkSize="32" latticeScale="1.0" textureScale="1.0">
+        <TerrainPatch origin="(0,0)" size="(2,2)" height="0">
+            <HeightModifier>
+                <Offset y="0"></Offset>
+            </HeightModifier>
+            <Transform>
+                <Position>(0,0,0)</Position>
+            </Transform>
+            <Material name="testMetalFloor01"/>
+            <Shadow>
+                <CullFace>1</CullFace>
+            </Shadow>
+        </TerrainPatch>
+    </Terrain>
+
+    <Chunk coords="(0,0)">
+        <Models>
+            <Model ypos="relative">
+                <Mesh type="icosphere">
+                    <Generator>
+                        <Density>2</Density>
+                    </Generator>
+                </Mesh>
+                <Material>
+                    <Uniform>
+                        <Albedo>(1.0,0.4,0.05)</Albedo>
+                        <Roughness>0.15</Roughness>
+                    </Uniform>
+                </Material>
+                <Transform>
+                    <Position>(10,1,10)</Position>
+                    <Scale>1.0</Scale>
+                    <Angle>(0,0,0)</Angle>
+                </Transform>
+            </Model>
+            <Model ypos="relative">
+                <Mesh type="cube"/>
+                <Material>
+                    <Uniform>
+                        <Albedo>(0.4,1.0,0.15)</Albedo>
+                        <Roughness>0.10</Roughness>
+                    </Uniform>
+                </Material>
+                <Transform>
+                    <Position>(13,0,8)</Position>
+                    <Scale>1.0</Scale>
+                    <Angle>(0,45,0)</Angle>
+                </Transform>
+            </Model>
+            <Model name="tree04" ypos="relative">
+                <Transform>
+                    <Position>(16,-1.0,16)</Position>
+                    <Scale>10.0</Scale>
+                    <Angle>(0,0,0)</Angle>
+                </Transform>
+            </Model>
+            <Model name="earthSquare01" ypos="relative">
+                <Transform>
+                    <Position>(16,-0.1,16)</Position>
+                </Transform>
+            </Model>
+        </Models>
+
+        <Lights>
+            <!-- Static lights -->
+            <Light type="point" ypos="relative">
+                <Position>(12.0,2.0,12.0)</Position>
+                <Color>(0.2, 0.9, 0.7)</Color>
+                <Radius>10.0</Radius>
+                <Brightness>10.0</Brightness>
+            </Light>
+        </Lights>
+    </Chunk>
+
+    <!--
+    <Chunk coords="(0,1)"/>
+    <Chunk coords="(1,0)"/>
+    <Chunk coords="(1,1)"/>
+    -->
+
+    <Ambient>
+        <Directional>
+            <ShadowBias>1.0</ShadowBias>
+            <Color>
+                <CSpline base="vec3" tangentPolicy="CatmullRom">
+                    <Control locus="0.0" value="(0.10,0.25,0.85)"/>
+                    <Control locus="6.0" value="(0.20,0.45,0.85)"/>
+                    <Control locus="8.0" value="(0.50,0.45,0.85)"/>
+                    <Control locus="12.0" value="(0.75,0.75,0.80)"/>
+                    <Control locus="16.0" value="(0.85,0.55,0.50)"/>
+                    <Control locus="18.0" value="(0.85,0.25,0.20)"/>
+                    <Control locus="22.0" value="(0.95,0.25,0.10)"/>
+                    <Control locus="22.1" value="(0.10,0.25,0.85)"/>
+                    <Control locus="23.9" value="(0.10,0.25,0.85)"/>
+                </CSpline>
+            </Color>
+            <Brightness>
+                <CSpline base="float" tangentPolicy="Finite">
+                    <Control locus="0.0" value="1.0"/>
+                    <Control locus="6.0" value="0.0"/>
+                    <Control locus="12.0" value="6.0"/>
+                    <Control locus="21.0" value="4.0"/>
+                    <Control locus="22.0" value="0.0"/>
+                    <Control locus="22.1" value="0.0"/>
+                    <Control locus="23.9" value="1.0"/>
+                </CSpline>
+            </Brightness>
+            <AmbientStrength>
+                <CSpline base="float" tangentPolicy="Cardinal">
+                    <Control locus="0.0" value="0.03"/>
+                    <Control locus="6.0" value="0.09"/>
+                    <Control locus="12.0" value="0.1"/>
+                    <Control locus="16.0" value="0.2"/>
+                    <Control locus="22.0" value="0.03"/>
+                    <Control locus="23.9" value="0.03"/>
+                </CSpline>
+            </AmbientStrength>
+        </Directional>
+        <PostProcessing>
+            <Gamma>
+                <CSpline base="vec3" tangentPolicy="CatmullRom">
+                    <Control locus="0.0" value="(1.0,1.1,1.2)"/>
+                    <Control locus="6.0" value="(1.0,1.1,1.1)"/>
+                    <Control locus="18.0" value="(1.2,1.1,1.0)"/>
+                    <Control locus="23.9" value="(1.0,1.1,1.2)"/>
+                </CSpline>
+            </Gamma>
+            <Saturation>
+                <CSpline base="float" tangentPolicy="CatmullRom">
+                    <Control locus="0.0" value="0.8"/>
+                    <Control locus="6.0" value="1.0"/>
+                    <Control locus="18.0" value="1.4"/>
+                    <Control locus="22.0" value="1.0"/>
+                    <Control locus="23.9" value="0.8"/>
+                </CSpline>
+            </Saturation>
+            <FogDensity>
+                <CSpline base="float" tangentPolicy="Cardinal">
+                    <Control locus="0.0" value="0.02"/>
+                    <Control locus="6.0" value="0.05"/>
+                    <Control locus="8.0" value="0.02"/>
+                    <Control locus="12.0" value="0.0"/>
+                    <Control locus="22.0" value="0.0"/>
+                    <Control locus="23.9" value="0.02"/>
+                </CSpline>
+            </FogDensity>
+        </PostProcessing>
+    </Ambient>
+
+    <Camera>
+        <Position>(0,7,0)</Position>
+        <Orientation>(223,-38)</Orientation>
+    </Camera>
+
+    <!-- Sun -->
+    <Light type="directional">
+        <Position>(16.0,0.5,17.5)</Position>
+        <Color>(0.85,0.25,0.20)</Color>
+        <Brightness>15.0</Brightness>
+    </Light>
+
+</Scene>
