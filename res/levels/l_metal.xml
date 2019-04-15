@@ -57,9 +57,9 @@
             </Model>
             <Model name="tree04" ypos="relative">
                 <Transform>
-                    <Position>(16,-1.0,16)</Position>
+                    <Position>(16,-0.5,16)</Position>
                     <Scale>10.0</Scale>
-                    <Angle>(0,0,0)</Angle>
+                    <Angle>(30,40,-10)</Angle>
                 </Transform>
             </Model>
             <Model name="earthSquare01" ypos="relative">

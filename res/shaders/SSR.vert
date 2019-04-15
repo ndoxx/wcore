@@ -4,6 +4,9 @@ struct render_data
 {
     vec2 v2_texelSize;
 
+    mat4 m4_projection;
+    mat4 m4_invView;
+
     // Position reconstruction
     vec4 v4_proj_params;
 };
