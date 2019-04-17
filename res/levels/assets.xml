@@ -208,6 +208,13 @@
                 <Roughness>0.5</Roughness>
             </Uniform>
         </Material>
+        <Material name="chrome">
+            <Uniform>
+                <Albedo>(0.549,0.556,0.554)</Albedo>
+                <Roughness>0.0</Roughness>
+                <Metallic>1.0</Metallic>
+            </Uniform>
+        </Material>
     </Materials>
 
     <Meshes>

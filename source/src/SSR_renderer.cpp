@@ -35,6 +35,7 @@ void SSRRenderer::render(Scene* pscene)
     const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     const mat4& V = pscene->get_camera().get_view_matrix(); // Camera View matrix
     vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
+    float far = pscene->get_camera().get_far();
 
     mat4 invView;
     math::inverse(V, invView);
@@ -60,6 +61,7 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
+    SSR_shader_.send_uniform("rd.f_far"_h, far);
 
     GFX::clear_color();
 

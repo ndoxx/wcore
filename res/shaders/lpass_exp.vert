@@ -5,15 +5,17 @@ struct render_data
 {
     float f_wireframe_mix;    // Wireframe blend factor in[0,1]
     float f_bright_threshold; // For bloom bright pass
-    float f_bright_knee;
+    float f_bright_knee;      // For bloom bright pass
     vec3 v3_viewPos;
     vec2 v2_screenSize;
     // Shadow
     float f_shadowBias;
     vec2 v2_shadowTexelSize;
     bool b_shadow_enabled;
-    // SSAO
+    // Ambient occlusion
     bool b_enableSSAO;
+    // Reflections
+    bool b_enableSSR;
     // Lighting
     bool b_lighting_enabled;
     // Position reconstruction

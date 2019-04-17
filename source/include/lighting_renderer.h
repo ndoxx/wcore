@@ -25,6 +25,7 @@ private:
     ShadowMapRenderer& smr_;
 
     bool SSAO_enabled_;
+    bool SSR_enabled_;
     bool shadow_enabled_;
     bool lighting_enabled_;
     bool dirlight_enabled_;
@@ -43,15 +44,18 @@ public:
     virtual void render(Scene* pscene) override;
 
     inline void set_SSAO_enabled(bool value)              { SSAO_enabled_ = value; }
+    inline void set_SSR_enabled(bool value)               { SSR_enabled_ = value; }
     inline void set_lighting_enabled(bool value)          { lighting_enabled_ = value; }
     inline void set_shadow_mapping_enabled(bool value)    { shadow_enabled_ = value; }
     inline void set_directional_light_enabled(bool value) { dirlight_enabled_ = value; }
 
     inline void toggle_SSAO()           { SSAO_enabled_ = !SSAO_enabled_; }
+    inline void toggle_SSR()            { SSR_enabled_ = !SSR_enabled_; }
     inline void toggle_lighting()       { lighting_enabled_ = !lighting_enabled_; }
     inline void toggle_shadow_mapping() { shadow_enabled_ = !shadow_enabled_; }
 
     inline bool& get_SSAO_enabled_nc()     { return SSAO_enabled_; }
+    inline bool& get_SSR_enabled_nc()      { return SSR_enabled_; }
     inline bool& get_shadow_enabled_nc()   { return shadow_enabled_; }
     inline bool& get_lighting_enabled_nc() { return lighting_enabled_; }
 

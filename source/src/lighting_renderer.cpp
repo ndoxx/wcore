@@ -24,6 +24,7 @@ lpass_point_shader_(ShaderResource("lpass_exp.vert;lpass_exp.frag", "VARIANT_POI
 null_shader_(ShaderResource("null.vert;null.frag")),
 smr_(smr),
 SSAO_enabled_(true),
+SSR_enabled_(true),
 shadow_enabled_(true),
 lighting_enabled_(true),
 dirlight_enabled_(true),
@@ -69,6 +70,7 @@ static const math::mat4 biasMatrix
 
 static uint32_t SHADOW_TEX = 3;
 static uint32_t SSAO_TEX = 4;
+static uint32_t SSR_TEX = 5;
 
 void LightingRenderer::render(Scene* pscene)
 {
@@ -243,6 +245,15 @@ void LightingRenderer::render(Scene* pscene)
             lpass_dir_shader_.send_uniform<int>("SSAOTex"_h, SSAO_TEX);
         }
         lpass_dir_shader_.send_uniform("rd.b_enableSSAO"_h, SSAO_enabled_);
+
+        // SSR
+        if(SSR_enabled_)
+        {
+            auto pssr = Texture::get_named_texture("SSRbuffer"_h).lock();
+            pssr->bind(SSR_TEX,0); // Bind ssr[0] to texture unit SSR_TEX
+            lpass_dir_shader_.send_uniform<int>("SSRTex"_h, SSR_TEX);
+        }
+        lpass_dir_shader_.send_uniform("rd.b_enableSSR"_h, SSR_enabled_);
 
         buffer_unit_.draw(QUAD_NE(), QUAD_OFFSET());
         lpass_dir_shader_.unuse();

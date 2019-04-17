@@ -49,6 +49,7 @@ void init_look_at(mat4& Matrix, const vec3& eye, const vec3& target, const vec3&
     Matrix[3] = 0.0f;       Matrix[7] = 0.0f;       Matrix[11] = 0.0f;      Matrix[15] = 1.0f;
 }
 
+// UNUSED
 void init_perspective(mat4& Matrix, float fov, float aspectRatio, float zNear, float zFar, bool leftHanded)
 {
     float yScale = 1.0f / tan(TORADIANS(fov/2));

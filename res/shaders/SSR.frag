@@ -12,6 +12,7 @@ struct render_data
 
     mat4 m4_projection;
     mat4 m4_invView;
+    float f_far;
 
     // Position reconstruction
     vec4 v4_proj_params;
@@ -27,16 +28,17 @@ layout(location = 0) out vec3 out_SSR;
 
 const float step = 0.1;
 const float minRayStep = 0.1;
-const float maxSteps = 10;
-const int numBinarySearchSteps = 5;
+const float maxSteps = 30;
+const int numBinarySearchSteps = 10;
 const float reflectionSpecularFalloffExponent = 3.0;
 
 #define Scale vec3(.8, .8, .8)
 #define K 19.19
 
 vec3 hash(vec3 a);
-vec3 binary_search(inout vec3 dir, inout vec3 hitCoord, inout float dDepth);
-vec4 ray_march(vec3 dir, inout vec3 hitCoord, out float dDepth);
+vec2 binary_search(inout vec3 dir, inout vec3 hitCoord);
+//vec2 ray_march(vec3 dir, inout vec3 hitCoord, out float dDepth);
+vec2 ray_march(vec3 reflected, vec3 fragPos);
 
 void main()
 {
@@ -58,26 +60,27 @@ void main()
     // Reflection vector
     vec3 reflected = normalize(reflect(normalize(fragPos), fragNormal));
 
-    vec3 hitPos = fragPos;
-    float dDepth;
+    //vec3 hitPos = fragPos;
+    //float dDepth;
 
-    vec3 wp = vec3(rd.m4_invView * vec4(fragPos, 1.0));
-    vec3 jitt = mix(vec3(0.0), vec3(hash(wp)), fragRoughness);
-    vec4 coords = ray_march((vec3(jitt) + reflected * max(minRayStep, -fragPos.z)), hitPos, dDepth);
+    /*vec3 wp = vec3(rd.m4_invView * vec4(fragPos, 1.0));
+    vec3 jitt = mix(vec3(0.0), vec3(hash(wp)), fragRoughness);*/
+    //vec2 coords = ray_march((/*vec3(jitt) +*/ reflected * max(minRayStep, -fragPos.z)), hitPos, dDepth);
+    vec2 coords = ray_march(reflected, fragPos);
 
-
-    vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - texCoord.xy));
+    vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - coords.xy));
     float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
     float ReflectionMultiplier = pow(fragMetallic, reflectionSpecularFalloffExponent) *
                 screenEdgefactor *
                 -reflected.z;
 
-    out_SSR = texture2D(lastFrameTex, coords.xy).rgb * clamp(ReflectionMultiplier, 0.0, 0.9);
+    out_SSR = texture2D(lastFrameTex, coords).rgb * clamp(ReflectionMultiplier, 0.0, 0.9);
+    //out_SSR = texture2D(albedoTex, coords).rgb * clamp(ReflectionMultiplier, 0.0, 0.9);
 }
 
-vec3 binary_search(inout vec3 dir, inout vec3 hitCoord, inout float dDepth)
+vec2 binary_search(inout vec3 dir, inout vec3 hitCoord)
 {
-    float depth;
+    float depth, dDepth;
 
     vec4 projectedCoord;
 
@@ -88,9 +91,9 @@ vec3 binary_search(inout vec3 dir, inout vec3 hitCoord, inout float dDepth)
         projectedCoord.xy /= projectedCoord.w;
         projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
 
-        depth = texture2D(depthTex, projectedCoord.xy).r;
+        depth = depth_view_from_tex(depthTex, projectedCoord.xy, rd.v4_proj_params.zw);
 
-        dDepth = hitCoord.z - depth;
+        dDepth = -hitCoord.z - depth;
 
         dir *= 0.5;
         hitCoord += (dDepth > 0.0) ? dir : -dir;
@@ -100,46 +103,46 @@ vec3 binary_search(inout vec3 dir, inout vec3 hitCoord, inout float dDepth)
     projectedCoord.xy /= projectedCoord.w;
     projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
 
-    return vec3(projectedCoord.xy, depth);
+    return projectedCoord.xy;
 }
 
-vec4 ray_march(vec3 dir, inout vec3 hitCoord, out float dDepth)
+vec2 ray_march(vec3 reflected, vec3 fragPos/*, float fragRoughness*/)
 {
-    dir *= step;
+    /*vec3 wp = vec3(rd.m4_invView * vec4(fragPos, 1.0));
+    vec3 jitt = mix(vec3(0.0), vec3(hash(wp)), fragRoughness);*/
+    vec3 dir = step * (/*jitt +*/ reflected * max(minRayStep, -fragPos.z));
+    vec3 hitCoord = fragPos;
 
     float depth;
-    int steps;
     vec4 projectedCoord;
 
     for(int ii=0; ii<maxSteps; ++ii)
     {
+        // March ray: advance hit point
         hitCoord += dir;
-
+        // Project hit point to screen space
         projectedCoord = rd.m4_projection * vec4(hitCoord, 1.0);
         projectedCoord.xy /= projectedCoord.w;
         projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
 
-        depth = texture2D(depthTex, projectedCoord.xy).r;
-        if(depth > 1000.0)
+        // Get linear depth of nearest fragment at hit point from depth map
+        depth = depth_view_from_tex(depthTex, projectedCoord.xy, rd.v4_proj_params.zw);
+
+        /*if(depth > rd.f_far)
+            continue;*/
+        if(depth < -fragPos.z)
             continue;
 
-        dDepth = hitCoord.z - depth;
-
-        if((dir.z - dDepth) < 1.2)
+        if(depth < -hitCoord.z)
         {
-            if(dDepth <= 0.0)
-            {
-                vec4 Result;
-                Result = vec4(binary_search(dir, hitCoord, dDepth), 1.0);
-
-                return Result;
-            }
+            //return projectedCoord.xy;
+            return binary_search(dir, hitCoord);
         }
-
-        ++steps;
     }
 
-    return vec4(projectedCoord.xy, depth, 0.0);
+    //return vec2(0.0);
+    return projectedCoord.xy;
+    //discard;
 }
 
 vec3 hash(vec3 a)

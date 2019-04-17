@@ -6,6 +6,7 @@ struct render_data
 
     mat4 m4_projection;
     mat4 m4_invView;
+    float f_far;
 
     // Position reconstruction
     vec4 v4_proj_params;

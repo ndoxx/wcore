@@ -17,8 +17,10 @@ struct render_data
     float f_shadowBias;
     vec2 v2_shadowTexelSize;
     bool b_shadow_enabled;
-    // SSAO
+    // Ambient occlusion
     bool b_enableSSAO;
+    // Reflections
+    bool b_enableSSR;
     // Lighting
     bool b_lighting_enabled;
     // Position reconstruction
@@ -47,6 +49,7 @@ uniform sampler2D albedoTex;
 uniform sampler2D depthTex;
 uniform sampler2D shadowTex;
 uniform sampler2D SSAOTex;
+uniform sampler2D SSRTex;
 
 uniform render_data rd;
 uniform light       lt;
@@ -132,17 +135,20 @@ void main()
         }
         if(rd.b_lighting_enabled)
         {
-            total_light = CookTorrance(lt.v3_lightColor,
-                                       lt.v3_lightPosition,
-                                       fragNormal,
-                                       viewDir,
-                                       fragAlbedo,
-                                       fragMetallic,
-                                       fragRoughness,
-                                       fragAO,
-                                       visibility,
-                                       lt.f_ambientStrength);
-            //total_light += 0.1f*texture(SSAOTex, texCoord).rgb;
+            vec3 radiance = CookTorrance(lt.v3_lightColor,
+                                         lt.v3_lightPosition,
+                                         fragNormal,
+                                         viewDir,
+                                         fragAlbedo,
+                                         fragMetallic,
+                                         fragRoughness,
+                                         visibility);
+            vec3 ambient = (fragAO * lt.f_ambientStrength) * fragAlbedo;
+            total_light = radiance + ambient;
+            if(rd.b_enableSSR)
+            {
+                total_light += texture(SSRTex, texCoord).rgb * fragMetallic;
+            }
         }
         else
         {
@@ -155,16 +161,16 @@ void main()
         vec3 diff = lt.v3_lightPosition - fragPos;
         vec3 normalizedLightDir = normalize(diff);
         float distance = length(diff);
-        vec3 point_contrib = CookTorrance(lt.v3_lightColor,
-                                          normalizedLightDir,
-                                          fragNormal,
-                                          viewDir,
-                                          fragAlbedo,
-                                          fragMetallic,
-                                          fragRoughness,
-                                          fragAO,
-                                          1.0f,
-                                          lt.f_ambientStrength);
+        vec3 radiance = CookTorrance(lt.v3_lightColor,
+                                     normalizedLightDir,
+                                     fragNormal,
+                                     viewDir,
+                                     fragAlbedo,
+                                     fragMetallic,
+                                     fragRoughness,
+                                     1.0f);
+        vec3 ambient = (fragAO * lt.f_ambientStrength) * fragAlbedo;
+        vec3 point_contrib = radiance + ambient;
 
         // attenuation
         total_light = point_contrib * attenuate(distance, lt.f_light_radius, 3.0f);
