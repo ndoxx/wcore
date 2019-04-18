@@ -98,4 +98,4 @@ target_link_libraries(wcore
                       zipios
                       freetype
                       pthread)
-cotire(wcore)
+#cotire(wcore)

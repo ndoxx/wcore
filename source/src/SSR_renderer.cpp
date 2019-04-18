@@ -17,7 +17,12 @@ using namespace math;
 SSRRenderer::SSRRenderer():
 Renderer<Vertex3P>(),
 SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
-enabled_(true)
+enabled_(true),
+hit_threshold_(0.121f),
+ray_step_(1.0f),
+reflection_falloff_(3.f),
+ray_steps_(16),
+bin_steps_(10)
 {
     load_geometry();
     SSRBuffer::Init(GLB.WIN_W, GLB.WIN_H);
@@ -62,6 +67,11 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
     SSR_shader_.send_uniform("rd.f_far"_h, far);
+    SSR_shader_.send_uniform("rd.f_hitThreshold"_h, hit_threshold_);
+    SSR_shader_.send_uniform("rd.f_step"_h, ray_step_);
+    SSR_shader_.send_uniform("rd.f_reflectionFalloff"_h, reflection_falloff_);
+    SSR_shader_.send_uniform<int>("rd.i_raySteps"_h, ray_steps_);
+    SSR_shader_.send_uniform<int>("rd.i_binSteps"_h, bin_steps_);
 
     GFX::clear_color();
 

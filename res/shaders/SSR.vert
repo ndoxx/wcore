@@ -7,6 +7,11 @@ struct render_data
     mat4 m4_projection;
     mat4 m4_invView;
     float f_far;
+    float f_hitThreshold;
+    float f_step;
+    float f_reflectionFalloff;
+    int i_raySteps;
+    int i_binSteps;
 
     // Position reconstruction
     vec4 v4_proj_params;
