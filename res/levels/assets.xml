@@ -211,6 +211,20 @@
         <Material name="chrome">
             <Uniform>
                 <Albedo>(0.549,0.556,0.554)</Albedo>
+                <Roughness>0.05</Roughness>
+                <Metallic>1.0</Metallic>
+            </Uniform>
+        </Material>
+        <Material name="gold">
+            <Uniform>
+                <Albedo>(1.022,0.782,0.344)</Albedo>
+                <Roughness>0.01</Roughness>
+                <Metallic>1.0</Metallic>
+            </Uniform>
+        </Material>
+        <Material name="mirror">
+            <Uniform>
+                <Albedo>(0.549,0.556,0.554)</Albedo>
                 <Roughness>0.0</Roughness>
                 <Metallic>1.0</Metallic>
             </Uniform>

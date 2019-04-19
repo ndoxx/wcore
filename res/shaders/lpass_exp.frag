@@ -147,7 +147,7 @@ void main()
             total_light = radiance + ambient;
             if(rd.b_enableSSR)
             {
-                total_light += texture(SSRTex, texCoord).rgb * fragMetallic;
+                total_light += texture(SSRTex, texCoord).rgb;
             }
         }
         else

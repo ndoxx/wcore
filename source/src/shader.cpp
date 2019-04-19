@@ -1,6 +1,7 @@
 #include <cstring>
 #include <set>
 #include <filesystem>
+#include <algorithm>
 
 #include "shader.h"
 #include "lights.h"
@@ -77,6 +78,9 @@ ProgramID_(0),
 VertexShaderID_(0),
 GeometryShaderID_(0),
 FragmentShaderID_(0)
+#ifdef __DEBUG__
+, line_offset_(0)
+#endif
 {
 #ifdef __DEBUG__
     if(++instance_count_ == 1) dbg_show_defines();
@@ -217,6 +221,8 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
 
     // Append to source
     shader_source += include_source;
+    // Update line offset
+    line_offset_ += std::count(include_source.begin(), include_source.end(), '\n');
 }
 
 void Shader::parse_version(const std::string& line, std::string& shader_source)
@@ -303,6 +309,7 @@ GLuint Shader::compile_shader(const std::string& shader_file,
         //We don't need the shader anymore.
         glDeleteShader(ShaderID);
         DLOGF("Shader will not compile: <p>" + shader_file + "</p>", "shader");
+        DLOGI("Line offset is: <h>" + std::to_string(line_offset_) + "</h>", "shader");
         fatal("Shader will not compile: " + shader_file);
     }
 
@@ -324,6 +331,7 @@ void Shader::link()
     {
         program_error_report();
         DLOGF("Unable to link shaders.", "shader");
+        DLOGI("Line offset is: <h>" + std::to_string(line_offset_) + "</h>", "shader");
 
         //We don't need the program anymore.
         glDeleteProgram(ProgramID_);

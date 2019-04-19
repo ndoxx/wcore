@@ -372,6 +372,7 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Hit threshold", &SSR_renderer_->get_hit_threshold(), 0.0f, 1.5f);
             ImGui::SliderFloat("Ray step", &SSR_renderer_->get_ray_step(), 0.1f, 3.0f);
             ImGui::SliderFloat("Refl. falloff", &SSR_renderer_->get_reflection_falloff(), 0.5f, 5.0f);
+            ImGui::SliderFloat("Jitter", &SSR_renderer_->get_jitter_amount(), 0.0f, 1.0f);
             ImGui::SliderInt("Max ray steps", &SSR_renderer_->get_ray_steps(), 0, 32);
             ImGui::SliderInt("Max b-search steps", &SSR_renderer_->get_bin_steps(), 0, 32);
         }

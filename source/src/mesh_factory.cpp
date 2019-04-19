@@ -945,26 +945,26 @@ std::shared_ptr<FaceMesh> make_crystal(unsigned seed)
 
         // Left side
         pmesh->emplace_vertex(vec3(xx_last*radius_modifier[0], height[0], zz_last*radius_modifier[0]),
-                              vec2(0,0));
+                              vec2(1,1));
         pmesh->emplace_vertex(vec3(xx_last*radius_modifier[1], height[1], zz_last*radius_modifier[1]),
-                              vec2(0,1));
+                              vec2(1,0));
         pmesh->emplace_vertex(vec3(xx_last*radius_modifier[1], height[1], zz_last*radius_modifier[1]),
-                              vec2(0,0));
+                              vec2(1,1));
         pmesh->emplace_vertex(vec3(xx_last*radius_modifier[2], height[2], zz_last*radius_modifier[2]),
-                              vec2(0,1));
+                              vec2(1,0));
         pmesh->emplace_vertex(vec3(xx_last*radius_modifier[2], height[2], zz_last*radius_modifier[2]),
-                              vec2(0,0));
+                              vec2(1,1));
         // Right side
         pmesh->emplace_vertex(vec3(xx*radius_modifier[0], height[0], zz*radius_modifier[0]),
-                              vec2(1,0));
+                              vec2(0,1));
         pmesh->emplace_vertex(vec3(xx*radius_modifier[1], height[1], zz*radius_modifier[1]),
-                              vec2(1,1));
+                              vec2(0,0));
         pmesh->emplace_vertex(vec3(xx*radius_modifier[1], height[1], zz*radius_modifier[1]),
-                              vec2(1,0));
+                              vec2(0,1));
         pmesh->emplace_vertex(vec3(xx*radius_modifier[2], height[2], zz*radius_modifier[2]),
-                              vec2(1,1));
+                              vec2(0,0));
         pmesh->emplace_vertex(vec3(xx*radius_modifier[2], height[2], zz*radius_modifier[2]),
-                              vec2(1,0));
+                              vec2(0,1));
 
         xx_last = xx;
         zz_last = zz;

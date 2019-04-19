@@ -17,15 +17,17 @@ using namespace math;
 SSRRenderer::SSRRenderer():
 Renderer<Vertex3P>(),
 SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
+//SSR_shader_(ShaderResource("SSR_exp.vert;SSR_exp.frag")),
 enabled_(true),
-hit_threshold_(0.121f),
+hit_threshold_(1.1f),
 ray_step_(1.0f),
 reflection_falloff_(3.f),
-ray_steps_(16),
-bin_steps_(10)
+jitter_amount_(1.f),
+ray_steps_(10),
+bin_steps_(8)
 {
     load_geometry();
-    SSRBuffer::Init(GLB.WIN_W, GLB.WIN_H);
+    SSRBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
 }
 
 SSRRenderer::~SSRRenderer()
@@ -65,14 +67,31 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/ssrbuffer.get_width(),1.0f/ssrbuffer.get_height()));
     SSR_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
+
+
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
     SSR_shader_.send_uniform("rd.f_far"_h, far);
     SSR_shader_.send_uniform("rd.f_hitThreshold"_h, hit_threshold_);
     SSR_shader_.send_uniform("rd.f_step"_h, ray_step_);
     SSR_shader_.send_uniform("rd.f_reflectionFalloff"_h, reflection_falloff_);
+    SSR_shader_.send_uniform("rd.f_jitterAmount"_h, jitter_amount_);
     SSR_shader_.send_uniform<int>("rd.i_raySteps"_h, ray_steps_);
     SSR_shader_.send_uniform<int>("rd.i_binSteps"_h, bin_steps_);
 
+/*
+    // EXP -------------------------------------------------------------
+    SSR_shader_.send_uniform("rd.f_far"_h, far);
+    SSR_shader_.send_uniform("rd.f_maxRayDistance"_h, 10.f);
+    SSR_shader_.send_uniform("rd.f_pixelStride"_h, 64.f);         // number of pixels per ray step close to camera
+    SSR_shader_.send_uniform("rd.f_pixelStrideZCuttoff"_h, 100.f); // ray origin Z at this distance will have a pixel stride of 1.0
+    SSR_shader_.send_uniform("rd.f_iterations"_h, 16.f);
+    SSR_shader_.send_uniform("rd.f_binSearchIterations"_h, 8.f);
+    SSR_shader_.send_uniform("rd.f_screenEdgeFadeStart"_h, 0.75f); // distance to screen edge that ray hits will start to fade (0.0 -> 1.0)
+    SSR_shader_.send_uniform("rd.f_eyeFadeStart"_h, 0.f);        // ray direction's Z that ray hits will start to fade (0.0 -> 1.0)
+    SSR_shader_.send_uniform("rd.f_eyeFadeEnd"_h, 1.f);          // ray direction's Z that ray hits will be cut (0.0 -> 1.0)
+    SSR_shader_.send_uniform("rd.f_jitterAmount"_h, jitter_amount_);
+    // EXP -------------------------------------------------------------
+*/
     GFX::clear_color();
 
     vertex_array_.bind();

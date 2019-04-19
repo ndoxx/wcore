@@ -3,6 +3,7 @@
 #include "normal_compression.glsl"
 #include "position.glsl"
 #include "math_utils.glsl"
+#include "cook_torrance.glsl"
 
 in vec2 frag_ray;
 
@@ -16,6 +17,7 @@ struct render_data
     float f_hitThreshold;
     float f_step;
     float f_reflectionFalloff;
+    float f_jitterAmount;
     int i_raySteps;
     int i_binSteps;
 
@@ -31,11 +33,7 @@ uniform sampler2D lastFrameTex;
 
 layout(location = 0) out vec3 out_SSR;
 
-//const float step = 1.18;
 const float minRayStep = 0.1;
-//const float maxSteps = 16;
-//const int numBinarySearchSteps = 16;
-//const float reflectionSpecularFalloffExponent = 3.0;
 
 #define Scale vec3(.8, .8, .8)
 #define K 19.19
@@ -61,6 +59,11 @@ void main()
     vec4 fAlbRough  = texture(albedoTex, texCoord);
     float fragRoughness = fAlbRough.a;
 
+    // Fresnel coefficient vector
+    vec3 F0 = vec3(0.04);
+    F0 = mix(F0, fAlbRough.rgb, fragMetallic);
+    vec3 fresnel = FresnelGS(max(dot(fragNormal, normalize(fragPos)), 0.0), F0);
+
     // Reflection vector
     vec3 reflected = normalize(reflect(fragPos, fragNormal));
 
@@ -68,12 +71,12 @@ void main()
 
     vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - coords.xy));
     float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
-    float ReflectionMultiplier = pow(fragMetallic, rd.f_reflectionFalloff) *
-                screenEdgefactor *
-                -reflected.z *
-                coords.w;
+    float ReflectionMultiplier = pow(fragMetallic, rd.f_reflectionFalloff)
+                                 * screenEdgefactor
+                                 * clamp(-reflected.z, 0.f, 1.f)
+                                 * coords.w;
 
-    out_SSR = texture2D(lastFrameTex, coords.xy).rgb * clamp(ReflectionMultiplier, 0.0, 0.9);
+    out_SSR = texture2D(lastFrameTex, coords.xy).rgb * clamp(ReflectionMultiplier, 0.0, 1.0) * fresnel;
 }
 
 vec4 binary_search(inout vec3 dir, inout vec3 hitCoord)
@@ -101,14 +104,15 @@ vec4 binary_search(inout vec3 dir, inout vec3 hitCoord)
     projectedCoord.xy /= projectedCoord.w;
     projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
 
-    return vec4(projectedCoord.xy, depth, (abs(dDepth)<rd.f_hitThreshold) ? 1.f : 0.f);
+    //return vec4(projectedCoord.xy, depth, (abs(dDepth)<rd.f_hitThreshold) ? 1.f : 0.f);
+    return vec4(projectedCoord.xy, depth, clamp(rd.f_hitThreshold-abs(dDepth),0.f,1.f));
 }
 
 vec4 ray_march(vec3 reflected, vec3 fragPos, float fragRoughness)
 {
     vec3 wp = vec3(rd.m4_invView * vec4(fragPos, 1.0));
-    vec3 jitt = mix(vec3(0.0), vec3(hash(wp)), fragRoughness);
-    vec3 dir = rd.f_step * (jitt + reflected /* max(minRayStep, -fragPos.z)*/);
+    vec3 jitt = rd.f_jitterAmount * mix(vec3(0.0), vec3(hash(wp)), fragRoughness);
+    vec3 dir = jitt + reflected /* max(minRayStep, -fragPos.z)*/;
     vec3 hitCoord = fragPos;
 
     float depth, dDepth;

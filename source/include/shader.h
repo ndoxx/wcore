@@ -65,8 +65,10 @@ private:
 #ifdef __DEBUG__
     std::string name_;
     std::string glsl_version_;
-    static uint32_t instance_count_;
 
+    uint32_t line_offset_; // Subtract this from compiler error line numbers to get correct offset
+
+    static uint32_t instance_count_;
     static void dbg_show_defines();
 #endif
 

@@ -9,7 +9,7 @@ SSRBuffer::SSRBuffer(unsigned int width,
 BufferModule("SSRbuffer",
 std::make_shared<Texture>(
     std::vector<hash_t>{"SSRTex"_h},
-    std::vector<GLenum>{GL_NEAREST},
+    std::vector<GLenum>{GL_LINEAR},
     std::vector<GLenum>{GL_RGB16F},
     std::vector<GLenum>{GL_RGB},
     width,

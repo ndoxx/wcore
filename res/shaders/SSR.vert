@@ -10,6 +10,7 @@ struct render_data
     float f_hitThreshold;
     float f_step;
     float f_reflectionFalloff;
+    float f_jitterAmount;
     int i_raySteps;
     int i_binSteps;
 

@@ -14,8 +14,8 @@
             <Transform>
                 <Position>(0,0,0)</Position>
             </Transform>
-            <!--<Material name="chrome"/>-->
-            <Material name="testMetalFloor01"/>
+            <Material name="chrome"/>
+            <!--<Material name="testMetalFloor01"/>-->
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>
@@ -51,9 +51,27 @@
                     </Uniform>
                 </Material>
                 <Transform>
-                    <Position>(13,0,8)</Position>
+                    <Position>(15,0,8)</Position>
                     <Scale>1.0</Scale>
                     <Angle>(0,45,0)</Angle>
+                </Transform>
+            </Model>
+            <Model ypos="relative">
+                <Mesh type="crystal"/>
+                <Material name="testMetalFloor01"/>
+                <Transform>
+                    <Position>(12,0,8)</Position>
+                    <Scale>0.5</Scale>
+                    <Angle>(0,60,0)</Angle>
+                </Transform>
+            </Model>
+            <Model ypos="relative">
+                <Mesh type="cube"/>
+                <Material name="gold"/>
+                <Transform>
+                    <Position>(12,0,5)</Position>
+                    <Scale>2.0</Scale>
+                    <Angle>(0,60,0)</Angle>
                 </Transform>
             </Model>
             <Model name="tree04" ypos="relative">
@@ -74,9 +92,9 @@
             <!-- Static lights -->
             <Light type="point" ypos="relative">
                 <Position>(12.0,2.0,12.0)</Position>
-                <Color>(0.2, 0.9, 0.7)</Color>
+                <Color>(0.8, 0.9, 0.7)</Color>
                 <Radius>10.0</Radius>
-                <Brightness>10.0</Brightness>
+                <Brightness>20.0</Brightness>
             </Light>
         </Lights>
     </Chunk>
