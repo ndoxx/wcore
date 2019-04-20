@@ -371,21 +371,16 @@ void RenderPipeline::generate_widget()
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("SSR control"))
         {
-            ImGui::SliderFloat("Hit threshold", &SSR_renderer_->get_hit_threshold(), 0.0f, 1.5f);
-            ImGui::SliderFloat("Ray step", &SSR_renderer_->get_ray_step(), 0.1f, 3.0f);
-            ImGui::SliderFloat("Refl. falloff", &SSR_renderer_->get_reflection_falloff(), 0.5f, 5.0f);
-            ImGui::SliderFloat("Jitter", &SSR_renderer_->get_jitter_amount(), 0.0f, 1.0f);
             ImGui::SliderInt("Max ray steps", &SSR_renderer_->get_ray_steps(), 0, 32);
             ImGui::SliderInt("Max b-search steps", &SSR_renderer_->get_bin_steps(), 0, 32);
-            ImGui::Separator();
-
+            ImGui::SliderFloat("Max ray dist", &SSR_renderer_->get_max_ray_distance(), 0.0f, 100.0f);
+            ImGui::SliderFloat("Px stride", &SSR_renderer_->get_pix_stride(), 1.0f, 64.0f);
+            ImGui::SliderFloat("Px stride cuttoff", &SSR_renderer_->get_pix_stride_cuttoff(), 0.0f, 200.0f);
+            ImGui::SliderFloat("Px thickness", &SSR_renderer_->get_pix_thickness(), 0.0f, 10.0f);
+            ImGui::SliderFloat("Jitter", &SSR_renderer_->get_jitter_amount(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade eye start", &SSR_renderer_->get_fade_eye_start(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade eye end", &SSR_renderer_->get_fade_eye_end(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade screen edge", &SSR_renderer_->get_fade_screen_edge(), 0.0f, 1.0f);
-            ImGui::SliderFloat("Px thickness", &SSR_renderer_->get_pix_thickness(), 0.1f, 10.0f);
-            ImGui::SliderFloat("Px stride", &SSR_renderer_->get_pix_stride(), 0.1f, 10.0f);
-            ImGui::SliderFloat("Px stride cuttoff", &SSR_renderer_->get_pix_stride_cuttoff(), 0.0f, 200.0f);
-            ImGui::SliderFloat("Max ray dist", &SSR_renderer_->get_max_ray_distance(), 0.0f, 100.0f);
         }
     }
 

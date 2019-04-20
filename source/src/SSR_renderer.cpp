@@ -16,16 +16,11 @@ using namespace math;
 
 SSRRenderer::SSRRenderer():
 Renderer<Vertex3P>(),
-//SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
-SSR_shader_(ShaderResource("SSR_exp.vert;SSR_exp.frag")),
+SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
 enabled_(true),
-hit_threshold_(1.1f),
-ray_step_(1.0f),
-reflection_falloff_(3.f),
-jitter_amount_(1.f),
 ray_steps_(20),
 bin_steps_(6),
-
+jitter_amount_(1.f),
 fade_eye_start_(0.f),
 fade_eye_end_(1.f),
 fade_screen_edge_(0.85f),
@@ -74,22 +69,10 @@ void SSRRenderer::render(Scene* pscene)
     //SSR_shader_.send_uniform<int>("backDepthTex"_h, 4);
 
     SSR_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/ssrbuffer.get_width(),1.0f/ssrbuffer.get_height()));
+    SSR_shader_.send_uniform("rd.v2_viewportSize"_h, vec2(ssrbuffer.get_width(),ssrbuffer.get_height()));
     SSR_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
-
-/*
-    SSR_shader_.send_uniform("rd.f_far"_h, far);
-    SSR_shader_.send_uniform("rd.f_hitThreshold"_h, hit_threshold_);
-    SSR_shader_.send_uniform("rd.f_step"_h, ray_step_);
-    SSR_shader_.send_uniform("rd.f_reflectionFalloff"_h, reflection_falloff_);
-    SSR_shader_.send_uniform("rd.f_jitterAmount"_h, jitter_amount_);
-    SSR_shader_.send_uniform<int>("rd.i_raySteps"_h, ray_steps_);
-    SSR_shader_.send_uniform<int>("rd.i_binSteps"_h, bin_steps_);
-*/
-
-    // EXP -------------------------------------------------------------
-    SSR_shader_.send_uniform("rd.v2_viewportSize"_h, vec2(ssrbuffer.get_width(),ssrbuffer.get_height()));
     SSR_shader_.send_uniform("rd.f_near"_h, near);
     SSR_shader_.send_uniform("rd.f_pixelThickness"_h, pix_thickness_);
     SSR_shader_.send_uniform("rd.f_maxRayDistance"_h, max_ray_distance_);
@@ -101,7 +84,6 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.f_eyeFadeStart"_h, fade_eye_start_);
     SSR_shader_.send_uniform("rd.f_eyeFadeEnd"_h, fade_eye_end_);
     SSR_shader_.send_uniform("rd.f_jitterAmount"_h, jitter_amount_);
-    // EXP -------------------------------------------------------------
 
     GFX::clear_color();
 
