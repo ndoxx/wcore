@@ -250,6 +250,7 @@ void LightingRenderer::render(Scene* pscene)
         if(SSR_enabled_)
         {
             auto pssr = Texture::get_named_texture("SSRbuffer"_h).lock();
+            auto pssrblur = Texture::get_named_texture("SSRBlurBuffer"_h).lock();
             pssr->bind(SSR_TEX,0); // Bind ssr[0] to texture unit SSR_TEX
             lpass_dir_shader_.send_uniform<int>("SSRTex"_h, SSR_TEX);
         }

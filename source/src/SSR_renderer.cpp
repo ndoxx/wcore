@@ -17,6 +17,19 @@ using namespace math;
 SSRRenderer::SSRRenderer():
 Renderer<Vertex3P>(),
 SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
+SSR_blur_shader_(ShaderResource("SSR_blur.vert;SSR_blur.frag")),
+blur_buffer_("SSRBlurBuffer",
+std::make_shared<Texture>(
+    std::vector<hash_t>{"SSRBlurTex"_h},
+    std::vector<GLenum>{GL_LINEAR},
+    std::vector<GLenum>{GL_RGBA16F},
+    std::vector<GLenum>{GL_RGBA},
+    GLB.WIN_W/2,
+    GLB.WIN_H/2,
+    GL_TEXTURE_2D,
+    true),
+{GL_COLOR_ATTACHMENT0}),
+
 enabled_(true),
 ray_steps_(20),
 bin_steps_(6),
@@ -94,6 +107,34 @@ void SSRRenderer::render(Scene* pscene)
     lbuffer.unbind_as_source();
     ssrbuffer.unbind_as_target();
     SSR_shader_.unuse();
+
+    /*blur_buffer_.bind_as_target();
+    gbuffer.bind_as_source(0,0);   // normal, metallic, ao
+    gbuffer.bind_as_source(1,1);   // albedo, roughness
+    gbuffer.bind_as_source(2,2);   // depth
+    ssrbuffer.bind_as_source(3,0); // raw SSR
+
+    SSR_blur_shader_.use();
+    SSR_blur_shader_.send_uniform<int>("normalTex"_h, 0);
+    SSR_blur_shader_.send_uniform<int>("albedoTex"_h, 1);
+    SSR_blur_shader_.send_uniform<int>("depthTex"_h, 2);
+    SSR_blur_shader_.send_uniform<int>("mainTex"_h, 3);
+
+    SSR_blur_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/blur_buffer_.get_width(),1.0f/blur_buffer_.get_height()));
+    SSR_blur_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
+    SSR_blur_shader_.send_uniform("rd.f_depthBias"_h, 0.305f);
+    SSR_blur_shader_.send_uniform("rd.f_normalBias"_h, 0.29f);
+    SSR_blur_shader_.send_uniform("rd.f_blurQuality"_h, 4.f);
+
+
+    GFX::clear_color();
+    buffer_unit_.draw(2, 0);
+    gbuffer.unbind_as_source();
+    ssrbuffer.unbind_as_source();
+
+    SSR_blur_shader_.unuse();
+
+    blur_buffer_.unbind_as_target();*/
 }
 
 } // namespace wcore

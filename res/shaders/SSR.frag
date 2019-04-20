@@ -38,7 +38,7 @@ uniform sampler2D depthTex;
 uniform sampler2D lastFrameTex;
 //uniform sampler2D backDepthTex;
 
-layout(location = 0) out vec3 out_SSR;
+layout(location = 0) out vec4 out_SSR;
 
 
 void swap_if_bigger(inout float aa, inout float bb)
@@ -54,7 +54,7 @@ void swap_if_bigger(inout float aa, inout float bb)
 bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 {
     // Swap if bigger
-    if (rayZFar > rayZNear)
+    if(rayZFar > rayZNear)
     {
         float t = rayZFar; rayZFar = rayZNear; rayZNear = t;
     }
@@ -66,7 +66,7 @@ bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 {
     // Swap if bigger
-    if (rayZFar > rayZNear)
+    if(rayZFar > rayZNear)
     {
         float t = rayZFar; rayZFar = rayZNear; rayZNear = t;
     }
@@ -259,7 +259,7 @@ void main()
     // Fresnel coefficient vector
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, fAlbRough.rgb, fragMetallic);
-    vec3 fresnel = FresnelGS(max(dot(fragNormal, normalize(vsRayOrigin)), 0.0), F0);
+    vec4 fresnel = vec4(FresnelGS(max(dot(fragNormal, normalize(vsRayOrigin)), 0.f), F0), 1.f);
 
     vec3 vsRayDirection = normalize(reflect(normalize(vsRayOrigin), fragNormal));
 
@@ -277,5 +277,5 @@ void main()
     bool intersect = ray_march(vsRayOrigin, vsRayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
     float alpha = ssr_attenuation(intersect, iterationCount, specularStrength, hitPixel, hitPoint, vsRayOrigin, vsRayDirection);
 
-    out_SSR = (intersect ? texture2D(lastFrameTex, hitPixel).rgb : vec3(0.f)) * fresnel * alpha;
+    out_SSR = (intersect ? vec4(texture(lastFrameTex, hitPixel).rgb, alpha) : vec4(0.f)) * fresnel;
 }

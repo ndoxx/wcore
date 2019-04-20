@@ -43,7 +43,7 @@ text_renderer_(text_renderer)
     auto pssr     = Texture::get_named_texture("SSRbuffer"_h).lock();
 
     register_debug_pane(GBuffer::Instance());
-    register_debug_pane(BackFaceDepthBuffer::Instance());
+    //register_debug_pane(BackFaceDepthBuffer::Instance());
 
     register_debug_pane({(*psbuffer)[0]},
                         {"shadowTex"},

@@ -96,6 +96,12 @@
                 <Radius>10.0</Radius>
                 <Brightness>20.0</Brightness>
             </Light>
+            <Light type="point" ypos="relative">
+                <Position>(14.0,5.0,18.0)</Position>
+                <Color>(1.0, 0.5, 0.05)</Color>
+                <Radius>10.0</Radius>
+                <Brightness>25.0</Brightness>
+            </Light>
         </Lights>
     </Chunk>
 

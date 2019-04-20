@@ -147,7 +147,8 @@ void main()
             total_light = radiance + ambient;
             if(rd.b_enableSSR)
             {
-                total_light += texture(SSRTex, texCoord).rgb;
+                vec4 reflection = texture(SSRTex, texCoord);
+                total_light += reflection.rgb * reflection.a;
             }
         }
         else

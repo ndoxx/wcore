@@ -2,6 +2,7 @@
 #define SSR_RENDERER_H
 
 #include "renderer.hpp"
+#include "buffer_module.h"
 #include "shader.h"
 
 namespace wcore
@@ -34,6 +35,10 @@ public:
 
 private:
     Shader SSR_shader_;
+    Shader SSR_blur_shader_;
+
+    BufferModule blur_buffer_;
+
     bool enabled_;
     int ray_steps_;
     int bin_steps_;
