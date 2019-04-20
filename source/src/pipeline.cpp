@@ -41,8 +41,9 @@ namespace wcore
 RenderPipeline::RenderPipeline():
 bloom_enabled_(true)
 {
-    // Buffer with facilities for Geometry pass
+    // Buffers with facilities for Geometry pass
     GBuffer::Init(GLB.WIN_W, GLB.WIN_H);
+    BackFaceDepthBuffer::Init(GLB.WIN_W, GLB.WIN_H);
     // Buffer with facilities for Lighting pass
     LBuffer::Init(GLB.WIN_W, GLB.WIN_H);
     // Buffer for SSAO
@@ -82,6 +83,7 @@ RenderPipeline::~RenderPipeline()
 
     SSAOBuffer::Kill();
     LBuffer::Kill();
+    BackFaceDepthBuffer::Kill();
     GBuffer::Kill();
 }
 
@@ -375,6 +377,15 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Jitter", &SSR_renderer_->get_jitter_amount(), 0.0f, 1.0f);
             ImGui::SliderInt("Max ray steps", &SSR_renderer_->get_ray_steps(), 0, 32);
             ImGui::SliderInt("Max b-search steps", &SSR_renderer_->get_bin_steps(), 0, 32);
+            ImGui::Separator();
+
+            ImGui::SliderFloat("Fade eye start", &SSR_renderer_->get_fade_eye_start(), 0.0f, 1.0f);
+            ImGui::SliderFloat("Fade eye end", &SSR_renderer_->get_fade_eye_end(), 0.0f, 1.0f);
+            ImGui::SliderFloat("Fade screen edge", &SSR_renderer_->get_fade_screen_edge(), 0.0f, 1.0f);
+            ImGui::SliderFloat("Px thickness", &SSR_renderer_->get_pix_thickness(), 0.1f, 10.0f);
+            ImGui::SliderFloat("Px stride", &SSR_renderer_->get_pix_stride(), 0.1f, 10.0f);
+            ImGui::SliderFloat("Px stride cuttoff", &SSR_renderer_->get_pix_stride_cuttoff(), 0.0f, 200.0f);
+            ImGui::SliderFloat("Max ray dist", &SSR_renderer_->get_max_ray_distance(), 0.0f, 100.0f);
         }
     }
 

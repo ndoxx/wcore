@@ -16,15 +16,23 @@ using namespace math;
 
 SSRRenderer::SSRRenderer():
 Renderer<Vertex3P>(),
-SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
-//SSR_shader_(ShaderResource("SSR_exp.vert;SSR_exp.frag")),
+//SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
+SSR_shader_(ShaderResource("SSR_exp.vert;SSR_exp.frag")),
 enabled_(true),
 hit_threshold_(1.1f),
 ray_step_(1.0f),
 reflection_falloff_(3.f),
 jitter_amount_(1.f),
-ray_steps_(10),
-bin_steps_(8)
+ray_steps_(20),
+bin_steps_(6),
+
+fade_eye_start_(0.f),
+fade_eye_end_(1.f),
+fade_screen_edge_(0.85f),
+pix_thickness_(1.0f),
+pix_stride_cuttoff_(100.f),
+pix_stride_(1.f),
+max_ray_distance_(25.f)
 {
     load_geometry();
     SSRBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
@@ -42,7 +50,7 @@ void SSRRenderer::render(Scene* pscene)
     const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     const mat4& V = pscene->get_camera().get_view_matrix(); // Camera View matrix
     vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
-    float far = pscene->get_camera().get_far();
+    float near = pscene->get_camera().get_near();
 
     mat4 invView;
     math::inverse(V, invView);
@@ -68,7 +76,7 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
 
-
+/*
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
     SSR_shader_.send_uniform("rd.f_far"_h, far);
     SSR_shader_.send_uniform("rd.f_hitThreshold"_h, hit_threshold_);
@@ -77,21 +85,23 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.f_jitterAmount"_h, jitter_amount_);
     SSR_shader_.send_uniform<int>("rd.i_raySteps"_h, ray_steps_);
     SSR_shader_.send_uniform<int>("rd.i_binSteps"_h, bin_steps_);
+*/
 
-/*
     // EXP -------------------------------------------------------------
-    SSR_shader_.send_uniform("rd.f_far"_h, far);
-    SSR_shader_.send_uniform("rd.f_maxRayDistance"_h, 10.f);
-    SSR_shader_.send_uniform("rd.f_pixelStride"_h, 64.f);         // number of pixels per ray step close to camera
-    SSR_shader_.send_uniform("rd.f_pixelStrideZCuttoff"_h, 100.f); // ray origin Z at this distance will have a pixel stride of 1.0
-    SSR_shader_.send_uniform("rd.f_iterations"_h, 16.f);
-    SSR_shader_.send_uniform("rd.f_binSearchIterations"_h, 8.f);
-    SSR_shader_.send_uniform("rd.f_screenEdgeFadeStart"_h, 0.75f); // distance to screen edge that ray hits will start to fade (0.0 -> 1.0)
-    SSR_shader_.send_uniform("rd.f_eyeFadeStart"_h, 0.f);        // ray direction's Z that ray hits will start to fade (0.0 -> 1.0)
-    SSR_shader_.send_uniform("rd.f_eyeFadeEnd"_h, 1.f);          // ray direction's Z that ray hits will be cut (0.0 -> 1.0)
+    SSR_shader_.send_uniform("rd.v2_viewportSize"_h, vec2(ssrbuffer.get_width(),ssrbuffer.get_height()));
+    SSR_shader_.send_uniform("rd.f_near"_h, near);
+    SSR_shader_.send_uniform("rd.f_pixelThickness"_h, pix_thickness_);
+    SSR_shader_.send_uniform("rd.f_maxRayDistance"_h, max_ray_distance_);
+    SSR_shader_.send_uniform("rd.f_pixelStride"_h, pix_stride_);
+    SSR_shader_.send_uniform("rd.f_pixelStrideZCuttoff"_h, pix_stride_cuttoff_);
+    SSR_shader_.send_uniform("rd.f_iterations"_h, float(ray_steps_));
+    SSR_shader_.send_uniform("rd.f_binSearchIterations"_h, float(bin_steps_));
+    SSR_shader_.send_uniform("rd.f_screenEdgeFadeStart"_h, fade_screen_edge_);
+    SSR_shader_.send_uniform("rd.f_eyeFadeStart"_h, fade_eye_start_);
+    SSR_shader_.send_uniform("rd.f_eyeFadeEnd"_h, fade_eye_end_);
     SSR_shader_.send_uniform("rd.f_jitterAmount"_h, jitter_amount_);
     // EXP -------------------------------------------------------------
-*/
+
     GFX::clear_color();
 
     vertex_array_.bind();

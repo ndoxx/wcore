@@ -2,10 +2,12 @@
 
 struct render_data
 {
+    vec2 v2_viewportSize;
     vec2 v2_texelSize;
 
     mat4 m4_projection;
-    float f_far;
+    float f_near;
+    float f_pixelThickness;
     float f_maxRayDistance;
     float f_pixelStride;         // number of pixels per ray step close to camera
     float f_pixelStrideZCuttoff; // ray origin Z at this distance will have a pixel stride of 1.0

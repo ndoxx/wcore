@@ -16,6 +16,7 @@ class GeometryRenderer : public Renderer<Vertex3P3N3T2U>
 private:
     Shader geometry_pass_shader_;
     Shader terrain_shader_;
+    Shader null_shader_;
 
     // Rendering data
     float wireframe_mix_;

@@ -10,10 +10,12 @@ in vec2 frag_ray;
 
 struct render_data
 {
+    vec2 v2_viewportSize;
     vec2 v2_texelSize;
 
     mat4 m4_projection;
-    float f_far;
+    float f_near;
+    float f_pixelThickness;
     float f_maxRayDistance;
     float f_pixelStride;         // number of pixels per ray step close to camera
     float f_pixelStrideZCuttoff; // ray origin Z at this distance will have a pixel stride of 1.0
@@ -49,15 +51,8 @@ void swap_if_bigger(inout float aa, inout float bb)
 
 bool ray_intersects_depth_buffer(float zB, vec2 uv)
 {
-    float depth = depth_view_from_tex(depthTex, uv.xy, rd.v4_proj_params.zw);
-    return zB <= -depth;
-}
-
-float dist_2(vec2 a, vec2 b)
-{
-    /*a -= b;
-    return dot(a, a);*/
-    return dot(a,b);
+    float depth = -depth_view_from_tex(depthTex, uv.xy, rd.v4_proj_params.zw);
+    return (zB <= depth) && (zB >= depth - rd.f_pixelThickness);
 }
 
 bool ray_march(vec3 rayOrigin,
@@ -68,8 +63,8 @@ bool ray_march(vec3 rayOrigin,
                out float iterationCount)
 {
     // Clip to the near plane
-    float rayLength = ((rayOrigin.z + rayDirection.z * rd.f_maxRayDistance) > -rd.f_far) ?
-                      (-rd.f_far - rayOrigin.z) / rayDirection.z : rd.f_maxRayDistance;
+    float rayLength = ((rayOrigin.z + rayDirection.z * rd.f_maxRayDistance) > -rd.f_near) ?
+                      (-rd.f_near - rayOrigin.z) / rayDirection.z : rd.f_maxRayDistance;
     vec3 rayEnd = rayOrigin + rayDirection * rayLength;
 
     // Project into homogeneous clip space
@@ -80,17 +75,15 @@ bool ray_march(vec3 rayOrigin,
 
     // The interpolated homogeneous version of the camera-space points
     vec3 Q0 = rayOrigin * k0, Q1 = rayEnd * k1;
-      Q0 = Q0 * 0.5f + 0.5f;
-      Q1 = Q1 * 0.5f + 0.5f;
 
     // Screen-space endpoints
-    vec2 P0 = H0.xy * k0, P1 = H1.xy * k1;
-      P0 = P0 * 0.5f + 0.5f;
-      P1 = P1 * 0.5f + 0.5f;
+    //vec2 P0 = H0.xy * k0, P1 = H1.xy * k1;
+    vec2 P0 = (H0.xy * k0 * 0.5 + 0.5) * rd.v2_viewportSize;
+    vec2 P1 = (H1.xy * k1 * 0.5 + 0.5) * rd.v2_viewportSize;
 
     // If the line is degenerate, make it cover at least one pixel
     // to avoid handling zero-pixel extent as a special case later
-    P1 += (dist_2(P0, P1) < 0.0001f) ? 0.01f : 0.0f;
+    P1 += dot(P1 - P0, P1 - P0) < 0.0001f ? 0.01f : 0.0f;
 
     vec2 delta = P1 - P0;
 
@@ -122,13 +115,15 @@ bool ray_march(vec3 rayOrigin,
     // Scale derivatives by the desired pixel stride and then
     // offset the starting values by the jitter fraction
     dP *= pixelStride; dQ *= pixelStride; dk *= pixelStride;
-    P0 += dP * jitter; Q0 += dQ * jitter; k0 += dk * jitter;
 
-    float zB = 0.f;
 
     // Track ray step and derivatives in a vec4 to parallelize
     vec4 pqk = vec4(P0, Q0.z, k0);
     vec4 dPQK = vec4(dP, dQ.z, dk);
+
+    pqk += dPQK * jitter;
+
+    float rayZFar = 0.f;
     bool intersect = false;
     float ii;
 
@@ -136,16 +131,18 @@ bool ray_march(vec3 rayOrigin,
     {
         pqk += dPQK;
 
-        zB = (dPQK.z * 0.5f + pqk.z) / (dPQK.w * 0.5f + pqk.w);
+        rayZFar = (dPQK.z * 0.5f + pqk.z) / (dPQK.w * 0.5f + pqk.w);
 
         hitPixel = permute ? pqk.yx : pqk.xy;
         hitPixel *= rd.v2_texelSize;
 
-        intersect = ray_intersects_depth_buffer(zB, hitPixel);
+        intersect = ray_intersects_depth_buffer(rayZFar, hitPixel);
+
+        dPQK *= 1.1f;
     }
 
     // Binary search refinement
-    /*if(pixelStride > 1.f && intersect)
+    if(pixelStride > 1.f && intersect)
     {
         pqk -= dPQK;
         dPQK /= pixelStride;
@@ -157,15 +154,15 @@ bool ray_march(vec3 rayOrigin,
         {
             pqk += dPQK * stride;
 
-            zB = (dPQK.z * -0.5f + pqk.z) / (dPQK.w * -0.5f + pqk.w);
+            rayZFar = (dPQK.z * -0.5f + pqk.z) / (dPQK.w * -0.5f + pqk.w);
 
             hitPixel = permute ? pqk.yx : pqk.xy;
             hitPixel *= rd.v2_texelSize;
 
             originalStride *= 0.5f;
-            stride = ray_intersects_depth_buffer(zB, hitPixel) ? -originalStride : originalStride;
+            stride = ray_intersects_depth_buffer(rayZFar, hitPixel) ? -originalStride : originalStride;
         }
-    }*/
+    }
 
 
     Q0.xy += dQ.xy * ii;
@@ -178,13 +175,13 @@ bool ray_march(vec3 rayOrigin,
 
 float ssr_attenuation(bool intersect,
                       float iterationCount,
-                      float specularStrength,
+                      float reflectivity,
                       vec2 hitPixel,
                       vec3 hitPoint,
                       vec3 vsRayOrigin,
                       vec3 vsRayDirection)
 {
-    float alpha = min(1.f, specularStrength * 1.f);
+    float alpha = clamp(reflectivity, 0.f, 1.f);
 
     // Fade ray hits that approach the maximum iterations
     alpha *= 1.f - (iterationCount / rd.f_iterations);
@@ -195,7 +192,7 @@ float ssr_attenuation(bool intersect,
     float maxDimension = min(1.f, max(abs(hitPixelNDC.x), abs(hitPixelNDC.y)));
     alpha *= 1.f - (max(0.f, maxDimension - screenFade) / (1.f - screenFade));
 
-    // Fade ray hits base on how much they face the camera
+    // Fade ray hits based on how much they face the camera
     float eyeFadeStart = rd.f_eyeFadeStart;
     float eyeFadeEnd = rd.f_eyeFadeEnd;
     swap_if_bigger(eyeFadeStart, eyeFadeEnd);
@@ -242,14 +239,10 @@ void main()
     float iterationCount;
 
     float c = (gl_FragCoord.x + gl_FragCoord.y) * 0.25f;
-    //float jitter = fragRoughness * rd.f_jitterAmount * mod(c, 1.f);
-    float jitter = 0.f;
+    float jitter = fragRoughness * rd.f_jitterAmount * mod(c, 1.f);
 
     bool intersect = ray_march(vsRayOrigin, vsRayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
     float alpha = ssr_attenuation(intersect, iterationCount, specularStrength, hitPixel, hitPoint, vsRayOrigin, vsRayDirection);
-    hitPixel = mix(texCoord, hitPixel, float(intersect));
 
-    //out_SSR = vec3(iterationCount,0,rd.f_iterations-iterationCount)/rd.f_iterations;
-
-    out_SSR = texture2D(lastFrameTex, hitPixel).rgb * fresnel /* alpha*/;
+    out_SSR = (intersect ? texture2D(lastFrameTex, hitPixel).rgb : vec3(0.f)) * fresnel * alpha;
 }

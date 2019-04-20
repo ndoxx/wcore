@@ -21,6 +21,19 @@ private:
    virtual ~GBuffer();
 };
 
+class BackFaceDepthBuffer : public BufferModule, public SingletonNDI<BackFaceDepthBuffer>
+{
+public:
+    friend BackFaceDepthBuffer& SingletonNDI<BackFaceDepthBuffer>::Instance();
+    friend void SingletonNDI<BackFaceDepthBuffer>::Kill();
+    template <class T, typename ...Args>
+    friend void SingletonNDI<T>::Init(Args&&... args);
+private:
+    BackFaceDepthBuffer(unsigned int screenWidth,
+                        unsigned int screenHeight);
+   virtual ~BackFaceDepthBuffer();
+};
+
 }
 
 #endif // G_BUFFER_H
