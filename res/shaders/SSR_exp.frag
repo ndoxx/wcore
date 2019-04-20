@@ -14,6 +14,7 @@ struct render_data
     vec2 v2_texelSize;
 
     mat4 m4_projection;
+    mat4 m4_invView;
     float f_near;
     float f_pixelThickness;
     float f_maxRayDistance;
@@ -35,6 +36,7 @@ uniform sampler2D normalTex;
 uniform sampler2D albedoTex;
 uniform sampler2D depthTex;
 uniform sampler2D lastFrameTex;
+//uniform sampler2D backDepthTex;
 
 layout(location = 0) out vec3 out_SSR;
 
@@ -49,11 +51,30 @@ void swap_if_bigger(inout float aa, inout float bb)
     }
 }
 
-bool ray_intersects_depth_buffer(float zB, vec2 uv)
+bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 {
-    float depth = -depth_view_from_tex(depthTex, uv.xy, rd.v4_proj_params.zw);
-    return (zB <= depth) && (zB >= depth - rd.f_pixelThickness);
+    // Swap if bigger
+    if (rayZFar > rayZNear)
+    {
+        float t = rayZFar; rayZFar = rayZNear; rayZNear = t;
+    }
+    float cameraZ = -depth_view_from_tex(depthTex, hitPixel.xy, rd.v4_proj_params.zw);
+    // Cross z
+    return rayZFar <= cameraZ && rayZNear >= cameraZ - rd.f_pixelThickness;
 }
+/*
+bool ray_intersects_depth_buffer_2(float rayZNear, float rayZFar, vec2 hitPixel)
+{
+    // Swap if bigger
+    if (rayZFar > rayZNear)
+    {
+        float t = rayZFar; rayZFar = rayZNear; rayZNear = t;
+    }
+    float cameraZ = -depth_view_from_tex(depthTex, hitPixel.xy, rd.v4_proj_params.zw);
+    float cameraZBack = -depth_view_from_tex(backDepthTex, hitPixel.xy, rd.v4_proj_params.zw);
+    // Cross z
+    return rayZFar <= cameraZ && rayZNear >= cameraZBack - rd.f_pixelThickness;
+}*/
 
 bool ray_march(vec3 rayOrigin,
                vec3 rayDirection,
@@ -122,8 +143,8 @@ bool ray_march(vec3 rayOrigin,
     vec4 dPQK = vec4(dP, dQ.z, dk);
 
     pqk += dPQK * jitter;
-
-    float rayZFar = 0.f;
+    float rayZFar = (dPQK.z * 0.5 + pqk.z) / (dPQK.w * 0.5 + pqk.w);
+    float rayZNear;
     bool intersect = false;
     float ii;
 
@@ -131,12 +152,13 @@ bool ray_march(vec3 rayOrigin,
     {
         pqk += dPQK;
 
+        rayZNear = rayZFar;
         rayZFar = (dPQK.z * 0.5f + pqk.z) / (dPQK.w * 0.5f + pqk.w);
 
         hitPixel = permute ? pqk.yx : pqk.xy;
         hitPixel *= rd.v2_texelSize;
 
-        intersect = ray_intersects_depth_buffer(rayZFar, hitPixel);
+        intersect = ray_intersects_depth_buffer(rayZNear, rayZFar, hitPixel);
 
         dPQK *= 1.1f;
     }
@@ -154,13 +176,14 @@ bool ray_march(vec3 rayOrigin,
         {
             pqk += dPQK * stride;
 
+            rayZNear = rayZFar;
             rayZFar = (dPQK.z * -0.5f + pqk.z) / (dPQK.w * -0.5f + pqk.w);
 
             hitPixel = permute ? pqk.yx : pqk.xy;
             hitPixel *= rd.v2_texelSize;
 
             originalStride *= 0.5f;
-            stride = ray_intersects_depth_buffer(rayZFar, hitPixel) ? -originalStride : originalStride;
+            stride = ray_intersects_depth_buffer(rayZNear, rayZFar, hitPixel) ? -originalStride : originalStride;
         }
     }
 
@@ -208,6 +231,14 @@ float ssr_attenuation(bool intersect,
     return alpha;
 }
 
+#define Scale vec3(.8, .8, .8)
+#define K 19.19
+vec3 hash(vec3 a)
+{
+    a = fract(a * Scale);
+    a += dot(a, a.yxz + K);
+    return fract((a.xxy + a.yxx)*a.zyx);
+}
 
 void main()
 {
@@ -239,7 +270,11 @@ void main()
     float iterationCount;
 
     float c = (gl_FragCoord.x + gl_FragCoord.y) * 0.25f;
-    float jitter = fragRoughness * rd.f_jitterAmount * mod(c, 1.f);
+    float jitter = mod(c, 1.f);
+
+    vec3 wp = vec3(rd.m4_invView * vec4(vsRayOrigin, 1.0));
+    vec3 jitt = rd.f_jitterAmount * mix(vec3(0.0), vec3(hash(wp)), fragRoughness);
+    vsRayDirection = normalize(vsRayDirection + jitt);
 
     bool intersect = ray_march(vsRayOrigin, vsRayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
     float alpha = ssr_attenuation(intersect, iterationCount, specularStrength, hitPixel, hitPoint, vsRayOrigin, vsRayDirection);

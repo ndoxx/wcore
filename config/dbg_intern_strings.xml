@@ -36,6 +36,7 @@
     <string key="940534571439560742" value="SCROLL_LOCK"/>
     <string key="940676371841988263" value="inv_gamma_r"/>
     <string key="1009809161560322634" value="rd.f_radius"/>
+    <string key="1116916425875636143" value="rd.v2_viewportSize"/>
     <string key="1257079576020054407" value="PAGE_DOWN"/>
     <string key="1260601502544752171" value="k_tg_wireframe"/>
     <string key="1261501771575938509" value="ENTER"/>
@@ -184,6 +185,7 @@
     <string key="7273895582857962616" value="mt.f_metallic"/>
     <string key="7425191142704782914" value="vec3"/>
     <string key="7425192242216411125" value="vec2"/>
+    <string key="7431789928335961910" value="rd.f_pixelThickness"/>
     <string key="7464274105254009398" value="mt.sg2.depthTex"/>
     <string key="7480038081765558619" value="heaviside"/>
     <string key="7540258471201886724" value="root.sound.general.channel_fadeout_s"/>
@@ -353,6 +355,7 @@
     <string key="14531656747417305109" value="RIGHT_ALT"/>
     <string key="14571082521896106696" value="k_cam_next_state"/>
     <string key="14648703000634606193" value=".frag"/>
+    <string key="14678133955375853072" value="backDepthTex"/>
     <string key="14769396876084068640" value="SSAOTex"/>
     <string key="14775082119282188654" value="root.folders.level"/>
     <string key="14785269867199075517" value="bool"/>
@@ -391,7 +394,9 @@
     <string key="16679013307405797229" value="mt.b_has_metallic"/>
     <string key="16733900363094892041" value="KP_EQUAL"/>
     <string key="16804498396030224938" value="f_alpha"/>
+    <string key="16858268208561164597" value="backfaceDepthTex"/>
     <string key="16864108800910258017" value="k_bb_next_mode"/>
+    <string key="16948313245023980390" value="rd.f_near"/>
     <string key="17030330393165192822" value="k_show_neighbors"/>
     <string key="17067919005753676216" value="COMMA"/>
     <string key="17190761703808769086" value="f_normalOffset"/>

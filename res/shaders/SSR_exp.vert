@@ -6,6 +6,7 @@ struct render_data
     vec2 v2_texelSize;
 
     mat4 m4_projection;
+    mat4 m4_invView;
     float f_near;
     float f_pixelThickness;
     float f_maxRayDistance;

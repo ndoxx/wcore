@@ -29,9 +29,9 @@ bin_steps_(6),
 fade_eye_start_(0.f),
 fade_eye_end_(1.f),
 fade_screen_edge_(0.85f),
-pix_thickness_(1.0f),
+pix_thickness_(0.4f),
 pix_stride_cuttoff_(100.f),
-pix_stride_(1.f),
+pix_stride_(7.f),
 max_ray_distance_(25.f)
 {
     load_geometry();
@@ -71,13 +71,14 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform<int>("albedoTex"_h, 1);
     SSR_shader_.send_uniform<int>("depthTex"_h, 2);
     SSR_shader_.send_uniform<int>("lastFrameTex"_h, 3);
+    //SSR_shader_.send_uniform<int>("backDepthTex"_h, 4);
 
     SSR_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/ssrbuffer.get_width(),1.0f/ssrbuffer.get_height()));
     SSR_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
+    SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
 
 /*
-    SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
     SSR_shader_.send_uniform("rd.f_far"_h, far);
     SSR_shader_.send_uniform("rd.f_hitThreshold"_h, hit_threshold_);
     SSR_shader_.send_uniform("rd.f_step"_h, ray_step_);

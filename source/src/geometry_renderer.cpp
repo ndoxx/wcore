@@ -179,7 +179,7 @@ void GeometryRenderer::render(Scene* pscene)
 
 
     // EXP back face depth buffer ---------------------------------------------
-    null_shader_.use();
+    /*null_shader_.use();
     GFX::cull_front();
     BackFaceDepthBuffer::Instance().bind_as_target();
     GFX::clear_depth();
@@ -211,6 +211,7 @@ void GeometryRenderer::render(Scene* pscene)
 
     BackFaceDepthBuffer::Instance().unbind_as_target();
     null_shader_.unuse();
+    GFX::cull_back();*/
     // EXP back face depth buffer ---------------------------------------------
 
 
