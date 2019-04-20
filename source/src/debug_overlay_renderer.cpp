@@ -41,6 +41,7 @@ text_renderer_(text_renderer)
     auto pbloom   = Texture::get_named_texture("bloom"_h).lock();
     auto pssao    = Texture::get_named_texture("SSAObuffer"_h).lock();
     auto pssr     = Texture::get_named_texture("SSRbuffer"_h).lock();
+    auto pssrblur = Texture::get_named_texture("SSRBlurBuffer"_h).lock();
 
     register_debug_pane(GBuffer::Instance());
     //register_debug_pane(BackFaceDepthBuffer::Instance());
@@ -57,6 +58,10 @@ text_renderer_(text_renderer)
     register_debug_pane(LBuffer::Instance());
     register_debug_pane(SSAOBuffer::Instance());
     register_debug_pane(SSRBuffer::Instance());
+
+    /*register_debug_pane({(*pssr)[0], (*pssrblur)[0]},
+                        {"SSR", "SSR_hblur"},
+                        {false, false});*/
 
     register_debug_pane({(*plbuffer)[1], (*pbloom)[0]},
                         {"screenTex", "bloomTex"},

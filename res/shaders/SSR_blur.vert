@@ -3,8 +3,8 @@
 struct render_data
 {
     vec2 v2_texelSize;
+    vec2 v2_texelOffsetScale;
     vec4 v4_proj_params;
-    vec3 v3_texelOffsetScale;
 
     float f_depthBias;
     float f_normalBias;

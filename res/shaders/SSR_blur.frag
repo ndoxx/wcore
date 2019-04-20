@@ -6,8 +6,8 @@
 struct render_data
 {
     vec2 v2_texelSize;
+    vec2 v2_texelOffsetScale;
     vec4 v4_proj_params;
-    vec3 v3_texelOffsetScale;
 
     float f_depthBias;
     float f_normalBias;
@@ -63,7 +63,7 @@ void main()
     float fragRoughness = fAlbRough.a;
     vec3 sourceNormal = normalize(decompress_normal(fNormMetAO.xy));
 
-    vec2 stepSize = rd.v3_texelOffsetScale.xy * fragRoughness;
+    vec2 stepSize = rd.v2_texelOffsetScale * fragRoughness;
     vec4 accumulator = texture(mainTex, texCoord) * 0.214607f;
     float denominator = 0.214607f;
 

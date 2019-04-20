@@ -20,6 +20,7 @@ public:
     inline void set_enabled(bool value) { enabled_ = value; }
     inline bool is_enabled() const      { return enabled_; }
     inline bool& get_enabled()          { return enabled_; }
+    inline bool& get_blur_enabled()     { return blur_enabled_; }
 
     inline float& get_jitter_amount()      { return jitter_amount_; }
     inline int& get_ray_steps()            { return ray_steps_; }
@@ -40,6 +41,7 @@ private:
     BufferModule blur_buffer_;
 
     bool enabled_;
+    bool blur_enabled_;
     int ray_steps_;
     int bin_steps_;
     float jitter_amount_;

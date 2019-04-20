@@ -31,6 +31,7 @@ std::make_shared<Texture>(
 {GL_COLOR_ATTACHMENT0}),
 
 enabled_(true),
+blur_enabled_(false),
 ray_steps_(20),
 bin_steps_(6),
 jitter_amount_(1.f),
@@ -108,33 +109,65 @@ void SSRRenderer::render(Scene* pscene)
     ssrbuffer.unbind_as_target();
     SSR_shader_.unuse();
 
-    /*blur_buffer_.bind_as_target();
-    gbuffer.bind_as_source(0,0);   // normal, metallic, ao
-    gbuffer.bind_as_source(1,1);   // albedo, roughness
-    gbuffer.bind_as_source(2,2);   // depth
-    ssrbuffer.bind_as_source(3,0); // raw SSR
+    if(blur_enabled_)
+    {
+        blur_buffer_.bind_as_target();
+        gbuffer.bind_as_source(0,0);   // normal, metallic, ao
+        gbuffer.bind_as_source(1,1);   // albedo, roughness
+        gbuffer.bind_as_source(2,2);   // depth
+        ssrbuffer.bind_as_source(3,0); // raw SSR
 
-    SSR_blur_shader_.use();
-    SSR_blur_shader_.send_uniform<int>("normalTex"_h, 0);
-    SSR_blur_shader_.send_uniform<int>("albedoTex"_h, 1);
-    SSR_blur_shader_.send_uniform<int>("depthTex"_h, 2);
-    SSR_blur_shader_.send_uniform<int>("mainTex"_h, 3);
+        SSR_blur_shader_.use();
+        SSR_blur_shader_.send_uniform<int>("normalTex"_h, 0);
+        SSR_blur_shader_.send_uniform<int>("albedoTex"_h, 1);
+        SSR_blur_shader_.send_uniform<int>("depthTex"_h, 2);
+        SSR_blur_shader_.send_uniform<int>("mainTex"_h, 3);
 
-    SSR_blur_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/blur_buffer_.get_width(),1.0f/blur_buffer_.get_height()));
-    SSR_blur_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
-    SSR_blur_shader_.send_uniform("rd.f_depthBias"_h, 0.305f);
-    SSR_blur_shader_.send_uniform("rd.f_normalBias"_h, 0.29f);
-    SSR_blur_shader_.send_uniform("rd.f_blurQuality"_h, 4.f);
+        SSR_blur_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/blur_buffer_.get_width(),1.0f/blur_buffer_.get_height()));
+        SSR_blur_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
+        SSR_blur_shader_.send_uniform("rd.f_depthBias"_h, 0.305f);
+        SSR_blur_shader_.send_uniform("rd.f_normalBias"_h, 0.29f);
+        SSR_blur_shader_.send_uniform("rd.f_blurQuality"_h, 4.f);
 
+        // Horizontal pass
+        float maxBlurRadius = 4.f;
+        SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(maxBlurRadius/ssrbuffer.get_width(), 0.f));
 
-    GFX::clear_color();
-    buffer_unit_.draw(2, 0);
-    gbuffer.unbind_as_source();
-    ssrbuffer.unbind_as_source();
+        GFX::clear_color();
+        buffer_unit_.draw(2, 0);
+        gbuffer.unbind_as_source();
+        ssrbuffer.unbind_as_source();
+        blur_buffer_.unbind_as_target();
 
-    SSR_blur_shader_.unuse();
+        // Vertical pass
+        gbuffer.bind_as_source(0,0);   // normal, metallic, ao
+        gbuffer.bind_as_source(1,1);   // albedo, roughness
+        gbuffer.bind_as_source(2,2);   // depth
+        blur_buffer_.bind_as_source(3,0); // hblur SSR
+        ssrbuffer.bind_as_target();
 
-    blur_buffer_.unbind_as_target();*/
+        SSR_blur_shader_.send_uniform<int>("normalTex"_h, 0);
+        SSR_blur_shader_.send_uniform<int>("albedoTex"_h, 1);
+        SSR_blur_shader_.send_uniform<int>("depthTex"_h, 2);
+        SSR_blur_shader_.send_uniform<int>("mainTex"_h, 3);
+
+        SSR_blur_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/blur_buffer_.get_width(),1.0f/blur_buffer_.get_height()));
+        SSR_blur_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
+        SSR_blur_shader_.send_uniform("rd.f_depthBias"_h, 0.305f);
+        SSR_blur_shader_.send_uniform("rd.f_normalBias"_h, 0.29f);
+        SSR_blur_shader_.send_uniform("rd.f_blurQuality"_h, 2.f);
+        SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(0.f, maxBlurRadius/ssrbuffer.get_height()));
+
+        GFX::enable_blending();
+        GFX::set_std_blending();
+        buffer_unit_.draw(2, 0);
+        gbuffer.unbind_as_source();
+        blur_buffer_.unbind_as_source();
+        ssrbuffer.unbind_as_target();
+        GFX::disable_blending();
+
+        SSR_blur_shader_.unuse();
+    }
 }
 
 } // namespace wcore

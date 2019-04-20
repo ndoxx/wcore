@@ -270,9 +270,9 @@ void main()
     float c = (gl_FragCoord.x + gl_FragCoord.y) * 0.25f;
     float jitter = mod(c, 1.f);
 
-    vec3 wp = vec3(rd.m4_invView * vec4(vsRayOrigin, 1.0));
+    /*vec3 wp = vec3(rd.m4_invView * vec4(vsRayOrigin, 1.0));
     vec3 jitt = rd.f_jitterAmount * mix(vec3(0.0), vec3(hash(wp)), fragRoughness);
-    vsRayDirection = normalize(vsRayDirection + jitt);
+    vsRayDirection = normalize(vsRayDirection + jitt);*/
 
     bool intersect = ray_march(vsRayOrigin, vsRayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
     float alpha = ssr_attenuation(intersect, iterationCount, specularStrength, hitPixel, hitPoint, vsRayOrigin, vsRayDirection);
