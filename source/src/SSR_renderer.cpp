@@ -33,7 +33,7 @@ std::make_shared<Texture>(
 enabled_(true),
 blur_enabled_(false),
 ray_steps_(20),
-bin_steps_(6),
+bin_steps_(0),
 jitter_amount_(1.f),
 fade_eye_start_(0.f),
 fade_eye_end_(1.f),
@@ -111,6 +111,9 @@ void SSRRenderer::render(Scene* pscene)
 
     if(blur_enabled_)
     {
+        float maxBlurRadius = 4.f;
+        int nSamples = 10;
+
         blur_buffer_.bind_as_target();
         gbuffer.bind_as_source(0,0);   // normal, metallic, ao
         gbuffer.bind_as_source(1,1);   // albedo, roughness
@@ -127,10 +130,10 @@ void SSRRenderer::render(Scene* pscene)
         SSR_blur_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
         SSR_blur_shader_.send_uniform("rd.f_depthBias"_h, 0.305f);
         SSR_blur_shader_.send_uniform("rd.f_normalBias"_h, 0.29f);
-        SSR_blur_shader_.send_uniform("rd.f_blurQuality"_h, 4.f);
+        SSR_blur_shader_.send_uniform("rd.f_blurQuality"_h, 2.f);
+        SSR_blur_shader_.send_uniform<int>("rd.i_samples"_h, nSamples);
 
         // Horizontal pass
-        float maxBlurRadius = 4.f;
         SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(maxBlurRadius/ssrbuffer.get_width(), 0.f));
 
         GFX::clear_color();
@@ -156,6 +159,7 @@ void SSRRenderer::render(Scene* pscene)
         SSR_blur_shader_.send_uniform("rd.f_depthBias"_h, 0.305f);
         SSR_blur_shader_.send_uniform("rd.f_normalBias"_h, 0.29f);
         SSR_blur_shader_.send_uniform("rd.f_blurQuality"_h, 2.f);
+        SSR_blur_shader_.send_uniform<int>("rd.i_samples"_h, nSamples);
         SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(0.f, maxBlurRadius/ssrbuffer.get_height()));
 
         GFX::enable_blending();

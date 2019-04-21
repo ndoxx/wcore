@@ -9,6 +9,8 @@ struct render_data
     float f_depthBias;
     float f_normalBias;
     float f_blurQuality;
+
+    int i_samples;
 };
 uniform render_data rd;
 

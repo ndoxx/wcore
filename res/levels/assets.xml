@@ -75,6 +75,25 @@
             </Override>
         </Material>
 
+        <Material name="testMetalFloor02">
+            <Texture>
+                <Units>Albedo;Normal;Metallic;Roughness</Units>
+                <Block0>testMetalFloor02_block0.png</Block0>
+                <Block1>testMetalFloor02_block1.png</Block1>
+                <Block2>testMetalFloor02_block2.png</Block2>
+                <Parameters>
+                    <MinFilter>nearest_mipmap_linear</MinFilter>
+                    <MagFilter>linear</MagFilter>
+                    <AddressU>wrap</AddressU>
+                    <AddressV>wrap</AddressV>
+                </Parameters>
+            </Texture>
+            <Override>
+                <NormalMap>true</NormalMap>
+                <ParallaxMap>false</ParallaxMap>
+            </Override>
+        </Material>
+
         <Material name="grass">
             <Texture>
                 <Units>Albedo;Normal;Depth;AO;Roughness</Units>

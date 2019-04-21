@@ -6,7 +6,7 @@
     <Skybox disable="true">
         <CubemapTexture name="skybox01"/>
     </Skybox>
-    <Terrain chunkSize="32" latticeScale="1.0" textureScale="1.0">
+    <Terrain chunkSize="32" latticeScale="1.0" textureScale="2.0">
         <TerrainPatch origin="(0,0)" size="(2,2)" height="0">
             <HeightModifier>
                 <Offset y="0"></Offset>
@@ -15,7 +15,8 @@
                 <Position>(0,0,0)</Position>
             </Transform>
             <!--<Material name="chrome"/>-->
-            <Material name="testMetalFloor01"/>
+            <Material name="testMetalFloor02"/>
+            <!--<Material name="testMetalFloor02"/>-->
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>
@@ -74,6 +75,35 @@
                     <Angle>(0,60,0)</Angle>
                 </Transform>
             </Model>
+            <Model ypos="relative">
+                <Mesh type="icosphere">
+                    <Generator>
+                        <Density>2</Density>
+                    </Generator>
+                </Mesh>
+                <Material name="chrome"/>
+                <Transform>
+                    <Position>(19,1,7)</Position>
+                    <Scale>1.0</Scale>
+                </Transform>
+            </Model>
+            <Model ypos="relative">
+                <Mesh type="box">
+                    <Generator>
+                        <xmin>-5</xmin>
+                        <xmax>5</xmax>
+                        <ymin>0.0</ymin>
+                        <ymax>0.2</ymax>
+                        <zmin>-5</zmin>
+                        <zmax>5</zmax>
+                        <TextureScale>4.0f</TextureScale>
+                    </Generator>
+                </Mesh>
+                <Material name="testMetalFloor01"/>
+                <Transform>
+                    <Position>(27,-0.1,6)</Position>
+                </Transform>
+            </Model>
             <Model name="tree04" ypos="relative">
                 <Transform>
                     <Position>(16,-0.5,16)</Position>
@@ -100,7 +130,7 @@
                 <Position>(14.0,5.0,18.0)</Position>
                 <Color>(1.0, 0.5, 0.05)</Color>
                 <Radius>10.0</Radius>
-                <Brightness>25.0</Brightness>
+                <Brightness>35.0</Brightness>
             </Light>
         </Lights>
     </Chunk>

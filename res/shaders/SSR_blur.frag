@@ -12,6 +12,8 @@ struct render_data
     float f_depthBias;
     float f_normalBias;
     float f_blurQuality;
+
+    int i_samples;
 };
 uniform render_data rd;
 
@@ -67,27 +69,15 @@ void main()
     vec4 accumulator = texture(mainTex, texCoord) * 0.214607f;
     float denominator = 0.214607f;
 
-    process_sample(texCoord, sourceNormal, sourceDepth,  1,        rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 0.2f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 0.4f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 0.6f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 0.8f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 1.2f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 1.4f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 1.6f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 1.8f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth,  1 * 2.0f, rd.f_blurQuality, stepSize, accumulator, denominator);
+    // Samples span the [-2,2] interval
+    float step = 2.f / rd.i_samples;
 
-    process_sample(texCoord, sourceNormal, sourceDepth, -1,        rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 0.2f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 0.4f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 0.6f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 0.8f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 1.2f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 1.4f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 1.6f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 1.8f, rd.f_blurQuality, stepSize, accumulator, denominator);
-    process_sample(texCoord, sourceNormal, sourceDepth, -1 * 2.0f, rd.f_blurQuality, stepSize, accumulator, denominator);
+    for(int ii=0; ii<rd.i_samples/2; ++ii)
+    {
+        float offset = (ii+1) * step;
+        process_sample(texCoord, sourceNormal, sourceDepth,  offset, rd.f_blurQuality, stepSize, accumulator, denominator);
+        process_sample(texCoord, sourceNormal, sourceDepth, -offset, rd.f_blurQuality, stepSize, accumulator, denominator);
+    }
 
     out_color = accumulator / denominator;
 }
