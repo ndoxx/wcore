@@ -16,6 +16,7 @@ struct render_data
     mat4 m4_projection;
     mat4 m4_invView;
     float f_near;
+    float f_minGlossiness;
     float f_pixelThickness;
     float f_maxRayDistance;
     float f_pixelStride;         // number of pixels per ray step close to camera
@@ -137,7 +138,6 @@ bool ray_march(vec3 rayOrigin,
     // offset the starting values by the jitter fraction
     dP *= pixelStride; dQ *= pixelStride; dk *= pixelStride;
 
-
     // Track ray step and derivatives in a vec4 to parallelize
     vec4 pqk = vec4(P0, Q0.z, k0);
     vec4 dPQK = vec4(dP, dQ.z, dk);
@@ -244,7 +244,7 @@ void main()
 
     vec4 fNormMetAO = texture(normalTex, texCoord);
     float fragMetallic = fNormMetAO.b;
-    if(fragMetallic < 0.01)
+    if(fragMetallic < rd.f_minGlossiness)
         discard;
 
     vec3 fragNormal = normalize(decompress_normal(fNormMetAO.xy));
@@ -254,12 +254,14 @@ void main()
 
     vec4 fAlbRough = texture(albedoTex, texCoord);
     float fragRoughness = fAlbRough.a;
-    float specularStrength = 1.f - fragRoughness;
+    float reflectivity = fragMetallic*(1.f-fragRoughness);
+    reflectivity = (reflectivity - rd.f_minGlossiness) / (1.f - rd.f_minGlossiness);
 
     // Fresnel coefficient vector
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, fAlbRough.rgb, fragMetallic);
     vec4 fresnel = vec4(FresnelGS(max(dot(fragNormal, normalize(rayOrigin)), 0.f), F0), 1.f);
+    // NOTE(ndx) Try adding a Geometry Smith GGX
 
     vec3 rayDirection = normalize(reflect(normalize(rayOrigin), fragNormal));
 
@@ -268,15 +270,18 @@ void main()
     float iterationCount;
 
     // Jitter fraction to hide banding artifacts
-    float c = (gl_FragCoord.x + gl_FragCoord.y) * 0.25f;
+    float c = (gl_FragCoord.x + gl_FragCoord.y) * 0.5f;
     float jitter = (0.1f + fract(c)) / 1.1f;
 
+    // TMP dithering
     vec3 wp = vec3(rd.m4_invView * vec4(rayOrigin, 1.0));
     vec3 dither = rd.f_ditherAmount * (hash(wp) * 2.f - 1.f);//mix(vec3(0.0), hash(wp), fragRoughness);
     rayDirection = normalize(rayDirection + dither);
 
     bool intersect = ray_march(rayOrigin, rayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
-    float alpha = ssr_attenuation(intersect, iterationCount, specularStrength, hitPixel, hitPoint, rayOrigin, rayDirection);
+    float alpha = ssr_attenuation(intersect, iterationCount, reflectivity, hitPixel, hitPoint, rayOrigin, rayDirection);
 
-    out_SSR = (intersect ? vec4(texture(lastFrameTex, hitPixel).rgb, alpha) : vec4(0.f)) * fresnel;
+    hitPixel = clamp(hitPixel, 0.f, 1.f);
+
+    out_SSR = (intersect ? vec4(texture(lastFrameTex, hitPixel).rgb, alpha) : vec4(0.f)) /* fresnel*/;
 }

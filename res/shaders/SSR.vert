@@ -8,6 +8,7 @@ struct render_data
     mat4 m4_projection;
     mat4 m4_invView;
     float f_near;
+    float f_minGlossiness;
     float f_pixelThickness;
     float f_maxRayDistance;
     float f_pixelStride;         // number of pixels per ray step close to camera

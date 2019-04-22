@@ -41,6 +41,9 @@ private:
     uint8_t mode_;
     bool active_;
     bool tone_map_;
+    bool show_r_;
+    bool show_g_;
+    bool show_b_;
     bool split_alpha_;
     float split_pos_;
 

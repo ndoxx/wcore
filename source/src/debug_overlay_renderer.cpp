@@ -28,7 +28,7 @@ using namespace math;
 
 DebugOverlayRenderer::DebugOverlayRenderer(TextRenderer& text_renderer):
 Renderer<Vertex3P>(),
-passthrough_shader_(ShaderResource("passthrough.vert;passthrough.frag")),
+passthrough_shader_(ShaderResource("fb_peek.vert;fb_peek.frag")),
 render_target_("debugOverlayBuffer",
 std::make_shared<Texture>(
     std::vector<hash_t>{"debugOverlayTex"_h},
@@ -43,6 +43,9 @@ std::make_shared<Texture>(
 mode_(0),
 active_(false),
 tone_map_(true),
+show_r_(true),
+show_g_(true),
+show_b_(true),
 split_alpha_(true),
 split_pos_(0.5f),
 text_renderer_(text_renderer)
@@ -132,13 +135,12 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
         dbg::DebugTextureProperties& props = debug_panes_[index][ii];
         bool is_depth = props.is_depth;
 
-        passthrough_shader_.send_uniform("b_toneMap"_h, true);
         passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
-        passthrough_shader_.send_uniform("b_splitAlpha"_h, false);
         if(is_depth)
         {
-            passthrough_shader_.send_uniform("f_near"_h, pscene->get_camera().get_near());
-            passthrough_shader_.send_uniform("f_far"_h, pscene->get_camera().get_far());
+            const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
+            vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
+            passthrough_shader_.send_uniform("v4_proj_params"_h, proj_params);
         }
 
         GFX::bind_texture2D(0, props.texture_index);
@@ -192,6 +194,11 @@ void DebugOverlayRenderer::generate_widget(Scene* pscene)
 
     ImGui::NextColumn();
     ImGui::Checkbox("Tone mapping", &tone_map_);
+    ImGui::SameLine(); ImGui::Checkbox("R##0", &show_r_);
+    ImGui::SameLine(); ImGui::Checkbox("G##0", &show_g_);
+    ImGui::SameLine(); ImGui::Checkbox("B##0", &show_b_);
+
+
     ImGui::Checkbox("Alpha split", &split_alpha_);
     ImGui::SameLine();
     ImGui::SliderFloat("Split pos.", &split_pos_, 0.f, 1.f);
@@ -211,10 +218,14 @@ void DebugOverlayRenderer::generate_widget(Scene* pscene)
     passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
     passthrough_shader_.send_uniform("b_splitAlpha"_h, split_alpha_);
     passthrough_shader_.send_uniform("f_splitPos"_h, split_pos_);
+    passthrough_shader_.send_uniform("v3_channelFilter"_h, vec3((float)show_r_, (float)show_g_, (float)show_b_));
+    passthrough_shader_.send_uniform("v2_texelSize"_h, vec2(1.0f/render_target_.get_width(),1.0f/render_target_.get_height()));
+
     if(is_depth)
     {
-        passthrough_shader_.send_uniform("f_near"_h, pscene->get_camera().get_near());
-        passthrough_shader_.send_uniform("f_far"_h, pscene->get_camera().get_far());
+        const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
+        vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
+        passthrough_shader_.send_uniform("v4_proj_params"_h, proj_params);
     }
 
     GFX::viewport(0, 0, render_target_.get_width(), render_target_.get_height());

@@ -29,7 +29,7 @@ std::make_shared<Texture>(
     GL_TEXTURE_2D,
     true),
 {GL_COLOR_ATTACHMENT0}),
-
+nonce_(true),
 enabled_(true),
 blur_enabled_(false),
 ray_steps_(20),
@@ -38,6 +38,7 @@ dither_amount_(0.01f),
 fade_eye_start_(0.8f),
 fade_eye_end_(1.f),
 fade_screen_edge_(0.85f),
+min_glossiness_(0.01f),
 pix_thickness_(0.4f),
 pix_stride_cuttoff_(30.f),
 pix_stride_(7.f),
@@ -79,7 +80,14 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform<int>("normalTex"_h, 0);
     SSR_shader_.send_uniform<int>("albedoTex"_h, 1);
     SSR_shader_.send_uniform<int>("depthTex"_h, 2);
-    SSR_shader_.send_uniform<int>("lastFrameTex"_h, 3);
+    if(!nonce_)
+        SSR_shader_.send_uniform<int>("lastFrameTex"_h, 3);
+    else
+    {
+        // Use albedo map as "last frame" for first frame
+        SSR_shader_.send_uniform<int>("lastFrameTex"_h, 1);
+        nonce_ = false;
+    }
     //SSR_shader_.send_uniform<int>("backDepthTex"_h, 4);
 
     SSR_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/ssrbuffer.get_width(),1.0f/ssrbuffer.get_height()));
@@ -88,6 +96,7 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
     SSR_shader_.send_uniform("rd.f_near"_h, near);
+    SSR_shader_.send_uniform("rd.f_minGlossiness"_h, min_glossiness_);
     SSR_shader_.send_uniform("rd.f_pixelThickness"_h, pix_thickness_);
     SSR_shader_.send_uniform("rd.f_maxRayDistance"_h, max_ray_distance_);
     SSR_shader_.send_uniform("rd.f_pixelStride"_h, pix_stride_);
