@@ -33,13 +33,13 @@ std::make_shared<Texture>(
 enabled_(true),
 blur_enabled_(false),
 ray_steps_(20),
-bin_steps_(0),
-jitter_amount_(1.f),
-fade_eye_start_(0.f),
+bin_steps_(6),
+dither_amount_(0.01f),
+fade_eye_start_(0.8f),
 fade_eye_end_(1.f),
 fade_screen_edge_(0.85f),
 pix_thickness_(0.4f),
-pix_stride_cuttoff_(100.f),
+pix_stride_cuttoff_(30.f),
 pix_stride_(7.f),
 max_ray_distance_(25.f)
 {
@@ -97,7 +97,7 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.f_screenEdgeFadeStart"_h, fade_screen_edge_);
     SSR_shader_.send_uniform("rd.f_eyeFadeStart"_h, fade_eye_start_);
     SSR_shader_.send_uniform("rd.f_eyeFadeEnd"_h, fade_eye_end_);
-    SSR_shader_.send_uniform("rd.f_jitterAmount"_h, jitter_amount_);
+    SSR_shader_.send_uniform("rd.f_ditherAmount"_h, dither_amount_);
 
     GFX::clear_color();
 

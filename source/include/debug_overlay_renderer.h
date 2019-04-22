@@ -3,6 +3,7 @@
 
 #include "renderer.hpp"
 #include "shader.h"
+#include "buffer_module.h"
 
 namespace wcore
 {
@@ -35,9 +36,13 @@ class DebugOverlayRenderer : public Renderer<Vertex3P>
 {
 private:
     Shader passthrough_shader_;
+    BufferModule render_target_;
     std::vector<dbg::DebugPane> debug_panes_;
     uint8_t mode_;
     bool active_;
+    bool tone_map_;
+    bool split_alpha_;
+    float split_pos_;
 
     TextRenderer& text_renderer_;
 
@@ -59,7 +64,7 @@ public:
     void render_pane(uint32_t index, Scene* pscene);
 
 #ifndef __DISABLE_EDITOR__
-    void generate_widget();
+    void generate_widget(Scene* pscene);
 #endif
 };
 

@@ -377,7 +377,7 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Px stride", &SSR_renderer_->get_pix_stride(), 1.0f, 20.0f);
             ImGui::SliderFloat("Px stride cuttoff", &SSR_renderer_->get_pix_stride_cuttoff(), 0.0f, 200.0f);
             ImGui::SliderFloat("Px thickness", &SSR_renderer_->get_pix_thickness(), 0.0f, 5.0f);
-            ImGui::SliderFloat("Jitter", &SSR_renderer_->get_jitter_amount(), 0.0f, 1.0f);
+            ImGui::SliderFloat("Dither amt.", &SSR_renderer_->get_dither_amount(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade eye start", &SSR_renderer_->get_fade_eye_start(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade eye end", &SSR_renderer_->get_fade_eye_end(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade screen edge", &SSR_renderer_->get_fade_screen_edge(), 0.0f, 1.0f);
@@ -541,7 +541,7 @@ void RenderPipeline::generate_widget()
     }
 
     if(framebuffer_peek)
-        debug_overlay_renderer_->generate_widget();
+        debug_overlay_renderer_->generate_widget(pscene);
 }
 #endif //__DISABLE_EDITOR__
 

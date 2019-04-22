@@ -242,12 +242,6 @@ int EngineCore::run()
         }
 #endif //__PROFILING_EngineCore__
 
-        // GUI
-#ifndef __DISABLE_EDITOR__
-        if(render_editor_GUI_)
-            generate_editor_widgets();
-#endif
-
         // RENDER
 #ifdef __PROFILING_EngineCore__
         glFinish();
@@ -257,6 +251,12 @@ int EngineCore::run()
         // Render game
         if(!game_clock_.is_game_paused())
             render();
+
+        // GUI
+#ifndef __DISABLE_EDITOR__
+        if(render_editor_GUI_)
+            generate_editor_widgets();
+#endif
 
         // Render GUI
 #ifndef __DISABLE_EDITOR__

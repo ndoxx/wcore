@@ -17,7 +17,7 @@ struct render_data
     float f_screenEdgeFadeStart; // distance to screen edge that ray hits will start to fade (0.0 -> 1.0)
     float f_eyeFadeStart;        // ray direction's Z that ray hits will start to fade (0.0 -> 1.0)
     float f_eyeFadeEnd;          // ray direction's Z that ray hits will be cut (0.0 -> 1.0)
-    float f_jitterAmount;
+    float f_ditherAmount;
 
     // Position reconstruction
     vec4 v4_proj_params;

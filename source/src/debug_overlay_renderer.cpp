@@ -29,8 +29,22 @@ using namespace math;
 DebugOverlayRenderer::DebugOverlayRenderer(TextRenderer& text_renderer):
 Renderer<Vertex3P>(),
 passthrough_shader_(ShaderResource("passthrough.vert;passthrough.frag")),
+render_target_("debugOverlayBuffer",
+std::make_shared<Texture>(
+    std::vector<hash_t>{"debugOverlayTex"_h},
+    std::vector<GLenum>{GL_LINEAR},
+    std::vector<GLenum>{GL_RGB16F},
+    std::vector<GLenum>{GL_RGB},
+    GLB.WIN_W/2,
+    GLB.WIN_H/2,
+    GL_TEXTURE_2D,
+    true),
+{GL_COLOR_ATTACHMENT0}),
 mode_(0),
 active_(false),
+tone_map_(true),
+split_alpha_(true),
+split_pos_(0.5f),
 text_renderer_(text_renderer)
 {
     load_geometry();
@@ -58,10 +72,6 @@ text_renderer_(text_renderer)
     register_debug_pane(LBuffer::Instance());
     register_debug_pane(SSAOBuffer::Instance());
     register_debug_pane(SSRBuffer::Instance());
-
-    /*register_debug_pane({(*pssr)[0], (*pssrblur)[0]},
-                        {"SSR", "SSR_hblur"},
-                        {false, false});*/
 
     register_debug_pane({(*plbuffer)[1], (*pbloom)[0]},
                         {"screenTex", "bloomTex"},
@@ -96,9 +106,10 @@ void DebugOverlayRenderer::register_debug_pane(BufferModule& buffer_module)
     dbg::DebugPane dbg_pane;
     for(uint32_t ii=0; ii< n_tex; ++ii)
     {
+        std::string sampler_name(HRESOLVE(buffer_module.get_texture()->get_sampler_name(ii)));
 
         dbg_pane.push_back(dbg::DebugTextureProperties(buffer_module[ii],
-                           std::to_string(buffer_module.get_texture()->get_sampler_name(ii)),
+                           sampler_name,
                            buffer_module.get_texture()->is_depth(ii)));
     }
     debug_panes_.push_back(dbg_pane);
@@ -121,7 +132,9 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
         dbg::DebugTextureProperties& props = debug_panes_[index][ii];
         bool is_depth = props.is_depth;
 
+        passthrough_shader_.send_uniform("b_toneMap"_h, true);
         passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
+        passthrough_shader_.send_uniform("b_splitAlpha"_h, false);
         if(is_depth)
         {
             passthrough_shader_.send_uniform("f_near"_h, pscene->get_camera().get_near());
@@ -156,13 +169,18 @@ void DebugOverlayRenderer::render(Scene* pscene)
 static int current_pane = 0;
 static int current_tex = 0;
 
-void DebugOverlayRenderer::generate_widget()
+void DebugOverlayRenderer::generate_widget(Scene* pscene)
 {
     if(!ImGui::Begin("Framebuffer peek"))
     {
         ImGui::End();
         return;
     }
+
+    // * Get render properties from GUI
+    ImGui::BeginChild("##peekctl", ImVec2(0, 3*ImGui::GetItemsLineHeightWithSpacing()));
+    ImGui::Columns(2, nullptr, false);
+
     if(ImGui::SliderInt("Panel", &current_pane, 0, debug_panes_.size()-1))
     {
         current_tex = 0;
@@ -172,10 +190,53 @@ void DebugOverlayRenderer::generate_widget()
     dbg::DebugTextureProperties& props = debug_panes_[current_pane][current_tex];
     ImGui::Text("name: %s", props.sampler_name.c_str());
 
-    ImGui::GetWindowDrawList()->AddImage((void*)(uint64_t)props.texture_index,
+    ImGui::NextColumn();
+    ImGui::Checkbox("Tone mapping", &tone_map_);
+    ImGui::Checkbox("Alpha split", &split_alpha_);
+    ImGui::SameLine();
+    ImGui::SliderFloat("Split pos.", &split_pos_, 0.f, 1.f);
+
+    ImGui::EndChild();
+
+    // * Render texture offscreen
+    bool is_depth = props.is_depth;
+
+    render_target_.bind_as_target();
+    GFX::bind_texture2D(0, props.texture_index);
+
+    passthrough_shader_.use();
+    passthrough_shader_.send_uniform<int>("screenTex"_h, 0);
+
+    passthrough_shader_.send_uniform("b_toneMap"_h, tone_map_);
+    passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
+    passthrough_shader_.send_uniform("b_splitAlpha"_h, split_alpha_);
+    passthrough_shader_.send_uniform("f_splitPos"_h, split_pos_);
+    if(is_depth)
+    {
+        passthrough_shader_.send_uniform("f_near"_h, pscene->get_camera().get_near());
+        passthrough_shader_.send_uniform("f_far"_h, pscene->get_camera().get_far());
+    }
+
+    GFX::viewport(0, 0, render_target_.get_width(), render_target_.get_height());
+    GFX::clear_color();
+
+    vertex_array_.bind();
+    buffer_unit_.draw(2, 0);
+    vertex_array_.unbind();
+    passthrough_shader_.unuse();
+    render_target_.unbind_as_target();
+
+    uint64_t target_id = render_target_.get_texture()->get_texture_id(0);
+
+    ImGui::GetWindowDrawList()->AddImage((void*)target_id,
                                          ImGui::GetCursorScreenPos(),
                                          ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y),
                                          ImVec2(0, 1), ImVec2(1, 0));
+
+    /*ImGui::GetWindowDrawList()->AddImage((void*)(uint64_t)props.texture_index,
+                                         ImGui::GetCursorScreenPos(),
+                                         ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y),
+                                         ImVec2(0, 1), ImVec2(1, 0));*/
 
     ImGui::End();
 }

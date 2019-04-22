@@ -22,7 +22,7 @@ public:
     inline bool& get_enabled()          { return enabled_; }
     inline bool& get_blur_enabled()     { return blur_enabled_; }
 
-    inline float& get_jitter_amount()      { return jitter_amount_; }
+    inline float& get_dither_amount()      { return dither_amount_; }
     inline int& get_ray_steps()            { return ray_steps_; }
     inline int& get_bin_steps()            { return bin_steps_; }
 
@@ -44,7 +44,7 @@ private:
     bool blur_enabled_;
     int ray_steps_;
     int bin_steps_;
-    float jitter_amount_;
+    float dither_amount_;
     float fade_eye_start_;
     float fade_eye_end_;
     float fade_screen_edge_;

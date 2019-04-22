@@ -6,6 +6,9 @@ layout(location = 0) out vec3 out_color;
 // UNIFORMS
 uniform sampler2D screenTex;
 uniform bool b_isDepth;
+uniform bool b_toneMap;
+uniform bool b_splitAlpha;
+uniform float f_splitPos = 0.5;
 
 // Camera constants
 uniform float f_near = 0.1;
@@ -22,8 +25,15 @@ void main()
     else
     {
         // "screen" texture is a floating point color buffer
-        vec3 hdrColor = texture(screenTex, texCoord).rgb;
+        vec4 sampleColor = texture(screenTex, texCoord);
+
         // Fast Reinhard tone mapping
-        out_color = hdrColor / (hdrColor + vec3(1.0));
+        if(b_toneMap)
+            sampleColor.rgb = sampleColor.rgb / (sampleColor.rgb + vec3(1.0));
+
+        if(b_splitAlpha && texCoord.x>f_splitPos)
+            sampleColor.rgb = vec3(sampleColor.a);
+
+        out_color = sampleColor.rgb;
     }
 }

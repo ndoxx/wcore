@@ -25,7 +25,7 @@ struct render_data
     float f_screenEdgeFadeStart; // distance to screen edge that ray hits will start to fade (0.0 -> 1.0)
     float f_eyeFadeStart;        // ray direction's Z that ray hits will start to fade (0.0 -> 1.0)
     float f_eyeFadeEnd;          // ray direction's Z that ray hits will be cut (0.0 -> 1.0)
-    float f_jitterAmount;
+    float f_ditherAmount;
 
     // Position reconstruction
     vec4 v4_proj_params;
@@ -175,7 +175,7 @@ bool ray_march(vec3 rayOrigin,
             pqk += dPQK * stride;
 
             rayZNear = rayZFar;
-            rayZFar = (dPQK.z * -0.5f + pqk.z) / (dPQK.w * -0.5f + pqk.w);
+            rayZFar = (dPQK.z * 0.5f + pqk.z) / (dPQK.w * 0.5f + pqk.w);
 
             hitPixel = permute ? pqk.yx : pqk.xy;
             hitPixel *= rd.v2_texelSize;
@@ -199,8 +199,8 @@ float ssr_attenuation(bool intersect,
                       float reflectivity,
                       vec2 hitPixel,
                       vec3 hitPoint,
-                      vec3 vsRayOrigin,
-                      vec3 vsRayDirection)
+                      vec3 rayOrigin,
+                      vec3 rayDirection)
 {
     float alpha = clamp(reflectivity, 0.f, 1.f);
 
@@ -218,11 +218,11 @@ float ssr_attenuation(bool intersect,
     float eyeFadeEnd = rd.f_eyeFadeEnd;
     swap_if_bigger(eyeFadeStart, eyeFadeEnd);
 
-    float eyeDirection = clamp(vsRayDirection.z, eyeFadeStart, eyeFadeEnd);
+    float eyeDirection = clamp(rayDirection.z, eyeFadeStart, eyeFadeEnd);
     alpha *= 1.f - ((eyeDirection - eyeFadeStart) / (eyeFadeEnd - eyeFadeStart));
 
     // Fade ray hits based on distance from ray origin
-    alpha *= 1.f - clamp(distance(vsRayOrigin, hitPoint) / rd.f_maxRayDistance, 0.f, 1.f);
+    alpha *= 1.f - clamp(distance(rayOrigin, hitPoint) / rd.f_maxRayDistance, 0.f, 1.f);
 
     alpha *= float(intersect);
 
@@ -250,7 +250,7 @@ void main()
     vec3 fragNormal = normalize(decompress_normal(fNormMetAO.xy));
 
     float depth = texture(depthTex, texCoord).r;
-    vec3 vsRayOrigin = reconstruct_position(depth, frag_ray, rd.v4_proj_params);
+    vec3 rayOrigin = reconstruct_position(depth, frag_ray, rd.v4_proj_params);
 
     vec4 fAlbRough = texture(albedoTex, texCoord);
     float fragRoughness = fAlbRough.a;
@@ -259,23 +259,24 @@ void main()
     // Fresnel coefficient vector
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, fAlbRough.rgb, fragMetallic);
-    vec4 fresnel = vec4(FresnelGS(max(dot(fragNormal, normalize(vsRayOrigin)), 0.f), F0), 1.f);
+    vec4 fresnel = vec4(FresnelGS(max(dot(fragNormal, normalize(rayOrigin)), 0.f), F0), 1.f);
 
-    vec3 vsRayDirection = normalize(reflect(normalize(vsRayOrigin), fragNormal));
+    vec3 rayDirection = normalize(reflect(normalize(rayOrigin), fragNormal));
 
     vec2 hitPixel;
     vec3 hitPoint;
     float iterationCount;
 
+    // Jitter fraction to hide banding artifacts
     float c = (gl_FragCoord.x + gl_FragCoord.y) * 0.25f;
-    float jitter = mod(c, 1.f);
+    float jitter = (0.1f + fract(c)) / 1.1f;
 
-    /*vec3 wp = vec3(rd.m4_invView * vec4(vsRayOrigin, 1.0));
-    vec3 jitt = rd.f_jitterAmount * mix(vec3(0.0), vec3(hash(wp)), fragRoughness);
-    vsRayDirection = normalize(vsRayDirection + jitt);*/
+    vec3 wp = vec3(rd.m4_invView * vec4(rayOrigin, 1.0));
+    vec3 dither = rd.f_ditherAmount * (hash(wp) * 2.f - 1.f);//mix(vec3(0.0), hash(wp), fragRoughness);
+    rayDirection = normalize(rayDirection + dither);
 
-    bool intersect = ray_march(vsRayOrigin, vsRayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
-    float alpha = ssr_attenuation(intersect, iterationCount, specularStrength, hitPixel, hitPoint, vsRayOrigin, vsRayDirection);
+    bool intersect = ray_march(rayOrigin, rayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
+    float alpha = ssr_attenuation(intersect, iterationCount, specularStrength, hitPixel, hitPoint, rayOrigin, rayDirection);
 
     out_SSR = (intersect ? vec4(texture(lastFrameTex, hitPixel).rgb, alpha) : vec4(0.f)) * fresnel;
 }
