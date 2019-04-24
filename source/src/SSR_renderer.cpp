@@ -42,7 +42,8 @@ min_glossiness_(0.01f),
 pix_thickness_(0.4f),
 pix_stride_cuttoff_(30.f),
 pix_stride_(7.f),
-max_ray_distance_(25.f)
+max_ray_distance_(25.f),
+probe_(1.f)
 {
     load_geometry();
     SSRBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
@@ -107,6 +108,9 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.f_eyeFadeStart"_h, fade_eye_start_);
     SSR_shader_.send_uniform("rd.f_eyeFadeEnd"_h, fade_eye_end_);
     SSR_shader_.send_uniform("rd.f_ditherAmount"_h, dither_amount_);
+
+
+    SSR_shader_.send_uniform("rd.f_probe"_h, probe_);
 
     GFX::clear_color();
 

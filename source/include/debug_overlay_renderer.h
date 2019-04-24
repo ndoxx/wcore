@@ -44,6 +44,7 @@ private:
     bool show_r_;
     bool show_g_;
     bool show_b_;
+    bool invert_color_;
     bool split_alpha_;
     float split_pos_;
 

@@ -10,6 +10,8 @@
 #include "globals.h"
 #include "scene.h"
 #include "camera.h"
+#include "config.h"
+#include "png_loader.h"
 
 #include "g_buffer.h"
 #include "l_buffer.h"
@@ -35,8 +37,8 @@ std::make_shared<Texture>(
     std::vector<GLenum>{GL_LINEAR},
     std::vector<GLenum>{GL_RGB16F},
     std::vector<GLenum>{GL_RGB},
-    GLB.WIN_W/2,
-    GLB.WIN_H/2,
+    GLB.WIN_W,
+    GLB.WIN_H,
     GL_TEXTURE_2D,
     true),
 {GL_COLOR_ATTACHMENT0}),
@@ -46,6 +48,7 @@ tone_map_(true),
 show_r_(true),
 show_g_(true),
 show_b_(true),
+invert_color_(false),
 split_alpha_(true),
 split_pos_(0.5f),
 text_renderer_(text_renderer)
@@ -170,6 +173,7 @@ void DebugOverlayRenderer::render(Scene* pscene)
 #ifndef __DISABLE_EDITOR__
 static int current_pane = 0;
 static int current_tex = 0;
+static bool save_image = false;
 
 void DebugOverlayRenderer::generate_widget(Scene* pscene)
 {
@@ -197,6 +201,10 @@ void DebugOverlayRenderer::generate_widget(Scene* pscene)
     ImGui::SameLine(); ImGui::Checkbox("R##0", &show_r_);
     ImGui::SameLine(); ImGui::Checkbox("G##0", &show_g_);
     ImGui::SameLine(); ImGui::Checkbox("B##0", &show_b_);
+    ImGui::SameLine(); ImGui::Checkbox("Invert", &invert_color_);
+    ImGui::SameLine();
+    if(ImGui::Button("Save to file"))
+        save_image = true;
 
 
     ImGui::Checkbox("Alpha split", &split_alpha_);
@@ -217,6 +225,7 @@ void DebugOverlayRenderer::generate_widget(Scene* pscene)
     passthrough_shader_.send_uniform("b_toneMap"_h, tone_map_);
     passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
     passthrough_shader_.send_uniform("b_splitAlpha"_h, split_alpha_);
+    passthrough_shader_.send_uniform("b_invert"_h, invert_color_);
     passthrough_shader_.send_uniform("f_splitPos"_h, split_pos_);
     passthrough_shader_.send_uniform("v3_channelFilter"_h, vec3((float)show_r_, (float)show_g_, (float)show_b_));
     passthrough_shader_.send_uniform("v2_texelSize"_h, vec2(1.0f/render_target_.get_width(),1.0f/render_target_.get_height()));
@@ -239,15 +248,49 @@ void DebugOverlayRenderer::generate_widget(Scene* pscene)
 
     uint64_t target_id = render_target_.get_texture()->get_texture_id(0);
 
+    float winx = std::max(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x - 8.f, 0.f);
+    float winy = std::max(ImGui::GetWindowPos().y + ImGui::GetWindowSize().y - 8.f, 0.f);
     ImGui::GetWindowDrawList()->AddImage((void*)target_id,
                                          ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y),
+                                         ImVec2(winx, winy),
                                          ImVec2(0, 1), ImVec2(1, 0));
 
     /*ImGui::GetWindowDrawList()->AddImage((void*)(uint64_t)props.texture_index,
                                          ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y),
+                                         ImVec2(winx, winy),
                                          ImVec2(0, 1), ImVec2(1, 0));*/
+
+    // Save image if needed
+    if(save_image)
+    {
+        // Allocate buffer for image data
+        int width = render_target_.get_width();
+        int height = render_target_.get_height();
+        int img_size = width * height * 3;
+        unsigned char* data = new unsigned char[img_size];
+
+        // Bind output texture, read pixels to buffer and unbind
+        /*GFX::bind_texture2D(0, target_id);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        GFX::bind_texture2D(0, 0);*/
+
+        render_target_.bind_as_target();
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+        render_target_.unbind_as_target();
+
+        // Save to PNG image
+        fs::path file_path;
+        if(CONFIG.get("root.folders.log"_h, file_path))
+        {
+            std::string filename = props.sampler_name + "_" + std::to_string(props.texture_index) + ".png";
+            file_path /= filename;
+            PngLoader png_loader;
+            png_loader.write_png(file_path, data, width, height);
+        }
+        delete[] data;
+        save_image = false;
+    }
 
     ImGui::End();
 }

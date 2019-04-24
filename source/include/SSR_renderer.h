@@ -35,6 +35,9 @@ public:
     inline float& get_pix_stride()         { return pix_stride_; }
     inline float& get_max_ray_distance()   { return max_ray_distance_; }
 
+
+    inline float& get_probe()   { return probe_; }
+
 private:
     Shader SSR_shader_;
     Shader SSR_blur_shader_;
@@ -55,6 +58,8 @@ private:
     float pix_stride_cuttoff_;
     float pix_stride_;
     float max_ray_distance_;
+
+    float probe_;
 };
 
 } // namespace wcore

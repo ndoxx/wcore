@@ -20,6 +20,8 @@ public:
 
     [[deprecated("use streams instead")]]
     PixelBuffer* load_png(const fs::path& file_path);
+
+    bool write_png(const fs::path& file_path, unsigned char* pixels, int w, int h);
 };
 
 }

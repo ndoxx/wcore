@@ -28,6 +28,8 @@ struct render_data
     float f_eyeFadeEnd;          // ray direction's Z that ray hits will be cut (0.0 -> 1.0)
     float f_ditherAmount;
 
+    float f_probe; // dbg
+
     // Position reconstruction
     vec4 v4_proj_params;
 };
@@ -63,6 +65,7 @@ bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
     // Cross z
     return rayZFar <= cameraZ && rayZNear >= cameraZ - rd.f_pixelThickness;
 }
+
 /*
 bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 {
@@ -134,15 +137,15 @@ bool ray_march(vec3 rayOrigin,
     float strideScaler = 1.f - min(1.f, -rayOrigin.z / rd.f_pixelStrideZCuttoff);
     float pixelStride = 1.f + strideScaler * rd.f_pixelStride;
 
-    // Scale derivatives by the desired pixel stride and then
-    // offset the starting values by the jitter fraction
-    dP *= pixelStride; dQ *= pixelStride; dk *= pixelStride;
-
     // Track ray step and derivatives in a vec4 to parallelize
     vec4 pqk = vec4(P0, Q0.z, k0);
     vec4 dPQK = vec4(dP, dQ.z, dk);
 
+    // Scale derivatives by the desired pixel stride and then
+    // offset the starting values by the jitter fraction
+    dPQK *= pixelStride;
     pqk += dPQK * jitter;
+
     float rayZFar = (dPQK.z * 0.5 + pqk.z) / (dPQK.w * 0.5 + pqk.w);
     float rayZNear;
     bool intersect = false;
@@ -162,26 +165,26 @@ bool ray_march(vec3 rayOrigin,
     }
 
     // Binary search refinement
-    if(pixelStride > 1.f && intersect)
+    if(pixelStride>1.f && intersect)
     {
-        pqk -= dPQK;
-        dPQK /= pixelStride;
+        pqk -= dPQK; // step back
+        dPQK /= pixelStride; // unscale derivatives
 
-        float originalStride = pixelStride * 0.5f;
-        float stride = originalStride;
+        float stride = pixelStride * 0.5f;
+        vec4 dPQKj;
 
-        for(float jj=0; jj<rd.f_binSearchIterations; ++jj)
+        for(float jj=0; jj<rd.f_binSearchIterations && stride>0.5f; ++jj)
         {
-            pqk += dPQK * stride;
+            dPQKj = dPQK * stride;
+            pqk += dPQKj;
 
             rayZNear = rayZFar;
-            rayZFar = (dPQK.z * 0.5f + pqk.z) / (dPQK.w * 0.5f + pqk.w);
+            rayZFar = (dPQKj.z * 0.5f + pqk.z) / (dPQKj.w * 0.5f + pqk.w);
 
             hitPixel = permute ? pqk.yx : pqk.xy;
             hitPixel *= rd.v2_texelSize;
 
-            originalStride *= 0.5f;
-            stride = ray_intersects_depth_buffer(rayZNear, rayZFar, hitPixel) ? -originalStride : originalStride;
+            stride *= ray_intersects_depth_buffer(rayZNear, rayZFar, hitPixel) ? -0.5f : 0.5f;
         }
     }
 

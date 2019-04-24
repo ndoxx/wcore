@@ -382,6 +382,7 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Fade eye start", &SSR_renderer_->get_fade_eye_start(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade eye end", &SSR_renderer_->get_fade_eye_end(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade screen edge", &SSR_renderer_->get_fade_screen_edge(), 0.0f, 1.0f);
+            ImGui::SliderFloat("DBG Probe", &SSR_renderer_->get_probe(), 0.0f, 1.0f);
             ImGui::Separator();
 
             ImGui::Checkbox("Enable blur", &SSR_renderer_->get_blur_enabled());

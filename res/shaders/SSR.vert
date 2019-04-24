@@ -20,6 +20,8 @@ struct render_data
     float f_eyeFadeEnd;          // ray direction's Z that ray hits will be cut (0.0 -> 1.0)
     float f_ditherAmount;
 
+    float f_probe; // dbg
+
     // Position reconstruction
     vec4 v4_proj_params;
 };
