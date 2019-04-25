@@ -34,12 +34,47 @@ typedef std::vector<DebugTextureProperties> DebugPane;
 
 class DebugOverlayRenderer : public Renderer<Vertex3P>
 {
+public:
+    DebugOverlayRenderer(TextRenderer& text_renderer);
+    virtual ~DebugOverlayRenderer() = default;
+
+    inline void toggle()                { active_ = !active_; }
+    inline void set_enabled(bool value) { active_ = value; }
+    inline bool& get_enabled_flag()     { return active_; }
+    inline void next_pane() { if(active_) current_pane_ = (current_pane_+1)%debug_panes_.size(); }
+
+    // Register a group of textures to be debugged
+    void register_debug_pane(std::vector<unsigned int>&& texture_indices,
+                             std::vector<std::string>&& sampler_names,
+                             std::vector<bool>&& is_depth);
+
+    // Register each texture in a buffer module in the same debug group
+    void register_debug_pane(BufferModule& buffer_module);
+
+    // Render current debug pane if active
+    virtual void render(Scene* pscene) override;
+
+    // Render a full pane of engine textures at the bottom of the screen
+    void render_pane(uint32_t index, Scene* pscene);
+
+    // Render current engine texture to internal framebuffer
+    void render_internal(Scene* pscene);
+
+#ifndef __DISABLE_EDITOR__
+    void generate_widget(Scene* pscene);
+#endif
+
+protected:
+    bool save_fb_to_image(const std::string& filename);
+
 private:
-    Shader passthrough_shader_;
+    Shader peek_shader_;
     BufferModule render_target_;
     std::vector<dbg::DebugPane> debug_panes_;
-    uint8_t mode_;
+    int current_pane_;
+    int current_tex_;
     bool active_;
+    bool raw_;
     bool tone_map_;
     bool show_r_;
     bool show_g_;
@@ -49,27 +84,6 @@ private:
     float split_pos_;
 
     TextRenderer& text_renderer_;
-
-public:
-    DebugOverlayRenderer(TextRenderer& text_renderer);
-    virtual ~DebugOverlayRenderer() = default;
-
-    inline void toggle()                { active_ = !active_; }
-    inline void set_enabled(bool value) { active_ = value; }
-    inline bool& get_enabled_flag()     { return active_; }
-    inline void next_mode() { if(active_) mode_ = (mode_+1)%debug_panes_.size(); }
-
-    virtual void render(Scene* pscene) override;
-
-    void register_debug_pane(std::vector<unsigned int>&& texture_indices,
-                             std::vector<std::string>&& sampler_names,
-                             std::vector<bool>&& is_depth);
-    void register_debug_pane(BufferModule& buffer_module);
-    void render_pane(uint32_t index, Scene* pscene);
-
-#ifndef __DISABLE_EDITOR__
-    void generate_widget(Scene* pscene);
-#endif
 };
 
 }

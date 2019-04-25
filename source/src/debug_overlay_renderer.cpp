@@ -30,7 +30,7 @@ using namespace math;
 
 DebugOverlayRenderer::DebugOverlayRenderer(TextRenderer& text_renderer):
 Renderer<Vertex3P>(),
-passthrough_shader_(ShaderResource("fb_peek.vert;fb_peek.frag")),
+peek_shader_(ShaderResource("fb_peek.vert;fb_peek.frag")),
 render_target_("debugOverlayBuffer",
 std::make_shared<Texture>(
     std::vector<hash_t>{"debugOverlayTex"_h},
@@ -42,8 +42,10 @@ std::make_shared<Texture>(
     GL_TEXTURE_2D,
     true),
 {GL_COLOR_ATTACHMENT0}),
-mode_(0),
+current_pane_(0),
+current_tex_(0),
 active_(false),
+raw_(false),
 tone_map_(true),
 show_r_(true),
 show_g_(true),
@@ -138,12 +140,12 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
         dbg::DebugTextureProperties& props = debug_panes_[index][ii];
         bool is_depth = props.is_depth;
 
-        passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
+        peek_shader_.send_uniform("b_isDepth"_h, is_depth);
         if(is_depth)
         {
             const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
             vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
-            passthrough_shader_.send_uniform("v4_proj_params"_h, proj_params);
+            peek_shader_.send_uniform("v4_proj_params"_h, proj_params);
         }
 
         GFX::bind_texture2D(0, props.texture_index);
@@ -159,20 +161,91 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
     }
 }
 
+void DebugOverlayRenderer::render_internal(Scene* pscene)
+{
+    // Get current texture properties
+    dbg::DebugTextureProperties& props = debug_panes_[current_pane_][current_tex_];
+    bool is_depth = props.is_depth;
+
+    // Bind current texture as source and internal framebuffer as target
+    render_target_.bind_as_target();
+    GFX::bind_texture2D(0, props.texture_index);
+
+    // Send uniforms to shader
+    peek_shader_.use();
+    peek_shader_.send_uniform<int>("screenTex"_h, 0);
+
+    peek_shader_.send_uniform("b_toneMap"_h, tone_map_);
+    peek_shader_.send_uniform("b_isDepth"_h, is_depth);
+    peek_shader_.send_uniform("b_splitAlpha"_h, split_alpha_);
+    peek_shader_.send_uniform("b_invert"_h, invert_color_);
+    peek_shader_.send_uniform("f_splitPos"_h, split_pos_);
+    peek_shader_.send_uniform("v3_channelFilter"_h, vec3((float)show_r_, (float)show_g_, (float)show_b_));
+    peek_shader_.send_uniform("v2_texelSize"_h, vec2(1.0f/render_target_.get_width(),1.0f/render_target_.get_height()));
+
+    // If texture is a depth buffer, more information needed
+    if(is_depth)
+    {
+        const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
+        vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
+        peek_shader_.send_uniform("v4_proj_params"_h, proj_params);
+    }
+
+    // Draw
+    GFX::viewport(0, 0, render_target_.get_width(), render_target_.get_height());
+    GFX::clear_color();
+
+    vertex_array_.bind();
+    buffer_unit_.draw(2, 0);
+    vertex_array_.unbind();
+    peek_shader_.unuse();
+    render_target_.unbind_as_target();
+}
+
 void DebugOverlayRenderer::render(Scene* pscene)
 {
     if(!active_) return;
 
     vertex_array_.bind();
-    passthrough_shader_.use();
-    render_pane(mode_, pscene);
-    passthrough_shader_.unuse();
+    peek_shader_.use();
+    render_pane(current_pane_, pscene);
+    peek_shader_.unuse();
     vertex_array_.unbind();
 }
 
+bool DebugOverlayRenderer::save_fb_to_image(const std::string& filename)
+{
+    // Allocate buffer for image data
+    int width = render_target_.get_width();
+    int height = render_target_.get_height();
+    int img_size = width * height * 4;
+    unsigned char* pixels = new unsigned char[img_size];
+
+    // Bind framebuffer, change alignment to 1 to avoid out of bounds writes,
+    // read framebuffer to pixel array and unbind
+    render_target_.bind_as_target();
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pixels);
+    render_target_.unbind_as_target();
+
+    // Save to PNG image
+    bool success = false;
+    fs::path file_path;
+    if(CONFIG.get("root.folders.log"_h, file_path))
+    {
+        file_path /= filename;
+        PngLoader png_loader;
+        png_loader.write_png(file_path, pixels, width, height);
+        success = true;
+    }
+
+    delete[] pixels;
+    return success;
+}
+
+
+
 #ifndef __DISABLE_EDITOR__
-static int current_pane = 0;
-static int current_tex = 0;
 static bool save_image = false;
 
 void DebugOverlayRenderer::generate_widget(Scene* pscene)
@@ -187,13 +260,13 @@ void DebugOverlayRenderer::generate_widget(Scene* pscene)
     ImGui::BeginChild("##peekctl", ImVec2(0, 3*ImGui::GetItemsLineHeightWithSpacing()));
     ImGui::Columns(2, nullptr, false);
 
-    if(ImGui::SliderInt("Panel", &current_pane, 0, debug_panes_.size()-1))
+    if(ImGui::SliderInt("Panel", &current_pane_, 0, debug_panes_.size()-1))
     {
-        current_tex = 0;
+        current_tex_ = 0;
     }
-    int ntex = debug_panes_[current_pane].size();
-    ImGui::SliderInt("Texture", &current_tex, 0, ntex-1);
-    dbg::DebugTextureProperties& props = debug_panes_[current_pane][current_tex];
+    int ntex = debug_panes_[current_pane_].size();
+    ImGui::SliderInt("Texture", &current_tex_, 0, ntex-1);
+    dbg::DebugTextureProperties& props = debug_panes_[current_pane_][current_tex_];
     ImGui::Text("name: %s", props.sampler_name.c_str());
 
     ImGui::NextColumn();
@@ -202,93 +275,54 @@ void DebugOverlayRenderer::generate_widget(Scene* pscene)
     ImGui::SameLine(); ImGui::Checkbox("G##0", &show_g_);
     ImGui::SameLine(); ImGui::Checkbox("B##0", &show_b_);
     ImGui::SameLine(); ImGui::Checkbox("Invert", &invert_color_);
+    ImGui::SameLine(); ImGui::Checkbox("Raw", &raw_);
     ImGui::SameLine();
     if(ImGui::Button("Save to file"))
         save_image = true;
 
 
     ImGui::Checkbox("Alpha split", &split_alpha_);
-    ImGui::SameLine();
-    ImGui::SliderFloat("Split pos.", &split_pos_, 0.f, 1.f);
+    if(split_alpha_)
+    {
+        ImGui::SameLine();
+        ImGui::SliderFloat("Split pos.", &split_pos_, 0.f, 1.f);
+    }
 
     ImGui::EndChild();
 
-    // * Render texture offscreen
-    bool is_depth = props.is_depth;
+    // * Render current texture offscreen
+    if(!raw_)
+        render_internal(pscene);
 
-    render_target_.bind_as_target();
-    GFX::bind_texture2D(0, props.texture_index);
-
-    passthrough_shader_.use();
-    passthrough_shader_.send_uniform<int>("screenTex"_h, 0);
-
-    passthrough_shader_.send_uniform("b_toneMap"_h, tone_map_);
-    passthrough_shader_.send_uniform("b_isDepth"_h, is_depth);
-    passthrough_shader_.send_uniform("b_splitAlpha"_h, split_alpha_);
-    passthrough_shader_.send_uniform("b_invert"_h, invert_color_);
-    passthrough_shader_.send_uniform("f_splitPos"_h, split_pos_);
-    passthrough_shader_.send_uniform("v3_channelFilter"_h, vec3((float)show_r_, (float)show_g_, (float)show_b_));
-    passthrough_shader_.send_uniform("v2_texelSize"_h, vec2(1.0f/render_target_.get_width(),1.0f/render_target_.get_height()));
-
-    if(is_depth)
-    {
-        const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
-        vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
-        passthrough_shader_.send_uniform("v4_proj_params"_h, proj_params);
-    }
-
-    GFX::viewport(0, 0, render_target_.get_width(), render_target_.get_height());
-    GFX::clear_color();
-
-    vertex_array_.bind();
-    buffer_unit_.draw(2, 0);
-    vertex_array_.unbind();
-    passthrough_shader_.unuse();
-    render_target_.unbind_as_target();
-
-    uint64_t target_id = render_target_.get_texture()->get_texture_id(0);
-
+    // * Show image in window
     float winx = std::max(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x - 8.f, 0.f);
     float winy = std::max(ImGui::GetWindowPos().y + ImGui::GetWindowSize().y - 8.f, 0.f);
-    ImGui::GetWindowDrawList()->AddImage((void*)target_id,
-                                         ImGui::GetCursorScreenPos(),
-                                         ImVec2(winx, winy),
-                                         ImVec2(0, 1), ImVec2(1, 0));
 
-    /*ImGui::GetWindowDrawList()->AddImage((void*)(uint64_t)props.texture_index,
-                                         ImGui::GetCursorScreenPos(),
-                                         ImVec2(winx, winy),
-                                         ImVec2(0, 1), ImVec2(1, 0));*/
-
-    // Save image if needed
-    if(save_image)
+    if(raw_)
     {
-        // Allocate buffer for image data
-        int width = render_target_.get_width();
-        int height = render_target_.get_height();
-        int img_size = width * height * 3;
-        unsigned char* data = new unsigned char[img_size];
+        ImGui::GetWindowDrawList()->AddImage((void*)(uint64_t)props.texture_index,
+                                             ImGui::GetCursorScreenPos(),
+                                             ImVec2(winx, winy),
+                                             ImVec2(0, 1), ImVec2(1, 0));
+    }
+    else
+    {
+        uint64_t target_id = render_target_.get_texture()->get_texture_id(0);
+        ImGui::GetWindowDrawList()->AddImage((void*)target_id,
+                                             ImGui::GetCursorScreenPos(),
+                                             ImVec2(winx, winy),
+                                             ImVec2(0, 1), ImVec2(1, 0));
+    }
 
-        // Bind output texture, read pixels to buffer and unbind
-        /*GFX::bind_texture2D(0, target_id);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        GFX::bind_texture2D(0, 0);*/
-
-        render_target_.bind_as_target();
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
-        render_target_.unbind_as_target();
-
-        // Save to PNG image
-        fs::path file_path;
-        if(CONFIG.get("root.folders.log"_h, file_path))
-        {
-            std::string filename = props.sampler_name + "_" + std::to_string(props.texture_index) + ".png";
-            file_path /= filename;
-            PngLoader png_loader;
-            png_loader.write_png(file_path, data, width, height);
-        }
-        delete[] data;
+    // * Save image if needed
+    if(save_image && !raw_) // TMP only handle FB save for now
+    {
+        std::string filename = props.sampler_name + "_" + std::to_string(props.texture_index) + ".png";
+        if(save_fb_to_image(filename))
+            DLOGN("[DebugOverlayRenderer] Saved engine texture to file:", "core");
+        else
+            DLOGE("[DebugOverlayRenderer] Unable to save engine texture to file:", "core");
+        DLOGI("<p>" + filename + "</p>", "core");
         save_image = false;
     }
 

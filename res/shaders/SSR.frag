@@ -46,21 +46,21 @@ layout(location = 0) out vec4 out_SSR;
 
 void swap_if_bigger(inout float aa, inout float bb)
 {
-    if(aa > bb)
+    /*if(aa > bb)
     {
         float tmp = aa;
         aa = bb;
         bb = tmp;
-    }
+    }*/
+    bool bigger = aa > bb;
+    float tmp = aa;
+    aa = bigger ? bb : aa;
+    bb = bigger ? tmp: bb;
 }
 
 bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 {
-    // Swap if bigger
-    if(rayZFar > rayZNear)
-    {
-        float t = rayZFar; rayZFar = rayZNear; rayZNear = t;
-    }
+    swap_if_bigger(rayZFar, rayZNear);
     float cameraZ = -depth_view_from_tex(depthTex, hitPixel.xy, rd.v4_proj_params.zw);
     // Cross z
     return rayZFar <= cameraZ && rayZNear >= cameraZ - rd.f_pixelThickness;
@@ -88,9 +88,9 @@ bool ray_march(vec3 rayOrigin,
                out float iterationCount)
 {
     // Clip to the near plane
-    float rayLength = ((rayOrigin.z + rayDirection.z * rd.f_maxRayDistance) > -rd.f_near) ?
+    float rayLength = ((rayDirection.z * rd.f_maxRayDistance + rayOrigin.z) > -rd.f_near) ?
                       (-rd.f_near - rayOrigin.z) / rayDirection.z : rd.f_maxRayDistance;
-    vec3 rayEnd = rayOrigin + rayDirection * rayLength;
+    vec3 rayEnd = rayDirection * rayLength + rayOrigin;
 
     // Project into homogeneous clip space
     vec4 H0 = rd.m4_projection * vec4(rayOrigin, 1.0);
@@ -102,20 +102,21 @@ bool ray_march(vec3 rayOrigin,
     vec3 Q0 = rayOrigin * k0, Q1 = rayEnd * k1;
 
     // Screen-space endpoints
-    //vec2 P0 = H0.xy * k0, P1 = H1.xy * k1;
-    vec2 P0 = (H0.xy * k0 * 0.5 + 0.5) * rd.v2_viewportSize;
-    vec2 P1 = (H1.xy * k1 * 0.5 + 0.5) * rd.v2_viewportSize;
+    vec2 P0 = ((H0.xy * k0) * 0.5f + 0.5f) * rd.v2_viewportSize;
+    vec2 P1 = ((H1.xy * k1) * 0.5f + 0.5f) * rd.v2_viewportSize;
 
     // If the line is degenerate, make it cover at least one pixel
     // to avoid handling zero-pixel extent as a special case later
-    P1 += dot(P1 - P0, P1 - P0) < 0.0001f ? 0.01f : 0.0f;
-
     vec2 delta = P1 - P0;
+    float p_corr = dot(delta, delta) < 0.0001f ? 0.01f : 0.0f;
+    P1 += p_corr;
+    delta += p_corr;
 
     // Permute so that the primary iteration is in x to collapse
     // all quadrant-specific DDA cases later
     bool permute = false;
-    if (abs(delta.x) < abs(delta.y)) {
+    if(abs(delta.x) < abs(delta.y))
+    {
         // This is a more-vertical line
         permute = true; delta = delta.yx; P0 = P0.yx; P1 = P1.yx;
     }
@@ -134,8 +135,8 @@ bool ray_march(vec3 rayOrigin,
     // while still using a large pixel stride for near objects (and increase performance)
     // this also helps mitigate artifacts on distant reflections when we use a large
     // pixel stride.
-    float strideScaler = 1.f - min(1.f, -rayOrigin.z / rd.f_pixelStrideZCuttoff);
-    float pixelStride = 1.f + strideScaler * rd.f_pixelStride;
+    float strideScaler = 1.f - min(1.f, -rayOrigin.z * rd.f_pixelStrideZCuttoff);
+    float pixelStride = strideScaler * rd.f_pixelStride + 1.f;
 
     // Track ray step and derivatives in a vec4 to parallelize
     vec4 pqk = vec4(P0, Q0.z, k0);
@@ -146,7 +147,7 @@ bool ray_march(vec3 rayOrigin,
     dPQK *= pixelStride;
     pqk += dPQK * jitter;
 
-    float rayZFar = (dPQK.z * 0.5 + pqk.z) / (dPQK.w * 0.5 + pqk.w);
+    float rayZFar = (dPQK.z * 0.5f + pqk.z) / (dPQK.w * 0.5f + pqk.w);
     float rayZNear;
     bool intersect = false;
     float ii;

@@ -101,7 +101,7 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.f_pixelThickness"_h, pix_thickness_);
     SSR_shader_.send_uniform("rd.f_maxRayDistance"_h, max_ray_distance_);
     SSR_shader_.send_uniform("rd.f_pixelStride"_h, pix_stride_);
-    SSR_shader_.send_uniform("rd.f_pixelStrideZCuttoff"_h, pix_stride_cuttoff_);
+    SSR_shader_.send_uniform("rd.f_pixelStrideZCuttoff"_h, 1.f/pix_stride_cuttoff_);
     SSR_shader_.send_uniform("rd.f_iterations"_h, float(ray_steps_));
     SSR_shader_.send_uniform("rd.f_binSearchIterations"_h, float(bin_steps_));
     SSR_shader_.send_uniform("rd.f_screenEdgeFadeStart"_h, fade_screen_edge_);

@@ -7474,6 +7474,25 @@ Chaque contrôle de chaque dialogue est connecté au slot qui va bien, de sorte 
 
 Note : Les dialogues __doivent__ être détruits (delete) à leur fermeture et créés (new) avant leur réouverture. Il ne m'a pas été possible de les réinitialiser, basiquement j'avais besoin de changer la taille des FBOs à chaud, et donc de les détruire et recréer, mais un thread de Qt essaye d'intéragir avec ceux-ci, donc à moins d'arriver à foutre un mutex sur le FBO (je ne sais même pas si Qt permet ça), y a juste pas moyen. Ca ne change rien du tout au final, c'est juste beaucoup plus simple.
 
+#[24-04-19]
+
+A doc :
+    [ ] SSR
+    [ ] FB peek features
+        [ ] spec. debug pass
+        [ ] PNG export
+
+
+TODO :
+GL_RGBA -> GL_BGRA
+Il semblerait que le layout hardware le plus fréquent soit BGRA, et utiliser des framebuffers en RGBA force GL à swizzle. Donc GL_BGRA plus efficace en moyenne.
+Pour une conversion efficace des textures en BGRA on peut utiliser un swizzle mask :
+
+```cpp
+GLint swizzleMask[] = {GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA};
+glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+```
+
 
 TODO (Waterial):
     [X] Texmap controls dans une page dans un QTabWidget

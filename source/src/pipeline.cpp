@@ -188,7 +188,7 @@ bool RenderPipeline::onKeyboardEvent(const WData& data)
     		debug_overlay_renderer_->toggle();
     		break;
         case "k_debug_overlay_next_mode"_h:
-    		debug_overlay_renderer_->next_mode();
+    		debug_overlay_renderer_->next_pane();
     		break;
         case "k_tg_debug_info"_h:
     		DINFO.toggle();

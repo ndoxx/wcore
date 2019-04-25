@@ -190,7 +190,7 @@ bool PngLoader::write_png(const fs::path& file_path, unsigned char* pixels, int 
         return false;
     }
     png_init_io(png, fp);//9
-    png_set_IHDR(png, info, w, h, 8 /* depth */, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+    png_set_IHDR(png, info, w, h, 8 /* depth */, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
         PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);//10
     png_colorp palette = (png_colorp)png_malloc(png, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));//4
     if(!palette)
@@ -205,7 +205,7 @@ bool PngLoader::write_png(const fs::path& file_path, unsigned char* pixels, int 
 
     png_bytepp rows = (png_bytepp)png_malloc(png, h * sizeof(png_bytep));//
     for(int i = 0; i < h; ++i)
-        rows[i] = (png_bytep)(pixels + (h - i) * w * 3);
+        rows[i] = (png_bytep)(pixels + (h - i) * w * 4);
 
     png_write_image(png, rows);//2
     png_write_end(png, info);//6

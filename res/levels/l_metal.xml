@@ -6,7 +6,7 @@
     <Skybox disable="true">
         <CubemapTexture name="skybox01"/>
     </Skybox>
-    <Terrain chunkSize="32" latticeScale="1.0" textureScale="0.25">
+    <Terrain chunkSize="33" latticeScale="1.0" textureScale="0.25">
         <TerrainPatch origin="(0,0)" size="(2,2)" height="0">
             <HeightModifier>
                 <Offset y="0"></Offset>

@@ -3,7 +3,7 @@
 #include "position.glsl"
 
 in vec2 texCoord;
-layout(location = 0) out vec3 out_color;
+layout(location = 0) out vec4 out_color;
 
 // UNIFORMS
 uniform sampler2D screenTex;
@@ -22,7 +22,7 @@ void main()
     {
         float linearDepth = depth_view_from_tex(screenTex, texCoord, v4_proj_params.zw);
         float depthRemapped = linearDepth / (linearDepth + 1.0);
-        out_color = vec3(depthRemapped,depthRemapped,depthRemapped);
+        out_color = vec4(depthRemapped,depthRemapped,depthRemapped,1.f);
     }
     else
     {
@@ -53,6 +53,6 @@ void main()
                 sampleColor.rgb = vec3(sampleColor.a);
         }
 
-        out_color = sampleColor.rgb;
+        out_color = vec4(sampleColor.rgb, 1.f);
     }
 }

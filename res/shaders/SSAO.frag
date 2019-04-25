@@ -39,30 +39,24 @@ uniform sampler2D albedoTex;
 #define PHI 0.707106f
 const vec2 SAMPLES[4] = vec2[](vec2(1,0),vec2(-1,0),
                                vec2(0,1),vec2(0,-1));
-/*const float FAR = 100.0f;
-const float invFAR = 0.01f;*/
-const float f_occlusion_threshold = 0.5f;
 
-vec3 get_position(vec2 uv)
-{
-    float depth  = texture(depthTex, uv).r;
-    return reconstruct_position(depth, frag_ray, rd.v4_proj_params);
-}
+const float f_occlusion_threshold = 0.5f;
 
 float ambiant_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_normal)
 {
-    vec3 diff = get_position(texCoord + offset) - frag_pos;
-    diff = mix(diff, -frag_normal, rd.f_vbias);
+    vec3 diff = reconstruct_position(depthTex, texCoord + offset, frag_ray, rd.v4_proj_params) - frag_pos;
+    //diff = mix(diff, -frag_normal, rd.f_vbias);
+    diff -= rd.f_vbias * frag_normal;
     vec3 v = normalize(diff);
     float d2 = dot(diff,diff)*rd.f_scale;
-    //float d = length(diff)*rd.f_scale;
     return max(0.0f, dot(frag_normal,v)-rd.f_bias)*(1.0f/(1.0f+d2));
 }
 
 vec4 directional_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_normal)
 {
-    vec3 diff = get_position(texCoord + offset) - frag_pos;
-    diff = mix(diff, -frag_normal, rd.f_vbias);
+    vec3 diff = reconstruct_position(depthTex, texCoord + offset, frag_ray, rd.v4_proj_params) - frag_pos;
+    //diff = mix(diff, -frag_normal, rd.f_vbias);
+    diff -= rd.f_vbias * frag_normal;
     vec3 v = normalize(diff);
     float d2 = dot(diff,diff)*rd.f_scale;
 
@@ -77,22 +71,22 @@ vec4 directional_occlusion(vec2 texCoord, vec2 offset, vec3 frag_pos, vec3 frag_
 }
 
 vec2 poissonDisk[16] = vec2[](
-   vec2( -0.94201624, -0.39906216 ),
-   vec2( 0.94558609, -0.76890725 ),
-   vec2( -0.094184101, -0.92938870 ),
-   vec2( 0.34495938, 0.29387760 ),
-   vec2( -0.91588581, 0.45771432 ),
-   vec2( -0.81544232, -0.87912464 ),
-   vec2( -0.38277543, 0.27676845 ),
-   vec2( 0.97484398, 0.75648379 ),
-   vec2( 0.44323325, -0.97511554 ),
-   vec2( 0.53742981, -0.47373420 ),
-   vec2( -0.26496911, -0.41893023 ),
-   vec2( 0.79197514, 0.19090188 ),
-   vec2( -0.24188840, 0.99706507 ),
-   vec2( -0.81409955, 0.91437590 ),
-   vec2( 0.19984126, 0.78641367 ),
-   vec2( 0.14383161, -0.14100790 )
+    vec2( -0.94201624, -0.39906216 ),
+    vec2( 0.94558609, -0.76890725 ),
+    vec2( -0.094184101, -0.92938870 ),
+    vec2( 0.34495938, 0.29387760 ),
+    vec2( -0.91588581, 0.45771432 ),
+    vec2( -0.81544232, -0.87912464 ),
+    vec2( -0.38277543, 0.27676845 ),
+    vec2( 0.97484398, 0.75648379 ),
+    vec2( 0.44323325, -0.97511554 ),
+    vec2( 0.53742981, -0.47373420 ),
+    vec2( -0.26496911, -0.41893023 ),
+    vec2( 0.79197514, 0.19090188 ),
+    vec2( -0.24188840, 0.99706507 ),
+    vec2( -0.81409955, 0.91437590 ),
+    vec2( 0.19984126, 0.78641367 ),
+    vec2( 0.14383161, -0.14100790 )
 );
 
 vec2 random_sample(vec3 seed, int i)
@@ -109,7 +103,7 @@ void main()
     vec2 texCoord = gl_FragCoord.xy * rd.v2_texelSize;
 
     // View space
-    vec3 fragPos = get_position(texCoord);
+    vec3 fragPos = reconstruct_position(depthTex, texCoord, frag_ray, rd.v4_proj_params);
     vec3 fragNormal = decompress_normal(texture(normalTex, texCoord).xy);
 
     // Tangent space
@@ -125,11 +119,11 @@ void main()
     float rad = max(rd.v2_texelSize.x, rd.f_radius/max(0.1f,-fragPos.z));
 
     int iterations = int(mix(4.0,1.0,fragPos.z*rd.f_inv_far));
-    for (int jj=0; jj<iterations; ++jj)
+    for(int jj=0; jj<iterations; ++jj)
     {
         //vec2 coord1 = reflect(random_sample(texCoord.xyy, jj),randomVec)*rad;
         vec2 coord1 = reflect(SAMPLES[jj],randomVec)*rad;
-        vec2 coord2 = vec2(coord1.x*PHI - coord1.y*PHI, coord1.x*PHI + coord1.y*PHI);
+        vec2 coord2 = PHI * vec2(coord1.x - coord1.y, coord1.x + coord1.y);
 
         occlusion += ambiant_occlusion(texCoord, coord1*0.25f, fragPos, fragNormal);
         occlusion += ambiant_occlusion(texCoord, coord2*0.5f,  fragPos, fragNormal);
