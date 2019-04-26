@@ -106,41 +106,27 @@ public:
         indices_.insert(indices_.end(),transformed_indices.begin(),transformed_indices.end());
     }
 
-    void upload()
+    void upload(bool dynamic=false,
+                uint32_t nvert=0,
+                uint32_t nind=0)
     {
-        uint32_t nvert0 = vertices_.size();
-        uint32_t nind0  = indices_.size();
+        nvert = (nvert==0) ? vertices_.size() : nvert;
+        nind  = (nind==0) ? indices_.size() : nind;
+        GLenum draw_type = dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
 
         // Upload Vertex Data
         glBindBuffer(GL_ARRAY_BUFFER, VBO_);
         glBufferData(GL_ARRAY_BUFFER,
-                     nvert0*sizeof(VertexT),
-                     &vertices_[0],
-                     GL_STATIC_DRAW);
+                     nvert*sizeof(VertexT),
+                     vertices_.data(),
+                     draw_type);
 
         // Upload Index Data
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     nind0*sizeof(GLuint),
-                     &indices_[0],
-                     GL_STATIC_DRAW);
-    }
-
-    void upload_dynamic(uint32_t nvert, uint32_t nind)
-    {
-        // Vertex Data
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-        glBufferData(GL_ARRAY_BUFFER,
-                     nvert*sizeof(VertexT),
-                     nullptr,
-                     GL_DYNAMIC_DRAW);
-
-        // Index Data
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                      nind*sizeof(GLuint),
-                     nullptr,
-                     GL_DYNAMIC_DRAW);
+                     indices_.data(),
+                     draw_type);
     }
 
     void stream(const Mesh<VertexT>& mesh, uint32_t offset=0)

@@ -520,15 +520,6 @@
 	"buffers":
 	[
 		{
-			"file": "source/include/pipeline.h",
-			"settings":
-			{
-				"buffer_size": 3493,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "source/src/pipeline.cpp",
 			"settings":
 			{
@@ -538,38 +529,18 @@
 			}
 		},
 		{
-			"file": "source/include/debug_overlay_renderer.h",
+			"file": "source/include/SSAO_renderer.h",
 			"settings":
 			{
-				"buffer_size": 2361,
-				"encoding": "UTF-8",
+				"buffer_size": 2348,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "source/src/debug_overlay_renderer.cpp",
+			"file": "source/src/SSAO_renderer.cpp",
 			"settings":
 			{
-				"buffer_size": 10986,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "source/include/png_loader.h",
-			"settings":
-			{
-				"buffer_size": 499,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "source/src/png_loader.cpp",
-			"settings":
-			{
-				"buffer_size": 6577,
-				"encoding": "UTF-8",
+				"buffer_size": 7030,
 				"line_ending": "Unix"
 			}
 		},
@@ -586,40 +557,8 @@
 			"file": "source/src/SSR_renderer.cpp",
 			"settings":
 			{
-				"buffer_size": 6836,
+				"buffer_size": 6840,
 				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/ndx/Desktop/WCore rel/Snippets/SSR_pissang_glsl.frag",
-			"settings":
-			{
-				"buffer_size": 14045,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/ndx/Desktop/WCore rel/Snippets/SSR_kode80_glsl.frag",
-			"settings":
-			{
-				"buffer_size": 7814,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "source/include/gfx_driver.h",
-			"settings":
-			{
-				"buffer_size": 3459,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "source/src/lighting_renderer.cpp",
-			"settings":
-			{
-				"buffer_size": 9992,
 				"line_ending": "Unix"
 			}
 		},
@@ -732,6 +671,14 @@
 			}
 		},
 		{
+			"file": "config/edtweaks.xml",
+			"settings":
+			{
+				"buffer_size": 1620,
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "res/shaders/SSR.vert",
 			"settings":
 			{
@@ -744,7 +691,34 @@
 			"file": "res/shaders/SSR.frag",
 			"settings":
 			{
-				"buffer_size": 9430,
+				"buffer_size": 9463,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "res/shaders/SSAO.frag",
+			"settings":
+			{
+				"buffer_size": 4645,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "res/shaders/include/position.glsl",
+			"settings":
+			{
+				"buffer_size": 970,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "res/shaders/include/normal_compression.glsl",
+			"settings":
+			{
+				"buffer_size": 1286,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -955,8 +929,20 @@
 	},
 	"file_history":
 	[
-		"/home/ndx/Desktop/WCore/source/include/pixel_buffer.h",
+		"/home/ndx/Desktop/WCore/source/include/pipeline.h",
+		"/home/ndx/Desktop/WCore/source/include/debug_overlay_renderer.h",
+		"/home/ndx/Desktop/WCore/source/src/debug_overlay_renderer.cpp",
+		"/home/ndx/Desktop/WCore/source/src/lighting_renderer.cpp",
+		"/home/ndx/Desktop/WCore/source/include/gfx_driver.h",
+		"/home/ndx/Desktop/WCore rel/Snippets/SSR_kode80_glsl.frag",
+		"/home/ndx/Desktop/WCore rel/Snippets/SSR_pissang_glsl.frag",
 		"/home/ndx/Desktop/WCore/source/src/png_loader.cpp",
+		"/home/ndx/Desktop/WCore/source/include/png_loader.h",
+		"/home/ndx/Desktop/WCore/source/include/sound_system.h",
+		"/home/ndx/Desktop/WCore/source/src/sound_system.cpp",
+		"/home/ndx/Desktop/WCore/config/edtweaks.xml",
+		"/home/ndx/Desktop/WCore/source/src/math3d.cpp",
+		"/home/ndx/Desktop/WCore/source/include/pixel_buffer.h",
 		"/home/ndx/Desktop/WCore/source/include/SSR_buffer.h",
 		"/home/ndx/Desktop/WCore/source/src/SSR_buffer.cpp",
 		"/home/ndx/Desktop/WCore/source/src/engine_core.cpp",
@@ -967,14 +953,11 @@
 		"/home/ndx/Desktop/WCore/source/include/texture.h",
 		"/home/ndx/Desktop/WCore/source/include/buffer_module.h",
 		"/home/ndx/Desktop/WCore/source/src/l_buffer.cpp",
-		"/home/ndx/Desktop/WCore rel/Snippets/SSR_pissang_glsl.frag",
 		"/home/ndx/Desktop/WCore/source/src/g_buffer.cpp",
-		"/home/ndx/Desktop/WCore/source/src/debug_overlay_renderer.cpp",
 		"/home/ndx/Desktop/WCore/source/src/SSAO_renderer.cpp",
 		"/home/ndx/Desktop/WCore/source/include/SSAO_renderer.h",
 		"/home/ndx/Desktop/WCore/source/src/ping_pong_buffer.cpp",
 		"/home/ndx/Desktop/WCore/source/include/ping_pong_buffer.h",
-		"/home/ndx/Desktop/WCore rel/Snippets/SSR_kode80_glsl.frag",
 		"/home/ndx/Desktop/WCore rel/Snippets/SSR_mattdesl_glsl.frag",
 		"/home/ndx/Desktop/WCore rel/Snippets/SSR_kode80.frag",
 		"/home/ndx/Desktop/WCore/hosts/waterial/res/shaders/blur_h.frag",
@@ -985,8 +968,6 @@
 		"/home/ndx/Desktop/WCore/res/shaders/blurpass.vert",
 		"/home/ndx/Desktop/WCore/source/src/shader.cpp",
 		"/home/ndx/Desktop/WCore/source/include/shader.h",
-		"/home/ndx/Desktop/WCore/source/src/lighting_renderer.cpp",
-		"/home/ndx/Desktop/WCore/source/include/gfx_driver.h",
 		"/home/ndx/Desktop/WCore/res/shaders/text.frag",
 		"/home/ndx/Desktop/WCore/res/shaders/line.frag",
 		"/home/ndx/Desktop/WCore/res/shaders/line.vert",
@@ -1003,7 +984,6 @@
 		"/home/ndx/Desktop/WCore/res/levels/gui_assets.xml",
 		"/home/ndx/Desktop/WCore/res/levels/sounds.xml",
 		"/home/ndx/Desktop/WCore/res/levels/entity.xml",
-		"/home/ndx/Desktop/WCore/config/edtweaks.xml",
 		"/home/ndx/Desktop/WCore/res/shaders/SSAO.frag",
 		"/home/ndx/Desktop/WCore/res/shaders/SSAO.vert",
 		"/home/ndx/Desktop/WCore/res/shaders/include/cook_torrance.glsl",
@@ -1025,7 +1005,6 @@
 		"/home/ndx/Desktop/WCore/source/src/forward_renderer.cpp",
 		"/home/ndx/Desktop/WCore/source/src/texture.cpp",
 		"/home/ndx/Desktop/WCore/source/src/camera.cpp",
-		"/home/ndx/Desktop/WCore/source/src/math3d.cpp",
 		"/home/ndx/Desktop/WCore/source/src/mesh_factory.cpp",
 		"/home/ndx/Desktop/WCore/hosts/nuclear/CMakeLists.txt",
 		"/home/ndx/Desktop/WCore/hosts/internstr/CMakeLists.txt",
@@ -1057,7 +1036,6 @@
 		"/home/ndx/Desktop/WCore/source/src/material_factory.cpp",
 		"/home/ndx/Desktop/WCore/source/src/intern_string.cpp",
 		"/home/ndx/Desktop/WCore/source/src/input_handler.cpp",
-		"/home/ndx/Desktop/WCore/source/src/sound_system.cpp",
 		"/home/ndx/Desktop/WCore/hosts/waterial/editor_model.cpp",
 		"/home/ndx/Desktop/WCore/hosts/waterial/mainwindow.cpp",
 		"/home/ndx/Desktop/WCore/source/include/cspline.h",
@@ -1078,15 +1056,11 @@
 		"/home/ndx/Desktop/WCore/hosts/waterial/texmap_controls.cpp",
 		"/home/ndx/Desktop/WCore/hosts/waterial/texlist_delegate.cpp",
 		"/home/ndx/Desktop/WCore/hosts/waterial/shader_stage.cpp",
-		"/home/ndx/Desktop/WCore/hosts/waterial/preview_gl_widget.cpp",
-		"/home/ndx/Desktop/WCore/source/src/error.cpp",
-		"/home/ndx/Desktop/WCore/source/src/chunk.cpp",
-		"/home/ndx/Desktop/WCore/source/src/entity_system.cpp",
-		"/home/ndx/Desktop/WCore/source/src/pipeline.cpp"
+		"/home/ndx/Desktop/WCore/hosts/waterial/preview_gl_widget.cpp"
 	],
 	"find":
 	{
-		"height": 40.0
+		"height": 28.0
 	},
 	"find_in_files":
 	{
@@ -1110,6 +1084,20 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"MAD",
+			"delta_corr",
+			"corr",
+			"enc",
+			"half",
+			"half3",
+			"half2",
+			"norm",
+			"enc",
+			"half3",
+			"half4",
+			"compression",
+			".0",
+			"volume_bgm",
 			"passthrough_shader_",
 			"current_tex",
 			"current_pane",
@@ -1223,21 +1211,7 @@
 			"bind_as_source",
 			"SSAObuffer",
 			"SSAOBuffer",
-			"active_",
-			"f_inv_far",
-			"SSAOBuffer",
-			"SSAO_buffer",
-			"active_",
-			"SSAOBuffer",
-			"SSAObuffer",
-			"SSAOBuffer",
-			"SSAO",
-			"SSAORenderer",
-			"0.2, 0.6, abs(vec2(0.5, 0.5)",
-			"last_sev",
-			"(DLOG.)\\((.+?), \"io\"\\)",
-			"load_file_xml",
-			"Parsing xml file from stream"
+			"active_"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1383,44 +1357,11 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 4,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "source/include/pipeline.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3493,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								736,
-								736
-							]
-						],
-						"settings":
-						{
-							"SL.88.region_keys":
-							[
-							],
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 285.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 32,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
 					"file": "source/src/pipeline.cpp",
 					"semi_transient": false,
 					"settings":
@@ -1432,8 +1373,8 @@
 						"selection":
 						[
 							[
-								8928,
-								8928
+								3416,
+								3416
 							]
 						],
 						"settings":
@@ -1452,35 +1393,65 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2900.0,
+						"translation.y": 1532.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "source/include/SSAO_renderer.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2348,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"SL.68.region_keys":
+							[
+							],
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 342.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "source/include/debug_overlay_renderer.h",
+					"file": "source/src/SSAO_renderer.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2361,
+						"buffer_size": 7030,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2140,
-								2140
+								275,
+								275
 							]
 						],
 						"settings":
 						{
-							"SL.17.region_keys":
-							[
-							],
-							"SL.60.region_keys":
+							"SL.67.region_keys":
 							[
 							],
 							"syntax": "Packages/C++/C++.sublime-syntax",
@@ -1488,114 +1459,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 855.0,
+						"translation.y": 342.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "source/src/debug_overlay_renderer.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10986,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								7700,
-								7700
-							]
-						],
-						"settings":
-						{
-							"SL.18.region_keys":
-							[
-							],
-							"SL.55.region_keys":
-							[
-							],
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3894.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "source/include/png_loader.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 499,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								444,
-								444
-							]
-						],
-						"settings":
-						{
-							"SL.58.region_keys":
-							[
-							],
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "source/src/png_loader.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6577,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5216,
-								5216
-							]
-						],
-						"settings":
-						{
-							"SL.57.region_keys":
-							[
-							],
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3078.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
 					"file": "source/include/SSR_renderer.h",
 					"semi_transient": false,
 					"settings":
@@ -1631,24 +1502,24 @@
 						"translation.y": 285.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 4,
 					"file": "source/src/SSR_renderer.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6836,
+						"buffer_size": 6840,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1096,
-								1096
+								3372,
+								3372
 							]
 						],
 						"settings":
@@ -1662,158 +1533,29 @@
 							"SL.20.region_keys":
 							[
 							],
+							"SL.22.region_keys":
+							[
+							],
 							"SL.81.region_keys":
 							[
 							],
 							"syntax": "Packages/C++/C++.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 581.0,
+						"translation.y": 1664.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "/home/ndx/Desktop/WCore rel/Snippets/SSR_pissang_glsl.frag",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 14045,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5918,
-								5918
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/OpenGL Shading Language (GLSL)/GLSL.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3225.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 13,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "/home/ndx/Desktop/WCore rel/Snippets/SSR_kode80_glsl.frag",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7814,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/OpenGL Shading Language (GLSL)/GLSL.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2385.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 12,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "source/include/gfx_driver.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3459,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								339,
-								339
-							]
-						],
-						"settings":
-						{
-							"SL.117.region_keys":
-							[
-							],
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 24,
-					"type": "text"
-				},
-				{
-					"buffer": 11,
-					"file": "source/src/lighting_renderer.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 9992,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								8401,
-								8401
-							]
-						],
-						"settings":
-						{
-							"SL.112.region_keys":
-							[
-							],
-							"SL.21.region_keys":
-							[
-							],
-							"SL.25.region_keys":
-							[
-							],
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3690.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 15,
+					"stack_index": 2,
 					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 15,
+			"selected": 17,
 			"sheets":
 			[
 				{
-					"buffer": 12,
+					"buffer": 5,
 					"file": "hosts/wevel/resources.qrc",
 					"semi_transient": false,
 					"settings":
@@ -1842,11 +1584,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 36,
+					"stack_index": 33,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 6,
 					"file": "hosts/waterial/resources.qrc",
 					"semi_transient": false,
 					"settings":
@@ -1878,11 +1620,11 @@
 						"translation.y": 76.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 35,
+					"stack_index": 32,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 7,
 					"file": "hosts/waterial/res/stylesheets/default_style.css",
 					"semi_transient": false,
 					"settings":
@@ -1920,11 +1662,11 @@
 						"translation.y": 1767.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 34,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 8,
 					"file": "config/keybindings.xml",
 					"semi_transient": false,
 					"settings":
@@ -1968,11 +1710,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 40,
+					"stack_index": 37,
 					"type": "text"
 				},
 				{
-					"buffer": 16,
+					"buffer": 9,
 					"file": "res/levels/l_mv.xml",
 					"semi_transient": false,
 					"settings":
@@ -2016,11 +1758,11 @@
 						"translation.y": 38.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 39,
+					"stack_index": 36,
 					"type": "text"
 				},
 				{
-					"buffer": 17,
+					"buffer": 10,
 					"file": "res/levels/l_maze.xml",
 					"semi_transient": false,
 					"settings":
@@ -2061,11 +1803,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
-					"buffer": 18,
+					"buffer": 11,
 					"file": "res/levels/l_metal.xml",
 					"semi_transient": false,
 					"settings":
@@ -2077,13 +1819,16 @@
 						"selection":
 						[
 							[
-								4597,
-								4597
+								599,
+								599
 							]
 						],
 						"settings":
 						{
 							"SL.30.region_keys":
+							[
+							],
+							"SL.33.region_keys":
 							[
 							],
 							"SL.34.region_keys":
@@ -2103,14 +1848,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1769.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 19,
+					"buffer": 12,
 					"file": "res/levels/l_tree.xml",
 					"semi_transient": false,
 					"settings":
@@ -2154,11 +1899,11 @@
 						"translation.y": 550.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 27,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
-					"buffer": 20,
+					"buffer": 13,
 					"file": "res/levels/l_crystal.xml",
 					"semi_transient": false,
 					"settings":
@@ -2226,11 +1971,11 @@
 						"translation.y": 4617.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 28,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
+					"buffer": 14,
 					"file": "res/levels/l_lake.xml",
 					"semi_transient": false,
 					"settings":
@@ -2265,11 +2010,11 @@
 						"translation.y": 589.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 15,
 					"file": "res/levels/assets.xml",
 					"semi_transient": false,
 					"settings":
@@ -2325,11 +2070,11 @@
 						"translation.y": 86.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 16,
 					"file": "config/config.xml",
 					"semi_transient": false,
 					"settings":
@@ -2341,8 +2086,8 @@
 						"selection":
 						[
 							[
-								2032,
-								2032
+								1899,
+								1899
 							]
 						],
 						"settings":
@@ -2394,14 +2139,43 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1159.0,
+						"translation.y": 798.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 17,
+					"file": "config/edtweaks.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1620,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1305,
+								1305
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 684.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 18,
 					"file": "res/shaders/SSR.vert",
 					"semi_transient": false,
 					"settings":
@@ -2439,24 +2213,24 @@
 						"translation.y": 228.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 19,
 					"file": "res/shaders/SSR.frag",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9430,
+						"buffer_size": 9463,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1047,
-								1047
+								7113,
+								7113
 							]
 						],
 						"settings":
@@ -2470,6 +2244,9 @@
 							"SL.39.region_keys":
 							[
 							],
+							"SL.40.region_keys":
+							[
+							],
 							"SL.41.region_keys":
 							[
 							],
@@ -2481,14 +2258,106 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 285.0,
+						"translation.y": 5144.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
+					"buffer": 20,
+					"file": "res/shaders/SSAO.frag",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4645,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								904,
+								904
+							]
+						],
+						"settings":
+						{
+							"SL.66.region_keys":
+							[
+							],
+							"syntax": "Packages/OpenGL Shading Language (GLSL)/GLSL.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2008.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 21,
+					"file": "res/shaders/include/position.glsl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 970,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								235,
+								235
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/OpenGL Shading Language (GLSL)/GLSL.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 22,
+					"file": "res/shaders/include/normal_compression.glsl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1286,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								43,
+								43
+							]
+						],
+						"settings":
+						{
+							"SL.69.region_keys":
+							[
+							],
+							"syntax": "Packages/OpenGL Shading Language (GLSL)/GLSL.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 23,
 					"file": "res/shaders/include/cook_torrance.glsl",
 					"semi_transient": false,
 					"settings":
@@ -2514,11 +2383,11 @@
 						"translation.y": 969.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
-					"buffer": 27,
+					"buffer": 24,
 					"file": "res/shaders/fb_peek.frag",
 					"semi_transient": false,
 					"settings":
@@ -2547,11 +2416,11 @@
 						"translation.y": 399.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 28,
+					"buffer": 25,
 					"file": "res/shaders/include/math_utils.glsl",
 					"semi_transient": false,
 					"settings":
@@ -2575,11 +2444,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
-					"buffer": 29,
+					"buffer": 26,
 					"file": "res/shaders/SSR_blur.vert",
 					"semi_transient": false,
 					"settings":
@@ -2608,11 +2477,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 30,
+					"buffer": 27,
 					"file": "res/shaders/SSR_blur.frag",
 					"semi_transient": false,
 					"settings":
@@ -2638,14 +2507,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1083.0,
+						"translation.y": 399.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 31,
+					"buffer": 28,
 					"file": "res/shaders/lpass_exp.frag",
 					"semi_transient": false,
 					"settings":
@@ -2657,8 +2526,8 @@
 						"selection":
 						[
 							[
-								4909,
-								4909
+								4829,
+								4829
 							]
 						],
 						"settings":
@@ -2671,10 +2540,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2508.0,
+						"translation.y": 2394.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 5,
 					"type": "text"
 				}
 			]
@@ -2684,7 +2553,7 @@
 			"sheets":
 			[
 				{
-					"buffer": 32,
+					"buffer": 29,
 					"file": "/home/ndx/Desktop/WCore rel/Snippets/SSR_NullPointer.frag",
 					"semi_transient": false,
 					"settings":
@@ -2713,11 +2582,11 @@
 						"translation.y": 2934.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
-					"buffer": 33,
+					"buffer": 30,
 					"file": "NOTES.md",
 					"semi_transient": false,
 					"settings":
@@ -2729,8 +2598,8 @@
 						"selection":
 						[
 							[
-								469543,
-								469543
+								472083,
+								472083
 							]
 						],
 						"settings":
@@ -2930,14 +2799,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 230583.0,
+						"translation.y": 220464.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 34,
+					"buffer": 31,
 					"file": "QTSNIPS.md",
 					"semi_transient": false,
 					"settings":
@@ -2964,11 +2833,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
-					"buffer": 35,
+					"buffer": 32,
 					"file": "hosts/wevel/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -2997,11 +2866,11 @@
 						"translation.y": 570.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 31,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
-					"buffer": 36,
+					"buffer": 33,
 					"file": "hosts/waterial/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3033,11 +2902,11 @@
 						"translation.y": 1140.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 37,
+					"stack_index": 34,
 					"type": "text"
 				},
 				{
-					"buffer": 37,
+					"buffer": 34,
 					"file": ".gitignore",
 					"semi_transient": false,
 					"settings":
@@ -3067,11 +2936,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 41,
+					"stack_index": 38,
 					"type": "text"
 				},
 				{
-					"buffer": 38,
+					"buffer": 35,
 					"file": "hosts/sandbox/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3121,11 +2990,11 @@
 						"translation.y": 455.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 33,
+					"stack_index": 30,
 					"type": "text"
 				},
 				{
-					"buffer": 39,
+					"buffer": 36,
 					"file": "CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3172,11 +3041,11 @@
 						"translation.y": 1425.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
-					"buffer": 40,
+					"buffer": 37,
 					"file": "source/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3220,11 +3089,11 @@
 						"translation.y": 1539.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 41,
+					"buffer": 38,
 					"file": "source/tests/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3253,7 +3122,7 @@
 						"translation.y": 1254.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 38,
+					"stack_index": 35,
 					"type": "text"
 				}
 			]
@@ -3293,13 +3162,13 @@
 		"cols":
 		[
 			0.0,
-			0.544197020826,
+			0.509956100751,
 			1.0
 		],
 		"rows":
 		[
 			0.0,
-			0.724349650931,
+			0.782675412914,
 			1.0
 		]
 	},
@@ -3332,7 +3201,7 @@
 	"project": "wcore.sublime-project",
 	"replace":
 	{
-		"height": 72.0
+		"height": 52.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -3378,7 +3247,7 @@
 		],
 		"width": 592.0
 	},
-	"selected_group": 2,
+	"selected_group": 0,
 	"settings":
 	{
 	},
