@@ -1,7 +1,7 @@
 #ifndef POST_PROCESSING_RENDERER_H
 #define POST_PROCESSING_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 
 namespace wcore

@@ -1,7 +1,7 @@
 #ifndef DEBUG_OVERLAY_RENDERER_H
 #define DEBUG_OVERLAY_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 #include "buffer_module.h"
 
@@ -38,10 +38,7 @@ public:
     DebugOverlayRenderer(TextRenderer& text_renderer);
     virtual ~DebugOverlayRenderer() = default;
 
-    inline void toggle()                { active_ = !active_; }
-    inline void set_enabled(bool value) { active_ = value; }
-    inline bool& get_enabled_flag()     { return active_; }
-    inline void next_pane() { if(active_) current_pane_ = (current_pane_+1)%debug_panes_.size(); }
+    inline void next_pane() { if(enabled_) current_pane_ = (current_pane_+1)%debug_panes_.size(); }
 
     // Register a group of textures to be debugged
     void register_debug_pane(std::vector<unsigned int>&& texture_indices,
@@ -73,7 +70,6 @@ private:
     std::vector<dbg::DebugPane> debug_panes_;
     int current_pane_;
     int current_tex_;
-    bool active_;
     bool raw_;
     bool tone_map_;
     bool show_r_;

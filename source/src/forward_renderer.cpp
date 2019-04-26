@@ -19,23 +19,13 @@ using namespace math;
 
 ForwardRenderer::ForwardRenderer():
 forward_stage_shader_(ShaderResource("forwardstage.vert;forwardstage.frag")),
-skybox_shader_(ShaderResource("skybox.vert;skybox.frag")),
-active_(true)
+skybox_shader_(ShaderResource("skybox.vert;skybox.frag"))
 {
 
 }
-
-void ForwardRenderer::load_geometry()
-{
-
-}
-
 
 void ForwardRenderer::render(Scene* pscene)
 {
-    if(!active_)
-        return;
-
     // Get camera matrices
     mat4 V = pscene->get_camera().get_view_matrix();       // Camera View matrix
     mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix

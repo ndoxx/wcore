@@ -1,7 +1,7 @@
 #ifndef GEOMETRY_RENDERER_H
 #define GEOMETRY_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 
 namespace wcore

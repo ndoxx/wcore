@@ -27,6 +27,8 @@ public:
     float min_val;
     float max_val;
     float median;
+
+    size_t npoints;
 };
 
 class MovingAverage

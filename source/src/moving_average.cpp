@@ -64,6 +64,7 @@ FinalStatistics MovingAverage::get_stats() const
     stats.min_val = min_element;
     stats.max_val = max_element;
     stats.median  = median;
+    stats.npoints = get_size();
 
     return stats;
 }

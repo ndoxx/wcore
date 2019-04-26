@@ -1,7 +1,7 @@
 #ifndef GUI_RENDERER_H
 #define GUI_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 #include "math3d.h"
 

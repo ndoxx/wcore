@@ -1,7 +1,7 @@
 #ifndef FORWARD_RENDERER_H
 #define FORWARD_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 
 namespace wcore
@@ -17,12 +17,8 @@ private:
     Shader skybox_shader_;
 
 public:
-    bool active_;
-
     ForwardRenderer();
     virtual ~ForwardRenderer() = default;
-
-    void load_geometry();
     virtual void render(Scene* pscene) override;
 };
 

@@ -37,8 +37,6 @@ private:
     DebugOverlayRenderer*    debug_overlay_renderer_;
     GuiRenderer*             gui_renderer_;
 
-    bool bloom_enabled_;
-
 public:
 
     RenderPipeline();

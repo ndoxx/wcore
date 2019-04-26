@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 #include "frame_buffer.h"
 #include "gaussian.h"

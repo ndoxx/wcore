@@ -1,7 +1,7 @@
 #ifndef SSR_RENDERER_H
 #define SSR_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "buffer_module.h"
 #include "shader.h"
 
@@ -16,10 +16,6 @@ public:
 
     virtual void render(Scene* pscene) override;
 
-    inline void toggle()                { enabled_ = !enabled_; }
-    inline void set_enabled(bool value) { enabled_ = value; }
-    inline bool is_enabled() const      { return enabled_; }
-    inline bool& get_enabled()          { return enabled_; }
     inline bool& get_blur_enabled()     { return blur_enabled_; }
 
     inline float& get_dither_amount()      { return dither_amount_; }
@@ -45,7 +41,6 @@ private:
     BufferModule blur_buffer_;
 
     bool nonce_;
-    bool enabled_;
     bool blur_enabled_;
     int ray_steps_;
     int bin_steps_;

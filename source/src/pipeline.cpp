@@ -1,7 +1,6 @@
 #include "pipeline.h"
 
 #include "globals.h"
-#include "gfx_driver.h"
 #include "geometry_renderer.h"
 #include "lighting_renderer.h"
 #include "forward_renderer.h"
@@ -39,8 +38,7 @@
 namespace wcore
 {
 
-RenderPipeline::RenderPipeline():
-bloom_enabled_(true)
+RenderPipeline::RenderPipeline()
 {
     // Buffers with facilities for Geometry pass
     GBuffer::Init(GLB.WIN_W, GLB.WIN_H);
@@ -229,15 +227,6 @@ static bool profile_renderers = false;
 static uint32_t frame_cnt = 0;
 static float last_render_time_ = 0.0f;
 static nanoClock frame_clock_;
-static nanoClock profile_clock_;
-static MovingAverage geometry_dt_fifo_(PROFILING_MAX_SAMPLES);
-static MovingAverage SSAO_dt_fifo_(PROFILING_MAX_SAMPLES);
-static MovingAverage SSR_dt_fifo_(PROFILING_MAX_SAMPLES);
-static MovingAverage shadow_dt_fifo_(PROFILING_MAX_SAMPLES);
-static MovingAverage lighting_dt_fifo_(PROFILING_MAX_SAMPLES);
-static MovingAverage forward_dt_fifo_(PROFILING_MAX_SAMPLES);
-static MovingAverage bloom_dt_fifo_(PROFILING_MAX_SAMPLES);
-static MovingAverage pp_dt_fifo_(PROFILING_MAX_SAMPLES);
 #endif
 
 #ifndef __DISABLE_EDITOR__
@@ -301,6 +290,7 @@ void RenderPipeline::generate_widget()
             if(ImGui::Button("Profile renderers"))
             {
                 profile_renderers = !profile_renderers;
+                Renderer::PROFILING_ACTIVE = profile_renderers;
             }
 
             ImGui::TreePop();
@@ -324,11 +314,11 @@ void RenderPipeline::generate_widget()
         {
             //lighting_renderer_->set_SSR_enabled(SSR_renderer_->is_enabled());
         }
-        if(ImGui::Checkbox("Bloom", &bloom_enabled_))
+        if(ImGui::Checkbox("Bloom", &bloom_renderer_->get_enabled()))
         {
-            post_processing_renderer_->set_bloom_enabled(bloom_enabled_);
+            post_processing_renderer_->set_bloom_enabled(bloom_renderer_->is_enabled());
         }
-        ImGui::Checkbox("Forward pass", &forward_renderer_->active_);
+        ImGui::Checkbox("Forward pass", &forward_renderer_->get_enabled());
         ImGui::EndChild();
 
         ImGui::Separator();
@@ -398,7 +388,7 @@ void RenderPipeline::generate_widget()
     }
 
     // BLOOM OPTIONS
-    if(bloom_enabled_)
+    if(bloom_renderer_->is_enabled())
     {
         ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
         if(ImGui::CollapsingHeader("Bloom control"))
@@ -530,18 +520,18 @@ void RenderPipeline::generate_widget()
         if(ImGui::CollapsingHeader("Render time"))
         {
             ImGui::PlotVar("Draw time", 1e3*last_render_time_, 0.0f, 16.66f);
-            ImGui::PlotVar("Geometry pass", 1e3*geometry_dt_fifo_.last_element(), 0.0f, 16.66f);
+            ImGui::PlotVar("Geometry pass", geometry_renderer_->last_dt(), 0.0f, 16.66f);
             if(SSAO_renderer_->is_enabled())
-                ImGui::PlotVar("SSAO", 1e3*SSAO_dt_fifo_.last_element(), 0.0f, 16.66f);
+                ImGui::PlotVar("SSAO", 1e3*SSAO_renderer_->last_dt(), 0.0f, 16.66f);
             if(SSR_renderer_->is_enabled())
-                ImGui::PlotVar("SSR", 1e3*SSR_dt_fifo_.last_element(), 0.0f, 16.66f);
+                ImGui::PlotVar("SSR", 1e3*SSR_renderer_->last_dt(), 0.0f, 16.66f);
             if(shadow_map_renderer_->is_enabled())
-                ImGui::PlotVar("Shadow mapping", 1e3*shadow_dt_fifo_.last_element(), 0.0f, 16.66f);
-            ImGui::PlotVar("Lighting pass", 1e3*lighting_dt_fifo_.last_element(), 0.0f, 16.66f);
-            ImGui::PlotVar("Forward pass", 1e3*forward_dt_fifo_.last_element(), 0.0f, 16.66f);
-            if(bloom_enabled_)
-                ImGui::PlotVar("Bloom pass", 1e3*bloom_dt_fifo_.last_element(), 0.0f, 16.66f);
-            ImGui::PlotVar("Post processing", 1e3*pp_dt_fifo_.last_element(), 0.0f, 16.66f);
+                ImGui::PlotVar("Shadow mapping", 1e3*shadow_map_renderer_->last_dt(), 0.0f, 16.66f);
+            ImGui::PlotVar("Lighting pass", 1e3*lighting_renderer_->last_dt(), 0.0f, 16.66f);
+            ImGui::PlotVar("Forward pass", 1e3*forward_renderer_->last_dt(), 0.0f, 16.66f);
+            if(bloom_renderer_->is_enabled())
+                ImGui::PlotVar("Bloom pass", 1e3*bloom_renderer_->last_dt(), 0.0f, 16.66f);
+            ImGui::PlotVar("Post processing", 1e3*post_processing_renderer_->last_dt(), 0.0f, 16.66f);
 
             if(++frame_cnt>200)
             {
@@ -563,191 +553,28 @@ void RenderPipeline::render()
     Scene* pscene = locate<Scene>("Scene"_h);
 
     #ifdef __PROFILE__
-    float dt = 0.0f;
-    std::chrono::nanoseconds period;
-    #endif
-// ------- DEFERRED PASS (no blending allowed) --------------------------------
-// ------- GEOMETRY PASS (draw on texture "gbuffer") --------------------------
-    #ifdef __PROFILE__
     if(profile_renderers)
     {
-        GFX::finish();
-        profile_clock_.restart();
         frame_clock_.restart();
     }
     #endif
 
-    geometry_renderer_->render(pscene);
+    geometry_renderer_->Render(pscene);
+    SSAO_renderer_->Render(pscene);
+    SSR_renderer_->Render(pscene);
+    shadow_map_renderer_->Render(pscene);
+    lighting_renderer_->Render(pscene);
+    bloom_renderer_->Render(pscene);
+    forward_renderer_->Render(pscene);
+    post_processing_renderer_->Render(pscene);
+    debug_renderer_->Render(pscene);
+    debug_overlay_renderer_->Render(pscene);
+    text_renderer_->Render(pscene);
 
     #ifdef __PROFILE__
     if(profile_renderers)
     {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        geometry_dt_fifo_.push(dt);
-    }
-    #endif
-
-// ------- SSAO (draw on texture "SSAObuffer") --------------------------------
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
-    #endif
-
-    SSAO_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        SSAO_dt_fifo_.push(dt);
-    }
-    #endif
-
-// ------- SSR (draw on texture "SSRbuffer") ----------------------------------
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
-    #endif
-
-    SSR_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        SSR_dt_fifo_.push(dt);
-    }
-    #endif
-
-// ------- SHADOW PASS (draw on texture "shadowTex") --------------------------
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
-    #endif
-
-    shadow_map_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        shadow_dt_fifo_.push(dt);
-    }
-    #endif
-
-// ------- LIGHTING PASS (draw on texture "screen") ---------------------------
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
-    #endif
-
-    lighting_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        lighting_dt_fifo_.push(dt);
-    }
-    #endif
-
-// ------- BLUR PASS (draw on textures "bloom_i" with i in [0,3]) -------------
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
-    #endif
-
-    if(bloom_enabled_)
-        bloom_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        bloom_dt_fifo_.push(dt);
-    }
-    #endif
-
-// ------- FORWARD PASS (draw anything incompatible with deferred pass) -------
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
-    #endif
-
-    forward_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        forward_dt_fifo_.push(dt);
-    }
-    #endif
-
-// ------- HDR, POST-PROCESSING (draw LBuffer on screen) ------
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
-    #endif
-
-    post_processing_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        pp_dt_fifo_.push(dt);
-    }
-    #endif
-
-// ------- OVERLAY AND TEXT (draw to screen with alpha blending) --------------
-    debug_renderer_->render(pscene);
-    debug_overlay_renderer_->render(pscene);
-    text_renderer_->render(pscene);
-
-    #ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        period = frame_clock_.get_elapsed_time();
+        std::chrono::nanoseconds period = frame_clock_.get_elapsed_time();
         last_render_time_ = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
     }
     #endif
@@ -765,14 +592,14 @@ void RenderPipeline::dbg_show_statistics()
     #ifdef __PROFILE__
     if(profile_renderers)
     {
-        FinalStatistics geom_stats = geometry_dt_fifo_.get_stats();
-        FinalStatistics SSAO_stats = SSAO_dt_fifo_.get_stats();
-        FinalStatistics shadow_stats = shadow_dt_fifo_.get_stats();
-        FinalStatistics lighting_stats = lighting_dt_fifo_.get_stats();
-        FinalStatistics forward_stats = forward_dt_fifo_.get_stats();
-        FinalStatistics bloom_stats = bloom_dt_fifo_.get_stats();
-        FinalStatistics pp_stats = pp_dt_fifo_.get_stats();
-        uint32_t n_iter = geometry_dt_fifo_.get_size();
+        FinalStatistics geom_stats = geometry_renderer_->get_stats();
+        FinalStatistics SSAO_stats = SSAO_renderer_->get_stats();
+        FinalStatistics shadow_stats = shadow_map_renderer_->get_stats();
+        FinalStatistics lighting_stats = lighting_renderer_->get_stats();
+        FinalStatistics forward_stats = forward_renderer_->get_stats();
+        FinalStatistics bloom_stats = bloom_renderer_->get_stats();
+        FinalStatistics pp_stats = post_processing_renderer_->get_stats();
+        uint32_t n_iter = geom_stats.npoints;
 
         DLOGN("Geometry pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile");
         geom_stats.debug_print(1e6, "µs", "profile");

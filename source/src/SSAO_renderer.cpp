@@ -40,7 +40,6 @@ ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VAR
 out_size_(SSAOBuffer::Instance().get_width(),
           SSAOBuffer::Instance().get_height()),
 noise_scale_(out_size_/(float(NOISE_SQRSIZE_))),
-enabled_(true),
 SSAO_radius_(0.20),
 SSAO_bias_(0.025),
 SSAO_vbias_(0.086),
@@ -62,8 +61,6 @@ SSAORenderer::~SSAORenderer()
 
 void SSAORenderer::render(Scene* pscene)
 {
-    if(!enabled_) return;
-
     // For position reconstruction
     const math::mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     math::vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));

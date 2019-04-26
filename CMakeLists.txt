@@ -91,6 +91,7 @@ set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/bounding_boxes.cpp
     ${CMAKE_SOURCE_DIR}/source/src/ray.cpp
     ${CMAKE_SOURCE_DIR}/source/src/ray_caster.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/geometry_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/shadow_map_renderer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/SSAO_renderer.cpp

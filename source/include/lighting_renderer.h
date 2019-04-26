@@ -1,7 +1,7 @@
 #ifndef LIGHTING_RENDERER_H
 #define LIGHTING_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 
 namespace wcore

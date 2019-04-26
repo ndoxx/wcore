@@ -1,7 +1,7 @@
 #ifndef SSAO_RENDERER_H
 #define SSAO_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 #include "ping_pong_buffer.h"
 
@@ -19,7 +19,6 @@ private:
     math::vec2 noise_scale_;
 
     unsigned int noise_texture_;
-    bool enabled_;
 
     float SSAO_radius_;
     float SSAO_bias_;
@@ -38,11 +37,6 @@ public:
     virtual ~SSAORenderer();
 
     virtual void render(Scene* pscene) override;
-
-    inline void toggle() { enabled_ = !enabled_; }
-    inline void set_enabled(bool value) { enabled_ = value; }
-    inline bool is_enabled() const { return enabled_; }
-    inline bool& get_enabled() { return enabled_; }
 
     inline void set_radius(float value)      { SSAO_radius_ = value; }
     inline void set_scalar_bias(float value) { SSAO_bias_ = value; }

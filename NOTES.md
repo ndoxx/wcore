@@ -7489,7 +7489,8 @@ Le singleton _GeometryCommon_ enregistre toute la géométrie utilitaire (quads.
 ```cpp
     CGEOM.draw("quad"_h);
 ```
-Les renderers n'ayant plus besoin de _BufferUnit_ ont été détemplatés et _Renderer_ est maintenant une simple interface, avec la seule fonction virtuelle pure render().
+Les renderers n'ayant plus besoin de _BufferUnit_ ont été détemplatés et _Renderer_ est maintenant une simple interface.
+Chaque renderer doit toujours surcharger la virtuelle pure render(), mais cette dernière est maintenant protected. La fonction Render() se charge d'appeler l'implémentation render() si le renderer est activé. Par ailleurs, le profiling a été poussé dans la fonction Render() quand __PROFILE__ est défini. Ainsi, RenderPipeline::render() ne fait plus qu'une quinzaine de lignes et se contente d'appeler la fonction Render() de tous les renderers à la suite.
 
 
 

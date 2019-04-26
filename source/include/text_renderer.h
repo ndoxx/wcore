@@ -10,7 +10,7 @@
 #include <queue>
 
 #include "wtypes.h"
-#include "renderer.hpp"
+#include "renderer.h"
 #include "math3d.h"
 #include "shader.h"
 

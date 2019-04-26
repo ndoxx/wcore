@@ -30,7 +30,6 @@ std::make_shared<Texture>(
     true),
 {GL_COLOR_ATTACHMENT0}),
 nonce_(true),
-enabled_(true),
 blur_enabled_(false),
 ray_steps_(20),
 bin_steps_(6),
@@ -55,7 +54,6 @@ SSRRenderer::~SSRRenderer()
 
 void SSRRenderer::render(Scene* pscene)
 {
-    if(!enabled_) return;
     // For position reconstruction
     const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     const mat4& V = pscene->get_camera().get_view_matrix(); // Camera View matrix

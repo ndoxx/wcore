@@ -3,7 +3,7 @@
 
 #include <list>
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 
 namespace wcore

@@ -1,7 +1,7 @@
 #ifndef SHADOW_MAP_RENDERER_H
 #define SHADOW_MAP_RENDERER_H
 
-#include "renderer.hpp"
+#include "renderer.h"
 #include "shader.h"
 
 #ifdef __EXPERIMENTAL_VSM_BLUR__
@@ -22,10 +22,7 @@ public:
     inline const math::mat4& get_light_matrix() const { return light_matrix_; }
     inline float get_normal_offset() const            { return normal_offset_; }
     inline float& get_normal_offset()                 { return normal_offset_; }
-    inline bool& get_enabled()                        { return enabled_; }
-    inline bool is_enabled()                          { return enabled_; }
     inline void set_normal_offset(float value)        { normal_offset_ = value; }
-    inline void set_enabled(bool value)               { enabled_ = value; }
 
     virtual void render(Scene* pscene) override;
 
@@ -38,7 +35,6 @@ private:
 #endif
     ShadowBuffer* sbuffer_;
 
-    bool enabled_;
     float normal_offset_;
     math::mat4 light_matrix_; // Last light view-projection matrix
 

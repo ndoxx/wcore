@@ -33,7 +33,6 @@ ShadowMapRenderer::ShadowMapRenderer():
     sm_shader_(ShaderResource("shadowmap.vert;null.frag")),
 #endif
 sbuffer_(nullptr),
-enabled_(true),
 normal_offset_(-0.013f)
 {
     CONFIG.get("root.render.shadowmap.width"_h, SHADOW_WIDTH);
@@ -50,8 +49,6 @@ ShadowMapRenderer::~ShadowMapRenderer()
 
 void ShadowMapRenderer::render(Scene* pscene)
 {
-    if(!enabled_) return;
-
     // TMP: For now, only render directional shadow
 
     // * RENDER DIRECTIONAL LIGHT SHADOW

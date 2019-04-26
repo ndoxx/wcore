@@ -44,7 +44,6 @@ std::make_shared<Texture>(
 {GL_COLOR_ATTACHMENT0}),
 current_pane_(0),
 current_tex_(0),
-active_(false),
 raw_(false),
 tone_map_(true),
 show_r_(true),
@@ -55,6 +54,8 @@ split_alpha_(true),
 split_pos_(0.5f),
 text_renderer_(text_renderer)
 {
+    enabled_ = false;
+
     auto pgbuffer = Texture::get_named_texture("gbuffer"_h).lock();
     auto plbuffer = Texture::get_named_texture("lbuffer"_h).lock();
     auto psbuffer = Texture::get_named_texture("shadowmap"_h).lock();
@@ -202,8 +203,6 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
 
 void DebugOverlayRenderer::render(Scene* pscene)
 {
-    if(!active_) return;
-
     peek_shader_.use();
     render_pane(current_pane_, pscene);
     peek_shader_.unuse();
