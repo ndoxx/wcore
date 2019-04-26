@@ -55,7 +55,7 @@ bloom_enabled_(true)
 
     geometry_renderer_        = new GeometryRenderer();
     shadow_map_renderer_      = new ShadowMapRenderer();
-    lighting_renderer_        = new LightingRenderer(*shadow_map_renderer_);
+    lighting_renderer_        = new LightingRenderer();
     forward_renderer_         = new ForwardRenderer();
     SSAO_renderer_            = new SSAORenderer();
     SSR_renderer_             = new SSRRenderer();
@@ -142,13 +142,14 @@ void RenderPipeline::perform_test()
 }
 #endif
 
-void RenderPipeline::set_shadow_mapping_enabled(bool value)    { lighting_renderer_->set_shadow_mapping_enabled(value); }
+void RenderPipeline::set_shadow_mapping_enabled(bool value)    { lighting_renderer_->set_shadow_mapping_enabled(value);
+                                                                 shadow_map_renderer_->set_enabled(value); }
 void RenderPipeline::set_directional_light_enabled(bool value) { lighting_renderer_->set_directional_light_enabled(value); }
 void RenderPipeline::set_shadow_bias(float value)              { lighting_renderer_->set_shadow_bias(value); }
 void RenderPipeline::set_bright_threshold(float value)         { lighting_renderer_->set_bright_threshold(value); }
 void RenderPipeline::set_bright_knee(float value)              { lighting_renderer_->set_bright_knee(value); }
 void RenderPipeline::set_shadow_slope_bias(float value)        { lighting_renderer_->set_shadow_slope_bias(value); }
-void RenderPipeline::set_normal_offset(float value)            { lighting_renderer_->set_normal_offset(value); }
+void RenderPipeline::set_normal_offset(float value)            { shadow_map_renderer_->set_normal_offset(value); }
 
 void RenderPipeline::set_bloom_enabled(bool value)             { post_processing_renderer_->set_bloom_enabled(value); }
 void RenderPipeline::set_fog_enabled(bool value)               { post_processing_renderer_->set_fog_enabled(value); }
@@ -232,6 +233,7 @@ static nanoClock profile_clock_;
 static MovingAverage geometry_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage SSAO_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage SSR_dt_fifo_(PROFILING_MAX_SAMPLES);
+static MovingAverage shadow_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage lighting_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage forward_dt_fifo_(PROFILING_MAX_SAMPLES);
 static MovingAverage bloom_dt_fifo_(PROFILING_MAX_SAMPLES);
@@ -422,7 +424,7 @@ void RenderPipeline::generate_widget()
         {
             ImGui::SliderFloat("Depth bias",    &lighting_renderer_->get_shadow_bias_nc(), 0.0f, 5.0f);
             ImGui::SliderFloat("Slope bias",    &lighting_renderer_->get_shadow_slope_bias_nc(), 0.0f, 0.5f);
-            ImGui::SliderFloat("Normal offset", &lighting_renderer_->get_normal_offset_nc(), -1.0f, 1.0f);
+            ImGui::SliderFloat("Normal offset", &shadow_map_renderer_->get_normal_offset(), -1.0f, 1.0f);
         }
     }
 
@@ -533,6 +535,8 @@ void RenderPipeline::generate_widget()
                 ImGui::PlotVar("SSAO", 1e3*SSAO_dt_fifo_.last_element(), 0.0f, 16.66f);
             if(SSR_renderer_->is_enabled())
                 ImGui::PlotVar("SSR", 1e3*SSR_dt_fifo_.last_element(), 0.0f, 16.66f);
+            if(shadow_map_renderer_->is_enabled())
+                ImGui::PlotVar("Shadow mapping", 1e3*shadow_dt_fifo_.last_element(), 0.0f, 16.66f);
             ImGui::PlotVar("Lighting pass", 1e3*lighting_dt_fifo_.last_element(), 0.0f, 16.66f);
             ImGui::PlotVar("Forward pass", 1e3*forward_dt_fifo_.last_element(), 0.0f, 16.66f);
             if(bloom_enabled_)
@@ -553,6 +557,7 @@ void RenderPipeline::generate_widget()
 }
 #endif //__DISABLE_EDITOR__
 
+// TODO: call renderers in for loop
 void RenderPipeline::render()
 {
     Scene* pscene = locate<Scene>("Scene"_h);
@@ -623,6 +628,28 @@ void RenderPipeline::render()
         period = profile_clock_.get_elapsed_time();
         dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
         SSR_dt_fifo_.push(dt);
+    }
+    #endif
+
+// ------- SHADOW PASS (draw on texture "shadowTex") --------------------------
+
+    #ifdef __PROFILE__
+    if(profile_renderers)
+    {
+        GFX::finish();
+        profile_clock_.restart();
+    }
+    #endif
+
+    shadow_map_renderer_->render(pscene);
+
+    #ifdef __PROFILE__
+    if(profile_renderers)
+    {
+        GFX::finish();
+        period = profile_clock_.get_elapsed_time();
+        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
+        shadow_dt_fifo_.push(dt);
     }
     #endif
 
@@ -740,6 +767,7 @@ void RenderPipeline::dbg_show_statistics()
     {
         FinalStatistics geom_stats = geometry_dt_fifo_.get_stats();
         FinalStatistics SSAO_stats = SSAO_dt_fifo_.get_stats();
+        FinalStatistics shadow_stats = shadow_dt_fifo_.get_stats();
         FinalStatistics lighting_stats = lighting_dt_fifo_.get_stats();
         FinalStatistics forward_stats = forward_dt_fifo_.get_stats();
         FinalStatistics bloom_stats = bloom_dt_fifo_.get_stats();
@@ -750,6 +778,8 @@ void RenderPipeline::dbg_show_statistics()
         geom_stats.debug_print(1e6, "µs", "profile");
         DLOGN("SSAO pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile");
         SSAO_stats.debug_print(1e6, "µs", "profile");
+        DLOGN("Shadow pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile");
+        shadow_stats.debug_print(1e6, "µs", "profile");
         DLOGN("Lighting pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile");
         lighting_stats.debug_print(1e6, "µs", "profile");
         DLOGN("Forward pass statistics (over <z>" + std::to_string(n_iter) + "</z> points): ", "profile");

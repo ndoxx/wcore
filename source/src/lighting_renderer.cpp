@@ -18,11 +18,10 @@
 namespace wcore
 {
 
-LightingRenderer::LightingRenderer(ShadowMapRenderer& smr):
+LightingRenderer::LightingRenderer():
 lpass_dir_shader_(ShaderResource("lpass_exp.vert;lpass_exp.frag", "VARIANT_DIRECTIONAL")),
 lpass_point_shader_(ShaderResource("lpass_exp.vert;lpass_exp.frag", "VARIANT_POINT")),
 null_shader_(ShaderResource("null.vert;null.frag")),
-smr_(smr),
 SSAO_enabled_(true),
 SSR_enabled_(true),
 shadow_enabled_(true),
@@ -30,8 +29,7 @@ lighting_enabled_(true),
 dirlight_enabled_(true),
 bright_threshold_(1.0f),
 bright_knee_(0.1f),
-shadow_slope_bias_(0.1f),
-normal_offset_(-0.013f)
+shadow_slope_bias_(0.1f)
 {
     CONFIG.get("root.render.override.allow_shadow_mapping"_h, shadow_enabled_);
 }
@@ -160,11 +158,6 @@ void LightingRenderer::render(Scene* pscene)
     if(!dirlight_enabled_) return;
     if(auto dir_light = pscene->get_directional_light().lock())
     {
-        // Render shadow map
-        math::mat4 lightMatrix;
-        if(shadow_enabled_)
-            lightMatrix = math::mat4(biasMatrix*smr_.render_directional_shadow_map(pscene, normal_offset_)*V_inv);
-
     // ---- DIRECTIONAL LIGHT PASS
         gbuffer.bind_as_source();
         lbuffer.bind_as_target();
@@ -199,6 +192,8 @@ void LightingRenderer::render(Scene* pscene)
         lpass_dir_shader_.send_uniform("rd.b_shadow_enabled"_h, shadow_enabled_);
         if(shadow_enabled_)
         {
+            math::mat4 lightMatrix = biasMatrix*pscene->get_light_camera().get_view_projection_matrix()*V_inv;
+
             pshadow->bind(SHADOW_TEX,0); // Bind shadow[0] to texture unit SHADOW_TEX
             lpass_dir_shader_.send_uniform<int>("shadowTex"_h, SHADOW_TEX);
             lpass_dir_shader_.send_uniform("m4_LightSpace"_h, lightMatrix);

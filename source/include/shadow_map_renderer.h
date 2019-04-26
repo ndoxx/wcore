@@ -15,6 +15,22 @@ class ShadowBuffer;
 
 class ShadowMapRenderer : public Renderer
 {
+public:
+    explicit ShadowMapRenderer();
+    virtual ~ShadowMapRenderer();
+
+    inline const math::mat4& get_light_matrix() const { return light_matrix_; }
+    inline float get_normal_offset() const            { return normal_offset_; }
+    inline float& get_normal_offset()                 { return normal_offset_; }
+    inline bool& get_enabled()                        { return enabled_; }
+    inline bool is_enabled()                          { return enabled_; }
+    inline void set_normal_offset(float value)        { normal_offset_ = value; }
+    inline void set_enabled(bool value)               { enabled_ = value; }
+
+    virtual void render(Scene* pscene) override;
+
+    static math::vec2 SHADOW_TEXEL_SIZE;
+
 private:
     Shader sm_shader_;
 #ifdef __EXPERIMENTAL_VSM_BLUR__
@@ -22,17 +38,13 @@ private:
 #endif
     ShadowBuffer* sbuffer_;
 
+    bool enabled_;
+    float normal_offset_;
+    math::mat4 light_matrix_; // Last light view-projection matrix
+
     static uint32_t SHADOW_WIDTH;
     static uint32_t SHADOW_HEIGHT;
 
-public:
-    explicit ShadowMapRenderer();
-    virtual ~ShadowMapRenderer();
-
-    virtual void render(Scene* pscene) override {}
-    math::mat4 render_directional_shadow_map(Scene* pscene, float normal_offset);
-
-    static math::vec2 SHADOW_TEXEL_SIZE;
 };
 
 }

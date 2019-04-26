@@ -7482,25 +7482,24 @@ A doc :
         [ ] spec. debug pass
         [ ] PNG export
 
+#[26-04-19]
 
-TODO :
-[ ] GL_RGBA -> GL_BGRA
-Il semblerait que le layout hardware le plus fréquent soit BGRA, et utiliser des framebuffers en RGBA force GL à swizzle. Donc GL_BGRA plus efficace en moyenne.
-Pour une conversion efficace des textures en BGRA on peut utiliser un swizzle mask :
-
+## Refactor
+Le singleton _GeometryCommon_ enregistre toute la géométrie utilitaire (quads...) et de debug et la rend disponible à tous les renderers. Quand on veut dessiner un quad dans un renderer, au lieu se faire chier la couille avec une fonction load_geometry() qui génère un quad dans le _BufferUnit_ du renderer et un appel à buffer_unit_.draw(), il suffit de faire :
 ```cpp
-GLint swizzleMask[] = {GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA};
-glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+    CGEOM.draw("quad"_h);
 ```
-
-[ ] Créer un _BufferUnit_ global qui contient de la géométrie utilitaire (quads...) et de debug.
-[ ] Utiliser ce buffer dans tous les renderers qui en ont besoin.
-[ ] Virer le _BufferUnit_ de _Renderer_
-[ ] Détemplater l'interface _Renderer_
+Les renderers n'ayant plus besoin de _BufferUnit_ ont été détemplatés et _Renderer_ est maintenant une simple interface, avec la seule fonction virtuelle pure render().
 
 
-#include "geometry_common.h"
-CGEOM.draw("quad"_h);
+
+
+
+
+
+
+
+
 
 
 TODO (Waterial):
@@ -7521,7 +7520,7 @@ TODO (Waterial):
 * TODO (WCore):
     [ ] New texture maps (possibly grouped in same Gbuffer chan):
         * Emissivity map
-        * Reflection map
+        * [.] Reflection map
 
     [ ] Pre-multiplied alpha:
         https://www.essentialmath.com/GDC2015/VanVerth_Jim_DoingMathwRGB.pdf
@@ -7544,3 +7543,12 @@ TODO (Waterial):
     [ ] Insp better chunk loading:
 
         What we do is actually pretty simple. Each frame we loop though all active chunks for update. During the update, we check and see if a chunk is missing any neighbors. If it is, we check and see if the neighbor chunk slots are withing the loading range. If they are, we load chunks and hook them up to their neighbors.
+
+    [ ] GL_RGBA -> GL_BGRA
+    Il semblerait que le layout hardware le plus fréquent soit BGRA, et utiliser des framebuffers en RGBA force GL à swizzle. Donc GL_BGRA plus efficace en moyenne.
+    Pour une conversion efficace des textures en BGRA on peut utiliser un swizzle mask :
+
+```cpp
+GLint swizzleMask[] = {GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA};
+glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+```

@@ -10,7 +10,6 @@ namespace wcore
 struct Vertex3P;
 class GBuffer;
 class LBuffer;
-class ShadowMapRenderer;
 class LightingRenderer : public Renderer
 {
 private:
@@ -22,7 +21,6 @@ private:
     // Geometry data
     size_t buffer_offsets_[3];
     size_t num_elements_[3];
-    ShadowMapRenderer& smr_;
 
     bool SSAO_enabled_;
     bool SSR_enabled_;
@@ -34,10 +32,9 @@ private:
     float bright_knee_;
     float shadow_slope_bias_;
     float shadow_bias_;
-    float normal_offset_;
 
 public:
-    LightingRenderer(ShadowMapRenderer& smr);
+    LightingRenderer();
     virtual ~LightingRenderer() = default;
 
     void load_geometry();
@@ -63,19 +60,16 @@ public:
     inline void set_bright_knee(float value)       { bright_knee_ = value; }
     inline void set_shadow_slope_bias(float value) { shadow_slope_bias_ = value; }
     inline void set_shadow_bias(float value)       { shadow_bias_ = value; }
-    inline void set_normal_offset(float value)     { normal_offset_ = value; }
 
     inline float get_bright_threshold() const  { return bright_threshold_; }
     inline float get_bright_knee() const       { return bright_knee_; }
     inline float get_shadow_slope_bias() const { return shadow_slope_bias_; }
     inline float get_shadow_bias() const       { return shadow_bias_; }
-    inline float get_normal_offset() const     { return normal_offset_; }
 
     inline float& get_bright_threshold_nc()  { return bright_threshold_; }
     inline float& get_bright_knee_nc()       { return bright_knee_; }
     inline float& get_shadow_slope_bias_nc() { return shadow_slope_bias_; }
     inline float& get_shadow_bias_nc()       { return shadow_bias_; }
-    inline float& get_normal_offset_nc()     { return normal_offset_; }
 /*
 private:
     inline size_t QUAD_OFFSET()   { return buffer_offsets_[0]; }

@@ -47,12 +47,13 @@ public:
     inline void set_orientation(float yaw, float pitch);
     inline void set_position(const math::vec3& newpos);
     inline const math::vec3& get_position() const { return position_; }
-    inline float get_yaw() const { return yaw_; }
+    inline float get_yaw() const   { return yaw_; }
     inline float get_pitch() const { return pitch_; }
 
-    inline const math::mat4& get_view_matrix() const;
-    inline const math::mat4& get_projection_matrix() const;
-    inline const std::array<math::vec2,4>& get_rays() const;
+    inline const math::mat4& get_view_matrix() const        { return view_; }
+    inline const math::mat4& get_projection_matrix() const  { return proj_; }
+    inline math::mat4 get_view_projection_matrix() const    { return proj_*view_; }
+    inline const std::array<math::vec2,4>& get_rays() const { return rays_; }
 
     inline const math::vec3& get_right() const;
     inline const math::vec3& get_up() const;
@@ -212,21 +213,6 @@ inline void Camera::update_position(const math::vec3& d_pos)
 inline bool Camera::frustum_collides_sphere(const math::vec3& center, float radius) const
 {
     return traits::collision<FrustumBox,Sphere>::intersects(frusBox_, Sphere(center, radius));
-}
-
-inline const math::mat4& Camera::get_view_matrix() const
-{
-    return view_;
-}
-
-inline const math::mat4& Camera::get_projection_matrix() const
-{
-    return proj_;
-}
-
-inline const std::array<math::vec2,4>& Camera::get_rays() const
-{
-    return rays_;
 }
 
 inline math::vec3 Camera::get_frustum_split_center(uint32_t splitIndex) const

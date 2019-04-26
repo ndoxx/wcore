@@ -8,8 +8,6 @@ class Scene;
 class Renderer
 {
 public:
-    virtual ~Renderer() = default;
-
     virtual void render(Scene* pscene) = 0;
 };
 
