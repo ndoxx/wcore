@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "lights.h"
 #include "texture.h"
+#include "geometry_common.h"
 
 namespace wcore
 {
@@ -25,7 +26,6 @@ uint32_t SSAORenderer::NOISE_SIZE_ = pow(SSAORenderer::NOISE_SQRSIZE_,2);
 
 
 SSAORenderer::SSAORenderer():
-Renderer<Vertex3P>(),
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
 ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VARIANT_R_ONLY"),
            std::make_unique<Texture>(
@@ -52,7 +52,6 @@ blur_policy_(1,
              0.67f,
              1.0f)
 {
-    load_geometry();
     generate_random_kernel();
 }
 
@@ -118,7 +117,7 @@ void SSAORenderer::render(Scene* pscene)
     // For position reconstruction
     SSAO_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
 
-    buffer_unit_.draw(2, 0);
+    CGEOM.draw("quad"_h);
     ssaobuffer.unbind_as_target();
     gbuffer.unbind_as_source();
 
@@ -133,7 +132,7 @@ void SSAORenderer::render(Scene* pscene)
                        [&]()
                        {
                             GFX::clear_color();
-                            buffer_unit_.draw(2, 0);
+                            CGEOM.draw("quad"_h);
                        });
     }
 }

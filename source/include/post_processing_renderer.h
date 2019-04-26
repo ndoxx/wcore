@@ -7,7 +7,7 @@
 namespace wcore
 {
 
-class PostProcessingRenderer : public Renderer<Vertex3P>
+class PostProcessingRenderer : public Renderer
 {
 private:
     Shader post_processing_shader_;

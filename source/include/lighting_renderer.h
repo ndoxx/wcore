@@ -11,7 +11,7 @@ struct Vertex3P;
 class GBuffer;
 class LBuffer;
 class ShadowMapRenderer;
-class LightingRenderer : public Renderer<Vertex3P>
+class LightingRenderer : public Renderer
 {
 private:
     //Shader lighting_pass_shader_;
@@ -76,14 +76,14 @@ public:
     inline float& get_shadow_slope_bias_nc() { return shadow_slope_bias_; }
     inline float& get_shadow_bias_nc()       { return shadow_bias_; }
     inline float& get_normal_offset_nc()     { return normal_offset_; }
-
+/*
 private:
     inline size_t QUAD_OFFSET()   { return buffer_offsets_[0]; }
     inline size_t SPHERE_OFFSET() { return buffer_offsets_[1]; }
     inline size_t CONE_OFFSET()   { return buffer_offsets_[2]; }
     inline size_t QUAD_NE()       { return num_elements_[0]; }
     inline size_t SPHERE_NE()     { return num_elements_[1]; }
-    inline size_t CONE_NE()       { return num_elements_[2]; }
+    inline size_t CONE_NE()       { return num_elements_[2]; }*/
 };
 
 }

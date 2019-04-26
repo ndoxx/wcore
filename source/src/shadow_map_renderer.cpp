@@ -9,6 +9,7 @@
 #include "logger.h"
 #include "texture.h"
 #include "shadow_buffer.h"
+#include "geometry_common.h"
 
 namespace wcore
 {
@@ -21,7 +22,6 @@ uint32_t ShadowMapRenderer::SHADOW_HEIGHT = 1024;
 vec2 ShadowMapRenderer::SHADOW_TEXEL_SIZE(1.0f/ShadowMapRenderer::SHADOW_WIDTH, 1.0f/ShadowMapRenderer::SHADOW_HEIGHT);
 
 ShadowMapRenderer::ShadowMapRenderer():
-Renderer<Vertex3P>(),
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
     sm_shader_(ShaderResource("vsm.vert;vsm.frag")),
     #ifdef __EXPERIMENTAL_VSM_BLUR__
@@ -39,10 +39,6 @@ sbuffer_(nullptr)
     SHADOW_TEXEL_SIZE = vec2(1.0f/SHADOW_WIDTH, 1.0f/SHADOW_HEIGHT);
 
     sbuffer_ = new ShadowBuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
-
-#ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-    load_geometry();
-#endif
 }
 
 ShadowMapRenderer::~ShadowMapRenderer()
@@ -119,7 +115,7 @@ math::mat4 ShadowMapRenderer::render_directional_shadow_map(Scene* pscene, float
                    [&]()
                    {
                         GFX::clear_color();
-                        buffer_unit_.draw(2, 0);
+                        CGEOM.draw("quad"_h);
                    });
 #endif //__EXPERIMENTAL_VSM_BLUR__
 */

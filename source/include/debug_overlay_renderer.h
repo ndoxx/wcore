@@ -32,7 +32,7 @@ typedef std::vector<DebugTextureProperties> DebugPane;
 
 }
 
-class DebugOverlayRenderer : public Renderer<Vertex3P>
+class DebugOverlayRenderer : public Renderer
 {
 public:
     DebugOverlayRenderer(TextRenderer& text_renderer);

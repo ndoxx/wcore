@@ -13,7 +13,7 @@ namespace wcore
 
 class ShadowBuffer;
 
-class ShadowMapRenderer : public Renderer<Vertex3P>
+class ShadowMapRenderer : public Renderer
 {
 private:
     Shader sm_shader_;

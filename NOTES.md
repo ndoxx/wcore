@@ -7484,7 +7484,7 @@ A doc :
 
 
 TODO :
-GL_RGBA -> GL_BGRA
+[ ] GL_RGBA -> GL_BGRA
 Il semblerait que le layout hardware le plus fréquent soit BGRA, et utiliser des framebuffers en RGBA force GL à swizzle. Donc GL_BGRA plus efficace en moyenne.
 Pour une conversion efficace des textures en BGRA on peut utiliser un swizzle mask :
 
@@ -7492,6 +7492,15 @@ Pour une conversion efficace des textures en BGRA on peut utiliser un swizzle ma
 GLint swizzleMask[] = {GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA};
 glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
 ```
+
+[ ] Créer un _BufferUnit_ global qui contient de la géométrie utilitaire (quads...) et de debug.
+[ ] Utiliser ce buffer dans tous les renderers qui en ont besoin.
+[ ] Virer le _BufferUnit_ de _Renderer_
+[ ] Détemplater l'interface _Renderer_
+
+
+#include "geometry_common.h"
+CGEOM.draw("quad"_h);
 
 
 TODO (Waterial):

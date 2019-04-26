@@ -18,7 +18,6 @@ namespace wcore
 using namespace math;
 
 ForwardRenderer::ForwardRenderer():
-Renderer<Vertex3P3N3T2U>(),
 forward_stage_shader_(ShaderResource("forwardstage.vert;forwardstage.frag")),
 skybox_shader_(ShaderResource("skybox.vert;skybox.frag")),
 active_(true)

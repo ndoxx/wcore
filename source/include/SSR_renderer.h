@@ -8,7 +8,7 @@
 namespace wcore
 {
 
-class SSRRenderer : public Renderer<Vertex3P>
+class SSRRenderer : public Renderer
 {
 public:
     SSRRenderer();

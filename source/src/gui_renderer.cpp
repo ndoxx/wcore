@@ -6,6 +6,7 @@
 #include "config.h"
 #include "globals.h"
 #include "colors.h"
+#include "geometry_common.h"
 
 #include "logger.h"
 
@@ -20,35 +21,16 @@ CursorProperties::~CursorProperties()
 }
 
 GuiRenderer::GuiRenderer():
-Renderer<Vertex2P2U>(),
 cursor_shader_(ShaderResource("cursor.vert;cursor.frag")),
 material_factory_(new MaterialFactory("gui_assets.xml")),
 cursor_props_(false, material_factory_->make_material("cursor"_h))
 {
-    load_geometry();
+
 }
 
 GuiRenderer::~GuiRenderer()
 {
     delete material_factory_;
-}
-
-void GuiRenderer::load_geometry()
-{
-    float xpos = 0.0f;
-    float ypos = 0.0f;
-    float w = 1.0f;
-    float h = 1.0f;
-    Mesh<Vertex2P2U> quadmesh;
-    quadmesh._emplace_vertex(vec2(xpos,   ypos  ), vec2(0, 0));
-    quadmesh._emplace_vertex(vec2(xpos+w, ypos  ), vec2(1, 0));
-    quadmesh._emplace_vertex(vec2(xpos+w, ypos+h), vec2(1, 1));
-    quadmesh._emplace_vertex(vec2(xpos,   ypos+h), vec2(0, 1));
-    quadmesh._push_triangle(0,  1,  2);
-    quadmesh._push_triangle(0,  2,  3);
-
-    buffer_unit_.submit(quadmesh);
-    buffer_unit_.upload();
 }
 
 void GuiRenderer::set_cursor_hue(float hue)
@@ -85,7 +67,7 @@ void GuiRenderer::render(Scene* pscene)
         cursor_shader_.send_uniform("m4_transform"_h, transform);
         cursor_shader_.send_uniform("m4_transform"_h, transform);
         cursor_shader_.send_uniform<int>("inputTex"_h, 0);
-        buffer_unit_.draw(2, 0);
+        CGEOM.draw("screen_quad"_h);
 
         cursor_shader_.unuse();
     }

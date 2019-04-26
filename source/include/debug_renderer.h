@@ -31,7 +31,7 @@ struct DebugDrawRequest
     math::mat4 model_matrix;
 };
 
-class DebugRenderer : public Renderer<Vertex3P>
+class DebugRenderer : public Renderer
 {
 private:
     Shader line_shader_;

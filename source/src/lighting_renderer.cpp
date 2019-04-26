@@ -13,12 +13,12 @@
 #include "texture.h"
 #include "mesh_factory.h"
 #include "model.h"
+#include "geometry_common.h"
 
 namespace wcore
 {
 
 LightingRenderer::LightingRenderer(ShadowMapRenderer& smr):
-Renderer<Vertex3P>(),
 lpass_dir_shader_(ShaderResource("lpass_exp.vert;lpass_exp.frag", "VARIANT_DIRECTIONAL")),
 lpass_point_shader_(ShaderResource("lpass_exp.vert;lpass_exp.frag", "VARIANT_POINT")),
 null_shader_(ShaderResource("null.vert;null.frag")),
@@ -34,30 +34,6 @@ shadow_slope_bias_(0.1f),
 normal_offset_(-0.013f)
 {
     CONFIG.get("root.render.override.allow_shadow_mapping"_h, shadow_enabled_);
-    load_geometry();
-}
-
-void LightingRenderer::load_geometry()
-{
-    Mesh<Vertex3P>* quad_mesh   = factory::make_quad_3P();
-    Mesh<Vertex3P>* sphere_mesh = factory::make_uv_sphere_3P(4, 7); // factory::make_icosahedron_3P();
-    buffer_unit_.submit(*quad_mesh);
-    buffer_unit_.submit(*sphere_mesh);
-    buffer_unit_.upload();
-
-    buffer_offsets_[0] = quad_mesh->get_buffer_offset();
-    buffer_offsets_[1] = sphere_mesh->get_buffer_offset();
-    buffer_offsets_[2] = 0;
-
-    num_elements_[0] = quad_mesh->get_n_elements();
-    num_elements_[1] = sphere_mesh->get_n_elements();
-    num_elements_[2] = 0;
-/*
-    for(int ii=0; ii<3; ++ii)
-        std::cout << buffer_offsets_[ii] << " " << num_elements_[ii] << std::endl;
-*/
-    delete quad_mesh;
-    delete sphere_mesh;
 }
 
 static const math::mat4 biasMatrix
@@ -121,7 +97,7 @@ void LightingRenderer::render(Scene* pscene)
             // Only stencil operation is important
             null_shader_.use();
             null_shader_.send_uniform("m4_ModelViewProjection"_h, PV*M);
-            buffer_unit_.draw(SPHERE_NE(), SPHERE_OFFSET());
+            CGEOM.draw("sphere"_h);
             null_shader_.unuse();
 
             // Restore writing to color buffers
@@ -163,7 +139,7 @@ void LightingRenderer::render(Scene* pscene)
             }
             lpass_point_shader_.send_uniform("rd.b_enableSSAO"_h, SSAO_enabled_);
 
-            buffer_unit_.draw(SPHERE_NE(), SPHERE_OFFSET());
+            CGEOM.draw("sphere"_h);
             lpass_point_shader_.unuse();
 
             GFX::disable_blending();
@@ -253,7 +229,7 @@ void LightingRenderer::render(Scene* pscene)
         }
         lpass_dir_shader_.send_uniform("rd.b_enableSSR"_h, SSR_enabled_);
 
-        buffer_unit_.draw(QUAD_NE(), QUAD_OFFSET());
+        CGEOM.draw("quad"_h);
         lpass_dir_shader_.unuse();
 
         GFX::disable_blending();

@@ -37,8 +37,7 @@ struct LineInfo
     math::vec3 color;
 };
 
-struct Vertex2P2U;
-class TextRenderer : public Renderer<Vertex2P2U>
+class TextRenderer : public Renderer
 {
 private:
     FT_Library ft_;

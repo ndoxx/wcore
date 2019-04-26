@@ -6,6 +6,7 @@
 #include "algorithms.h"
 #include "math3d.h"
 #include "globals.h"
+#include "geometry_common.h"
 
 namespace wcore
 {
@@ -13,12 +14,9 @@ namespace wcore
 using namespace math;
 
 BloomRenderer::BloomRenderer():
-Renderer<Vertex3P>(),
 blur_pass_shader_(ShaderResource("blurpass.vert;blurpass.frag")),
 kernel_(9,1.8f)
 {
-    load_geometry();
-
     for(int ii=0; ii<3; ++ii)
     {
         bloom_h_tex_.push_back(std::make_shared<Texture>(
@@ -91,7 +89,7 @@ void BloomRenderer::render(Scene* pscene)
         fbo_h_[ii]->with_render_target([&]()
         {
             GFX::clear_color();
-            buffer_unit_.draw(2, 0);
+            CGEOM.draw("quad"_h);
         });
     }
 
@@ -112,8 +110,7 @@ void BloomRenderer::render(Scene* pscene)
             blur_pass_shader_.send_uniform("f_alpha"_h, bloom_alpha(ii, fbo_h_.size()));
             blur_pass_shader_.send_uniform("v2_texelSize"_h, vec2(1.0f/bloom_h_tex_[ii]->get_width(),
                                                                     1.0f/bloom_h_tex_[ii]->get_height()));
-
-            buffer_unit_.draw(2, 0);
+            CGEOM.draw("quad"_h);
         }
     });
     GFX::disable_blending();

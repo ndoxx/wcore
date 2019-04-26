@@ -8,7 +8,7 @@
 namespace wcore
 {
 
-class SSAORenderer : public Renderer<Vertex3P>
+class SSAORenderer : public Renderer
 {
 private:
     Shader SSAO_shader_;

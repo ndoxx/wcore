@@ -12,7 +12,7 @@ namespace wcore
 {
 
 class Texture;
-class BloomRenderer : public Renderer<Vertex3P>
+class BloomRenderer : public Renderer
 {
 private:
     Shader blur_pass_shader_;

@@ -8,6 +8,7 @@
 #include "texture.h"
 #include "globals.h"
 #include "logger.h"
+#include "geometry_common.h"
 
 namespace wcore
 {
@@ -15,7 +16,6 @@ namespace wcore
 using namespace math;
 
 SSRRenderer::SSRRenderer():
-Renderer<Vertex3P>(),
 SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
 SSR_blur_shader_(ShaderResource("SSR_blur.vert;SSR_blur.frag")),
 blur_buffer_("SSRBlurBuffer",
@@ -45,7 +45,6 @@ pix_stride_(7.f),
 max_ray_distance_(25.f),
 probe_(1.f)
 {
-    load_geometry();
     SSRBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
 }
 
@@ -114,7 +113,7 @@ void SSRRenderer::render(Scene* pscene)
 
     GFX::clear_color();
 
-    buffer_unit_.draw(2, 0);
+    CGEOM.draw("quad"_h);
 
     gbuffer.unbind_as_source();
     lbuffer.unbind_as_source();
@@ -149,7 +148,7 @@ void SSRRenderer::render(Scene* pscene)
         SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(maxBlurRadius/ssrbuffer.get_width(), 0.f));
 
         GFX::clear_color();
-        buffer_unit_.draw(2, 0);
+        CGEOM.draw("quad"_h);
         gbuffer.unbind_as_source();
         ssrbuffer.unbind_as_source();
         blur_buffer_.unbind_as_target();
@@ -176,7 +175,7 @@ void SSRRenderer::render(Scene* pscene)
 
         GFX::enable_blending();
         GFX::set_std_blending();
-        buffer_unit_.draw(2, 0);
+        CGEOM.draw("quad"_h);
         gbuffer.unbind_as_source();
         blur_buffer_.unbind_as_source();
         ssrbuffer.unbind_as_target();

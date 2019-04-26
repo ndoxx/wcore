@@ -32,7 +32,7 @@ struct CursorProperties
     float scale;
 };
 
-class GuiRenderer : public Renderer<Vertex2P2U>
+class GuiRenderer : public Renderer
 {
 public:
     GuiRenderer();

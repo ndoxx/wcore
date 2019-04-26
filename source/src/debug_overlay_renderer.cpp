@@ -13,6 +13,7 @@
 #include "config.h"
 #include "png_loader.h"
 
+#include "geometry_common.h"
 #include "g_buffer.h"
 #include "l_buffer.h"
 #include "SSAO_buffer.h"
@@ -29,7 +30,6 @@ namespace wcore
 using namespace math;
 
 DebugOverlayRenderer::DebugOverlayRenderer(TextRenderer& text_renderer):
-Renderer<Vertex3P>(),
 peek_shader_(ShaderResource("fb_peek.vert;fb_peek.frag")),
 render_target_("debugOverlayBuffer",
 std::make_shared<Texture>(
@@ -55,8 +55,6 @@ split_alpha_(true),
 split_pos_(0.5f),
 text_renderer_(text_renderer)
 {
-    load_geometry();
-
     auto pgbuffer = Texture::get_named_texture("gbuffer"_h).lock();
     auto plbuffer = Texture::get_named_texture("lbuffer"_h).lock();
     auto psbuffer = Texture::get_named_texture("shadowmap"_h).lock();
@@ -150,7 +148,8 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
 
         GFX::bind_texture2D(0, props.texture_index);
         GFX::viewport((ii+1)*gap + ii*vpw, gap, vpw, vph);
-        buffer_unit_.draw(2, 0);
+
+        CGEOM.draw("quad"_h);
 
         text_renderer_.schedule_for_drawing(props.sampler_name,
                                             "arial"_h,
@@ -195,7 +194,8 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
     GFX::viewport(0, 0, render_target_.get_width(), render_target_.get_height());
     GFX::clear_color();
 
-    buffer_unit_.draw(2, 0);
+    CGEOM.draw("quad"_h);
+
     peek_shader_.unuse();
     render_target_.unbind_as_target();
 }

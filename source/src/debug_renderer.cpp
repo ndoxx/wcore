@@ -14,6 +14,7 @@
 #include "camera.h"
 #include "globals.h"
 #include "logger.h"
+#include "geometry_common.h"
 #ifndef __DISABLE_EDITOR__
 #include "editor.h"
 #endif
@@ -24,7 +25,6 @@ namespace wcore
 using namespace math;
 
 DebugRenderer::DebugRenderer():
-Renderer<Vertex3P>(GL_LINES),
 line_shader_(ShaderResource("line.vert;line.frag")),
 display_line_models_(true),
 light_proxy_scale_(1.0f),
@@ -33,55 +33,7 @@ bb_display_mode_(0),
 enable_depth_test_(true),
 show_static_octree_(false)
 {
-    load_geometry();
-}
 
-static size_t CUBE_OFFSET = 0;
-static size_t SPHERE_OFFSET = 0;
-static size_t SEG_X_OFFSET = 0;
-static size_t SEG_Y_OFFSET = 0;
-static size_t SEG_Z_OFFSET = 0;
-static size_t CROSS3_OFFSET = 0;
-static size_t CUBE_NE = 0;
-static size_t SPHERE_NE = 0;
-static size_t SEG_X_NE = 0;
-static size_t SEG_Y_NE = 0;
-static size_t SEG_Z_NE = 0;
-static size_t CROSS3_NE = 0;
-
-void DebugRenderer::load_geometry()
-{
-    Mesh<Vertex3P>* cube_mesh   = factory::make_cube_3P();
-    Mesh<Vertex3P>* sphere_mesh = factory::make_uv_sphere_3P(4, 7, true);
-    Mesh<Vertex3P>* seg_mesh_x  = factory::make_segment_x_3P();
-    Mesh<Vertex3P>* seg_mesh_y  = factory::make_segment_y_3P();
-    Mesh<Vertex3P>* seg_mesh_z  = factory::make_segment_z_3P();
-    Mesh<Vertex3P>* cross3_mesh = factory::make_cross3D_3P();
-    buffer_unit_.submit(*cube_mesh);
-    buffer_unit_.submit(*sphere_mesh);
-    buffer_unit_.submit(*seg_mesh_x);
-    buffer_unit_.submit(*seg_mesh_y);
-    buffer_unit_.submit(*seg_mesh_z);
-    buffer_unit_.submit(*cross3_mesh);
-    buffer_unit_.upload();
-    CUBE_OFFSET   = cube_mesh->get_buffer_offset();
-    SPHERE_OFFSET = sphere_mesh->get_buffer_offset();
-    SEG_X_OFFSET = seg_mesh_x->get_buffer_offset();
-    SEG_Y_OFFSET = seg_mesh_y->get_buffer_offset();
-    SEG_Z_OFFSET = seg_mesh_z->get_buffer_offset();
-    CROSS3_OFFSET = cross3_mesh->get_buffer_offset();
-    CUBE_NE   = cube_mesh->get_n_elements();
-    SPHERE_NE = sphere_mesh->get_n_elements();
-    SEG_X_NE = seg_mesh_x->get_n_elements();
-    SEG_Y_NE = seg_mesh_y->get_n_elements();
-    SEG_Z_NE = seg_mesh_z->get_n_elements();
-    CROSS3_NE = cross3_mesh->get_n_elements();
-    delete cube_mesh;
-    delete sphere_mesh;
-    delete seg_mesh_x;
-    delete seg_mesh_y;
-    delete seg_mesh_z;
-    delete cross3_mesh;
 }
 
 void DebugRenderer::render(Scene* pscene)
@@ -110,7 +62,7 @@ void DebugRenderer::render(Scene* pscene)
             line_shader_.send_uniform("v4_line_color"_h, vec4(0,1,0,0));
             mat4 MVP = PV*M;
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
-            buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+            CGEOM.draw("cube_line"_h);
         }
         if(bb_display_mode_ == 2 || model.debug_display_opts_.is_enabled(DebugDisplayOptions::OBB))
         {
@@ -120,7 +72,7 @@ void DebugRenderer::render(Scene* pscene)
             line_shader_.send_uniform("v4_line_color"_h, vec4(0,0,1,0));
             mat4 MVP = PV*M;
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
-            buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+            CGEOM.draw("cube_line"_h);
         }
         if(bb_display_mode_ == 3 || model.debug_display_opts_.is_enabled(DebugDisplayOptions::ORIGIN))
         {
@@ -130,11 +82,11 @@ void DebugRenderer::render(Scene* pscene)
             mat4 MVP = PV*M;
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             line_shader_.send_uniform("v4_line_color"_h, vec4(1,0,0,0));
-            buffer_unit_.draw(SEG_X_NE, SEG_X_OFFSET);
+            CGEOM.draw("segment_x"_h);
             line_shader_.send_uniform("v4_line_color"_h, vec4(0,1,0,0));
-            buffer_unit_.draw(SEG_Y_NE, SEG_Y_OFFSET);
+            CGEOM.draw("segment_y"_h);
             line_shader_.send_uniform("v4_line_color"_h, vec4(0,0,1,0));
-            buffer_unit_.draw(SEG_Z_NE, SEG_Z_OFFSET);
+            CGEOM.draw("segment_z"_h);
         }
     },
     wcore::DEFAULT_MODEL_EVALUATOR,
@@ -150,7 +102,7 @@ void DebugRenderer::render(Scene* pscene)
         line_shader_.send_uniform("v4_line_color"_h, vec4(1,0.8,0,0));
         mat4 MVP = PV*M;
         line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
-        buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+        CGEOM.draw("cube_line"_h);
     }
 #endif
 
@@ -174,7 +126,7 @@ void DebugRenderer::render(Scene* pscene)
 
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             line_shader_.send_uniform("v4_line_color"_h, vec4(light.get_color().normalized()));
-            buffer_unit_.draw(SPHERE_NE, SPHERE_OFFSET);
+            CGEOM.draw("sphere_line"_h);
         },
         [&](const Light& light)
         {
@@ -201,7 +153,7 @@ void DebugRenderer::render(Scene* pscene)
             float alpha = 1.0f-std::min((bound.mid_point-pscene->get_camera().get_position()).norm()/far,1.0f);
             line_shader_.send_uniform("v4_line_color"_h, vec4(1,0,0,alpha));
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
-            buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
+            CGEOM.draw("cube_line"_h);
         });
         GFX::disable_blending();
     }
@@ -226,21 +178,15 @@ void DebugRenderer::render(Scene* pscene)
             line_shader_.send_uniform("v4_line_color"_h, vec4((*it).color));
 
             if((*it).type == DebugDrawRequest::SEGMENT)
-            {
-                buffer_unit_.draw(SEG_X_NE, SEG_X_OFFSET);
-            }
+                CGEOM.draw("segment_x"_h);
             else if((*it).type == DebugDrawRequest::CUBE)
-            {
-                buffer_unit_.draw(CUBE_NE, CUBE_OFFSET);
-            }
+                CGEOM.draw("cube_line"_h);
             else if((*it).type == DebugDrawRequest::SPHERE)
-            {
-                buffer_unit_.draw(SPHERE_NE, SPHERE_OFFSET);
-            }
+                CGEOM.draw("sphere_line"_h);
             else if((*it).type == DebugDrawRequest::CROSS3)
             {
                 glLineWidth(2.5f);
-                buffer_unit_.draw(CROSS3_NE, CROSS3_OFFSET);
+                CGEOM.draw("cross"_h);
                 glLineWidth(1.0f);
             }
             ++it;

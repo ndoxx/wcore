@@ -15,6 +15,7 @@
 #include "shadow_map_renderer.h"
 #include "gui_renderer.h"
 
+#include "geometry_common.h"
 #include "l_buffer.h"
 #include "g_buffer.h"
 #include "SSAO_buffer.h"
@@ -49,6 +50,9 @@ bloom_enabled_(true)
     // Buffer for SSAO
     SSAOBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
 
+    // Common utility meshes
+    GeometryCommon::Instance();
+
     geometry_renderer_        = new GeometryRenderer();
     shadow_map_renderer_      = new ShadowMapRenderer();
     lighting_renderer_        = new LightingRenderer(*shadow_map_renderer_);
@@ -80,6 +84,8 @@ RenderPipeline::~RenderPipeline()
     delete lighting_renderer_;
     delete shadow_map_renderer_;
     delete geometry_renderer_;
+
+    GeometryCommon::Kill();
 
     SSAOBuffer::Kill();
     LBuffer::Kill();

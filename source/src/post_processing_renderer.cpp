@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "scene.h"
 #include "globals.h"
+#include "geometry_common.h"
 
 namespace wcore
 {
@@ -14,7 +15,6 @@ namespace wcore
 using namespace math;
 
 PostProcessingRenderer::PostProcessingRenderer():
-Renderer<Vertex3P>(),
 post_processing_shader_(ShaderResource("postprocessing.vert;postprocessing.frag")),
 fog_enabled_(true),
 bloom_enabled_(true),
@@ -35,7 +35,7 @@ gamma_(1.f),
 vibrance_bal_(1.f),
 fog_color_(0.f)
 {
-    load_geometry();
+
 }
 
 void PostProcessingRenderer::render(Scene* pscene)
@@ -89,7 +89,7 @@ void PostProcessingRenderer::render(Scene* pscene)
     lbuffer.bind_as_source(2,2);
 
     // Draw triangles in screen quad
-    buffer_unit_.draw(2, 0);
+    CGEOM.draw("quad"_h);
     lbuffer.unbind_as_source();
     if(bloom_enabled_)
         pbloom->unbind();

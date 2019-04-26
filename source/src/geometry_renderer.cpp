@@ -26,7 +26,6 @@ using namespace math;
 
 
 GeometryRenderer::GeometryRenderer():
-Renderer<Vertex3P3N3T2U>(),
 geometry_pass_shader_(ShaderResource("gpass.vert;gpass.geom;gpass.frag")),
 terrain_shader_(ShaderResource("gpass.vert;gpass.geom;gpass.frag", "VARIANT_SPLAT")),
 null_shader_(ShaderResource("null.vert;null.frag")),

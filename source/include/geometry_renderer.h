@@ -11,7 +11,7 @@ struct Vertex3P3N3T2U;
 class Scene;
 class Camera;
 class GBuffer;
-class GeometryRenderer : public Renderer<Vertex3P3N3T2U>
+class GeometryRenderer : public Renderer
 {
 private:
     Shader geometry_pass_shader_;

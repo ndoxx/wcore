@@ -57,6 +57,7 @@ set(SRC_CORE
 
 set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/gfx_driver.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/geometry_common.cpp
     ${CMAKE_SOURCE_DIR}/source/src/model.cpp
     ${CMAKE_SOURCE_DIR}/source/src/mesh_descriptor.cpp
     ${CMAKE_SOURCE_DIR}/source/src/surface_mesh_factory.cpp

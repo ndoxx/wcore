@@ -7,11 +7,10 @@
 namespace wcore
 {
 
-struct Vertex3P3N3T2U;
 class GBuffer;
 class LBuffer;
 class Camera;
-class ForwardRenderer : public Renderer<Vertex3P3N3T2U>
+class ForwardRenderer : public Renderer
 {
 private:
     Shader forward_stage_shader_;

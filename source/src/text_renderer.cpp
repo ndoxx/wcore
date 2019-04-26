@@ -5,6 +5,7 @@
 #include "mesh.hpp"
 #include "globals.h"
 #include "file_system.h"
+#include "geometry_common.h"
 #include "error.h"
 
 namespace wcore
@@ -13,7 +14,6 @@ namespace wcore
 using namespace math;
 
 TextRenderer::TextRenderer():
-Renderer<Vertex2P2U>(),
 ft_(),
 text_shader_(ShaderResource("text.vert;text.frag"))
 {
@@ -22,8 +22,6 @@ text_shader_(ShaderResource("text.vert;text.frag"))
         DLOGF("[TextRenderer] Could not init FreeType Library.", "text");
         fatal("Could not init FreeType Library.");
     }
-
-    load_geometry();
 }
 
 TextRenderer::~TextRenderer()
@@ -32,25 +30,6 @@ TextRenderer::~TextRenderer()
         FT_Done_Face(p.second);
     FT_Done_FreeType(ft_);
 }
-
-void TextRenderer::load_geometry()
-{
-    float xpos = 0.0f;
-    float ypos = 0.0f;
-    float w = 1.0f;
-    float h = 1.0f;
-    Mesh<Vertex2P2U> quadmesh;
-    quadmesh._emplace_vertex(vec2(xpos,   ypos  ), vec2(0, 1));
-    quadmesh._emplace_vertex(vec2(xpos+w, ypos  ), vec2(1, 1));
-    quadmesh._emplace_vertex(vec2(xpos+w, ypos+h), vec2(1, 0));
-    quadmesh._emplace_vertex(vec2(xpos,   ypos+h), vec2(0, 0));
-    quadmesh._push_triangle(0,  1,  2);
-    quadmesh._push_triangle(0,  2,  3);
-
-    buffer_unit_.submit(quadmesh);
-    buffer_unit_.upload();
-}
-
 
 void TextRenderer::load_face(const char* fontname,
                              uint32_t height,
@@ -169,7 +148,7 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
 
 
         GFX::bind_texture2D(0, ch.tex_ID);
-        buffer_unit_.draw(2, 0);
+        CGEOM.draw("char_quad"_h);
 
         // Advance to next glyph
         x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
