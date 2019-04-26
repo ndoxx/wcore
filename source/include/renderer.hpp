@@ -2,7 +2,6 @@
 #define RENDERER_HPP
 
 #include "buffer_unit.hpp"
-#include "vertex_array.hpp"
 #include "mesh_factory.h"
 #include "vertex_format.h"
 
@@ -15,12 +14,10 @@ class Renderer
 {
 protected:
     BufferUnit<VertexT>  buffer_unit_;
-    VertexArray<VertexT> vertex_array_;
 
 public:
     explicit Renderer():
-    buffer_unit_(),
-    vertex_array_(buffer_unit_){}
+    buffer_unit_(){}
 
     ~Renderer() = default;
 
@@ -37,12 +34,10 @@ class Renderer<Vertex3P>
 {
 protected:
     BufferUnit<Vertex3P>  buffer_unit_;
-    VertexArray<Vertex3P> vertex_array_;
 
 public:
     explicit Renderer(GLenum primitive = GL_TRIANGLES):
-    buffer_unit_(primitive),
-    vertex_array_(buffer_unit_){}
+    buffer_unit_(primitive){}
 
     ~Renderer() = default;
 

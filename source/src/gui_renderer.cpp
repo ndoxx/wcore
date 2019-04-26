@@ -63,7 +63,6 @@ void GuiRenderer::render(Scene* pscene)
     GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
     GFX::enable_blending();
     GFX::set_std_blending();
-    vertex_array_.bind();
 
     // Render cursor if needed
     if(cursor_props_.active && CONFIG.is("root.gui.cursor.custom"_h))

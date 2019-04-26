@@ -41,28 +41,24 @@ protected:
     std::array<float, 6>  dimensions_;
     BufferToken           buffer_token_;
     bool                  centered_;
-    bool                  cached_;
 
 public:
     Mesh():
-    centered_(false),
-    cached_(false){}
+    centered_(false){}
 
     Mesh(Mesh&& other) noexcept
     : vertices_(std::move(other.vertices_))
     , indices_(std::move(other.indices_))
     , dimensions_(other.dimensions_)
     , buffer_token_(other.buffer_token_)
-    , centered_(false)
-    , cached_(other.cached_){}
+    , centered_(false){}
 
     Mesh(const Mesh& other)
     : vertices_(other.vertices_)
     , indices_(other.indices_)
     , dimensions_(other.dimensions_)
     , buffer_token_(other.buffer_token_)
-    , centered_(false)
-    , cached_(other.cached){}
+    , centered_(false){}
 
     virtual ~Mesh() {}
 
@@ -73,7 +69,6 @@ public:
         buffer_token_ = other.buffer_token_;
         dimensions_ = other.dimensions_;
         centered_ = other.centered_;
-        cached_ = other.cached_;
         return *this;
     }
 
@@ -86,9 +81,7 @@ public:
     inline void set_buffer_batch(BufferToken::Batch value) { buffer_token_.batch = value; }
 
     inline bool is_centered() const           { return centered_; }
-    inline bool is_cached() const             { return cached_; }
     inline void set_centered(bool value)      { centered_ = value; }
-    inline void set_cached(bool value)        { cached_ = value; }
 
     inline const std::vector<VertexT>&  get_vertex_buffer() const { return vertices_; }
     inline const std::vector<uint32_t>& get_index_buffer()  const { return indices_; }

@@ -149,7 +149,6 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
 
     GFX::enable_blending();
     GFX::set_std_blending();
-    vertex_array_.bind();
     // Iterate through all characters
     std::string::const_iterator itc;
     for (itc = text.begin(); itc != text.end(); ++itc)
@@ -176,7 +175,6 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
         x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
     }
 
-    vertex_array_.unbind();
     text_shader_.unuse();
     GFX::unbind_texture2D();
     GFX::disable_blending();

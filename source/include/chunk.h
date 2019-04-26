@@ -7,7 +7,6 @@
 
 #include "w_symbols.h"
 #include "buffer_unit.hpp"
-#include "vertex_array.hpp"
 #include "math3d.h"
 #include "vertex_format.h"
 
@@ -69,10 +68,6 @@ private:
     BufferUnit<Vertex3P3N3T2U>  terrain_buffer_unit_;
     BufferUnit<Vertex3P3N3T2U>  blend_buffer_unit_;
     BufferUnit<Vertex3P>        line_buffer_unit_;
-    VertexArray<Vertex3P3N3T2U> vertex_array_;
-    VertexArray<Vertex3P3N3T2U> terrain_vertex_array_;
-    VertexArray<Vertex3P3N3T2U> blend_vertex_array_;
-    VertexArray<Vertex3P>       line_vertex_array_;
     pTerrain terrain_;
 
     std::vector<pModel> models_;

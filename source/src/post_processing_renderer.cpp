@@ -89,13 +89,11 @@ void PostProcessingRenderer::render(Scene* pscene)
     lbuffer.bind_as_source(2,2);
 
     // Draw triangles in screen quad
-    vertex_array_.bind();
     buffer_unit_.draw(2, 0);
     lbuffer.unbind_as_source();
     if(bloom_enabled_)
         pbloom->unbind();
     post_processing_shader_.unuse();
-    vertex_array_.unbind();
 }
 
 }

@@ -97,7 +97,6 @@ void DebugRenderer::render(Scene* pscene)
         GFX::enable_depth_testing();
 
     line_shader_.use();
-    vertex_array_.bind();
 
     // pscene->OBJECTS AABB/OBB
     pscene->traverse_models([&](const Model& model, uint32_t chunk_index)
@@ -248,7 +247,6 @@ void DebugRenderer::render(Scene* pscene)
         }
     }
 
-    vertex_array_.unbind();
 
     // LINE MODELS
     if(display_line_models_)

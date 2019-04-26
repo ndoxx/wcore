@@ -34,7 +34,6 @@ using namespace math;
 
 Scene::Scene():
 instance_buffer_unit_(),
-instance_vertex_array_(instance_buffer_unit_),
 skybox_(nullptr),
 camera_(std::make_shared<Camera>(GLB.WIN_W, GLB.WIN_H)),
 light_camera_(std::make_shared<Camera>(1, 1)),
@@ -262,7 +261,6 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
                 if(token.batch == BufferToken::Batch::INSTANCE)
                 {
                     // Instance buffers are owned by scene
-                    instance_vertex_array_.bind();
                     instance_buffer_unit_.draw(token);
                 }
                 else
@@ -282,7 +280,6 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
                 if(token.batch == BufferToken::Batch::INSTANCE)
                 {
                     // Instance buffers are owned by scene
-                    instance_vertex_array_.bind();
                     instance_buffer_unit_.draw(token);
                 }
             }

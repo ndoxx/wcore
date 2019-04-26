@@ -30,6 +30,7 @@ class BufferUnit
 private:
     GLuint VBO_;
     GLuint IBO_;
+    GLuint VAO_;
     GLenum primitive_;
 
     std::vector<VertexT> vertices_;
@@ -39,6 +40,7 @@ public:
     explicit BufferUnit(GLenum primitive = GL_TRIANGLES):
     VBO_(0),
     IBO_(0),
+    VAO_(0),
     primitive_(primitive)
     {
 #ifdef __DEBUG__
@@ -53,6 +55,17 @@ public:
         DLOGI("IBO created. id=" + std::to_string(IBO_), "buffer");
         DLOGI("dimensionality= " + std::to_string(dimensionality(primitive_)), "buffer");
 #endif
+
+        // Generate and init VAO
+        glGenVertexArrays(1, &VAO_);
+        glBindVertexArray(VAO_);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+        VertexT::enable_vertex_attrib_array();
+        glBindVertexArray(0);
+#ifdef __DEBUG__
+        DLOGI("VAO created. id=" + std::to_string(VAO_), "buffer");
+#endif
     }
 
     ~BufferUnit()
@@ -65,13 +78,19 @@ public:
         // First unbind
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
 
+        // Release VAO
+        glDeleteVertexArrays(1, &VAO_);
+#ifdef __DEBUG__
+        DLOGI("VAO destroyed. id=" + std::to_string(VAO_), "buffer");
+#endif
         // Then delete buffers
-        glDeleteBuffers(1,&IBO_);
+        glDeleteBuffers(1, &IBO_);
 #ifdef __DEBUG__
         DLOGI("IBO destroyed. id=" + std::to_string(IBO_), "buffer");
 #endif
-        glDeleteBuffers(1,&VBO_);
+        glDeleteBuffers(1, &VBO_);
 #ifdef __DEBUG__
         DLOGI("VBO destroyed. id=" + std::to_string(VBO_), "buffer");
 #endif
@@ -82,11 +101,6 @@ public:
     inline GLuint get_index_buffer() const  { return IBO_; }
     inline uint32_t get_n_vertices() const  { return vertices_.size(); }
     inline uint32_t get_n_indices() const   { return indices_.size(); }
-
-    static inline void enable_vertex_attrib_array()
-    {
-        VertexT::enable_vertex_attrib_array();
-    }
 
     void submit(Mesh<VertexT>& mesh)
     {
@@ -141,19 +155,15 @@ public:
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (GLuint)offset, mesh.get_ni()*sizeof(GLuint), &indices[0]);
     }
 
-    void bind_buffers() const
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
-    }
-
     void draw(uint32_t n_elements, uint32_t offset, bool condition=true) const
     {
         if(n_elements==0 || !condition) return;
 
+        glBindVertexArray(VAO_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
         glDrawElements(primitive_, dimensionality(primitive_)*n_elements, GL_UNSIGNED_INT,
                       (void*)(offset * sizeof(GLuint)));
+        //glBindVertexArray(0);
     }
 
     inline void draw(const BufferToken& buffer_token, bool condition=true) const

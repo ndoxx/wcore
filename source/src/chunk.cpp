@@ -37,10 +37,6 @@ buffer_unit_(),
 terrain_buffer_unit_(),
 blend_buffer_unit_(),
 line_buffer_unit_(GL_LINES),
-vertex_array_(buffer_unit_),
-terrain_vertex_array_(terrain_buffer_unit_),
-blend_vertex_array_(blend_buffer_unit_),
-line_vertex_array_(line_buffer_unit_),
 terrain_(nullptr)
 {
 
@@ -344,22 +340,18 @@ void Chunk::draw(const BufferToken& buffer_token) const
         case BufferToken::Batch::INSTANCE:
             return;
         case BufferToken::Batch::OPAQUE:
-            vertex_array_.bind();
             buffer_unit_.draw(buffer_token);
             break;
         case BufferToken::Batch::TERRAIN:
             if(terrain_ != nullptr)
             {
-                terrain_vertex_array_.bind();
                 terrain_buffer_unit_.draw(buffer_token);
             }
             break;
         case BufferToken::Batch::BLEND:
-            blend_vertex_array_.bind();
             blend_buffer_unit_.draw(buffer_token);
             break;
         case BufferToken::Batch::LINE:
-            line_vertex_array_.bind();
             line_buffer_unit_.draw(buffer_token);
             break;
     }

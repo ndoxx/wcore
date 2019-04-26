@@ -8,7 +8,6 @@
 #include "singleton.hpp"
 #include "game_system.h"
 #include "buffer_unit.hpp"
-#include "vertex_array.hpp"
 #include "chunk.h"
 #include "wentity.h"
 #include "octree.hpp"
@@ -45,7 +44,6 @@ private:
     typedef Octree<BoundingRegion, StaticOctreeData> StaticOctree;
 
     BufferUnit<Vertex3P3N3T2U>  instance_buffer_unit_;
-    VertexArray<Vertex3P3N3T2U> instance_vertex_array_;
 
     std::map<uint32_t, Chunk*> chunks_;
     std::map<hash_t, std::weak_ptr<Model>> ref_models_;

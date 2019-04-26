@@ -114,7 +114,6 @@ void SSRRenderer::render(Scene* pscene)
 
     GFX::clear_color();
 
-    vertex_array_.bind();
     buffer_unit_.draw(2, 0);
 
     gbuffer.unbind_as_source();

@@ -195,9 +195,7 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
     GFX::viewport(0, 0, render_target_.get_width(), render_target_.get_height());
     GFX::clear_color();
 
-    vertex_array_.bind();
     buffer_unit_.draw(2, 0);
-    vertex_array_.unbind();
     peek_shader_.unuse();
     render_target_.unbind_as_target();
 }
@@ -206,11 +204,9 @@ void DebugOverlayRenderer::render(Scene* pscene)
 {
     if(!active_) return;
 
-    vertex_array_.bind();
     peek_shader_.use();
     render_pane(current_pane_, pscene);
     peek_shader_.unuse();
-    vertex_array_.unbind();
 }
 
 bool DebugOverlayRenderer::save_fb_to_image(const std::string& filename)

@@ -118,7 +118,6 @@ void SSAORenderer::render(Scene* pscene)
     // For position reconstruction
     SSAO_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
 
-    vertex_array_.bind();
     buffer_unit_.draw(2, 0);
     ssaobuffer.unbind_as_target();
     gbuffer.unbind_as_source();
@@ -129,7 +128,6 @@ void SSAORenderer::render(Scene* pscene)
     if(blur_policy_.n_pass_)
     {
         //GFX::disable_face_culling();
-        vertex_array_.bind();
         ping_pong_.run(*static_cast<BufferModule*>(&ssaobuffer),
                        blur_policy_,
                        [&]()

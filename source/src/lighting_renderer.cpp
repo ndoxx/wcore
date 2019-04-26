@@ -91,7 +91,6 @@ void LightingRenderer::render(Scene* pscene)
 
     if(lighting_enabled_)
     {
-        vertex_array_.bind();
         gbuffer.bind_as_source();
         lbuffer.bind_as_target();
         gbuffer.blit_depth(lbuffer); // [OPT] Find a workaround
@@ -180,7 +179,6 @@ void LightingRenderer::render(Scene* pscene)
         // Render directional light shadow to shadow buffer
         gbuffer.unbind_as_source();
         lbuffer.unbind_as_target();
-        vertex_array_.unbind();
     }
 
     if(!dirlight_enabled_) return;
@@ -195,7 +193,6 @@ void LightingRenderer::render(Scene* pscene)
         gbuffer.bind_as_source();
         lbuffer.bind_as_target();
 
-        vertex_array_.bind();
         if(lighting_enabled_)
             GFX::enable_blending();
         else
@@ -263,7 +260,6 @@ void LightingRenderer::render(Scene* pscene)
         GFX::disable_face_culling();
 
         //glDrawBuffer(GL_FRONT_AND_BACK);
-        vertex_array_.unbind();
     }
 }
 

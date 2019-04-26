@@ -72,7 +72,6 @@ void BloomRenderer::render(Scene* pscene)
     auto pscreen = Texture::get_named_texture("lbuffer"_h).lock();
 
     blur_pass_shader_.use();
-    vertex_array_.bind();
 
     // Generate mipmaps for brightmap (texture unit 1, 4 levels total)
     pscreen->generate_mipmaps(1, 0, 3);
@@ -119,7 +118,6 @@ void BloomRenderer::render(Scene* pscene)
     });
     GFX::disable_blending();
 
-    vertex_array_.unbind();
     blur_pass_shader_.unuse();
 }
 
