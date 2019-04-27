@@ -2,6 +2,7 @@
 #include <set>
 #include <filesystem>
 #include <algorithm>
+#include <regex>
 
 #include "shader.h"
 #include "lights.h"
@@ -222,7 +223,7 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
     // Append to source
     shader_source += include_source;
     // Update line offset
-    line_offset_ += std::count(include_source.begin(), include_source.end(), '\n');
+    line_offset_ += std::count(include_source.begin(), include_source.end(), '\n') - 1;
 }
 
 void Shader::parse_version(const std::string& line, std::string& shader_source)
@@ -304,9 +305,25 @@ GLuint Shader::compile_shader(const std::string& shader_file,
 
     if(isCompiled == GL_FALSE)
     {
-        shader_error_report(ShaderID);
+        std::set<int> errlines;
+        shader_error_report(ShaderID, errlines);
 
-        //We don't need the shader anymore.
+        // Show problematic lines
+        std::istringstream source_iss(shader_source);
+
+        std::string line;
+        int nline = 1;
+        while(std::getline(source_iss, line))
+        {
+            if(errlines.find(nline++)!=errlines.end())
+            {
+                int actual_line = std::max(0, nline-line_offset_-1);
+                std::cout << "\033[1;38;2;200;200;200m> \033[1;38;2;255;90;90m"
+                          << actual_line << "\033[1;38;2;200;200;200m : " << line << std::endl;
+            }
+        }
+
+        // We don't need the shader anymore.
         glDeleteShader(ShaderID);
         DLOGF("Shader will not compile: <p>" + shader_file + "</p>", "shader");
         DLOGI("Line offset is: <h>" + std::to_string(line_offset_) + "</h>", "shader");
@@ -343,7 +360,7 @@ void Shader::link()
     }
 }
 
-void Shader::shader_error_report(GLuint ShaderID)
+void Shader::shader_error_report(GLuint ShaderID, std::set<int>& errlines)
 {
     char* log = nullptr;
     GLsizei logsize = 0;
@@ -359,7 +376,21 @@ void Shader::shader_error_report(GLuint ShaderID)
 
     memset(log, '\0', logsize + 1);
     glGetShaderInfoLog(ShaderID, logsize, &logsize, log);
-    fprintf(stderr, "%s\n", log);
+    //fprintf(stderr, "%s\n", log);
+    std::cerr << log << std::endl;
+
+    // * Find error line numbers
+    std::string logstr(log);
+    static std::regex rx_errline("(\\d+)\\((\\d+)\\)\\s:\\s");
+    std::regex_iterator<std::string::iterator> it(logstr.begin(), logstr.end(), rx_errline);
+    std::regex_iterator<std::string::iterator> end;
+
+    while(it != end)
+    {
+        errlines.insert(std::stoi((*it)[2]));
+        ++it;
+    }
+
     free(log);
 }
 

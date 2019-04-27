@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <set>
 #include <algorithm>
 #include <map>
 #include <GL/glew.h>
@@ -54,7 +55,7 @@ private:
     void setup_defines(std::string& shader_source, const std::vector<std::string>& flags);
     void link();
     void setup_uniform_map();
-    void shader_error_report(GLuint ShaderID);
+    void shader_error_report(GLuint ShaderID, std::set<int>& errlines);
     void program_error_report();
     void program_active_report();
     void warn_uniform_unknown_type() const;
@@ -66,7 +67,7 @@ private:
     std::string name_;
     std::string glsl_version_;
 
-    uint32_t line_offset_; // Subtract this from compiler error line numbers to get correct offset
+    int line_offset_; // Subtract this from compiler error line numbers to get correct offset
 
     static uint32_t instance_count_;
     static void dbg_show_defines();
