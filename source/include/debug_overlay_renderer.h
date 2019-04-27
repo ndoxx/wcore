@@ -58,7 +58,7 @@ public:
     void render_internal(Scene* pscene);
 
 #ifndef __DISABLE_EDITOR__
-    void generate_widget(Scene* pscene);
+    void framebuffer_peek_widget(Scene* pscene);
 #endif
 
 protected:

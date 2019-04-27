@@ -44,7 +44,7 @@ public:
     void push(float value);
     FinalStatistics get_stats() const;
 
-    inline float last_element() const { return queue_.back(); }
+    inline float last_element() const { return queue_.size() ? queue_.back() : 0.f; }
     inline size_t get_size() const    { return std::min(queue_.size(), max_size_); }
 };
 

@@ -40,8 +40,6 @@ allow_parallax_mapping_(true)
     GFX::set_clear_color(math::vec4(0.f,0.f,0.f,1.f));
 }
 
-static uint64_t texture_index;
-
 void GeometryRenderer::render(Scene* pscene)
 {
     // Get camera matrices
@@ -218,24 +216,5 @@ void GeometryRenderer::render(Scene* pscene)
     GFX::lock_depth_buffer();
     GFX::disable_depth_testing();
 }
-
-// TMP for debugging
-#ifndef __DISABLE_EDITOR__
-void GeometryRenderer::generate_widget()
-{
-    if(!ImGui::Begin("Texture peek"))
-    {
-        ImGui::End();
-        return;
-    }
-
-    ImGui::GetWindowDrawList()->AddImage((void*)texture_index,
-                                         ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y),
-                                         ImVec2(0, 1), ImVec2(1, 0));
-
-    ImGui::End();
-}
-#endif
 
 }

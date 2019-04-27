@@ -39,10 +39,6 @@ public:
     inline float& get_min_parallax_distance_nc()   { return min_parallax_distance_; }
 
     inline void toggle_wireframe();
-
-#ifndef __DISABLE_EDITOR__
-    void generate_widget();
-#endif
 };
 
 inline void GeometryRenderer::toggle_wireframe()

@@ -32,6 +32,7 @@
 #ifdef __PROFILE__
     #include "clock.hpp"
     #include "moving_average.h"
+    #include "gfx_driver.h"
     #define PROFILING_MAX_SAMPLES 1000
 #endif
 
@@ -286,13 +287,14 @@ void RenderPipeline::generate_widget()
             {
                 framebuffer_peek = !framebuffer_peek;
             }
+#ifdef __PROFILE__
             ImGui::SameLine();
             if(ImGui::Button("Profile renderers"))
             {
                 profile_renderers = !profile_renderers;
                 Renderer::PROFILING_ACTIVE = profile_renderers;
             }
-
+#endif
             ImGui::TreePop();
         }
     }
@@ -509,6 +511,7 @@ void RenderPipeline::generate_widget()
     }
 
     // RENDERER STATISTICS
+#ifdef __PROFILE__
     if(profile_renderers)
     {
         if(!ImGui::Begin("Renderer profile"))
@@ -541,13 +544,12 @@ void RenderPipeline::generate_widget()
         }
         ImGui::End();
     }
-
+#endif
     if(framebuffer_peek)
-        debug_overlay_renderer_->generate_widget(pscene);
+        debug_overlay_renderer_->framebuffer_peek_widget(pscene);
 }
 #endif //__DISABLE_EDITOR__
 
-// TODO: call renderers in for loop
 void RenderPipeline::render()
 {
     Scene* pscene = locate<Scene>("Scene"_h);
@@ -555,6 +557,7 @@ void RenderPipeline::render()
     #ifdef __PROFILE__
     if(profile_renderers)
     {
+        GFX::finish();
         frame_clock_.restart();
     }
     #endif
@@ -574,6 +577,7 @@ void RenderPipeline::render()
     #ifdef __PROFILE__
     if(profile_renderers)
     {
+        GFX::finish();
         std::chrono::nanoseconds period = frame_clock_.get_elapsed_time();
         last_render_time_ = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
     }

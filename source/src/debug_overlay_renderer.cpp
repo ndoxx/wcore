@@ -243,7 +243,7 @@ bool DebugOverlayRenderer::save_fb_to_image(const std::string& filename)
 #ifndef __DISABLE_EDITOR__
 static bool save_image = false;
 
-void DebugOverlayRenderer::generate_widget(Scene* pscene)
+void DebugOverlayRenderer::framebuffer_peek_widget(Scene* pscene)
 {
     if(!ImGui::Begin("Framebuffer peek"))
     {

@@ -23,7 +23,9 @@ uint32_t SSAORenderer::NOISE_SQRSIZE_ = 16;
 uint32_t SSAORenderer::KERNEL_SQRSIZE_ = 8;
 uint32_t SSAORenderer::KERNEL_SIZE_ = pow(SSAORenderer::KERNEL_SQRSIZE_,2);
 uint32_t SSAORenderer::NOISE_SIZE_ = pow(SSAORenderer::NOISE_SQRSIZE_,2);
-
+/*
+static int SSAO_kernel_half_size = 3;
+static float SSAO_sigma = 1.8f;*/
 
 SSAORenderer::SSAORenderer():
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
