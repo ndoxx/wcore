@@ -7650,12 +7650,10 @@ Maintenant c'est putain de limpide, je regrette de ne pas m'être donné la pein
 
 
 TODO :
-    [ ] Shader hot editing
+    [X] Shader hot editing
 Recharger un shader depuis la source et tenter une compilation. Si la compilation échoue, détruire le programme nouvellement créé sous GL et afficher le rapport d'erreur. Si la compilation (et le linking) aboutissent, détruire l'ancien programme sous GL et swap les shader/program IDs. Ceci doit se produire alors qu'aucun programme n'est utilisé, donc se synchroniser avec la phase d'update du main thread et faire un glFinish() juste avant.
 J'aimerais être sélectif, et ne pouvoir recharger qu'un programme à la fois, donc il faut que je puisse activer le hot swap, par exemple via un pragma custom dans le code du shader qui soit repéré par _Shader_ au chargement initial, et enregistre ce shader particulier dans une liste de shaders pouvant être hot swappés.
 
-
-^#ifndef\s.+\n#define\s.+
 
 TODO (Waterial):
     [X] Texmap controls dans une page dans un QTabWidget

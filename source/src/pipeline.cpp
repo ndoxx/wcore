@@ -169,6 +169,7 @@ void RenderPipeline::set_pp_acc_blindness_type(int value)      { post_processing
 void RenderPipeline::set_pp_vibrance_balance(const math::vec3& value) { post_processing_renderer_->set_vibrance_balance(value); }
 
 static float neighbors_search_eadius = 5.f;
+static bool HOTSWAP_SHADERS = false;
 
 bool RenderPipeline::onKeyboardEvent(const WData& data)
 {
@@ -205,7 +206,7 @@ bool RenderPipeline::onKeyboardEvent(const WData& data)
     		break;
 #ifdef __DEBUG__
         case "k_hotswap_shaders"_h:
-            Shader::dbg_hotswap();
+            HOTSWAP_SHADERS = true;
             break;
         case "k_test_key"_h:
             perform_test();
@@ -558,13 +559,24 @@ void RenderPipeline::render()
 {
     Scene* pscene = locate<Scene>("Scene"_h);
 
-    #ifdef __PROFILE__
+#ifdef __DEBUG__
+    // Reload shaders at start of frame
+    if(HOTSWAP_SHADERS)
+    {
+        GFX::finish();
+        Shader::dbg_hotswap();
+        GFX::finish();
+        HOTSWAP_SHADERS = false;
+    }
+#endif
+
+#ifdef __PROFILE__
     if(profile_renderers)
     {
         GFX::finish();
         frame_clock_.restart();
     }
-    #endif
+#endif
 
     geometry_renderer_->Render(pscene);
     SSAO_renderer_->Render(pscene);
@@ -578,14 +590,14 @@ void RenderPipeline::render()
     debug_overlay_renderer_->Render(pscene);
     text_renderer_->Render(pscene);
 
-    #ifdef __PROFILE__
+#ifdef __PROFILE__
     if(profile_renderers)
     {
         GFX::finish();
         std::chrono::nanoseconds period = frame_clock_.get_elapsed_time();
         last_render_time_ = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
     }
-    #endif
+#endif
 }
 
 void RenderPipeline::render_gui()

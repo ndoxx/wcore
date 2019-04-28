@@ -96,7 +96,7 @@ private:
     // Write a #define directive for each flag in flags
     void setup_defines(std::string& shader_source, const std::vector<std::string>& flags);
     // Link program
-    GLuint link();
+    bool link();
     // Associate each active uniform to its uniform hname engine-side
     void setup_uniform_map();
     // Print the error report generated when shader compilation failed, populate a set of error line numbers

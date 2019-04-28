@@ -130,8 +130,7 @@ FragmentShaderID_(0)
     }
 
     // Link program
-    ProgramID_ = link();
-    if(ProgramID_ == 0)
+    if(!link())
     {
         glDeleteShader(VertexShaderID_);
         glDeleteShader(FragmentShaderID_);
@@ -220,14 +219,23 @@ bool Shader::reload()
     }
 
     // Link program
-    pr_id = link();
-    if(pr_id == 0)
+    pr_id = glCreateProgram();
+    glAttachShader(pr_id, vs_id);
+    if(gs_id) glAttachShader(pr_id, gs_id);
+    glAttachShader(pr_id, fs_id);
+    glLinkProgram(pr_id);
+
+    GLint isLinked = 0;
+    glGetProgramiv(pr_id, GL_LINK_STATUS, (int*) &isLinked);
+
+    if(isLinked == GL_FALSE)
     {
         glDeleteShader(vs_id);
         glDeleteShader(fs_id);
         if(gs_id)
             glDeleteShader(gs_id);
 
+        glDeleteProgram(pr_id);
         return false;
     }
 
@@ -453,16 +461,16 @@ GLuint Shader::compile_shader(const std::string& shader_file,
     return ShaderID;
 }
 
-GLuint Shader::link()
+bool Shader::link()
 {
-    GLuint pr_id = glCreateProgram();
-    glAttachShader(pr_id, VertexShaderID_);
-    if(GeometryShaderID_) glAttachShader(pr_id, GeometryShaderID_);
-    glAttachShader(pr_id, FragmentShaderID_);
-    glLinkProgram(pr_id);
+    ProgramID_ = glCreateProgram();
+    glAttachShader(ProgramID_, VertexShaderID_);
+    if(GeometryShaderID_) glAttachShader(ProgramID_, GeometryShaderID_);
+    glAttachShader(ProgramID_, FragmentShaderID_);
+    glLinkProgram(ProgramID_);
 
     GLint isLinked = 0;
-    glGetProgramiv(pr_id, GL_LINK_STATUS, (int*) &isLinked);
+    glGetProgramiv(ProgramID_, GL_LINK_STATUS, (int*) &isLinked);
 
     if(isLinked == GL_FALSE)
     {
@@ -471,14 +479,14 @@ GLuint Shader::link()
         DLOGI("Line offset is: <h>" + std::to_string(line_offset_) + "</h>", "shader");
 
         //We don't need the program anymore.
-        glDeleteProgram(pr_id);
+        glDeleteProgram(ProgramID_);
         //Don't leak shaders either.
-        /*glDeleteShader(VertexShaderID_);
-        glDeleteShader(FragmentShaderID_);*/
+        //glDeleteShader(VertexShaderID_);
+        //glDeleteShader(FragmentShaderID_);
 
-        return 0;
+        return false;
     }
-    return pr_id;
+    return true;
 }
 
 void Shader::shader_error_report(GLuint ShaderID, std::set<int>& errlines)
