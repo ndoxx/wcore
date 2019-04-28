@@ -20,6 +20,7 @@
         <bool name="full"       value="false"/>
         <bool name="vsync"      value="true"/>
         <uint name="target_fps" value="60"/>
+        <bool name="topmost"    value="true"/>
     </display>
     <render>
         <chunk>
@@ -66,7 +67,7 @@
             <uint name="texture"   value="0"/>
             <uint name="material"  value="0"/>
             <uint name="model"     value="0"/>
-            <uint name="shader"    value="3"/>
+            <uint name="shader"    value="0"/>
             <uint name="text"      value="0"/>
             <uint name="input"     value="0"/>
             <uint name="buffer"    value="0"/>
@@ -75,10 +76,10 @@
             <uint name="entity"    value="0"/>
             <uint name="sound"     value="0"/>
             <uint name="scene"     value="0"/>
-            <uint name="ios"       value="3"/>
+            <uint name="ios"       value="0"/>
             <uint name="profile"   value="0"/>
             <uint name="collision" value="0"/>
-            <uint name="editor"    value="3"/>
+            <uint name="editor"    value="0"/>
         </channel_verbosity>
         <raycast>
             <geometry>

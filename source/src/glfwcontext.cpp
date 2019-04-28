@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <thread>
+#include <sstream>
 
 //GUI
 #ifndef __DISABLE_EDITOR__
@@ -49,6 +50,17 @@ window_(nullptr)
     }
 
     glGetError(); // Hide glfwInit's errors
+
+#ifdef __DEBUG__
+    {
+        int major, minor, rev;
+        glfwGetVersion(&major, &minor, &rev);
+        std::stringstream ss;
+        ss << "[<h>GLFW</h> version is <v>" << major << "." << minor << "." << rev << "</v>]";
+        DLOG(ss.str(), "core", Severity::LOW);
+    }
+#endif
+
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -65,6 +77,11 @@ window_(nullptr)
     {
         DLOGF("Failed to open GLFW window.", "core");
         fatal("Failed to open GLFW window.");
+    }
+
+    if(!GLB.SCR_FULL && CONFIG.is("root.display.topmost"_h))
+    {
+        glfwSetWindowAttrib(window_, GLFW_FLOATING, GLFW_TRUE);
     }
 
     glfwMakeContextCurrent(window_);

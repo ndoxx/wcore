@@ -65,6 +65,12 @@ set_target_properties(fmod PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/vendor/fmod"
 )
 
+add_library(glfw SHARED IMPORTED)
+set_target_properties(glfw PROPERTIES
+  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/libglfw.so"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/vendor/GLFW"
+)
+
 #add_definitions(-D__DISABLE_EDITOR__)
 add_definitions(-D__DEBUG__)
 add_definitions(-D__PROFILE__)
