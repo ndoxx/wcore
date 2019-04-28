@@ -29,6 +29,7 @@
         <KB name="k_frame_slow_down"         key="KP_SUBTRACT"  cooldown="10" repeat="true"     description="Slow down game clock."/>
         <KB name="k_next_frame"              key="KP_DECIMAL"   cooldown="10" repeat="true"     description="Triggers next frame if game clock is stopped."/>
         <KB name="k_test_key"                key="T"            cooldown="10"                   description="Triggers RenderPipeline test function."/>
+        <KB name="k_hotswap_shaders"         key="F8"           cooldown="20"                   description="Reload all hotswappable shaders."/>
         <KB name="k_show_neighbors"          key="N"            cooldown="10"                   description="Show octree neighbors of selected object."/>
         <KB name="k_editor_deselect"         key="Q"            cooldown="20"                   description="Deselect currently selected object in editor."/>
         <KB name="k_cam_new_keyframe"        key="I"            cooldown="20"                   description="Generate new camera keyframe for tracking shot."/>

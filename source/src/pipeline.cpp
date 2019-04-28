@@ -22,6 +22,7 @@
 #include "logger.h"
 #include "input_handler.h"
 #include "scene.h"
+#include "shader.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -203,6 +204,9 @@ bool RenderPipeline::onKeyboardEvent(const WData& data)
     		geometry_renderer_->toggle_wireframe();
     		break;
 #ifdef __DEBUG__
+        case "k_hotswap_shaders"_h:
+            Shader::dbg_hotswap();
+            break;
         case "k_test_key"_h:
             perform_test();
             break;

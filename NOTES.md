@@ -7474,13 +7474,6 @@ Chaque contrôle de chaque dialogue est connecté au slot qui va bien, de sorte 
 
 Note : Les dialogues __doivent__ être détruits (delete) à leur fermeture et créés (new) avant leur réouverture. Il ne m'a pas été possible de les réinitialiser, basiquement j'avais besoin de changer la taille des FBOs à chaud, et donc de les détruire et recréer, mais un thread de Qt essaye d'intéragir avec ceux-ci, donc à moins d'arriver à foutre un mutex sur le FBO (je ne sais même pas si Qt permet ça), y a juste pas moyen. Ca ne change rien du tout au final, c'est juste beaucoup plus simple.
 
-#[24-04-19]
-
-A doc :
-    [ ] SSR
-    [ ] FB peek features
-        [ ] spec. debug pass
-        [ ] PNG export
 
 #[26-04-19]
 
@@ -7492,17 +7485,177 @@ Le singleton _GeometryCommon_ enregistre toute la géométrie utilitaire (quads.
 Les renderers n'ayant plus besoin de _BufferUnit_ ont été détemplatés et _Renderer_ est maintenant une simple interface.
 Chaque renderer doit toujours surcharger la virtuelle pure render(), mais cette dernière est maintenant protected. La fonction Render() se charge d'appeler l'implémentation render() si le renderer est activé. Par ailleurs, le profiling a été poussé dans la fonction Render() quand __PROFILE__ est défini. Ainsi, RenderPipeline::render() ne fait plus qu'une quinzaine de lignes et se contente d'appeler la fonction Render() de tous les renderers à la suite.
 
+#[28-04-19]
 
-TODO:
-    [ ] virtual Renderer::generate_widget() pour déléguer certaines parties du widget de _RenderPipeline_.
+## SSR: Screen Space Reflections
+J'ai implémenté il y a deux semaines un renderer spécialisé pour les réflexions. J'ai choisi une approche screen-space qui semble suffir pour les scènes que je pense avoir à gérer. Peut-être que je devrai implémenter quand-même des cubemaps reflections plus tard, il est assez fréquent dans l'industrie d'utiliser ces deux systèmes conjointement pour produire les réflexions.
+
+J'ai envisagé que l'implémentation d'un algo SSR puisse être plus aisée que prévu après avoir visionné la vidéo de [1]. J'ai commencé par écrire les classes _SSRRenderer_ et _SSRBuffer_ sur le modèle de _SSAORenderer_ et _SSAOBuffer_, puis un shader en m'inspirant de cette source. Je savais ce code très sous-optimal à l'avance, mais il présentait l'avantage d'être très compréhensible visuellement :
+
+* On calcule la position view space du fragment, le gars fait ça avec son position buffer, moi je renconstruit cette position depuis le depth buffer. Le vecteur position obtenu est aussi le vecteur direction allant de l'origine de la caméra au fragment, toujours en view space.
+```c
+    vec3 fragPos = reconstruct_position(depth, frag_ray, rd.v4_proj_params);
+    vec3 fragNormal = normalize(decompress_normal(fNormMetAO.xy));
+```
+* On normalise ce vecteur et on le reflette en se servant de la normale locale.
+```c
+    vec3 reflected = normalize(reflect(fragPos, fragNormal));
+```
+* Le vecteur obtenu est la direction qui part du fragment jusqu'à la position de l'objet réfléchi (encore à découvrir). Il suffit d'itérer le long de cette direction, jusqu'à ce que la profondeur du fragment atteint (hit point) dépasse celle du depth buffer, ce qui se produit quand le vecteur réfléchi intersecte une surface solide. Là on retourne les coordonnées screen-space du dernier hit point, et on s'en sert pour sampler une texture du rendu de la frame précédente.
+```c
+    vec3 dir = reflected;
+    vec3 hitCoord = fragPos;
+    for(int ii=0; ii<rd.i_raySteps; ++ii)
+    {
+        // March ray: advance hit point
+        hitCoord += dir;
+        // Project hit point to screen space
+        projectedCoord = rd.m4_projection * vec4(hitCoord, 1.0);
+        projectedCoord.xy /= projectedCoord.w;
+        projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+        // Get linear depth of nearest fragment at hit point from depth map
+        depth = depth_view_from_tex(depthTex, projectedCoord.xy, rd.v4_proj_params.zw);
+
+        dDepth = -hitCoord.z - depth;
+        if(dDepth > 0.f)
+            return hitCoord.xy;
+
+        dir *= rd.f_step;
+    }
+
+    // ...
+
+    out_SSR = texture2D(lastFrameTex, hitCoord.xy).rgb;
+
+```
+
+Bien entendu on a un beau bestiaire d'artéfactes dégueulasses à gérer, et plusieurs solutions pour chacun d'entre eux :
+
+* *Banding* Comme on itère avec un pas fixé, la position finale du hit point obtenue par l'algo précédent est systématiquement derrière l'objet, et le bruit de quantification qui en résulte provoque des bandes sur les réflexions. Une solution efficace est de lancer quelques itérations de recherche binaire pour affiner la position du hit point. [1] et [2] proposent une implémentation.
+* *Toujours du banding* On peut ajouter un peu de bruit à la position de départ du rayon pour améliorer le résultat davantage (dithering).
+* *Faux positifs* Liés au fait que le depth buffer n'a pas dépaisseur. On peut simuler une épaisseur homogène ou bien se servir d'un *backface depth buffer* obtenu avec un rendu cull front dont la différence avec le front depth buffer est un bon estimateur de l'épaisseur de la géométrie. J'avais lu un papier impressionnant utilisant de telles *thickness maps* pour estimer du SSS. [4] mentionne cette possibilité. Mon moteur est capable de produire un backface depth buffer, mais j'ai eu peu de succès avec cette méthode.
+* Et bien d'autres.
+
+A ce stade, plutôt que de poursuivre la résolution de problèmes sur du code-jouet, je me suis intéressé à des implémentations plus sérieuses, dont beaucoup semblent reprendre le travail de Morgan McGuire [3]. Notamment deux implémentations intéressantes par Kode80 [4] et [5] en HLSL et Pissang [6] en GLSL (qui d'ailleurs recolle la SSR avec du physically based, et fait du importance sampling sur une GGX Schlick pour simuler les réflexions diffuses des matériaux rugueux).
+
+L'idée assez élégante de McGuire est de faire le raymarching en 2D raster plutôt qu'en 3D. Les relations entre l'avancement du rayon en 3D et sa projection à l'écran sont estimées par le calcul différentiel. Kode80 y ajoute du fading pour les rayons qui approchent le nombre max d'itérations, les côtés de l'écran, ou vont vers la caméra. Une méthode est aussi proposée pour simuler les réflexions diffuses avec un flou Gaussien adaptatif dont la taille du noyau varie en fonction de la rugosité locale.
+
+Mon implémentation reprend pour l'essentiel le travail de Kode80 et Pissang. J'ai aussi une implémentation du flou adaptatif avec un _PingPongBuffer_, mais c'est extrêmement lent en raison du nombre énorme d'accès textures exigé. Et le bénéfice reste très minime sur les scènes que j'ai testées, donc je l'ai désactivé par défaut.
+Ma SSR est franchement pas dégueu pour du half-res et tourne assez rapidement (0.5ms-1.5ms selon les scenes). J'ai fait pas mal de micro-optim (genre pour forcer des MADs, éviter des divisions...). J'ai toujours un artéfact qui me rend dingue si j'y fait trop attention, mais il ne se produit que près du sol, quand on regarde dans la direction de l'origine en world space (WTF), ce qui ne peut pas se produire dans les scènes que j'envisage, donc au pire... Pour référence, voici quelques observations sur cet artéfact :
+* Des bandes grises / de texture répétée se forment à distance fixe de la caméra sur un sol réfléchissant.
+* Les fragments de la zone affectée sont calculés en une seule itération et présentent une discontinuité UV avec leur voisinage.
+* Ces fragments passent le test d'intersection avec le depth buffer, ça me fait évidemment penser que ce sont des faux positifs.
+* L'artéfact disparaît complètement quand on regarde dans la direction des x et z croissants (world space).
+* La magnitude de l'artéfact ne semble pas dépendre de la position en world space, juste de l'orientation azimuthale de la caméra.
+* L'artéfact ne dépend pas de la résolution du framebuffer, ni d'ailleurs d'aucun paramètre actionnable du shader.
 
 
+Sources :
+[1] http://imanolfotia.com/blog/update/2017/03/11/ScreenSpaceReflections.html
+[2] https://gitlab.com/congard/algine/blob/master/src/resources/shaders/fragment_screenspace_shader.glsl
+[3] http://casual-effects.blogspot.com/2014/08/screen-space-ray-tracing.html
+[4] http://www.kode80.com/blog/2015/03/11/screen-space-reflections-in-unity-5/
+[5] https://github.com/kode80/kode80SSR/blob/master/Assets/Resources/Shaders/SSR.shader
+[6] https://github.com/pissang/claygl-advanced-renderer/blob/master/src/SSR.glsl
+[7] http://roar11.com/2015/07/screen-space-glossy-reflections/
+[8] http://bitsquid.blogspot.com/2017/06/reprojecting-reflections_22.html
+[9] https://bartwronski.com/2014/01/25/the-future-of-screenspace-reflections/
+[10] https://thomasdeliot.wixsite.com/blog/single-post/2018/04/26/Small-project-OpenGL-engine-and-PBR-deferred-pipeline-with-SSRSSAO
 
 
+## Framebuffer Peek enfin utile
+J'ai beaucoup amélioré cette fonctionnalité du _DebugOverlayRenderer_ qui me permet depuis le menu debug d'afficher n'importe quelle texture interne du moteur préalablement enregistrée. Au lieu de simplement afficher cette texture dans une fenêtre ImGui, je fais un rendu avec un shader spécialisé (fbpeek.vert/frag) qui implémente les features suivants :
+* Tone mapping (on/off)
+* Filtrage des channels R G et B
+* Inversion de la couleur
+* Split screen avec position ajustable du split, pour afficher la valeur du canal alpha en niveaux de gris à droite
+* Si un unique canal est observé alors on bascule en mode niveau de gris, plus lisible qu'un niveau de couleur primaire.
+* On peut toutefois afficher la texture en l'état (raw) si on le souhaite.
+* On peut sauvegarder les textures telles que visionnées dans la fenêtre, dans des images png !
+
+La sauvegarde d'images mérite un commentaire. Basiquement, j'utilise glReadPixels sur le framebuffer ciblé par cette passe de rendu pour populer un buffer, et j'utilise une nouvelle fonction write_png(4) de _PngLoader_ (qui ferait bien de changer de nom pour l'occasion) qui utilise la libpng pour encoder dans un fichier png le contenu d'un buffer :
+```cpp
+    BufferModule render_target_;
+
+    // ... Render ...
+
+    int width = render_target_.get_width();
+    int height = render_target_.get_height();
+    int img_size = width * height * 4;
+    unsigned char* pixels = new unsigned char[img_size];
+
+    render_target_.bind_as_target();
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pixels);
+    render_target_.unbind_as_target();
+
+    fs::path file_path("path/to/file.png");
+    png_loader.write_png(file_path, pixels, width, height);
+    delete[] pixels;
+```
+Noter que j'utilise render_target_.bind_as_target() et non bind_as_source(), parce que c'est le frabuffer que je cherche à bind et non la texture. Peut être que je devrais renommer cette fonction en bind_framebuffer() ? J'avoue m'être planté la première fois, comme quoi c'est pas clair.
+Le changement de pack alignment à 1 permet grossièrement d'éviter à glReadPixels() d'écrire out of bounds en essayant à tout prix d'aligner des blocks de données sur 4 bytes (par défaut), comme on a réservé une taille exacte pour le buffer (hauteur x largeur x 4 canaux RGBA). Le GL_UNSIGNED_INT_8_8_8_8_REV est supposé être plus rapide (par un certain mec d'un certain forum qui citait un certain mec de NVidia).
+
+## Shader line numbers
+J'ai donc ce système fantastique qui me permet de gérer un niveau d'include dans mes shaders. Le problème immédiat que celà entraîne, et je l'avais noté à l'époque (voir [05/06-09-18]), c'est que les numéros de lignes renvoyés par le shader error report en cas de problème de compilation, sont décalés de ceux que j'observe dans l'éditeur, du fait que chaque directive include est remplacée par un certain nombre de lignes avant que le source ne soit envoyé au compilo. Je me suis payé une migraine un jour, incapable de retrouver une ligne problématique et j'ai décider d'agir.
+
+La fonction parse_include() de _Shader_ incrémente maintenant un membre line_offset_ du nombre de lignes dans l'include. A terme, line_offset_ contient le nombre total de lignes incluses et je peux retrancher cette variable aux numéros de ligne renvoyés par le rapport d'erreurs pour obtenir les numéros de lignes corrects, visibles dans mon éditeur. Il reste à parser le rapport d'erreur pour obtenir les numéros des lignes problématiques :
+```cpp
+    std::set<int> errlines;
+
+    // ... Get error report in string logstr
+
+    // * Find error line numbers
+    static std::regex rx_errline("\\d+\\((\\d+)\\)\\s:\\s");
+    std::regex_iterator<std::string::iterator> it(logstr.begin(), logstr.end(), rx_errline);
+    std::regex_iterator<std::string::iterator> end;
+
+    while(it != end)
+    {
+        errlines.insert(std::stoi((*it)[1]));
+        ++it;
+    }
+
+    // ... Further in the error handling section
+
+    // * Show problematic lines
+    std::istringstream source_iss(shader_source);
+    std::string line;
+    int nline = 1;
+    while(std::getline(source_iss, line))
+    {
+        if(errlines.find(nline++)!=errlines.end())
+        {
+            int actual_line = std::max(0, nline-line_offset_-1);
+            std::cout << actual_line << " : " << line << std::endl;
+        }
+    }
+```
+Je me sers du pattern /\d+\((\d+)\)\s:\s/ pour matcher les numéros de ligne dans un texte qui ressemble à ça :
+
+    0(376) : error C1503: undefined variable "jj"
+    0(376) : error C0000: syntax error, unexpected ')', expecting ',' or ';' at token ")"
+    0(282) : error C1110: function "ray_march" has no return statement
+    0(392) : error C0000: syntax error, unexpected '.', expecting "::" at token "."
+
+Je capture le nombre entre parenthèses qui m'intéresse. Ensuite pour chaque ligne du source, si la ligne cause une erreur, je l'affiche avec son numéro de ligne.
+
+Maintenant c'est putain de limpide, je regrette de ne pas m'être donné la peine plus tôt :
+
+    0(378) : error C1503: undefined variable "quequette"
+
+    > 179 :             dPQKj = dPQK * stride * quequette;
+    [0.431286][sha]  ‡  Shader will not compile: SSR.frag
 
 
+TODO :
+    [ ] Shader hot editing
+Recharger un shader depuis la source et tenter une compilation. Si la compilation échoue, détruire le programme nouvellement créé sous GL et afficher le rapport d'erreur. Si la compilation (et le linking) aboutissent, détruire l'ancien programme sous GL et swap les shader/program IDs. Ceci doit se produire alors qu'aucun programme n'est utilisé, donc se synchroniser avec la phase d'update du main thread et faire un glFinish() juste avant.
+J'aimerais être sélectif, et ne pouvoir recharger qu'un programme à la fois, donc il faut que je puisse activer le hot swap, par exemple via un pragma custom dans le code du shader qui soit repéré par _Shader_ au chargement initial, et enregistre ce shader particulier dans une liste de shaders pouvant être hot swappés.
 
 
+^#ifndef\s.+\n#define\s.+
 
 TODO (Waterial):
     [X] Texmap controls dans une page dans un QTabWidget

@@ -25,9 +25,6 @@ void Renderer::Render(Scene* pscene)
     if(!enabled_)
         return;
 
-    float dt = 0.0f;
-    std::chrono::nanoseconds period;
-
     if(PROFILING_ACTIVE)
     {
         GFX::finish();
@@ -39,8 +36,8 @@ void Renderer::Render(Scene* pscene)
     if(PROFILING_ACTIVE)
     {
         GFX::finish();
-        period = profile_clock_.get_elapsed_time();
-        dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
+        std::chrono::nanoseconds period = profile_clock_.get_elapsed_time();
+        float dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
         dt_fifo_.push(dt);
     }
 }

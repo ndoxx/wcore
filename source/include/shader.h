@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 #include <set>
-#include <algorithm>
 #include <map>
+#include <algorithm>
 #include <GL/glew.h>
 
 #include "math3d.h"
@@ -39,50 +39,21 @@ public:
 
 class Shader
 {
-private:
-    GLuint ProgramID_;
-    GLuint VertexShaderID_;
-    GLuint GeometryShaderID_;
-    GLuint FragmentShaderID_;
-
-    std::map<hash_t, GLint> uniform_locations_;
-
-    GLuint compile_shader(const std::string& shader_file,
-                          GLenum ShaderType,
-                          const std::vector<std::string>& flags);
-    void parse_include(const std::string& line, std::string& shader_source);
-    void parse_version(const std::string& line, std::string& shader_source);
-    void setup_defines(std::string& shader_source, const std::vector<std::string>& flags);
-    void link();
-    void setup_uniform_map();
-    void shader_error_report(GLuint ShaderID, std::set<int>& errlines);
-    void program_error_report();
-    void program_active_report();
-    void warn_uniform_unknown_type() const;
-
-    std::vector<hash_t> defines_;
-    static std::vector<std::string> global_defines_;
-
-#ifdef __DEBUG__
-    std::string name_;
-    std::string glsl_version_;
-
-    int line_offset_; // Subtract this from compiler error line numbers to get correct offset
-
-    static uint32_t instance_count_;
-    static void dbg_show_defines();
-#endif
-
 public:
     Shader() = delete;
     Shader(const ShaderResource& res);
     ~Shader();
 
+    // Activate program
     inline void use() const        { glUseProgram(ProgramID_); }
+    // Disable program
     inline void unuse() const      { glUseProgram(0); }
+    // Get OpenGL program ID
     inline GLuint get_program_id() { return ProgramID_; }
+    // Is this program a specified variant
     inline bool is_variant(hash_t variant);
 
+    // Uniform management
     template <typename T>
     bool send_uniform(hash_t name, const T& value) const
     {
@@ -102,6 +73,66 @@ public:
         return false;
     }
     bool send_uniforms(const Light& light) const;
+
+    // Reload program from source, swap program only if compilation was successful
+    bool reload();
+
+#ifdef __DEBUG__
+    // Reload all hotswappable programs
+    static void dbg_hotswap();
+#endif
+
+private:
+    // Compile a shader from file name, specifying shader type and setup defines if any
+    GLuint compile_shader(const std::string& shader_file,
+                          GLenum ShaderType,
+                          const std::vector<std::string>& flags);
+    // Replace an #include directive by actual code from the file it points to
+    void parse_include(const std::string& line, std::string& shader_source);
+    // Parse a #pragma directive
+    void parse_pragma(const std::string& line, std::string& shader_source);
+    // Parse openGL version from #version directive in source
+    void parse_version(const std::string& line, std::string& shader_source);
+    // Write a #define directive for each flag in flags
+    void setup_defines(std::string& shader_source, const std::vector<std::string>& flags);
+    // Link program
+    GLuint link();
+    // Associate each active uniform to its uniform hname engine-side
+    void setup_uniform_map();
+    // Print the error report generated when shader compilation failed, populate a set of error line numbers
+    void shader_error_report(GLuint ShaderID, std::set<int>& errlines);
+    // Print the error report generated on program linking failure
+    void program_error_report();
+    // Print the list of active attributes and uniforms detected after a successful compilation/linking
+    void program_active_report();
+    // Display a warning message for when a uniform of unknown type is sent via send_uniform_x()
+    void warn_uniform_unknown_type() const;
+
+private:
+    ShaderResource resource_;
+    GLuint ProgramID_;
+    GLuint VertexShaderID_;
+    GLuint GeometryShaderID_;
+    GLuint FragmentShaderID_;
+
+    std::map<hash_t, GLint> uniform_locations_; // [uniform hname, location]
+
+    std::vector<hash_t> defines_; // list of all the defines specified
+    static std::vector<std::string> global_defines_; // list of all the global defines
+
+#ifdef __DEBUG__
+    std::string name_;
+    std::string glsl_version_;
+
+    int line_offset_; // Subtract this from compiler error line numbers to get correct offset
+
+    uint32_t instance_index_;
+    static uint32_t instance_count_;
+    static std::map<uint32_t,Shader*> hotswap_shaders_; // Map of all shaders that enable hot swapping
+
+    // Displays the defines specified by this instance
+    static void dbg_show_defines();
+#endif
 };
 
 inline bool Shader::is_variant(hash_t variant)

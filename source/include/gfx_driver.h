@@ -73,6 +73,7 @@ inline void viewport(float xx, float yy, float width, float height)
 }
 
 inline void finish() { glFinish(); }
+inline void flush()  { glFlush(); }
 
 } // namespace GFX
 } // namespace wcore

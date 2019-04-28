@@ -199,6 +199,7 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
 
     peek_shader_.unuse();
     render_target_.unbind_as_target();
+    GFX::flush();
 }
 
 void DebugOverlayRenderer::render(Scene* pscene)
@@ -312,6 +313,7 @@ void DebugOverlayRenderer::framebuffer_peek_widget(Scene* pscene)
     // * Save image if needed
     if(save_image && !raw_) // TMP only handle FB save for now
     {
+        GFX::finish();
         std::string filename = props.sampler_name + "_" + std::to_string(props.texture_index) + ".png";
         if(save_fb_to_image(filename))
             DLOGN("[DebugOverlayRenderer] Saved engine texture to file:", "core");

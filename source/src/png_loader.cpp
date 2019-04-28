@@ -176,41 +176,41 @@ bool PngLoader::write_png(const fs::path& file_path, unsigned char* pixels, int 
     if(!png)
         return false;
 
-    png_infop info = png_create_info_struct(png);//7
+    png_infop info = png_create_info_struct(png);
     if(!info)
     {
-        png_destroy_write_struct(&png, &info);//
+        png_destroy_write_struct(&png, &info);
         return false;
     }
 
     FILE* fp = fopen(file_path.string().c_str(), "wb");
     if(!fp)
     {
-        png_destroy_write_struct(&png, &info);//
+        png_destroy_write_struct(&png, &info);
         return false;
     }
-    png_init_io(png, fp);//9
+    png_init_io(png, fp);
     png_set_IHDR(png, info, w, h, 8 /* depth */, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
-        PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);//10
-    png_colorp palette = (png_colorp)png_malloc(png, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));//4
+        PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+    png_colorp palette = (png_colorp)png_malloc(png, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));
     if(!palette)
     {
         fclose(fp);
-        png_destroy_write_struct(&png, &info);//
+        png_destroy_write_struct(&png, &info);
         return false;
     }
-    png_set_PLTE(png, info, palette, PNG_MAX_PALETTE_LENGTH);//12
-    png_write_info(png, info);//1
-    png_set_packing(png);//5
+    png_set_PLTE(png, info, palette, PNG_MAX_PALETTE_LENGTH);
+    png_write_info(png, info);
+    png_set_packing(png);
 
-    png_bytepp rows = (png_bytepp)png_malloc(png, h * sizeof(png_bytep));//
+    png_bytepp rows = (png_bytepp)png_malloc(png, h * sizeof(png_bytep));
     for(int i = 0; i < h; ++i)
         rows[i] = (png_bytep)(pixels + (h - i) * w * 4);
 
-    png_write_image(png, rows);//2
-    png_write_end(png, info);//6
-    png_free(png, palette);//11
-    png_destroy_write_struct(&png, &info);//3
+    png_write_image(png, rows);
+    png_write_end(png, info);
+    png_free(png, palette);
+    png_destroy_write_struct(&png, &info);
 
     fclose(fp);
     delete[] rows;
