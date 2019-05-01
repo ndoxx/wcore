@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BoneHierarchy name="test_bones">
+    <bone name="head">
+        <bone name="arm.r">
+            <bone name="forearm.r">
+                <bone name="hand.r">
+                </bone>
+            </bone>
+        </bone>
+        <bone name="arm.l">
+            <bone name="forearm.l">
+                <bone name="hand.l">
+                </bone>
+            </bone>
+        </bone>
+        <bone name="torso">
+            <bone name="thigh.r">
+                <bone name="leg.r">
+                    <bone name="foot.r">
+                    </bone>
+                </bone>
+            </bone>
+            <bone name="thigh.l">
+                <bone name="leg.l">
+                    <bone name="foot.l">
+                    </bone>
+                </bone>
+            </bone>
+        </bone>
+    </bone>
+</BoneHierarchy>

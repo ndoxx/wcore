@@ -79,10 +79,9 @@ window_(nullptr)
         fatal("Failed to open GLFW window.");
     }
 
+    // Make window always-on-top if required
     if(!GLB.SCR_FULL && CONFIG.is("root.display.topmost"_h))
-    {
         glfwSetWindowAttrib(window_, GLFW_FLOATING, GLFW_TRUE);
-    }
 
     glfwMakeContextCurrent(window_);
     // Ensure we can capture the escape key being pressed below

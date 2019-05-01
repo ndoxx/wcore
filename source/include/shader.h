@@ -124,8 +124,6 @@ private:
     std::string name_;
     std::string glsl_version_;
 
-    int line_offset_; // Subtract this from compiler error line numbers to get correct offset
-
     uint32_t instance_index_;
     static uint32_t instance_count_;
     static std::map<uint32_t,Shader*> hotswap_shaders_; // Map of all shaders that enable hot swapping

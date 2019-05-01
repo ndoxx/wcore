@@ -146,6 +146,7 @@ void SSRRenderer::render(Scene* pscene)
         SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(maxBlurRadius/ssrbuffer.get_width(), 0.f));
 
         GFX::clear_color();
+
         CGEOM.draw("quad"_h);
         gbuffer.unbind_as_source();
         ssrbuffer.unbind_as_source();

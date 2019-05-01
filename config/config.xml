@@ -18,9 +18,9 @@
         <uint name="width"      value="1920"/>
         <uint name="height"     value="1080"/>
         <bool name="full"       value="false"/>
+        <bool name="topmost"    value="true"/>
         <bool name="vsync"      value="true"/>
         <uint name="target_fps" value="60"/>
-        <bool name="topmost"    value="true"/>
     </display>
     <render>
         <chunk>

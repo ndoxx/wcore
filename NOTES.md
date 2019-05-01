@@ -7649,10 +7649,67 @@ Maintenant c'est putain de limpide, je regrette de ne pas m'être donné la pein
     [0.431286][sha]  ‡  Shader will not compile: SSR.frag
 
 
-TODO :
-    [X] Shader hot editing
-Recharger un shader depuis la source et tenter une compilation. Si la compilation échoue, détruire le programme nouvellement créé sous GL et afficher le rapport d'erreur. Si la compilation (et le linking) aboutissent, détruire l'ancien programme sous GL et swap les shader/program IDs. Ceci doit se produire alors qu'aucun programme n'est utilisé, donc se synchroniser avec la phase d'update du main thread et faire un glFinish() juste avant.
-J'aimerais être sélectif, et ne pouvoir recharger qu'un programme à la fois, donc il faut que je puisse activer le hot swap, par exemple via un pragma custom dans le code du shader qui soit repéré par _Shader_ au chargement initial, et enregistre ce shader particulier dans une liste de shaders pouvant être hot swappés.
+## Shader hot swap
+J'ai implémenté une fonctionnalité permettant de recharger un shader program à chaud. On peut maintenant éditer les shaders pendant que le moteur tourne !
+
+Un shader qui déclare la directive :
+```c
+#pragma hotswap
+```
+est enregistré dans une map statique de _Shader_ en tant que candidat potentiel au rechargement dynamique. Lorsqu'on presse la touche __F8__ l'ensemble des shaders référencés par cette map est rechargé grâce à un appel à la statique Shader::dbg_hotswap().
+
+Le rechargement d'un programme peut échouer sans danger. Pour recharger un programme je procède comme suit :
+* De nouveaux shader ids sont créés.
+* Les fichiers sources sont rechargés et compilés.
+* Si la compilation échoue j'affiche un warning avec le rapport d'erreurs. La fonction de compilation s'occupe déjà du cleanup. Echec du rechargement. A ce stade, c'est comme si rien ne s'était passé du point de vue du moteur.
+* Je crée un nouveau programme et j'y link les shaders nouvellement compilés.
+* Si le linking échoue, je libère les ressources et échoue le rechargement.
+* Si tout s'est bien passé, je libère les ressources openGL de l'ancienne version du programme et je substitue les anciens IDs par les nouveaux. Le rechargement a réussi.
+
+Le rechargement est effectif en début de frame dans RenderPipeline::render(). L'appel à Shader::dbg_hotswap() se fait entre deux glFinish() par précaution.
+
+## Always-on-top
+Comme il est particulièrement irritant que la fenêtre de l'appli se cache derrière l'éditeur quand je commence à éditer un shader (par exemple), j'ai cherché le moyen de rendre celle-ci flottante (always-on-top). Il suffit d'appeler :
+```cpp
+glfwSetWindowAttrib(window_, GLFW_FLOATING, GLFW_TRUE);
+```
+Seul problème : cette fonction était introduite en version 3.3, j'avais la 3.1.2... J'ai donc build la dernière version depuis la source (hyper simple) :
+>> git clone https://github.com/glfw/glfw.git
+>> cd glfw
+>> nano CMakeLists.txt
+    Pour activer le build de la shared lib et désactiver tout le reste
+>> mkdir build;cd build
+>> cmake ..
+>> make
+
+Puis j'ai copié les .so dans WCore/lib et les includes dans WCore/source/vendor/GLFW. Maintenant je link avec cette version, tout se passe bien.
+
+Bref, pour activer le mode always-on-top il faut mettre à true la propriété *root.display.topmost* de config.xml.
+
+#[01-05-19] Fête du travail, ça tombe bien, y en a beaucoup
+
+## Plan de route pour le moteur d'animation
+J'attaque la partie animation. Je me suis fixé sur la possibilité d'animer des modèles 3D relativement low poly pour mon jeu. La difficulté comme à chaque fois que je démarre un gros système est de trouver un angle d'attaque ; comme souvent je commence côté données.
+
+[ ] Créer un tool pour convertir des exports Blender vers mes formats propriétaires.
+* Un type de fichier en entrée
+* Deux fichiers en sortie : un pour le modèle (vertex data), un pour le squelette (bone hierarchy) et l'ensemble des animations applicables à ce squelette.
+    -> Ainsi on pourra trivialement réutiliser un squelette et un groupe d'animation d'un modèle à un autre semblable.
+[ ] Augmenter le mesh loader actuel ou en créer un nouveau, pour être en mesure de charger les nouvelles données per-vertex (bone IDs / weights).
+[ ] Créer un loader pour initialiser une classe _SkelettalAnimation_ qui prendra en charge deux structures de données :
+    [ ] Un arbre _BoneHierarchy_ qui contient la description hiérarchique d'un squelette, chaque os est à un noeud de l'arbre et possède une matrice d'offsets.
+    [ ] Une hashmap contenant des objets _Animation_, lesquels contiennent les delta-transformations pour chaque os pour chaque keyframe.
+[ ] Etendre la classe _Model_ ou créer une nouvelle classe _AnimatedModel_ qui prend en charge des meshes avec le nouveau format de vertex, et un tableau de matrices représentant la pose instantannée du modèle (joint transforms).
+[ ] Créer un système _AnimationSystem_ (hériterait de _GameSystem_) qui associe des modèles animés avec une instance de _SkelettalAnimation_, et met à jour les joint transforms de chaque modèle animé enregistré.
+[ ] Créer un _Renderer_ spécialisé pour les modèles animés. Peut-être que du forward rendering conviendrait mieux.
+
+J'ai démarré une classe template _Tree_ pointer-less que je teste en ce moment. Je dispose d'un fichier XML test représentant une hiérarchie d'os, j'ai eu l'idée de traverser le DOM en depth-first et d'initialiser le tableau de noeuds interne à l'arbre de manière linéaire, à mesure que je rencontre un noeud lors de la récursion. Après initialisation, un parcours linéaire du tableau équivaut à un parcours depth-first de l'arbre. En gros j'ai baked un depth-first traversal dans un tableau et j'appèle ça un arbre. Bien sûr, les éléments du tableau, les noeuds, contiennent l'information hiérarchique. Cette méthode m'assure également une utilisation optimale du cache lors du calcul itératif des transformations, en effet, un noeud et son fils seront toujours contigus en mémoire, et comme les transformations d'un noeud donné dépendent toujours de la transformation du parent, les données nécessaires à chaque itération sont calculées à l'itération précédente.
+
+
+
+
+
+
 
 
 TODO (Waterial):

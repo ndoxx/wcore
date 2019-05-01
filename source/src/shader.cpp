@@ -12,6 +12,7 @@
 #include "material_common.h"
 #include "file_system.h"
 #include "error.h"
+#include "string_utils.h"
 
 namespace fs = std::filesystem;
 
@@ -83,7 +84,6 @@ VertexShaderID_(0),
 GeometryShaderID_(0),
 FragmentShaderID_(0)
 #ifdef __DEBUG__
-, line_offset_(0)
 , instance_index_(++instance_count_)
 #endif
 {
@@ -131,13 +131,7 @@ FragmentShaderID_(0)
 
     // Link program
     if(!link())
-    {
-        glDeleteShader(VertexShaderID_);
-        glDeleteShader(FragmentShaderID_);
-        if(GeometryShaderID_)
-            glDeleteShader(GeometryShaderID_);
         fatal("Unable to link shaders.");
-    }
 
 #ifdef __DEBUG__
     DLOGI("Shader program [" + std::to_string(ProgramID_) + "] linked.", "shader");
@@ -330,8 +324,6 @@ void Shader::parse_include(const std::string& incline, std::string& shader_sourc
 
     // Append to source
     shader_source += include_source;
-    // Update line offset
-    line_offset_ += std::count(include_source.begin(), include_source.end(), '\n') - 1;
 }
 
 void Shader::parse_pragma(const std::string& line, std::string& shader_source)
@@ -373,13 +365,11 @@ void Shader::setup_defines(std::string& shader_source,
     for(const std::string& str: global_defines_)
     {
         shader_source += "#define " + str + "\n";
-        ++line_offset_;
     }
     for(const std::string& str: flags)
     {
         shader_source += "#define " + str + "\n";
         defines_.push_back(H_(str.c_str()));
-        ++line_offset_;
     }
 }
 
@@ -388,6 +378,7 @@ GLuint Shader::compile_shader(const std::string& shader_file,
                               const std::vector<std::string>& flags)
 {
     std::string shader_source_raw(FILESYSTEM.get_file_as_string(shader_file.c_str(), "root.folders.shader"_h, "pack0"_h));
+    int nlines_raw = std::count(shader_source_raw.begin(), shader_source_raw.end(), '\n');
     std::string shader_source;
     {
         std::stringstream ss(shader_source_raw);
@@ -424,6 +415,9 @@ GLuint Shader::compile_shader(const std::string& shader_file,
         return 0;
     }
 
+    int nlines_parsed = std::count(shader_source.begin(), shader_source.end(), '\n');
+    int line_offset = nlines_parsed - nlines_raw;
+
     const GLchar* source = (const GLchar*) shader_source.c_str();
     glShaderSource(ShaderID, 1, &source, nullptr);
     glCompileShader(ShaderID);
@@ -445,16 +439,16 @@ GLuint Shader::compile_shader(const std::string& shader_file,
         {
             if(errlines.find(nline++)!=errlines.end())
             {
-                int actual_line = std::max(0, nline-line_offset_-1);
-                std::cout << "\033[1;38;2;200;200;200m> \033[1;38;2;255;90;90m"
-                          << actual_line << "\033[1;38;2;200;200;200m : " << line << std::endl;
+                int actual_line = std::max(0, nline-line_offset-1);
+                trim(line);
+                std::cout << "\033[1;38;2;255;200;10m> \033[1;38;2;255;90;90m"
+                          << actual_line << "\033[1;38;2;255;200;10m : " << line << std::endl;
             }
         }
 
         // We don't need the shader anymore.
         glDeleteShader(ShaderID);
         DLOGE("Shader will not compile: <p>" + shader_file + "</p>", "shader");
-        DLOGI("Line offset is: <h>" + std::to_string(line_offset_) + "</h>", "shader");
         return 0;
     }
 
@@ -476,14 +470,14 @@ bool Shader::link()
     {
         program_error_report();
         DLOGE("Unable to link shaders.", "shader");
-        DLOGI("Line offset is: <h>" + std::to_string(line_offset_) + "</h>", "shader");
 
         //We don't need the program anymore.
         glDeleteProgram(ProgramID_);
         //Don't leak shaders either.
-        //glDeleteShader(VertexShaderID_);
-        //glDeleteShader(FragmentShaderID_);
-
+        glDeleteShader(VertexShaderID_);
+        glDeleteShader(FragmentShaderID_);
+        if(GeometryShaderID_)
+            glDeleteShader(GeometryShaderID_);
         return false;
     }
     return true;

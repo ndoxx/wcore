@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BoneHierarchy name="test_bones">
+    <bone name="b0">
+        <bone name="b1">
+            <bone name="b2">
+            </bone>
+            <bone name="b3">
+            </bone>
+            <bone name="b4">
+            </bone>
+        </bone>
+        <bone name="b5">
+            <bone name="b6">
+            </bone>
+            <bone name="b7">
+                <bone name="b8">
+                </bone>
+            </bone>
+            <bone name="b9">
+            </bone>
+        </bone>
+    </bone>
+</BoneHierarchy>

@@ -280,51 +280,54 @@ int main()
 #include <iostream>
 #include <string>
 #include <vector>
-#include "wtypes.h"
+#include "tree.hpp"
+#include "xml_parser.h"
+#include "xml_utils.hpp"
+#include "config.h"
+#include "file_system.h"
 
 using namespace wcore;
 
-std::vector<std::string> split(const std::string& s, char delimiter)
+struct Bone
 {
-   std::vector<std::string> tokens;
-   std::string token;
-   std::istringstream tokenStream(s);
-   while(std::getline(tokenStream, token, delimiter))
-   {
-      tokens.push_back(token);
-   }
-   return tokens;
+    std::string name;
+};
+
+int parse_bone(rapidxml::xml_node<>* node, Tree<Bone>& bone_hierarchy)
+{
+    char* name = node->first_attribute("name")->value();
+
+    int parent_index = bone_hierarchy.add_node(Bone( { name } ));
+
+    for(rapidxml::xml_node<>* child = node->first_node(); child; child = child->next_sibling())
+    {
+        int child_index = parse_bone(child, bone_hierarchy);
+        bone_hierarchy.set_child(parent_index, child_index);
+    }
+
+    return parent_index;
 }
+
 
 int main()
 {
-    std::string units_str = "Albedo;Normal;Depth;Metallic;AO;Roughness";
+    CONFIG.init();
+    FILESYSTEM.open_archive("../res/pack0.zip", "pack0"_h);
 
-    std::vector<std::string> units(split(units_str, ';'));
-    for(int ii=0; ii<units.size(); ++ii)
+    XMLParser xml_parser;
+    auto pstream = FILESYSTEM.get_file_as_stream("test_humanoid.skel", "root.folders.model"_h, "pack0"_h);
+    xml_parser.load_file_xml(*pstream);
+
+    rapidxml::xml_node<>* root_bone_n = xml_parser.get_root()->first_node("bone");
+
+    // Depth first traversal of DOM to generate tree
+    Tree<Bone> meh_tree;
+    parse_bone(root_bone_n, meh_tree);
+
+    meh_tree.traverse_linear([&](const Bone& bone)
     {
-        switch(H_(units[ii].c_str()))
-        {
-            case "Albedo"_h:
-                std::cout << "has Albedo" << std::endl;
-                break;
-            case "Normal"_h:
-                std::cout << "has Normal" << std::endl;
-                break;
-            case "Depth"_h:
-                std::cout << "has Depth" << std::endl;
-                break;
-            case "Metallic"_h:
-                std::cout << "has Metallic" << std::endl;
-                break;
-            case "AO"_h:
-                std::cout << "has AO" << std::endl;
-                break;
-            case "Roughness"_h:
-                std::cout << "has Roughness" << std::endl;
-                break;
-        }
-    }
+        std::cout << bone.name << std::endl;
+    });
 
     return 0;
 }

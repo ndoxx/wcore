@@ -192,7 +192,6 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
     }
 
     // Draw
-    GFX::viewport(0, 0, render_target_.get_width(), render_target_.get_height());
     GFX::clear_color();
 
     CGEOM.draw("quad"_h);
@@ -238,8 +237,6 @@ bool DebugOverlayRenderer::save_fb_to_image(const std::string& filename)
     delete[] pixels;
     return success;
 }
-
-
 
 #ifndef __DISABLE_EDITOR__
 static bool save_image = false;

@@ -6,5 +6,6 @@ subdirs(nuclear)
 subdirs(internstr)
 subdirs(waterial)
 subdirs(wevel)
+subdirs(wconvert)
 
 include_directories(${CMAKE_SOURCE_DIR}/source)

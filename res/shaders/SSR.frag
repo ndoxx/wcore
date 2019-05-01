@@ -1,5 +1,6 @@
 #version 400 core
 #pragma hotswap
+
 #include "normal_compression.glsl"
 #include "position.glsl"
 #include "math_utils.glsl"

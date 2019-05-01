@@ -82,12 +82,12 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
         if(!line_view.substr(0,6).compare(mtllib_cc))
         {
             mtllib = line_view.substr(7);
-            trim_whitespaces(mtllib);
+            trim(mtllib);
         }
         if(!line_view.substr(0,6).compare(usemtl_cc))
         {
             usemtl = line_view.substr(7);
-            trim_whitespaces(usemtl);
+            trim(usemtl);
             if(material_map.find(usemtl) == material_map.end())
             {
                 material_map[usemtl] = materials.size();
