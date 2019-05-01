@@ -34,6 +34,7 @@ set(CMAKE_BUILD_TYPE Release)
 # Populate a CMake variable with the sources
 set(wconvert_SRCS
     main.cpp
+    animated_model_importer.cpp
 )
 
 # Tell CMake to create the wconvert executable
@@ -55,8 +56,8 @@ set_target_properties(iwcore PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/source/include"
 )
 
-# Use the Widgets module from Qt 5
-#target_link_libraries(wconvert GL GLEW iwcore Qt5::Widgets)
+target_link_libraries(wconvert iwcore assimp)
+
 cotire(wconvert)
 
 

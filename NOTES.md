@@ -7706,7 +7706,8 @@ J'attaque la partie animation. Je me suis fixé sur la possibilité d'animer des
 J'ai démarré une classe template _Tree_ pointer-less que je teste en ce moment. Je dispose d'un fichier XML test représentant une hiérarchie d'os, j'ai eu l'idée de traverser le DOM en depth-first et d'initialiser le tableau de noeuds interne à l'arbre de manière linéaire, à mesure que je rencontre un noeud lors de la récursion. Après initialisation, un parcours linéaire du tableau équivaut à un parcours depth-first de l'arbre. En gros j'ai baked un depth-first traversal dans un tableau et j'appèle ça un arbre. Bien sûr, les éléments du tableau, les noeuds, contiennent l'information hiérarchique. Cette méthode m'assure également une utilisation optimale du cache lors du calcul itératif des transformations, en effet, un noeud et son fils seront toujours contigus en mémoire, et comme les transformations d'un noeud donné dépendent toujours de la transformation du parent, les données nécessaires à chaque itération sont calculées à l'itération précédente.
 
 
-
+ATTENTION :
+* Les bone IDs per-vertex sont des entiers, bien penser à utiliser glVertexAttrib*I*Pointer au lieu de glVertexAttribPointer pour bind les IDs dans la structure de données per-vertex.
 
 
 

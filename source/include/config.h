@@ -40,6 +40,7 @@ public:
 
     // Initialize directory info
     void init();
+
 #ifdef __DEBUG__
     void init_logger_channels();
 #endif // __DEBUG__

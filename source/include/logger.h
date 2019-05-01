@@ -16,6 +16,7 @@
 #include "listener.h"
 #include "singleton.hpp"
 #include "wtypes.h"
+#include "error.h"
 
 namespace wcore
 {
@@ -314,6 +315,7 @@ namespace dbg
         } while(0)
     #define DLOGF(MESSAGE, CHANNEL) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::FATAL,   LogMode::CANONICAL, Severity::CRIT, H_( CHANNEL ), __FILE__, __LINE__ ); \
+        fatal();\
         } while(0)
     #define DLOGG(MESSAGE, CHANNEL) do { \
         wcore::dbg::LOG( MESSAGE, MsgType::GOOD,    LogMode::CANONICAL, Severity::LOW, H_( CHANNEL ) ); \

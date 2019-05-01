@@ -599,28 +599,6 @@ public:
     }
 
     /**
-     * @brief Move constructor.
-     * @details Construct a matrix from an r-value matrix
-     *
-     * @param right Other matrix.
-     */
-    /*mat(mat&& right)
-    {
-        std::swap(value_, right.value_);
-    }*/
-
-    /**
-     * @brief Copy constructor.
-     * @details Copy a matrix
-     *
-     * @param right Other matrix.
-     */
-    /*mat(const mat& right)
-    {
-        std::copy(right.value_,right.value_+Size,value_);
-    }*/
-
-    /**
      * @brief Parentheses accessor.
      * @details Get a reference to an element by specifying the row and column
      * indices.
