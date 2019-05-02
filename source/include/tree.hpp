@@ -9,10 +9,8 @@ namespace wcore
 template<typename T, size_t MAX_CHILD=4>
 class Tree
 {
-protected:
-    struct Node;
-
 public:
+    struct Node;
     typedef Node nodeT;
 
     Tree():
@@ -28,7 +26,9 @@ public:
     int add_node(T&& data);
     bool set_child(int node, int child_index);
 
-    void traverse_linear(std::function<void(const T& data)> visit);
+    void traverse_linear(std::function<void(const T& data)> visit) const;
+
+    inline const Node* get_root() const { return &nodes_[0]; }
 
 protected:
     std::vector<Node> nodes_;
@@ -47,6 +47,7 @@ public:
     friend class TREE;
 
     Node(const T& data):
+    index_(0),
     parent_(0),
     nchildren_(0),
     data(data)
@@ -55,6 +56,7 @@ public:
     }
 
     Node(T&& data):
+    index_(0),
     parent_(0),
     nchildren_(0),
     data(std::move(data))
@@ -65,10 +67,31 @@ public:
     inline int parent() const         { return parent_; }
     inline int child(int index) const { return children_[index]; }
 
+    const Node* first_node() const { return nchildren_!=0 ? &(*tree_)[children_[0]] : nullptr; }
+    const Node* next_sibling() const
+    {
+        // Root node has no siblings
+        if(parent_==index_)
+            return nullptr;
+
+        // Find child index of this node in parent node's children array
+        const Node& parent = (*tree_)[parent_];
+        int ii;
+        for(ii=0; ii<parent.nchildren_; ++ii)
+        {
+            if(parent.children_[ii] == index_) break;
+        }
+
+        // Return node at next index if any
+        return (ii<parent.nchildren_-1) ? &(*tree_)[parent.children_[ii+1]] : nullptr;
+    }
+
 private:
+    int index_;
     int parent_;
     int nchildren_;
     std::array<int, MAX_CHILD> children_;
+    TREE* tree_;
 
 public:
     T data;
@@ -78,6 +101,8 @@ template<TREE_ARGLIST>
 int TREE::add_node(const T& data)
 {
     nodes_.emplace_back(data);
+    nodes_[n_nodes_].tree_ = this;
+    nodes_[n_nodes_].index_ = n_nodes_;
     ++n_nodes_;
     return nodes_.size() - 1;
 }
@@ -86,6 +111,8 @@ template<TREE_ARGLIST>
 int TREE::add_node(T&& data)
 {
     nodes_.emplace_back(std::forward<T>(data));
+    nodes_[n_nodes_].tree_ = this;
+    nodes_[n_nodes_].index_ = n_nodes_;
     ++n_nodes_;
     return nodes_.size() - 1;
 }
@@ -103,7 +130,7 @@ bool TREE::set_child(int node, int child_index)
 }
 
 template<TREE_ARGLIST>
-void TREE::traverse_linear(std::function<void(const T&)> visit)
+void TREE::traverse_linear(std::function<void(const T&)> visit) const
 {
     for(int ii=0; ii<n_nodes_; ++ii)
         visit(nodes_[ii].data);

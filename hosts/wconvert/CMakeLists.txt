@@ -35,6 +35,7 @@ set(CMAKE_BUILD_TYPE Release)
 set(wconvert_SRCS
     main.cpp
     animated_model_importer.cpp
+    xml_skeletton_exporter.cpp
 )
 
 # Tell CMake to create the wconvert executable

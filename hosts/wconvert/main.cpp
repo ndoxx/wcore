@@ -4,6 +4,7 @@
 #include "file_system.h"
 #include "logger.h"
 #include "animated_model_importer.h"
+#include "xml_skeletton_exporter.h"
 
 using namespace wcore;
 
@@ -24,7 +25,19 @@ int main(int argc, char const *argv[])
 
     // Load animated models and export them to my formats
     wconvert::AnimatedModelImporter importer;
-    importer.load_model("chest.dae");
+    wconvert::XMLSkelettonExporter skel_exporter;
+
+    wconvert::ModelInfo model_info;
+    if(importer.load_model("chest.dae", model_info))
+    {
+        /*model_info.bone_hierarchy.traverse_linear([&](const wconvert::BoneInfo& bone)
+        {
+            std::cout << bone.name << std::endl;
+            std::cout << bone.offset_matrix << std::endl;
+        });*/
+
+        skel_exporter.export_skeletton(model_info);
+    }
 
     return 0;
 }

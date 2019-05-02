@@ -8,24 +8,12 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "tree.hpp"
-#include "math3d.h"
+#include "animated_model_data.h"
 
 namespace wconvert
 {
 
 namespace fs = std::filesystem;
-
-struct BoneInfo
-{
-    aiMatrix4x4 offset_matrix;
-};
-
-struct Bone
-{
-    std::string name;
-    wcore::math::mat4 offset_matrix;
-};
 
 class AnimatedModelImporter
 {
@@ -33,11 +21,12 @@ public:
     AnimatedModelImporter();
     ~AnimatedModelImporter();
 
-    bool load_model(const std::string& filename);
+    bool load_model(const std::string& filename, ModelInfo& model_info);
 
 private:
     int read_bone_hierarchy(const aiNode* pnode,
-                            wcore::Tree<Bone>& bone_hierarchy);
+                            ModelInfo& model_info);
+    void reset();
 
 private:
     Assimp::Importer importer_;
@@ -45,11 +34,10 @@ private:
 
     fs::path workdir_; // Working directory for models
 
+    // Internal data used to walk the Assimp structures
     std::unordered_map<std::string, uint32_t> bone_map_; // Associate bone name to bone index
     std::vector<BoneInfo> bone_info_;
     uint32_t n_bones_;
-
-    wcore::Tree<Bone> bone_hierarchy_;
 };
 
 } // namespace wconvert

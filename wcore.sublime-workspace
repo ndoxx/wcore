@@ -4,6 +4,26 @@
 		"selected_items":
 		[
 			[
+				"node",
+				"node_offset"
+			],
+			[
+				"root",
+				"root_node"
+			],
+			[
+				"bon",
+				"bone_index"
+			],
+			[
+				"pme",
+				"pmesh"
+			],
+			[
+				"n_",
+				"n_bones_"
+			],
+			[
 				"TR",
 				"TREE_ARGLIST"
 			],
@@ -494,26 +514,6 @@
 			[
 				"edito",
 				"editor_model_"
-			],
-			[
-				"edit",
-				"editor_model_"
-			],
-			[
-				"is",
-				"isEmpty"
-			],
-			[
-				"tost",
-				"toStdString"
-			],
-			[
-				"stat",
-				"static_cast"
-			],
-			[
-				"toS",
-				"toStdString"
 			]
 		]
 	},
@@ -596,6 +596,49 @@
 			}
 		},
 		{
+			"file": "source/include/logger.h",
+			"settings":
+			{
+				"buffer_size": 12221,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "source/include/value_map.h",
+			"settings":
+			{
+				"buffer_size": 3222,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "source/src/value_map.cpp",
+			"settings":
+			{
+				"buffer_size": 9767,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "source/include/config.h",
+			"settings":
+			{
+				"buffer_size": 987,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "source/src/config.cpp",
+			"settings":
+			{
+				"buffer_size": 2379,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "hosts/nuclear/source/src/main.cpp",
 			"settings":
 			{
@@ -605,10 +648,29 @@
 			}
 		},
 		{
-			"file": "/home/ndx/Desktop/WCore rel/Snippets/blender_export/export_x.py",
+			"file": "hosts/wconvert/main.cpp",
 			"settings":
 			{
-				"buffer_size": 54809,
+				"buffer_size": 897,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "hosts/wconvert/animated_model_importer.h",
+			"settings":
+			{
+				"buffer_size": 1062,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "hosts/wconvert/animated_model_importer.cpp",
+			"settings":
+			{
+				"buffer_size": 4608,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
@@ -837,7 +899,16 @@
 			"file": "NOTES.md",
 			"settings":
 			{
-				"buffer_size": 487839,
+				"buffer_size": 490882,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "hosts/wconvert/CMakeLists.txt",
+			"settings":
+			{
+				"buffer_size": 2000,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -978,6 +1049,11 @@
 	},
 	"file_history":
 	[
+		"/home/ndx/Desktop/WCore/source/include/math_structures.hpp",
+		"/home/ndx/Desktop/WCore/source/include/error.h",
+		"/home/ndx/Desktop/WCore/source/include/config.h",
+		"/home/ndx/Desktop/WCore/hosts/waterial/main.cpp",
+		"/home/ndx/Desktop/WCore rel/Snippets/blender_export/export_x.py",
 		"/home/ndx/Desktop/WCore/source/include/xml_parser.h",
 		"/home/ndx/Desktop/WCore/source/src/xml_utils.cpp",
 		"/home/ndx/Desktop/WCore/source/include/file_system.h",
@@ -1100,16 +1176,11 @@
 		"/home/ndx/Desktop/WCore/res/shaders/include/cook_torrance.glsl",
 		"/home/ndx/Desktop/WCore/res/shaders/include/shadow.glsl",
 		"/home/ndx/Desktop/WCore/res/shaders/include/position.glsl",
-		"/home/ndx/Desktop/WCore/res/shaders/include/math_utils.glsl",
-		"/home/ndx/Desktop/WCore rel/Snippets/SSR_blur_kode80.frag",
-		"/home/ndx/Desktop/WCore/source/include/g_buffer.h",
-		"/home/ndx/Desktop/WCore/res/shaders/old/SSR_simple.vert",
-		"/home/ndx/Desktop/WCore/res/shaders/null.vert",
-		"/home/ndx/Desktop/WCore/source/include/SSAO_buffer.h"
+		"/home/ndx/Desktop/WCore/res/shaders/include/math_utils.glsl"
 	],
 	"find":
 	{
-		"height": 45.0
+		"height": 28.0
 	},
 	"find_in_files":
 	{
@@ -1133,6 +1204,14 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"jj",
+			"ii",
+			"n_bones",
+			"uint",
+			"std::filesystem",
+			"pscene",
+			"m_pScene",
+			"wevel",
 			"ArmatureExportObject",
 			"children",
 			"nchildren",
@@ -1252,15 +1331,7 @@
 			"passthrough",
 			"tone_map_",
 			"bool",
-			"generate_widget",
-			"index",
-			"false",
-			"b_isHDR",
-			"passthrough.vert",
-			"passthrough.frag",
-			"GL_NEAREST",
-			"jitter",
-			"cutt"
+			"generate_widget"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1406,7 +1477,7 @@
 	"groups":
 	[
 		{
-			"selected": 10,
+			"selected": 17,
 			"sheets":
 			[
 				{
@@ -1442,7 +1513,7 @@
 						"translation.y": 1448.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
@@ -1484,7 +1555,7 @@
 						"translation.y": 10252.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
@@ -1517,7 +1588,7 @@
 						"translation.y": 4990.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
@@ -1533,12 +1604,15 @@
 						"selection":
 						[
 							[
-								1157,
-								1157
+								158,
+								158
 							]
 						],
 						"settings":
 						{
+							"SL.18.region_keys":
+							[
+							],
 							"SL.80.region_keys":
 							[
 							],
@@ -1547,10 +1621,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 285.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -1583,7 +1657,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
@@ -1616,7 +1690,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
@@ -1649,7 +1723,7 @@
 						"translation.y": 171.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
@@ -1665,12 +1739,15 @@
 						"selection":
 						[
 							[
-								2701,
-								2701
+								16572,
+								16572
 							]
 						],
 						"settings":
 						{
+							"SL.22.region_keys":
+							[
+							],
 							"SL.68.region_keys":
 							[
 							],
@@ -1682,7 +1759,7 @@
 						"translation.y": 9904.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
@@ -1698,39 +1775,75 @@
 						"selection":
 						[
 							[
-								838,
-								838
+								1398,
+								1398
 							]
 						],
 						"settings":
 						{
+							"SL.23.region_keys":
+							[
+							],
 							"SL.67.region_keys":
 							[
 							],
 							"syntax": "Packages/C++/C++.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 513.0,
+						"translation.y": 1254.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
 					"buffer": 9,
-					"file": "hosts/nuclear/source/src/main.cpp",
+					"file": "source/include/logger.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10056,
+						"buffer_size": 12221,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								9726,
-								9726
+								10305,
+								10305
+							]
+						],
+						"settings":
+						{
+							"SL.72.region_keys":
+							[
+							],
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 5390.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "source/include/value_map.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3222,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2935,
+								2935
 							]
 						],
 						"settings":
@@ -1743,159 +1856,235 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 6867.0,
+						"translation.y": 912.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
-					"file": "/home/ndx/Desktop/WCore rel/Snippets/blender_export/export_x.py",
+					"buffer": 11,
+					"file": "source/src/value_map.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 54809,
+						"buffer_size": 9767,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								44733,
-								44733
+								0,
+								0
 							]
 						],
 						"settings":
 						{
-							"SL.82.region_keys":
+							"SL.70.region_keys":
 							[
-								"SL.flake8.Highlights.|ef8e637fa3d0cff76ed759c5149e5d6dd4873aaf6bf0995892387a785ec84e29|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|395dcb583052d0d8aea45986e9f7fc6439c11562289f98494d2c02eeb9253ee5|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|6126b8a0a4a21042df06fceb3c65130511f99a870fc015ca915c0cd85854c84d|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|7ddcabc557981b6a10f59ebb70411c5df92a6fe4397282ec775a03dca1be4d73|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|1866f7ae34b23759d2dccd8970a2b5635027d26a6416de7d22809432cdd0ffdb|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|3c12b7c16d05124fb01fc80c7c07a85db44654732f2fcc00e5d6c3ccbcfe455b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|cdf807c9e91e699fc19f30a5b11b96e7d9a37eb5416a42357b3c48ddd0e09cf3|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|e55c1392c92b8bf9b414266381f5636f7cc6a2a19f2f4744074fe88b1a5fb332|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|298b01313fb97167e1fce6a863eae0595bbf9cd0e009a40ee02d913882d6e47d|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|457865b767acc7bbb80d0398f121e0b7ee58c5bc904419c6dc87ba5dac359cae|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|c7cea37db595730c0dbeb226a6c143384d09a5cb072d65921bf704b61378cdd2|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|fa2b02ec4d2cd18d3fb249f0d7d5f3ad107b1ec60aeb3a43864f3a89e9e4de7f|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|24cb1a9d0f18eeb3b8da489bd019183f590b4f7f8a428b27032cb11f1aa4634e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|fa95591a09ac4769892af3eb0ec6e7aa3234255f0cbfb481579cdaeb9f5e9107|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|c2fc8226c1db18e0088a528aaab5f531b8b2d61bd41a0fcc01a4dd2e541af74e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|124fea761a4a5ea4dfb0195d7b228a49f8f0002c4edd460186528558fa340e8a|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|6cdca79312a9375c041e456fa3f9b0b3c47afd9ccddd7718190d7a50b48e82e5|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|00a27808902f015c6d4c645e8d1055c6c1edd1c03f7445f84eba1a8c4c9571ce|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|787ad326313c118d5261d64288ba10ec992848ba25395e1ba8aefba6ff4b1369|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|b372bfcea1d5f7b34fb75e3670006e473e8c74e92921e5de3975e94a82a5ec21|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|e1f57030b1cae3f161c5f06d16d7444e63cfca0e785cd1e61dbdd2224fb21aae|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|d7b8196548e1cce9c884527e68ecc7db38c9d741821b34b06259e9c92455c2cd|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|d9b28e416645025e6a13635449a9eba23c9504bb69b5cfd8c5ce4dcefbc05f77|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|d0ea9471f8b95d4d057ca86e40d5760694ca7b4f1d822a55291098347a7ea7eb|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|5d624de2daf47e88f03bbf74726e6343a9c8da82d15358684ec904a10b98ea21|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|a962a1ddea0cab6c536aa23d96e7c2306530f1d9b5af24e67989f1cd73311cb4|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|86d5e3aa9abac9c1aae36414ff6b3078183bbb9bd2fb24c3c7f22ab4b4715b59|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|a5301b9f9ece6922b1e2923079d88c6c6708b41095706228dd8a4e6b7a0e259c|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|24ca32e8bb96b85fe5f31a3876a3270f0a0fe62d44e23178b621dc2fde71d10d|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|2c209b2a2cc96cae6dad8ff5dc462b000dba79e42d3c2c7944874e132e76152b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|39618a425b3b904cf3b93e0e44d7606c475c472095a446d2b68b8216c014b3ad|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|444d0d97b570670abde9a1d19904672c9b9d71d6856dd88f1de64648c287bbe8|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|ee0cc191b507fa90629d478cac3d0ba52552da03decd8dc036b57e81b7292dc9|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|299adb874aee577ad5bf92655a1c4df0b35f751de646b27778a52821898c52f6|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|7ddbdc7f97f463e7eae90ff9691fcd4107e2e97f8f2e2898e4aae127b7987930|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|570525ea8549c759bde4adc67f2e11379e57005f1e31dd299a0e45277507f6cf|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|b999e27a7917dd2b427b58f6a4f9b5d9d6e0cda6d94b4292372002fb29e0c847|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|40323fce558104e8e3a9e5685879eff6c9cd5e973c91d16c7056c70507c3a768|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|ef879881cfd1c2d14dd0e88486265b9868345e86903dd0647b3097c0b75c7f97|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|8ccb7c5154cbb00b61c0babac9351f26cf3a77867d0e95e5fb19029a529d2cb9|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|7d8734132c8af4804216977dcf0050f55c78d2693c91a9bd21d7106b66756743|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|e67e7e4072c26e9dd627a95bd040fc57b807af94d243b02f5c4ed13ea3a236f3|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|e6db56981c7209952bef7278e6d37ec8def5724229b00700cfb497573260e81e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|63049f1fe8cbead38c85e7189a2ad84fd06c934fb35cb67a0c1eb96564583bae|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|b4190ef521a093f66eb23200d26349f3078644a8ea0478ccc35f2c036381da52|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|dedd55b56de9c93e3e078c217a0231f270d0811de7dc25571a2afae213beccfd|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|ad29c94000c9521f84907bd8e7ab761337f71cf75527a62d92df60340a8dfd86|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|00284c1966e42df3c7959861ee4f8310d777eac37643d410ee3bd3604f8555db|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|0106798893d0c89b096790f54790ebc7f7e457d729b19d39fbb155a2fa4c5bef|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|4da1e61620a5dab1759ca32c6d6e9f1788624411afdc517d4e8c6ef9a829326f|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|526e4bdf5ad6718cd711d56a90b255bd17870f58cc980d5ddaa5327dcff585d8|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
-								"SL.flake8.Highlights.|03f9dc6178fab9fb6934698a26aa11d08f6c0ff2890086ce4a02344612550dcb|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|29a2d9ecb7195456d0ac4a7178752358f418db8edd379d5aa3251387317da6ea|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|b9859297c7f8cfe064c7143c14b4a0d73f13a22fa92294a7c4aefc7da8d3ae30|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|7cc0f60c6cf0c824f044946ed0f0e12268e7a8651b14f2bea10b5d3e99bd3f59|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|ee9f2752108d0287191584836d73084c2bce825a401db074fb08de390b1075ec|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|cc4129a3719e1ef4e2ddc70db76f091ada7626ff8f94c94c0eada0cb11c82da0|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|baf41950450eae86ef75f5b461b0cf83ae9bbbf896d4af654c8397a9836fb46d|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|0a88ed9c81e7e538b3c5798eb5ad053a3417286bf46321467117921c5d55dbdf|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|1f05c0b950f35e6bef61237c7151ac6ed5fec2a136193765ff94a7b404ddc56e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|aeae306cc9c2f984ba4dd3579eaefe31726443b4e1f2130a4307c3dde9c51ba0|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|b11938d3d841d3a9dc728890c7cf8a09350b2451d650d12ad23d42e77d03ca58|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|9cb89b51b3b2f9cfe3c8e1cd2a1d9c04dc2d82619e5efd374528dc0670d960d9|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|c59be968b3d4726f777c86db1b6a21d9d98a69e0bbeb64d7b1ec6f1534df837b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|5f5ba92cceb8760c813b6cadc8b5a77bdccf5da924e50f64c64ed440b4d3b5ec|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|200a775d5f5983680d79d14172683af353fc823b2dc932bdd5c827b7223c4dea|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|9256a41d55c7ae85f19317ca8687c92dcde2a1a108f75ae6a1b10ad85213e40d|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|10a2ed8f2acd2e5f6024018bc3b25fa112c0c9d82dd995129b6f29dd2719c516|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|cf1675d624d164158fa41b80e693a3a51e1026046ff40045ed4482a0e84d7125|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|dbd29db568f9f4f3bfd9f8c4a845a1072fd2175bcbd183adb296753ec442d47c|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|129388cdc270d6591d4148044eb58cd4304284fd8530550938faec04cd539060|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|e84b938af79bca8d802c5c1f15301afc99e36efbcec809c35704a31af439d313|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|216d84ac4f2a1edd9af0e9d9d69d685460bd7a79d2d02a2fc418f2af131ba723|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|79d70aa4695ebeaf4e5bf4430f3d95dfd246cc25395f623901e61829f15ff1ad|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|ce047686490a10d8ac20716b8a77db903b6fe1645ef60b5d9edd6ee2e4ff7c1e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|eba63eab6d048c661da266b2bf7f91c9f4733d984dab809651beec4505203ab8|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|77bf285230c773a5b39d90a31fb38702a2dfadfd76084d8b38dd1c631a30a0a0|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|5198b986d8f0050936a11e1b533c2e0a52d7b6e7880bc94273cf1c7021e58505|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|1673c6ec80eaf6bcbacedc979cd0b40b0d658af902b0f1e6dcc5b1dfa9c18009|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|e9fb38d8f36a6c83fa93bd10ff82ff5fa3c574a291c3f5b842e8ee8f08c6a85f|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|a6272e112040ab7b7a4c8f6c32ccd87e32d71dd42afd599fe765413e11d338d5|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|5d1330324ab00ac7fde29c5a2c09faf3c7e9f4fa378e10e702e8564059741499|region.yellowish markup.warning.sublime_linter|32",
-								"sublime_linter.protected_regions",
-								"SL.flake8.Highlights.|050de197b04324ce18772556082d877fd1b7becab3515fdaded636a0f619799d|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|ee4f6f483bcc9bc94502a23460b79c4b330d4531690f1d50910dfa0f3921116b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|05e3b40e50e0094f7600e8da9e23dfb2edc54d5d66cd5f8432a2e46094f2449c|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|3a2f6a5193d10ac6024e743a778d4504c5163458e3c143cdcfbb3db6e6924ca8|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|3289ccbc25f28d32c5b2b1952a5f254eb85a1e0cc68975c118df0ad9efe22a5e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|bec207394c645c8eda9d287150300ac91f48a63e7f4361ce3918f1c879e8d3dc|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|2c262e9c6d7ebe4e9cecad9f6311ce4a80988b7c2581713465ca229a8c27d992|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|3b7f413143a9f5057f0b634b7a6ecc38f4684b6cd5faf289f339a4e08015d455|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|686aa2da200e2efe0fa0bc331732eeaba11c173e6ce7198c499b0e47d8f406a0|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|b4b50ce9f79d5759dbc6fa60b59398e58e311789d9519e7cfb63679223ebc72b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|7157429da69b3c05881ddd746f3fd80bfcb4c45e1889dbb384d9dae0a99bb052|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|fa715599d0530c7867b3abe7142bf89c406e6fdb706f16342cba2e63f79a2298|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|696760f307cf75f67cc2e2458936b330cd700949c35b7cbaa5b203e38f6c8db2|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|5a18b2241e1fbfc2f60dc279423b49a7c20ceeb425b10011d70f777d90172849|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|26bc0ef82872c1b674b512426142d0c45ca264649f52212b4290f9efa9ff7a51|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|56d75ced0d0a717f06435538341b89fa9da04b62f931114c4d10436a29de9ea1|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|8a0a83f465cc0b6c5905863ba0e6a5e0a2748eb60afa530ddd1935b8885eba6d|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|5e4b888eb7d1f3f6b52f0531f1a1d847b3b6f80496ef6aea45bec46a39899ffb|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|ef395836d6e0a6ab15b444e1009ab440b8272518d092c245739765223a0b300f|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|fc622c2cf0d5a4f51478cf048da4f6270cee8d5d40702357d825d993ce389c07|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|528927ed0c5a434c7fb4ab627855883e75ce97aeb139a12308d637e7382d8790|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|c35065885c591d43ac77d0cde64a9f0be105663a15d7d306f38eccad9c39c08b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|93f55c59cb4459a2680352c9ad0f713e163dcf7e94476361df0b4ceca42ae26e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|2b6dcc24fcf799179ee91e92488f06742e2c617fb83e87dc174093d3c54ba0d5|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|a952678cd7c7e31b17f47bc4218010372ccb48f95c4001a73942de98ec97150e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|43bd33951dcc7df00d92991e5f65e8cf306a46067f8738a6617d4857f1d2a5d8|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|b45e233ed3dabd07688b55cc7cfed36d44b80bf6d67d65e143db702360560e53|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|e8836e242c9270e1200e0e3a198c30d2b7a245fa3c798e03bd60aeb4f2ac7c1b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|a59fc58c2bb05aca317abe2d524826510307ae2618d7150d9933a3b8b8ee5f28|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|36ae55b7b1e23b82766246f02d28418110d97a9e025442a6a58c5522b7c1ee78|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|fa751cd1edc1c868a54c4f99c055f6476b7a1f89e5997a7c05f5b6982c0ed5e8|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|9b2d0bb7af4410779d5a12163024eb5aaa4128745263a0ae5e6a0e9fecd155c0|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|ac1d04e306866c7c162c5ba1a62a4534892fdfa1fda5040639f9d6f414d064de|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|2764d394373474e67e7731f827be16ecacb286aae4c015bd93c05612e17dd660|region.yellowish markup.warning.sublime_linter|32",
-								"SL.flake8.Highlights.|7d3d4fb940584deb097eba339bcd7e229f5ac60ac69b4b367f4ed53630952cc7|region.yellowish markup.warning.sublime_linter|32"
 							],
-							"syntax": "Packages/Python Improved/PythonImproved.tmLanguage",
+							"syntax": "Packages/C++/C++.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 20830.0,
+						"translation.y": 4690.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "source/include/config.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 987,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								342,
+								342
+							]
+						],
+						"settings":
+						{
+							"SL.67.region_keys":
+							[
+							],
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 114.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "source/src/config.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2379,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1907,
+								1907
+							]
+						],
+						"settings":
+						{
+							"SL.68.region_keys":
+							[
+							],
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1083.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "hosts/nuclear/source/src/main.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10056,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9929,
+								9929
+							]
+						],
+						"settings":
+						{
+							"SL.24.region_keys":
+							[
+							],
+							"SL.69.region_keys":
+							[
+							],
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 5457.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "hosts/wconvert/main.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 897,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								876,
+								876
+							]
+						],
+						"settings":
+						{
+							"SL.62.region_keys":
+							[
+							],
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"file": "hosts/wconvert/animated_model_importer.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1062,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								350,
+								350
+							]
+						],
+						"settings":
+						{
+							"SL.63.region_keys":
+							[
+							],
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 171.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "hosts/wconvert/animated_model_importer.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4608,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3704,
+								3704
+							]
+						],
+						"settings":
+						{
+							"SL.64.region_keys":
+							[
+							],
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1881.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1904,11 +2093,11 @@
 			]
 		},
 		{
-			"selected": 4,
+			"selected": 12,
 			"sheets":
 			[
 				{
-					"buffer": 11,
+					"buffer": 18,
 					"file": "hosts/wevel/resources.qrc",
 					"semi_transient": false,
 					"settings":
@@ -1940,11 +2129,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 44,
+					"stack_index": 52,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 19,
 					"file": "hosts/waterial/resources.qrc",
 					"semi_transient": false,
 					"settings":
@@ -1979,11 +2168,11 @@
 						"translation.y": 76.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 43,
+					"stack_index": 51,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 20,
 					"file": "hosts/waterial/res/stylesheets/default_style.css",
 					"semi_transient": false,
 					"settings":
@@ -2024,11 +2213,11 @@
 						"translation.y": 1767.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 21,
 					"file": "res/models/test_bones.skel",
 					"semi_transient": false,
 					"settings":
@@ -2052,11 +2241,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 22,
 					"file": "res/models/test_humanoid.skel",
 					"semi_transient": false,
 					"settings":
@@ -2080,11 +2269,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
-					"buffer": 16,
+					"buffer": 23,
 					"file": "res/levels/l_mv.xml",
 					"semi_transient": false,
 					"settings":
@@ -2131,11 +2320,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
-					"buffer": 17,
+					"buffer": 24,
 					"file": "res/levels/l_maze.xml",
 					"semi_transient": false,
 					"settings":
@@ -2179,11 +2368,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 38,
+					"stack_index": 46,
 					"type": "text"
 				},
 				{
-					"buffer": 18,
+					"buffer": 25,
 					"file": "res/levels/l_metal.xml",
 					"semi_transient": false,
 					"settings":
@@ -2230,11 +2419,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 34,
+					"stack_index": 42,
 					"type": "text"
 				},
 				{
-					"buffer": 19,
+					"buffer": 26,
 					"file": "res/levels/l_tree.xml",
 					"semi_transient": false,
 					"settings":
@@ -2281,11 +2470,11 @@
 						"translation.y": 550.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 40,
+					"stack_index": 48,
 					"type": "text"
 				},
 				{
-					"buffer": 20,
+					"buffer": 27,
 					"file": "res/levels/l_crystal.xml",
 					"semi_transient": false,
 					"settings":
@@ -2353,11 +2542,11 @@
 						"translation.y": 4617.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 41,
+					"stack_index": 49,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
+					"buffer": 28,
 					"file": "res/levels/l_lake.xml",
 					"semi_transient": false,
 					"settings":
@@ -2395,11 +2584,11 @@
 						"translation.y": 589.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 39,
+					"stack_index": 47,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 29,
 					"file": "res/levels/assets.xml",
 					"semi_transient": false,
 					"settings":
@@ -2458,11 +2647,11 @@
 						"translation.y": 86.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 37,
+					"stack_index": 45,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 30,
 					"file": "config/config.xml",
 					"semi_transient": false,
 					"settings":
@@ -2530,11 +2719,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 31,
 					"file": "config/edtweaks.xml",
 					"semi_transient": false,
 					"settings":
@@ -2562,11 +2751,11 @@
 						"translation.y": 684.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 33,
+					"stack_index": 41,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 32,
 					"file": "res/shaders/SSR.vert",
 					"semi_transient": false,
 					"settings":
@@ -2607,11 +2796,11 @@
 						"translation.y": 94.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 34,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
+					"buffer": 33,
 					"file": "res/shaders/SSR.frag",
 					"semi_transient": false,
 					"settings":
@@ -2661,11 +2850,11 @@
 						"translation.y": 1762.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
-					"buffer": 27,
+					"buffer": 34,
 					"file": "res/shaders/SSAO.frag",
 					"semi_transient": false,
 					"settings":
@@ -2700,11 +2889,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
-					"buffer": 28,
+					"buffer": 35,
 					"file": "res/shaders/include/position.glsl",
 					"semi_transient": false,
 					"settings":
@@ -2734,11 +2923,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 33,
 					"type": "text"
 				},
 				{
-					"buffer": 29,
+					"buffer": 36,
 					"file": "res/shaders/include/normal_compression.glsl",
 					"semi_transient": false,
 					"settings":
@@ -2768,11 +2957,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 32,
+					"stack_index": 40,
 					"type": "text"
 				},
 				{
-					"buffer": 30,
+					"buffer": 37,
 					"file": "res/shaders/shadowmap.vert",
 					"semi_transient": false,
 					"settings":
@@ -2796,11 +2985,11 @@
 						"translation.y": 114.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 38,
 					"type": "text"
 				},
 				{
-					"buffer": 31,
+					"buffer": 38,
 					"file": "res/shaders/include/cook_torrance.glsl",
 					"semi_transient": false,
 					"settings":
@@ -2829,11 +3018,11 @@
 						"translation.y": 969.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 36,
+					"stack_index": 44,
 					"type": "text"
 				},
 				{
-					"buffer": 32,
+					"buffer": 39,
 					"file": "res/shaders/fb_peek.frag",
 					"semi_transient": false,
 					"settings":
@@ -2865,11 +3054,11 @@
 						"translation.y": 399.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 33,
+					"buffer": 40,
 					"file": "res/shaders/lpass_exp.frag",
 					"semi_transient": false,
 					"settings":
@@ -2895,11 +3084,11 @@
 						"translation.y": 3295.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
-					"buffer": 34,
+					"buffer": 41,
 					"file": "res/shaders/include/math_utils.glsl",
 					"semi_transient": false,
 					"settings":
@@ -2926,11 +3115,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 32,
 					"type": "text"
 				},
 				{
-					"buffer": 35,
+					"buffer": 42,
 					"file": "res/shaders/SSR_blur.frag",
 					"semi_transient": false,
 					"settings":
@@ -2962,7 +3151,7 @@
 						"translation.y": 456.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 30,
 					"type": "text"
 				}
 			]
@@ -2972,20 +3161,20 @@
 			"sheets":
 			[
 				{
-					"buffer": 36,
+					"buffer": 43,
 					"file": "NOTES.md",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 487839,
+						"buffer_size": 490882,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								484451,
-								484451
+								488417,
+								488417
 							]
 						],
 						"settings":
@@ -3188,14 +3377,44 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 267912.0,
+						"translation.y": 273118.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 37,
+					"buffer": 44,
+					"file": "hosts/wconvert/CMakeLists.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2000,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								898,
+								898
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CMake/CMake.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 456.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 14,
+					"type": "text"
+				},
+				{
+					"buffer": 45,
 					"file": "/home/ndx/Desktop/WCore rel/Snippets/SSR_NullPointer.frag",
 					"semi_transient": false,
 					"settings":
@@ -3227,11 +3446,11 @@
 						"translation.y": 2934.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 28,
+					"stack_index": 36,
 					"type": "text"
 				},
 				{
-					"buffer": 38,
+					"buffer": 46,
 					"file": "QTSNIPS.md",
 					"semi_transient": false,
 					"settings":
@@ -3261,11 +3480,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 35,
+					"stack_index": 43,
 					"type": "text"
 				},
 				{
-					"buffer": 39,
+					"buffer": 47,
 					"file": "hosts/wevel/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3297,11 +3516,11 @@
 						"translation.y": 570.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 31,
+					"stack_index": 39,
 					"type": "text"
 				},
 				{
-					"buffer": 40,
+					"buffer": 48,
 					"file": "hosts/waterial/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3336,11 +3555,11 @@
 						"translation.y": 765.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 27,
+					"stack_index": 35,
 					"type": "text"
 				},
 				{
-					"buffer": 41,
+					"buffer": 49,
 					"file": "hosts/sandbox/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3390,11 +3609,11 @@
 						"translation.y": 455.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 42,
+					"stack_index": 50,
 					"type": "text"
 				},
 				{
-					"buffer": 42,
+					"buffer": 50,
 					"file": "CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3444,11 +3663,11 @@
 						"translation.y": 1254.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 37,
 					"type": "text"
 				},
 				{
-					"buffer": 43,
+					"buffer": 51,
 					"file": "source/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3460,8 +3679,8 @@
 						"selection":
 						[
 							[
-								2239,
-								2239
+								3209,
+								3209
 							]
 						],
 						"settings":
@@ -3492,14 +3711,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1077.0,
+						"translation.y": 1476.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 44,
+					"buffer": 52,
 					"file": "source/tests/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
@@ -3531,7 +3750,7 @@
 						"translation.y": 1254.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 16,
 					"type": "text"
 				}
 			]
@@ -3539,7 +3758,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 33.0
+		"height": 28.0
 	},
 	"input":
 	{
@@ -3571,13 +3790,13 @@
 		"cols":
 		[
 			0.0,
-			0.618162952022,
+			0.62103532241,
 			1.0
 		],
 		"rows":
 		[
 			0.0,
-			0.735585167008,
+			0.444136393094,
 			1.0
 		]
 	},
@@ -3610,7 +3829,7 @@
 	"project": "wcore.sublime-project",
 	"replace":
 	{
-		"height": 62.0
+		"height": 52.0
 	},
 	"save_all_on_build": true,
 	"select_file":

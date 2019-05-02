@@ -308,7 +308,6 @@ int parse_bone(rapidxml::xml_node<>* node, Tree<Bone>& bone_hierarchy)
     return parent_index;
 }
 
-
 int main()
 {
     CONFIG.init();
