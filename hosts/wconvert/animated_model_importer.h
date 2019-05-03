@@ -24,6 +24,8 @@ public:
     bool load_model(const std::string& filename, ModelInfo& model_info);
 
 private:
+    bool read_mesh(const aiMesh* pmesh,
+                   ModelInfo& model_info);
     int read_bone_hierarchy(const aiNode* pnode,
                             ModelInfo& model_info);
     void reset();

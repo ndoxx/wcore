@@ -19,8 +19,8 @@ namespace factory
 std::shared_ptr<FaceMesh> make_cube(bool finalize)
 {
     std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
-    //                  /--------POSITION------  /----------UV----------
-    //Front 1          |                        |
+    //                  /--------POSITION------ /                  /----------UV----------
+    //Front 1          |                        |                  |
     pmesh->push_vertex({vec3( 0.5f, 0.0f, 0.5f), vec3(0), vec3(0), vec2(1.0f/3.0f, 1.0f)});
     pmesh->push_vertex({vec3( 0.5f, 1.0f, 0.5f), vec3(0), vec3(0), vec2(1.0f/3.0f, 0.5f)});
     pmesh->push_vertex({vec3(-0.5f, 1.0f, 0.5f), vec3(0), vec3(0), vec2(0.0f, 0.5f)});
@@ -81,9 +81,8 @@ std::shared_ptr<FaceMesh> make_cube(bool finalize)
 std::shared_ptr<FaceMesh> make_cube_uniface(bool finalize)
 {
     std::shared_ptr<FaceMesh> pmesh(new FaceMesh);
-    //                  /--------POSITION------  /----------UV----------
-    //Front 1          |                        |
-    //Front 1          |                        |
+    //                  /--------POSITION------  /                  /--------UV--------
+    //Front 1          |                        |                   |
     pmesh->push_vertex({vec3( 0.5f, -0.5f, 0.5f), vec3(0), vec3(0), vec2(1.0f, 1.0f)});
     pmesh->push_vertex({vec3( 0.5f,  0.5f, 0.5f), vec3(0), vec3(0), vec2(1.0f, 0.0f)});
     pmesh->push_vertex({vec3(-0.5f,  0.5f, 0.5f), vec3(0), vec3(0), vec2(0.0f, 0.0f)});

@@ -36,6 +36,7 @@ set(wconvert_SRCS
     main.cpp
     animated_model_importer.cpp
     xml_skeleton_exporter.cpp
+    binary_mesh_exporter.cpp
 )
 
 # Tell CMake to create the wconvert executable

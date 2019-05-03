@@ -2,6 +2,9 @@
 #include <fstream>
 
 #include "xml_skeleton_exporter.h"
+
+#include "vendor/rapidxml/rapidxml_print.hpp"
+#include "xml_utils.hpp"
 #include "config.h"
 #include "logger.h"
 
@@ -71,7 +74,7 @@ bool XMLSkeletonExporter::export_skeleton(const ModelInfo& model_info)
 {
     std::string filename(model_info.model_name + ".skel");
 
-    DLOGN("Exporting skeletton to:", "wconvert");
+    DLOGN("<i>Exporting</i> skeletton to:", "wconvert");
     DLOGI("<p>" + filename + "</p>", "wconvert");
 
     // * Produce XML representation of model data

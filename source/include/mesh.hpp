@@ -46,31 +46,18 @@ public:
     Mesh():
     centered_(false){}
 
-    Mesh(Mesh&& other) noexcept
-    : vertices_(std::move(other.vertices_))
-    , indices_(std::move(other.indices_))
-    , dimensions_(other.dimensions_)
-    , buffer_token_(other.buffer_token_)
-    , centered_(false){}
-
-    Mesh(const Mesh& other)
-    : vertices_(other.vertices_)
-    , indices_(other.indices_)
-    , dimensions_(other.dimensions_)
-    , buffer_token_(other.buffer_token_)
-    , centered_(false){}
+    Mesh(std::vector<VertexT>&& vertices,
+         std::vector<uint32_t>&& indices,
+         int dimensionality=3):
+    vertices_(std::move(vertices)),
+    indices_(std::move(indices)),
+    centered_(false)
+    {
+        buffer_token_.n_elements = indices_.size() / dimensionality;
+        compute_dimensions();
+    }
 
     virtual ~Mesh() {}
-
-    Mesh& operator= (const Mesh& other)
-    {
-        vertices_ = other.vertices_;
-        indices_ = other.indices_;
-        buffer_token_ = other.buffer_token_;
-        dimensions_ = other.dimensions_;
-        centered_ = other.centered_;
-        return *this;
-    }
 
     inline uint32_t get_nv() const            { return vertices_.size(); }
     inline uint32_t get_ni() const            { return indices_.size(); }

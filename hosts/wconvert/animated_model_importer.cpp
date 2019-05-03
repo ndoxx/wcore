@@ -15,6 +15,16 @@ static inline wcore::math::mat4 to_mat4(const aiMatrix4x4& ai_mat)
     return ret;
 }
 
+static inline wcore::math::vec3 to_vec3(const aiVector3D& ai_vec3)
+{
+    return wcore::math::vec3(ai_vec3.x, ai_vec3.y, ai_vec3.z);
+}
+
+static inline wcore::math::vec2 to_vec2(const aiVector3D& ai_vec3)
+{
+    return wcore::math::vec2(ai_vec3.x, ai_vec3.y);
+}
+
 AnimatedModelImporter::AnimatedModelImporter():
 n_bones_(0)
 {
@@ -35,6 +45,7 @@ bool AnimatedModelImporter::load_model(const std::string& filename, ModelInfo& m
     pscene_ = importer_.ReadFile(workdir_ / filename,
                                  aiProcess_Triangulate |
                                  aiProcess_GenSmoothNormals |
+                                 aiProcess_CalcTangentSpace |
                                  aiProcess_FlipUVs);
 
     // Sanity check
@@ -58,18 +69,100 @@ bool AnimatedModelImporter::load_model(const std::string& filename, ModelInfo& m
     DLOGI("<p>" + filename + "</p>", "wconvert");
     DLOGI("#meshes= <v>" + std::to_string(n_meshes) + "</v>", "wconvert");
 
+    // * Read mesh data
+    if(n_meshes==0)
+    {
+        DLOGE("No mesh detected, skipping model.", "wconvert");
+        return false;
+    }
     // Just care about the index 0 mesh
     if(n_meshes>1)
         DLOGW("Only single meshes allowed, ignoring all but index 0.", "wconvert");
 
-    auto pmesh = pscene_->mMeshes[0];
+    if(!read_mesh(pscene_->mMeshes[0], model_info))
+        return false;
 
+    // * Read bone hierarchy
+    // Skeleton root is the node named "Armature"
+    auto* arm_node  = pscene_->mRootNode->FindNode("Armature");
+
+    if(arm_node)
+    {
+        // Armature transform
+        model_info.root_transform = to_mat4(arm_node->mTransformation);
+
+        // Read hierarchy recursively and construct skelettal tree
+        auto* skel_root_node = arm_node->mChildren[0];
+        read_bone_hierarchy(skel_root_node, model_info);
+    }
+    else
+    {
+        DLOGE("Cannot find <h>Armature</h> node in scene hierarchy.", "wconvert");
+        return false;
+    }
+
+    // * Read animation data
+
+    // TODO
+
+    return true;
+}
+
+void AnimatedModelImporter::reset()
+{
+    bone_map_.clear();
+    bone_info_.clear();
+    n_bones_ = 0;
+}
+
+bool AnimatedModelImporter::read_mesh(const aiMesh* pmesh, ModelInfo& model_info)
+{
+    // * Sanity check
+    if(!pmesh->HasBones() || !pmesh->HasPositions())
+    {
+        DLOGE("Mesh lacks bones or position data.", "wconvert");
+        return false;
+    }
+
+    // * Register vertex data
+    static const aiVector3D v3_zero(0.f, 0.f, 0.f);
+    for(unsigned int ii=0; ii<pmesh->mNumVertices; ++ii)
+    {
+        const aiVector3D& p_pos       = pmesh->mVertices[ii];
+        const aiVector3D& p_normal    = pmesh->HasNormals() ? pmesh->mNormals[ii] : v3_zero;
+        const aiVector3D& p_tangent   = pmesh->HasTangentsAndBitangents() ? pmesh->mTangents[ii] : v3_zero;
+        const aiVector3D& p_tex_coord = pmesh->HasTextureCoords(0) ? pmesh->mTextureCoords[0][ii] : v3_zero;
+
+        model_info.vertex_data.vertices.push_back({to_vec3(p_pos),
+                                                   to_vec3(p_normal),
+                                                   to_vec3(p_tangent),
+                                                   to_vec2(p_tex_coord)});
+    }
+
+    DLOGI("#vertices= <v>" + std::to_string(model_info.vertex_data.vertices.size()) + "</v>", "wconvert");
+
+    // Indices
+    for(unsigned int ii=0; ii<pmesh->mNumFaces; ++ii)
+    {
+        const aiFace& face = pmesh->mFaces[ii];
+        assert(face.mNumIndices == 3); // Should be the case with aiProcess_Triangulate
+        model_info.vertex_data.indices.push_back(face.mIndices[0]);
+        model_info.vertex_data.indices.push_back(face.mIndices[1]);
+        model_info.vertex_data.indices.push_back(face.mIndices[2]);
+    }
+    DLOGI("#indices= <v>" + std::to_string(model_info.vertex_data.indices.size()) + "</v>", "wconvert");
+
+    // * Register bone-related per-vertex data
     uint32_t n_bones_tot = pmesh->mNumBones;
     DLOGI("#bones= <v>" + std::to_string(n_bones_tot) + "</v>", "wconvert");
 
-    // For each bone in mesh, register bone data
+    // Vector of indices to keep track of the location of per-vertex bone data
+    std::vector<uint32_t> weight_pos(model_info.vertex_data.indices.size(), 0);
+
+    // For each bone in mesh
     for(uint32_t ii=0; ii<n_bones_tot; ++ii)
     {
+        // Register bone data
         uint32_t bone_index = 0;
         std::string bone_name(pmesh->mBones[ii]->mName.data);
 
@@ -95,42 +188,21 @@ bool AnimatedModelImporter::load_model(const std::string& filename, ModelInfo& m
         uint32_t n_weights = pmesh->mBones[ii]->mNumWeights;
         DLOGI("#weights= <v>" + std::to_string(n_weights) + "</v>", "wconvert");
 
-        // For each weight in bone
+        // Register weight and bone id in mesh vertices
         for(uint32_t jj=0; jj<n_weights; ++jj)
         {
-            uint32_t vertex_id = pmesh->mBones[ii]->mWeights[jj].mVertexId;
-            float weight = pmesh->mBones[ii]->mWeights[jj].mWeight;
-            //bones_[vertex_id].add_bone_data(bone_index, weight);
+            const auto& weight_data = pmesh->mBones[ii]->mWeights[jj];
+            uint32_t vertex_id = weight_data.mVertexId;
+            float weight = weight_data.mWeight;
+
+            auto& vertex = model_info.vertex_data.vertices[vertex_id];
+            uint32_t pos = weight_pos[vertex_id]++;
+            vertex.weight_[pos] = weight;
+            vertex.bone_id_[pos] = bone_index;
         }
     }
 
-    // * Read bone hierarchy
-    // Skeleton root is the node named "Armature"
-    auto* root_node = pscene_->mRootNode;
-    auto* arm_node  = root_node->FindNode("Armature");
-
-    if(arm_node)
-    {
-        // Armature transform
-        model_info.root_transform = to_mat4(arm_node->mTransformation);
-
-        // Read hierarchy recursively and construct skelettal tree
-        auto* skel_root_node = arm_node->mChildren[0];
-        read_bone_hierarchy(skel_root_node, model_info);
-        return true;
-    }
-    else
-    {
-        DLOGE("Cannot find <h>Armature</h> node in scene hierarchy.", "wconvert");
-        return false;
-    }
-}
-
-void AnimatedModelImporter::reset()
-{
-    bone_map_.clear();
-    bone_info_.clear();
-    n_bones_ = 0;
+    return true;
 }
 
 int AnimatedModelImporter::read_bone_hierarchy(const aiNode* pnode,
@@ -143,14 +215,9 @@ int AnimatedModelImporter::read_bone_hierarchy(const aiNode* pnode,
     // Find node name in bone map
     auto b_it = bone_map_.find(node_name);
     if(b_it != bone_map_.end())
-    {
-        // Get bone data
         node_offset = bone_info_[b_it->second].offset_matrix;
-    }
     else
-    {
         node_offset = to_mat4(pnode->mTransformation);
-    }
 
     int parent_index = model_info.bone_hierarchy.add_node(BoneInfo( { node_name, node_offset } ));
 

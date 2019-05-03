@@ -330,17 +330,5 @@ int main()
         std::cout << bone.name << std::endl;
     });
 
-    // math::vec3 position_;
-    // math::vec3 normal_;
-    // math::vec3 tangent_;
-    // math::vec2 uv_;
-    // math::vec4 weight_;
-    // math::i32vec4 bone_id_;
-
-    /*VertexAnim vertex1({vec3(0,1,2), vec3(0), vec3(0), vec2(0.5f,0.5f)});
-    VertexAnim vertex2({vec3(0,1,2), vec3(0), vec3(0), vec2(0.5f,0.5f), vec4(0.1,0.2,0.3,0.4), i32vec4(0,1,2,3)});
-    std::cout << vertex1 << std::endl;
-    std::cout << vertex2 << std::endl;*/
-
     return 0;
 }

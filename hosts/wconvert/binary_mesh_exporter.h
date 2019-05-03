@@ -1,5 +1,5 @@
-#ifndef XML_SKELETTON_EXPORTER_H
-#define XML_SKELETTON_EXPORTER_H
+#ifndef BINARY_MESH_EXPORTER_H
+#define BINARY_MESH_EXPORTER_H
 
 #include <filesystem>
 
@@ -10,17 +10,16 @@ namespace wconvert
 
 namespace fs = std::filesystem;
 
-class XMLSkeletonExporter
+class BinaryMeshExporter
 {
 public:
-    XMLSkeletonExporter();
-    ~XMLSkeletonExporter();
+    BinaryMeshExporter();
+    ~BinaryMeshExporter();
 
-    bool export_skeleton(const ModelInfo& model_info);
+    bool export_mesh(const ModelInfo& model_info);
 
 private:
     fs::path exportdir_; // Export directory for meshes and skelettons
-
 };
 
 } // namespace wconvert
