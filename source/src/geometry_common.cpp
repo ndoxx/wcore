@@ -27,19 +27,19 @@ buffer_unit_line_(GL_LINES)
     float w = 1.0f;
     float h = 1.0f;
     Mesh<Vertex2P2U>* scr_quad_mesh = new Mesh<Vertex2P2U>();
-    scr_quad_mesh->_emplace_vertex(vec2(xpos,   ypos  ), vec2(0, 0));
-    scr_quad_mesh->_emplace_vertex(vec2(xpos+w, ypos  ), vec2(1, 0));
-    scr_quad_mesh->_emplace_vertex(vec2(xpos+w, ypos+h), vec2(1, 1));
-    scr_quad_mesh->_emplace_vertex(vec2(xpos,   ypos+h), vec2(0, 1));
+    scr_quad_mesh->_push_vertex({vec2(xpos,   ypos  ), vec2(0, 0)});
+    scr_quad_mesh->_push_vertex({vec2(xpos+w, ypos  ), vec2(1, 0)});
+    scr_quad_mesh->_push_vertex({vec2(xpos+w, ypos+h), vec2(1, 1)});
+    scr_quad_mesh->_push_vertex({vec2(xpos,   ypos+h), vec2(0, 1)});
     scr_quad_mesh->_push_triangle(0,  1,  2);
     scr_quad_mesh->_push_triangle(0,  2,  3);
     add_mesh_2P2U("screen_quad"_h, scr_quad_mesh);
 
     Mesh<Vertex2P2U>* char_quad_mesh = new Mesh<Vertex2P2U>();
-    char_quad_mesh->_emplace_vertex(vec2(xpos,   ypos  ), vec2(0, 1));
-    char_quad_mesh->_emplace_vertex(vec2(xpos+w, ypos  ), vec2(1, 1));
-    char_quad_mesh->_emplace_vertex(vec2(xpos+w, ypos+h), vec2(1, 0));
-    char_quad_mesh->_emplace_vertex(vec2(xpos,   ypos+h), vec2(0, 0));
+    char_quad_mesh->_push_vertex({vec2(xpos,   ypos  ), vec2(0, 1)});
+    char_quad_mesh->_push_vertex({vec2(xpos+w, ypos  ), vec2(1, 1)});
+    char_quad_mesh->_push_vertex({vec2(xpos+w, ypos+h), vec2(1, 0)});
+    char_quad_mesh->_push_vertex({vec2(xpos,   ypos+h), vec2(0, 0)});
     char_quad_mesh->_push_triangle(0,  1,  2);
     char_quad_mesh->_push_triangle(0,  2,  3);
     add_mesh_2P2U("char_quad"_h, scr_quad_mesh);

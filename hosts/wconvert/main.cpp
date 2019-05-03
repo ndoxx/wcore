@@ -1,12 +1,30 @@
 #include <iostream>
+#include <filesystem>
+#include <vector>
 
 #include "config.h"
 #include "file_system.h"
 #include "logger.h"
 #include "animated_model_importer.h"
-#include "xml_skeletton_exporter.h"
+#include "xml_skeleton_exporter.h"
 
 using namespace wcore;
+namespace fs = std::filesystem;
+
+void read_directory(const fs::path& directory, std::vector<std::string>& v)
+{
+    fs::directory_iterator start(directory);
+    fs::directory_iterator end;
+    std::transform(start, end, std::back_inserter(v), [&](const fs::directory_entry& entry)
+    {
+        return entry.path().filename().string();
+    });
+}
+
+bool check_extension(const std::string& filename, const char* ext)
+{
+    return !filename.substr(filename.find('.')).compare(ext);
+}
 
 int main(int argc, char const *argv[])
 {
@@ -23,20 +41,26 @@ int main(int argc, char const *argv[])
     else
         DLOGF("Models work directory does not exist.", "wconvert");
 
-    // Load animated models and export them to my formats
+    // * Load animated models and export them to my formats
     wconvert::AnimatedModelImporter importer;
-    wconvert::XMLSkelettonExporter skel_exporter;
+    wconvert::XMLSkeletonExporter skel_exporter;
 
-    wconvert::ModelInfo model_info;
-    if(importer.load_model("chest.dae", model_info))
+    // Convert all .dae files in work directory
+    std::vector<std::string> files;
+    read_directory(modelswork, files);
+
+    for(auto& filename: files)
     {
-        /*model_info.bone_hierarchy.traverse_linear([&](const wconvert::BoneInfo& bone)
+        if(check_extension(filename, ".dae"))
         {
-            std::cout << bone.name << std::endl;
-            std::cout << bone.offset_matrix << std::endl;
-        });*/
-
-        skel_exporter.export_skeletton(model_info);
+            DLOGS("Converting <n>" + filename + "</n>", "wconvert", Severity::LOW);
+            wconvert::ModelInfo model_info;
+            if(importer.load_model(filename, model_info))
+            {
+                skel_exporter.export_skeleton(model_info);
+            }
+            DLOGES("wconvert", Severity::LOW);
+        }
     }
 
     return 0;

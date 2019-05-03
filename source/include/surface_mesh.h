@@ -48,10 +48,9 @@ public:
         position_classes_.insert(VertexHashMap::value_type(vertex.position_,index));
     }
 
-    template <typename... Args>
-    inline size_t emplace_vertex(Args&&... args)
+    inline size_t push_vertex(Vertex3P3N3T2U&& vertex)
     {
-        size_t index = _emplace_vertex(std::forward<Args>(args)...);
+        size_t index = _push_vertex(std::forward<Vertex3P3N3T2U>(vertex));
         position_classes_.insert(VertexHashMap::value_type(vertices_.back().position_,vertices_.size()-1));
         return index;
     }
@@ -116,10 +115,9 @@ public:
         }
     }
 
-    template <typename... Args>
-    inline size_t emplace_vertex(Args&&... args)
+    inline size_t push_vertex(Vertex3P3N3T2U&& vertex)
     {
-        return _emplace_vertex(std::forward<Args>(args)...);
+        return _push_vertex(std::forward<Vertex3P3N3T2U>(vertex));
     }
 
     inline void push_triangle(uint32_t T1, uint32_t T2, uint32_t T3)

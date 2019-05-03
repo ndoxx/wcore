@@ -217,10 +217,10 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
         std::shared_ptr<TriangularMesh> pmesh(new TriangularMesh);
         for(uint32_t ii=0; ii<positions.size(); ++ii)
         {
-            pmesh->emplace_vertex(positions[ii],
-                                  vec3(0),
-                                  vec3(0),
-                                  vec2(0));
+            pmesh->push_vertex({positions[ii],
+                                vec3(0),
+                                vec3(0),
+                                vec2(0)});
         }
         for(uint32_t ii=0; ii<triangles.size(); ++ii)
         {
@@ -241,10 +241,10 @@ std::shared_ptr<SurfaceMesh> ObjLoader::load(std::istream& stream,
         {
             for(uint32_t jj=0; jj<3; ++jj)
             {
-                pmesh->emplace_vertex(triangles[ii].vertices[jj],
-                                      triangles[ii].normals[jj],
-                                      vec3(0),
-                                      process_uv ? triangles[ii].uvs[jj].xy() : vec2(0));
+                pmesh->push_vertex({triangles[ii].vertices[jj],
+                                    triangles[ii].normals[jj],
+                                    vec3(0),
+                                    process_uv ? triangles[ii].uvs[jj].xy() : vec2(0)});
             }
             pmesh->push_triangle(3*ii, 3*ii+1, 3*ii+2);
         }

@@ -173,8 +173,8 @@ Mesh<Vertex3P>* TreeGenerator::generate_spline_tree(const TreeProps& props)
     {
         for(uint32_t ii=0; ii<N_SAMP; ++ii)
         {
-            pmesh->_emplace_vertex(splines[jj].interpolate(ii*step));
-            pmesh->_emplace_vertex(splines[jj].interpolate((ii+1)*step));
+            pmesh->_push_vertex({splines[jj].interpolate(ii*step)});
+            pmesh->_push_vertex({splines[jj].interpolate((ii+1)*step)});
             pmesh->push_line(jj*2*N_SAMP+ii, jj*2*N_SAMP+ii+1);
         }
     }

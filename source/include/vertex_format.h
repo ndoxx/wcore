@@ -31,25 +31,6 @@ public:
     math::vec2 uv_;
     math::vec4 color_;
 
-
-    Vertex3P3N2U4C(const math::vec3& position,
-                   const math::vec3& normal,
-                   const math::vec2& uv,
-                   const math::vec4& color)
-    : position_(position)
-    , normal_(normal)
-    , uv_(uv)
-    , color_(color) {}
-
-    Vertex3P3N2U4C(math::vec3&& position,
-                   math::vec3&& normal,
-                   math::vec2&& uv,
-                   math::vec4&& color)
-    : position_(std::move(position))
-    , normal_(std::move(normal))
-    , uv_(std::move(uv))
-    , color_(std::move(color)) {}
-
     inline std::size_t get_pos_hash() const
     {
         return std::hash<math::vec3>()(position_);
@@ -90,39 +71,6 @@ public:
     math::vec3 tangent_;
     math::vec2 uv_;
 
-
-    Vertex3P3N3T2U(const math::vec3& position,
-                   const math::vec3& normal,
-                   const math::vec3& tangent,
-                   const math::vec2& uv)
-    : position_(position)
-    , normal_(normal)
-    , tangent_(tangent)
-    , uv_(uv) {}
-
-    Vertex3P3N3T2U(const math::vec3& position,
-                   const math::vec2& uv)
-    : position_(position)
-    , normal_()
-    , tangent_()
-    , uv_(uv) {}
-
-    Vertex3P3N3T2U(math::vec3&& position,
-                   math::vec3&& normal,
-                   math::vec3&& tangent,
-                   math::vec2&& uv)
-    : position_(std::move(position))
-    , normal_(std::move(normal))
-    , tangent_(std::move(tangent))
-    , uv_(std::move(uv)) {}
-
-    Vertex3P3N3T2U(math::vec3&& position,
-                   math::vec2&& uv)
-    : position_(std::move(position))
-    , normal_()
-    , tangent_()
-    , uv_(std::move(uv)) {}
-
     inline std::size_t get_pos_hash() const
     {
         return std::hash<math::vec3>()(position_);
@@ -154,6 +102,50 @@ public:
     }
 };
 
+struct VertexAnim
+{
+public:
+    math::vec3 position_;
+    math::vec3 normal_;
+    math::vec3 tangent_;
+    math::vec2 uv_;
+    math::vec4 weight_;
+    math::i32vec4 bone_id_;
+
+    inline std::size_t get_pos_hash() const
+    {
+        return std::hash<math::vec3>()(position_);
+    }
+
+    bool operator==(const VertexAnim& other) const
+    {
+        return position_==other.position_;
+    }
+
+    static void enable_vertex_attrib_array()
+    {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), nullptr);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), (const GLvoid*)(3*sizeof(float)));
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), (const GLvoid*)(6*sizeof(float)));
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), (const GLvoid*)(9*sizeof(float)));
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), (const GLvoid*)(11*sizeof(float)));
+        glVertexAttribIPointer(5, 4, GL_UNSIGNED_BYTE,  sizeof(VertexAnim), (const GLvoid*)(15*sizeof(float)));
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
+        glEnableVertexAttribArray(5);
+    }
+
+    friend std::ostream& operator<<(std::ostream& stream, const VertexAnim& vf)
+    {
+        stream << "<p" << vf.position_ << "|n" << vf.normal_ << "|t" << vf.tangent_
+               << "|u" << vf.uv_ << "|w" << vf.weight_ << "|b" << vf.bone_id_ << ">" << std::endl;
+        return stream;
+    }
+};
 
 struct Vertex3P3N2U
 {
@@ -161,21 +153,6 @@ public:
     math::vec3 position_;
     math::vec3 normal_;
     math::vec2 uv_;
-
-
-    Vertex3P3N2U(const math::vec3& position,
-                 const math::vec3& normal,
-                 const math::vec2& uv)
-    : position_(position)
-    , normal_(normal)
-    , uv_(uv) {}
-
-    Vertex3P3N2U(math::vec3&& position,
-                 math::vec3&& normal,
-                 math::vec2&& uv)
-    : position_(std::move(position))
-    , normal_(std::move(normal))
-    , uv_(std::move(uv)) {}
 
     inline std::size_t get_pos_hash() const
     {
@@ -213,17 +190,6 @@ public:
     math::vec3 position_;
     math::vec3 normal_;
 
-
-    Vertex3P3N(const math::vec3& position,
-               const math::vec3& normal)
-    : position_(position)
-    , normal_(normal) {}
-
-    Vertex3P3N(math::vec3&& position,
-               math::vec3&& normal)
-    : position_(std::move(position))
-    , normal_(std::move(normal)) {}
-
     inline std::size_t get_pos_hash() const
     {
         return std::hash<math::vec3>()(position_);
@@ -257,17 +223,6 @@ public:
     math::vec3 position_;
     math::vec2 uv_;
 
-
-    Vertex3P2U(const math::vec3& position,
-               const math::vec2& uv)
-    : position_(position)
-    , uv_(uv) {}
-
-    Vertex3P2U(math::vec3&& position,
-               math::vec2&& uv)
-    : position_(std::move(position))
-    , uv_(std::move(uv)) {}
-
     static void enable_vertex_attrib_array()
     {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P2U), nullptr);
@@ -289,13 +244,6 @@ struct Vertex3P
 public:
     math::vec3 position_;
 
-
-    Vertex3P(const math::vec3& position)
-    : position_(position){}
-
-    Vertex3P(math::vec3&& position)
-    : position_(std::move(position)){}
-
     static void enable_vertex_attrib_array()
     {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P), nullptr);
@@ -315,17 +263,6 @@ struct Vertex3P3C
 public:
     math::vec3 position_;
     math::vec3 color_;
-
-
-    Vertex3P3C(const math::vec3& position,
-               const math::vec3& color)
-    : position_(position)
-    , color_(color){}
-
-    Vertex3P3C(math::vec3&& position,
-               math::vec3&& color)
-    : position_(std::move(position))
-    , color_(std::move(color)){}
 
     static void enable_vertex_attrib_array()
     {
@@ -348,17 +285,6 @@ struct Vertex2P2U
 public:
     math::vec2 position_;
     math::vec2 uv_;
-
-
-    Vertex2P2U(const math::vec2& position,
-               const math::vec2& uv)
-    : position_(position)
-    , uv_(uv) {}
-
-    Vertex2P2U(math::vec2&& position,
-               math::vec2&& uv)
-    : position_(std::move(position))
-    , uv_(std::move(uv)) {}
 
     static void enable_vertex_attrib_array()
     {

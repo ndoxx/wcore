@@ -97,10 +97,10 @@ public:
     {
         _set_vertex(index, VertexT(std::forward<Args>(args)...));
     }
-    template <typename... Args>
-    inline size_t _emplace_vertex(Args&&... args)
+
+    inline size_t _push_vertex(VertexT&& vertex)
     {
-        vertices_.emplace_back(std::forward<Args>(args)...);
+        vertices_.push_back(std::forward<VertexT>(vertex));
         return vertices_.size()-1;
     }
 

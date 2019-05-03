@@ -1,7 +1,7 @@
 #include <stack>
 #include <fstream>
 
-#include "xml_skeletton_exporter.h"
+#include "xml_skeleton_exporter.h"
 #include "config.h"
 #include "logger.h"
 
@@ -24,12 +24,12 @@ static void xml_node_set_value(xml_document<>& doc, xml_node<>* node, const char
     node->value(doc.allocate_string(value));
 }
 
-XMLSkelettonExporter::XMLSkelettonExporter()
+XMLSkeletonExporter::XMLSkeletonExporter()
 {
     wcore::CONFIG.get("root.folders.model"_h, exportdir_);
 }
 
-XMLSkelettonExporter::~XMLSkelettonExporter()
+XMLSkeletonExporter::~XMLSkeletonExporter()
 {
 
 }
@@ -67,7 +67,7 @@ static void make_skeletton_DOM(xml_document<>& doc, rapidxml::xml_node<>* parent
     }
 }
 
-bool XMLSkelettonExporter::export_skeletton(const ModelInfo& model_info)
+bool XMLSkeletonExporter::export_skeleton(const ModelInfo& model_info)
 {
     std::string filename(model_info.model_name + ".skel");
 
