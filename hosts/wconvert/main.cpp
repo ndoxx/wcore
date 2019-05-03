@@ -1,13 +1,16 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
+#include <cassert>
 
 #include "config.h"
 #include "file_system.h"
 #include "logger.h"
+#include "wesh_loader.h"
 #include "animated_model_importer.h"
 #include "xml_skeleton_exporter.h"
 #include "binary_mesh_exporter.h"
+#include "mesh.hpp"
 
 using namespace wcore;
 namespace fs = std::filesystem;
@@ -31,25 +34,30 @@ void test_read_binary(const std::string& filename, const wconvert::ModelInfo& mo
 {
     std::string stripped_filename(filename.substr(0, filename.find('.')));
     // Test read binary mesh data
-    std::ifstream fin("../res/models/" + stripped_filename + ".wesh", std::ios::in | std::ios::binary);
+    std::ifstream stream("../res/models/" + stripped_filename + ".wesh", std::ios::in | std::ios::binary);
 
-    size_t vsize, isize;
+    WeshLoader wesh;
+    auto pmesh = wesh.load(stream);
+    stream.close();
 
-    // Read vertex data size
-    fin.read(reinterpret_cast<char*>(&vsize), sizeof(vsize));
-    // Read vertex data
-    std::vector<VertexAnim> vertices(vsize);
-    fin.read(reinterpret_cast<char*>(&vertices[0]), vsize*sizeof(VertexAnim));
-    // Read index data size
-    fin.read(reinterpret_cast<char*>(&isize), sizeof(isize));
-    // Read index data
-    std::vector<uint32_t> indices(isize);
-    fin.read(reinterpret_cast<char*>(&indices[0]), isize*sizeof(uint32_t));
+    assert(pmesh->get_nv() == model_info.vertex_data.vertices.size());
+    assert(pmesh->get_ni() == model_info.vertex_data.indices.size());
 
-    fin.close();
-
-    assert(vsize == model_info.vertex_data.vertices.size());
-    assert(isize == model_info.vertex_data.indices.size());
+    const auto& vertices = pmesh->get_vertex_buffer();
+    for(int ii=0; ii<pmesh->get_nv(); ++ii)
+    {
+        assert(vertices[ii].position_ == model_info.vertex_data.vertices[ii].position_);
+        assert(vertices[ii].normal_   == model_info.vertex_data.vertices[ii].normal_);
+        assert(vertices[ii].tangent_  == model_info.vertex_data.vertices[ii].tangent_);
+        assert(vertices[ii].uv_       == model_info.vertex_data.vertices[ii].uv_);
+        assert(vertices[ii].weight_   == model_info.vertex_data.vertices[ii].weight_);
+        assert(vertices[ii].bone_id_  == model_info.vertex_data.vertices[ii].bone_id_);
+    }
+    const auto& indices = pmesh->get_index_buffer();
+    for(int ii=0; ii<pmesh->get_ni(); ++ii)
+    {
+        assert(indices[ii] == model_info.vertex_data.indices[ii]);
+    }
 }
 
 int main(int argc, char const *argv[])

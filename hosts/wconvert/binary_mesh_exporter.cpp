@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include "binary_mesh_exporter.h"
+#include "wesh_loader.h"
 #include "config.h"
 #include "logger.h"
 
@@ -26,23 +27,14 @@ bool BinaryMeshExporter::export_mesh(const ModelInfo& model_info)
     DLOGN("<i>Exporting</i> mesh to:", "wconvert");
     DLOGI("<p>" + filename + "</p>", "wconvert");
 
-    const auto& vertices = model_info.vertex_data.vertices;
-    const auto& indices  = model_info.vertex_data.indices;
+    std::ofstream stream(exportdir_ / filename, std::ios::out | std::ios::binary);
 
-    size_t vsize = vertices.size();
-    size_t isize = indices.size();
+    wcore::WeshLoader wesh;
+    wesh.write(stream,
+               model_info.vertex_data.vertices,
+               model_info.vertex_data.indices);
 
-    std::ofstream fout(exportdir_ / filename, std::ios::out | std::ios::binary);
-    // Write vertex data size
-    fout.write(reinterpret_cast<const char*>(&vsize), sizeof(vsize));
-    // Write vertex data
-    fout.write(reinterpret_cast<const char*>(&vertices[0]), vertices.size()*sizeof(VertexAnim));
-    // Write index data size
-    fout.write(reinterpret_cast<const char*>(&isize), sizeof(isize));
-    // Write index data
-    fout.write(reinterpret_cast<const char*>(&indices[0]), indices.size()*sizeof(uint32_t));
-
-    fout.close();
+    stream.close();
     return true;
 }
 

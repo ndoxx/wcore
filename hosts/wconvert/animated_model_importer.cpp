@@ -10,8 +10,9 @@ namespace wconvert
 static inline wcore::math::mat4 to_mat4(const aiMatrix4x4& ai_mat)
 {
     wcore::math::mat4 ret;
-    for(int ii=0; ii<16; ++ii)
-        ret[ii] = *ai_mat[ii];
+    for(int ii=0; ii<4; ++ii)
+        for(int jj=0; jj<4; ++jj)
+            ret[4*ii+jj] = ai_mat[jj][ii];
     return ret;
 }
 
