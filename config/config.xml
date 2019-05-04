@@ -24,7 +24,7 @@
     </display>
     <render>
         <chunk>
-            <uint name="load_distance" value="5"/>
+            <uint name="load_distance" value="3"/>
         </chunk>
         <shadowmap>
             <uint name="width"  value="1920"/>

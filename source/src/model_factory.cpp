@@ -185,15 +185,13 @@ std::shared_ptr<TerrainChunk> ModelFactory::make_terrain_patch(const TerrainPatc
     );
 
     // Try to load splatmap
-    //std::string splatmap_name("splat_");
-    //splatmap_name += std::to_string(desc.chunk_x) + "_" + std::to_string(desc.chunk_z) + ".png";
-
+    // Splatmap name is like: splat_[map_name]_[chunk_x]_[chunk_z].png
     const std::string& splatmap_name = desc.splatmap_name;
 
     // Check that splatmap file exists before proceeding
-    if(FILESYSTEM.file_exists(splatmap_name.c_str(), "root.folders.texture"_h, "pack0"_h))
+    if(FILESYSTEM.file_exists(splatmap_name.c_str(), "root.folders.level"_h, "pack0"_h))
     {
-        auto pstream = FILESYSTEM.get_file_as_stream(splatmap_name.c_str(), "root.folders.texture"_h, "pack0"_h);
+        auto pstream = FILESYSTEM.get_file_as_stream(splatmap_name.c_str(), "root.folders.level"_h, "pack0"_h);
         if(pstream)
         {
             Texture* splatmap = material_factory_->make_texture(*pstream);

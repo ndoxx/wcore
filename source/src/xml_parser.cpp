@@ -36,10 +36,8 @@ void XMLParser::load_file_xml(const fs::path& filepath)
     }
     filepath_ = filepath;
 
-#ifdef __DEBUG__
     DLOGN("[XML] Parsing xml file:", "core");
     DLOGI("<p>" + filepath.string() + "</p>", "core");
-#endif
 
     // Read the xml file into a vector
     buffer_ = io::get_file_as_vector(filepath);
@@ -51,9 +49,7 @@ void XMLParser::load_file_xml(const fs::path& filepath)
     root_ = dom_.first_node();
     if(!root_)
     {
-#ifdef __DEBUG__
         DLOGE("[XML] No root node.", "core");
-#endif
         return;
     }
 }
@@ -67,9 +63,7 @@ void XMLParser::load_file_xml(std::istream& stream)
         return;
     }
 
-#ifdef __DEBUG__
     DLOGN("[XML] Parsing xml file from stream.", "core");
-#endif
 
     // Read the xml file into a vector
     buffer_ = std::vector<char>((std::istreambuf_iterator<char>(stream)),
@@ -82,12 +76,7 @@ void XMLParser::load_file_xml(std::istream& stream)
     // Find our root node
     root_ = dom_.first_node();
     if(!root_)
-    {
-#ifdef __DEBUG__
         DLOGE("[XML] No root node.", "core");
-#endif
-        return;
-    }
 }
 
 // deprec

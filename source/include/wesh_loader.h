@@ -27,16 +27,16 @@ template <typename VertexT> class Mesh;
 struct VertexAnim;
 using AnimMesh = Mesh<VertexAnim>;
 
-#pragma pack(push,1)
+//#pragma pack(push,1)
 struct WeshHeader
 {
     uint32_t magic;
     uint8_t version_major;
     uint8_t version_minor;
 };
-#pragma pack(pop)
+//#pragma pack(pop)
 
-#define WESH_HEADER_SIZE 512
+#define WESH_HEADER_SIZE 128
 typedef union
 {
     struct WeshHeader h;

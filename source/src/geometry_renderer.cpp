@@ -52,14 +52,14 @@ void GeometryRenderer::render(Scene* pscene)
     GFX::enable_depth_testing();
     GFX::unlock_depth_buffer();
 
-    Shader& shader = geometry_pass_shader_;
+    Shader* shader = &geometry_pass_shader_;
 
     GFX::cull_back();
-    shader.use();
+    shader->use();
     // Wireframe mix
-    shader.send_uniform("rd.f_wireframe_mix"_h, wireframe_mix_);
+    shader->send_uniform("rd.f_wireframe_mix"_h, wireframe_mix_);
     // Camera (eye) position
-    //shader.send_uniform("rd.v3_viewPos"_h, pscene->get_camera()->get_position());
+    //shader->send_uniform("rd.v3_viewPos"_h, pscene->get_camera()->get_position());
     // Draw to G-Buffer
     GBuffer::Instance().bind_as_target();
 
@@ -74,25 +74,25 @@ void GeometryRenderer::render(Scene* pscene)
         mat4 MVP = PV*M;
 
         // normal matrix for light calculation
-        //shader.send_uniform("tr.m3_Normal"_h, M.submatrix(3,3)); // Transposed inverse of M if non uniform scales
-        shader.send_uniform("tr.m3_Normal"_h, MV.submatrix(3,3)); // Transposed inverse of M if non uniform scales
+        //shader->send_uniform("tr.m3_Normal"_h, M.submatrix(3,3)); // Transposed inverse of M if non uniform scales
+        shader->send_uniform("tr.m3_Normal"_h, MV.submatrix(3,3)); // Transposed inverse of M if non uniform scales
         // model matrix
-        //shader.send_uniform("tr.m4_Model"_h, M);
-        shader.send_uniform("tr.m4_ModelView"_h, MV);
+        //shader->send_uniform("tr.m4_Model"_h, M);
+        shader->send_uniform("tr.m4_ModelView"_h, MV);
         // MVP matrix
-        shader.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
+        shader->send_uniform("tr.m4_ModelViewProjection"_h, MVP);
         // material uniforms
-        shader.send_uniforms(model.get_material());
+        shader->send_uniforms(model.get_material());
         // overrides
         if(!allow_normal_mapping_)
-            shader.send_uniform("mt.b_use_normal_map"_h, false);
+            shader->send_uniform("mt.b_use_normal_map"_h, false);
         if(!allow_parallax_mapping_)
-            shader.send_uniform("mt.b_use_parallax_map"_h, false);
+            shader->send_uniform("mt.b_use_parallax_map"_h, false);
         else
         {
             // use parallax mapping only if object is close enough
             float dist = (model.get_position()-campos).norm();
-            shader.send_uniform("mt.b_use_parallax_map"_h, (dist < min_parallax_distance_));
+            shader->send_uniform("mt.b_use_parallax_map"_h, (dist < min_parallax_distance_));
         }
         if(model.get_material().is_textured())
         {
@@ -105,7 +105,7 @@ void GeometryRenderer::render(Scene* pscene)
         return model.is_visible(); // Visibility is evaluated during update by Scene::visibility_pass()
     },
     wcore::ORDER::FRONT_TO_BACK);
-    shader.unuse();
+    shader->unuse();
 
 
     // TERRAINS
@@ -114,12 +114,12 @@ void GeometryRenderer::render(Scene* pscene)
     pscene->draw_terrains([&](const TerrainChunk& terrain)
     {
         if(terrain.is_multi_textured())
-            shader = terrain_shader_;
+            shader = &terrain_shader_;
         else
-            shader = geometry_pass_shader_;
+            shader = &geometry_pass_shader_;
 
-        shader.use();
-        shader.send_uniform("rd.f_wireframe_mix"_h, wireframe_mix_);
+        shader->use();
+        shader->send_uniform("rd.f_wireframe_mix"_h, wireframe_mix_);
 
         // Get model matrix and compute products
         mat4 M = const_cast<TerrainChunk&>(terrain).get_model_matrix();
@@ -127,13 +127,13 @@ void GeometryRenderer::render(Scene* pscene)
         mat4 MVP = PV*M;
 
         // normal matrix for light calculation
-        shader.send_uniform("tr.m3_Normal"_h, MV.submatrix(3,3)); // Transposed inverse of M if non uniform scales
+        shader->send_uniform("tr.m3_Normal"_h, MV.submatrix(3,3)); // Transposed inverse of M if non uniform scales
         // model matrix
-        shader.send_uniform("tr.m4_ModelView"_h, MV);
+        shader->send_uniform("tr.m4_ModelView"_h, MV);
         // MVP matrix
-        shader.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
+        shader->send_uniform("tr.m4_ModelViewProjection"_h, MVP);
         // material uniforms
-        shader.send_uniforms(terrain.get_material());
+        shader->send_uniforms(terrain.get_material());
         if(terrain.get_material().is_textured())
         {
             // bind current material texture units if any
@@ -142,7 +142,7 @@ void GeometryRenderer::render(Scene* pscene)
 
         if(terrain.is_multi_textured())
         {
-            shader.send_uniforms(terrain.get_alternative_material());
+            shader->send_uniforms(terrain.get_alternative_material());
             if(terrain.get_alternative_material().is_textured())
             {
                 terrain.get_alternative_material().bind_texture();
@@ -151,26 +151,26 @@ void GeometryRenderer::render(Scene* pscene)
             // Send splatmap
             const Texture& splatmap = terrain.get_splatmap();
             /*splatmap.bind(12,0);
-            shader.send_uniform<int>("mt.splatTex"_h, 12);*/
+            shader->send_uniform<int>("mt.splatTex"_h, 12);*/
             splatmap.bind(6,0);
-            shader.send_uniform<int>("mt.splatTex"_h, 6);
+            shader->send_uniform<int>("mt.splatTex"_h, 6);
 
-            shader.send_uniform("f_inv_chunk_size"_h, 1.f/terrain.get_chunk_size());
+            shader->send_uniform("f_inv_chunk_size"_h, 1.f/terrain.get_chunk_size());
         }
 
         // overrides
         if(!allow_normal_mapping_)
-            shader.send_uniform("mt.b_use_normal_map"_h, false);
+            shader->send_uniform("mt.b_use_normal_map"_h, false);
         if(!allow_parallax_mapping_)
-            shader.send_uniform("mt.b_use_parallax_map"_h, false);
+            shader->send_uniform("mt.b_use_parallax_map"_h, false);
         else
         {
             // use parallax mapping only if object is close enough
             float dist = (terrain.get_position()-campos).norm();
-            shader.send_uniform("mt.b_use_parallax_map"_h, (dist < min_parallax_distance_));
+            shader->send_uniform("mt.b_use_parallax_map"_h, (dist < min_parallax_distance_));
         }
     });
-    shader.unuse();
+    shader->unuse();
 
     GBuffer::Instance().unbind_as_target();
 

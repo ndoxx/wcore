@@ -97,6 +97,7 @@ bool XMLSkeletonExporter::export_skeleton(const ModelInfo& model_info)
     xml_node_set_value(doc, root_transform_xml_node, matrix_str.c_str());
 
     // Depth-first traversal of bone hierarchy
+    // We want to conserve the hierarchy in XML format
     make_skeletton_DOM(doc, root, model_info.bone_hierarchy.get_root());
 
     std::ofstream outfile;
