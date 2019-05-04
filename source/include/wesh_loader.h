@@ -8,9 +8,10 @@
     VertexAnim vertex format.
 
     As of version 1.0 data is layed out like this:
-    [size_t vsize]        -> vertex buffer size in bytes
+    [HEADER]              -> 128 bytes, padded
+    [size_t vsize]        -> number of vertices
     [array of VertexAnim] -> vertex buffer content of size vsize
-    [size_t isize]        -> index buffer size in bytes
+    [size_t isize]        -> number of indices
     [array of uint32_t]   -> index buffer content of size isize
 */
 

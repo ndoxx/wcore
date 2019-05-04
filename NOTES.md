@@ -5883,7 +5883,7 @@ La structure actuelle s'appelle un Point Octree, et reste intéressante à conse
 ##[REFACTOR] Bounding boxes
 - Une nouvelle structure _BoundingRegion_ cumule les 2 représentations possibles d'un volume spatial cubique : un math::extent ET un couple de vecteurs pour le centre (mid_point) et les demi-dimensions (half). Comme mes algos utilisent les 2 représentations, j'ai pensé que l'overhead valait le coup.
 
-- La classe _OBB_ possède un _BoundingRegion_ en model space, est construite depuis un math::extent d'un modèle parent et un booléen qui traduit si le mesh est centré ou non su l'origine en model space. La fonction update() prend une matrice modèle en argument (celle du parent).
+- La classe _OBB_ qui possède un _BoundingRegion_ en model space, est construite depuis un math::extent d'un modèle parent et un booléen qui traduit si le mesh est centré ou non sur l'origine en model space. La fonction update() prend une matrice modèle en argument (celle du parent).
 
 - La classe _AABB_ possède un _BoundingRegion_ en world space, et est updatée via un objet _OBB_ (celui du parent).
 
@@ -6686,7 +6686,7 @@ Mais générer de telles images nécessite un outil, sans quoi ce serait une gal
 [ ] Export des materials en XML
 [X] Visualisation d'objets texturés sous wcore
     [X] Avec choix des sources de lumière
-    [ ] Et choix des objets (cube, plane, sphere, .obj)
+    [/] Et choix des objets (cube, plane, sphere, .obj)
 [/] Opérations de base sur chaque texture map
     -> Invert, Bias, Curve...
 [ ] Export sous différentes résolutions
@@ -7011,7 +7011,7 @@ int main(int argc, char *argv[])
 ```
 C'est dingue le nombre de choses que Qt me fait dans le dos...
 
-Par ailleurs, le formattage des champs d'édition dépendent de la locale fixée par Qt, donc un QDoubleSpinBox utilisera des virgules chez-moi. J'imagine qu'on peut rétablir la locale anglaise globalement, mais pour modifier simplement le séparateur décimal pour un controle donné je fais la chose suivante :
+Par ailleurs, le formattage des champs d'édition dépend de la locale fixée par Qt, donc un QDoubleSpinBox utilisera des virgules chez-moi. J'imagine qu'on peut rétablir la locale anglaise globalement, mais pour modifier simplement le séparateur décimal pour un controle donné je fais la chose suivante :
 
 ```cpp
     QLocale qlocale(QLocale::C);
@@ -7320,7 +7320,7 @@ On savait que c'était de la merde, maintenant on sait aussi pourquoi. Ce connar
 
     Any or all of the position arguments may be NULL. If an error occurs, all non-NULL position arguments will be set to zero.
 (Voir [2])
-C'est ce qui se produit lors des 2 premières frames, va comprendre pourquoi. Ca entraîne un evt mouse move sur le chan input.mouse.locked, et c'est ça qui baise l'orientation de la caméra de 30° exactement (en pitch et en yaw).
+C'est ce qui se produit lors des 2 premières frames, va comprendre pourquoi. Ca entraîne un evt mouse move sur le chan *input.mouse.locked*, et c'est ça qui baise l'orientation de la caméra de 30° exactement (en pitch et en yaw).
 
 Donc j'ai modifié InputHandler::handle_mouse() pour détecter cette situation et ne pas poster d'événement sur input.mouse.locked quand ça se produit.
 
@@ -7329,7 +7329,7 @@ On veut pouvoir faire les choses suivantes depuis l'API :
     [X] Référencer un modèle donné via un hash
     [X] Swapper le material d'un modèle référencé
     [ ] Swapper le mesh d'un modèle référencé. En l'occurrence il me faut pouvoir afficher le material sur :
-        [ ] Un plan
+        [X] Un plan
         [X] Un cube
         [ ] Une sphère
         [ ] Un .obj quelconque
@@ -7492,7 +7492,7 @@ J'ai implémenté il y a deux semaines un renderer spécialisé pour les réflex
 
 J'ai envisagé que l'implémentation d'un algo SSR puisse être plus aisée que prévu après avoir visionné la vidéo de [1]. J'ai commencé par écrire les classes _SSRRenderer_ et _SSRBuffer_ sur le modèle de _SSAORenderer_ et _SSAOBuffer_, puis un shader en m'inspirant de cette source. Je savais ce code très sous-optimal à l'avance, mais il présentait l'avantage d'être très compréhensible visuellement :
 
-* On calcule la position view space du fragment, le gars fait ça avec son position buffer, moi je renconstruit cette position depuis le depth buffer. Le vecteur position obtenu est aussi le vecteur direction allant de l'origine de la caméra au fragment, toujours en view space.
+* On calcule la position view space du fragment, le gars fait ça avec son position buffer, moi je renconstruis cette position depuis le depth buffer. Le vecteur position obtenu est aussi le vecteur direction allant de l'origine de la caméra au fragment, toujours en view space.
 ```c
     vec3 fragPos = reconstruct_position(depth, frag_ray, rd.v4_proj_params);
     vec3 fragNormal = normalize(decompress_normal(fNormMetAO.xy));
@@ -7530,11 +7530,11 @@ J'ai envisagé que l'implémentation d'un algo SSR puisse être plus aisée que 
 
 ```
 
-Bien entendu on a un beau bestiaire d'artéfactes dégueulasses à gérer, et plusieurs solutions pour chacun d'entre eux :
+Bien entendu on a un beau bestiaire d'artéfactes dégueulasses à gérer, et plusieurs solutions pour mitiger chacun d'entre eux :
 
 * *Banding* Comme on itère avec un pas fixé, la position finale du hit point obtenue par l'algo précédent est systématiquement derrière l'objet, et le bruit de quantification qui en résulte provoque des bandes sur les réflexions. Une solution efficace est de lancer quelques itérations de recherche binaire pour affiner la position du hit point. [1] et [2] proposent une implémentation.
 * *Toujours du banding* On peut ajouter un peu de bruit à la position de départ du rayon pour améliorer le résultat davantage (dithering).
-* *Faux positifs* Liés au fait que le depth buffer n'a pas dépaisseur. On peut simuler une épaisseur homogène ou bien se servir d'un *backface depth buffer* obtenu avec un rendu cull front dont la différence avec le front depth buffer est un bon estimateur de l'épaisseur de la géométrie. J'avais lu un papier impressionnant utilisant de telles *thickness maps* pour estimer du SSS. [4] mentionne cette possibilité. Mon moteur est capable de produire un backface depth buffer, mais j'ai eu peu de succès avec cette méthode.
+* *Faux positifs* Liés au fait que le depth buffer n'a pas d'épaisseur. On peut simuler une épaisseur homogène ou bien se servir d'un *backface depth buffer* obtenu avec un rendu cull front dont la différence avec le front depth buffer est un bon estimateur de l'épaisseur de la géométrie visible. J'avais lu un papier impressionnant utilisant de telles *thickness maps* pour estimer du SSS. [4] mentionne cette possibilité. Mon moteur est capable de produire un backface depth buffer, mais j'ai eu peu de succès avec cette méthode.
 * Et bien d'autres.
 
 A ce stade, plutôt que de poursuivre la résolution de problèmes sur du code-jouet, je me suis intéressé à des implémentations plus sérieuses, dont beaucoup semblent reprendre le travail de Morgan McGuire [3]. Notamment deux implémentations intéressantes par Kode80 [4] et [5] en HLSL et Pissang [6] en GLSL (qui d'ailleurs recolle la SSR avec du physically based, et fait du importance sampling sur une GGX Schlick pour simuler les réflexions diffuses des matériaux rugueux).
@@ -7600,7 +7600,7 @@ Le changement de pack alignment à 1 permet grossièrement d'éviter à glReadPi
 ## Shader line numbers
 J'ai donc ce système fantastique qui me permet de gérer un niveau d'include dans mes shaders. Le problème immédiat que celà entraîne, et je l'avais noté à l'époque (voir [05/06-09-18]), c'est que les numéros de lignes renvoyés par le shader error report en cas de problème de compilation, sont décalés de ceux que j'observe dans l'éditeur, du fait que chaque directive include est remplacée par un certain nombre de lignes avant que le source ne soit envoyé au compilo. Je me suis payé une migraine un jour, incapable de retrouver une ligne problématique et j'ai décider d'agir.
 
-La fonction parse_include() de _Shader_ incrémente maintenant un membre line_offset_ du nombre de lignes dans l'include. A terme, line_offset_ contient le nombre total de lignes incluses et je peux retrancher cette variable aux numéros de ligne renvoyés par le rapport d'erreurs pour obtenir les numéros de lignes corrects, visibles dans mon éditeur. Il reste à parser le rapport d'erreur pour obtenir les numéros des lignes problématiques :
+Il me suffit de compter le nombre de lignes avant et après parsing dans la fonction compile_shader(3), la différence des deux peut être retranchée aux numéros de ligne renvoyés par le rapport d'erreurs pour obtenir les numéros de lignes corrects, visibles dans mon éditeur. Il reste à parser le rapport d'erreur pour obtenir les numéros des lignes problématiques :
 ```cpp
     std::set<int> errlines;
 
@@ -7617,7 +7617,16 @@ La fonction parse_include() de _Shader_ incrémente maintenant un membre line_of
         ++it;
     }
 
-    // ... Further in the error handling section
+    // ... In compile_shader()
+
+    int nlines_raw = std::count(shader_source_raw.begin(), shader_source_raw.end(), '\n');
+
+    // ... Parse shader code
+
+    int nlines_parsed = std::count(shader_source.begin(), shader_source.end(), '\n');
+    int line_offset = nlines_parsed - nlines_raw;
+
+    // ... Further down in error handling section
 
     // * Show problematic lines
     std::istringstream source_iss(shader_source);
@@ -7627,7 +7636,7 @@ La fonction parse_include() de _Shader_ incrémente maintenant un membre line_of
     {
         if(errlines.find(nline++)!=errlines.end())
         {
-            int actual_line = std::max(0, nline-line_offset_-1);
+            int actual_line = std::max(0, nline-line_offset-1);
             std::cout << actual_line << " : " << line << std::endl;
         }
     }
@@ -7691,7 +7700,7 @@ Bref, pour activer le mode always-on-top il faut mettre à true la propriété *
 ## Plan de route pour le moteur d'animation
 J'attaque la partie animation. Je me suis fixé sur la possibilité d'animer des modèles 3D relativement low poly pour mon jeu. La difficulté comme à chaque fois que je démarre un gros système est de trouver un angle d'attaque ; comme souvent je commence côté données.
 
-[ ] Créer un tool pour convertir des exports Blender vers mes formats propriétaires.
+[/] Créer un tool pour convertir des exports Blender vers mes formats propriétaires.
 * Un type de fichier en entrée
 * Deux fichiers en sortie : un pour le modèle (vertex data), un pour le squelette (bone hierarchy) et l'ensemble des animations applicables à ce squelette.
     -> Ainsi on pourra trivialement réutiliser un squelette et un groupe d'animation d'un modèle à un autre semblable.
@@ -7708,6 +7717,91 @@ J'ai démarré une classe template _Tree_ pointer-less que je teste en ce moment
 
 ATTENTION :
 * Les bone IDs per-vertex sont des entiers, bien penser à utiliser glVertexAttrib*I*Pointer au lieu de glVertexAttribPointer pour bind les IDs dans la structure de données per-vertex.
+
+
+#[04-05-19]
+Je bosse sur l'utilitaire *wconvert* qui permet de convertir un modèle animé au format Collada (.dae) en fichiers lisibles par le moteur.
+Le programme se borne à parcourir un dossier de travail où sont stockés les fichiers d'échange exportés par Blender, et à convertir ces derniers en une paire de fichiers contenant respectivement les données d'animation squelettale (pour l'instant juste la hiérarchie de l'armature) et les données de mesh.
+
+J'ai codé un importer basé sur Assimp du nom de _AnimatedModelImporter_, lequel remplit une structure _ModelInfo_ avec des données de mesh et une hiérarchie squelettale _Tree<BoneInfo>_. Assimp gère automatiquement la triangulation, la génération des normales, tangentes et bi-tangentes. Une des difficultés a été de récupérer les poids et bone IDs qui sont stockées dans les os pour Assimp et d'en faire des données par vertex.
+
+J'ai également deux exporters capables de lire un _ModelInfo_ et d'exporter les données d'armature et de mesh vers des fichiers distincts :
+
+## _XMLSkeletonExporter_
+Cette classe exporte une hiérarchie squelettale dans un fichiers XML à l'extension .skel. Un tel fichier tire partie de la hiérarchie du DOM pour représenter la hiérarchie squelettale. Chaque noeud définit en prime une matrice d'offsets en bone space pour le positionnement correct des os :
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<BoneHierarchy name="chest">
+    <offset>1.061462 0.000000 0.000000 0.000000 0.000000 1.034307 -0.238556 0.000000 0.000000 0.238556 1.034307 0.000000 -0.006071 0.537051 0.012778 1.000000</offset>
+    <bone name="Armature_bottom">
+        <offset>0.942097 0.000000 0.000000 0.000000 0.000000 0.211730 -0.917996 0.000000 0.000000 0.917996 0.211730 0.000000 0.005720 0.802042 0.704223 1.000000</offset>
+        <bone name="Armature_top">
+            <offset>0.942097 0.000000 -0.000000 0.000000 -0.000000 0.483948 -0.808296 0.000000 0.000000 0.808296 0.483948 0.000000 0.005720 -0.405061 0.609134 1.000000</offset>
+        </bone>
+    </bone>
+</BoneHierarchy>
+```
+
+## _BinaryMeshExporter_
+Cette classe exporte les données de mesh (per-vertex data) dans un fichier binaire .wesh (!), dont le format est pris en charge par la classe WCore _WeshLoader_.
+
+Un wesh file possède la structure suivante :
+
+    [HEADER]              -> 128 bytes, padded
+    [size_t vsize]        -> number of vertices
+    [array of VertexAnim] -> vertex buffer content of size vsize
+    [size_t isize]        -> number of indices
+    [array of uint32_t]   -> index buffer content of size isize
+
+Le header commence par un magic number 0x48534557 (WESH en ASCII), et définit le numéro de version du format utilisé pour l'export :
+
+```cpp
+struct WeshHeader
+{
+    uint32_t magic;
+    uint8_t version_major;
+    uint8_t version_minor;
+};
+
+#define WESH_HEADER_SIZE 128
+typedef union
+{
+    struct WeshHeader h;
+    uint8_t padding[WESH_HEADER_SIZE];
+} WeshHeaderWrapper;
+```
+L'astuce pour forcer une taille de header à 128 octets (padding) consiste à envelopper la structure du header dans une union avec un tableau de 128 octets, et à (dé)sérialiser le wrapper plutôt que le header lui-même.
+En mode lecture, _WeshLoader_ commence par parser le header, et détermine si le wesh file est valide (présence du magic number et numéro de version compatible).
+L'avantage de ce format est que les vertices sont stockées avec des données entrelacées, telles qu'utilisées par le moteur, ainsi je peux directement sérialiser / désérialiser un couple vertex buffer / index buffer de la façon la plus rapide possible.
+Pour l'instant, le format ne prend en charge que les mesh animés, présentant le vertex layout suivant :
+
+    math::vec3 position_;
+    math::vec3 normal_;
+    math::vec3 tangent_;
+    math::vec2 uv_;
+    math::vec4 weight_;
+    math::i32vec4 bone_id_;
+C'est le format de vertex défini par la structure _VertexAnim_ de vertex_format.h. Bientôt le format sera étendu pour gérer les mesh statiques qui n'ont pas besoin des deux derniers attributs (_Vertex3P3N3T2U_).
+
+La lecture et l'écriture se fait au moyen de streams, rendant ce système compatible avec FILESYSTEM :
+
+```cpp
+    // --- WRITE to std::ostream& stream ---
+    size_t vsize = vertices.size();
+    // Write vertex data size
+    stream.write(reinterpret_cast<const char*>(&vsize), sizeof(vsize));
+    // Write vertex data
+    stream.write(reinterpret_cast<const char*>(&vertices[0]), vertices.size()*sizeof(VertexAnim));
+
+    // --- READ from std::istream& stream ---
+    size_t vsize;
+    // Read vertex data size
+    stream.read(reinterpret_cast<char*>(&vsize), sizeof(vsize));
+    // Read vertex data
+    std::vector<VertexAnim> vertices(vsize);
+    stream.read(reinterpret_cast<char*>(&vertices[0]), vsize*sizeof(VertexAnim));
+```
 
 
 
