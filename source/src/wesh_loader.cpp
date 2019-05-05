@@ -42,6 +42,7 @@ bool WeshLoader::header_sanity_check(const WeshHeader& header, size_t vertex_siz
     if(header.magic != WESH_MAGIC)
     {
         DLOGE("[Wesh] Not a valid Wesh file.", "parsing");
+        DLOGI("Magic bytes should be " + std::to_string(WESH_MAGIC) + " but got " + std::to_string(header.magic), "parsing");
         return false;
     }
 

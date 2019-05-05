@@ -6,6 +6,7 @@
 #include "tree_generator.h"
 #include "config.h"
 #include "obj_loader.h"
+#include "wesh_loader.h"
 #include "cspline.h"
 #include "logger.h"
 #include "xml_utils.hpp"
@@ -16,7 +17,8 @@ namespace wcore
 using namespace math;
 
 SurfaceMeshFactory::SurfaceMeshFactory():
-obj_loader_(new ObjLoader())
+obj_loader_(new ObjLoader()),
+wesh_loader_(new WeshLoader())
 {
     models_path_ = CONFIG.get_root_directory();
     models_path_ = models_path_ / "res/models";
@@ -24,6 +26,7 @@ obj_loader_(new ObjLoader())
 
 SurfaceMeshFactory::~SurfaceMeshFactory()
 {
+    delete wesh_loader_;
     delete obj_loader_;
 }
 
@@ -84,6 +87,17 @@ bool SurfaceMeshDescriptor::parse(rapidxml::xml_node<char>* mesh_node)
         xml::parse_node(mesh_node, "ProcessNormals", process_normals);
         xml::parse_node(mesh_node, "Centered", centered);
     }
+    else if(type == "wesh"_h)
+    {
+        if(!xml::parse_node(mesh_node, "Location", file_name))
+        {
+            DLOGW("[SceneLoader] Ignoring incomplete .wesh mesh declaration.", "parsing");
+            DLOGI("Missing <n>Location</n> node.", "parsing");
+            return false;
+        }
+        centered = false;
+        xml::parse_node(mesh_node, "Centered", centered);
+    }
     return true;
 }
 
@@ -140,6 +154,12 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_surface_mesh(rapidxml::xml
                              desc.centered,
                              desc.smooth_func);
     }
+    else if(!mesh.compare("wesh"))
+    {
+        SurfaceMeshDescriptor desc;
+        if(desc.parse(mesh_node))
+            pmesh = make_wesh(desc.file_name.c_str(), desc.centered);
+    }
     else
     {
         rapidxml::xml_node<>* gen_node = mesh_node->first_node("Generator");
@@ -181,6 +201,11 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_instance(hash_t name)
                                  desc.process_normals,
                                  desc.centered,
                                  desc.smooth_func);
+            }
+            else if(desc.type=="wesh"_h)
+            {
+                DLOGI("From wesh file.", "model");
+                pmesh = make_wesh(desc.file_name.c_str(), desc.centered);
             }
             else
             {
@@ -291,6 +316,16 @@ std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_obj(const char* filename,
                                                            process_uv,
                                                            process_normals,
                                                            smooth_func);
+    pmesh->set_centered(centered);
+
+    return pmesh;
+}
+
+std::shared_ptr<SurfaceMesh> SurfaceMeshFactory::make_wesh(const char* filename,
+                                                           bool centered)
+{
+    auto stream = FILESYSTEM.get_file_as_stream(filename, "root.folders.model"_h, "pack0"_h);
+    std::shared_ptr<SurfaceMesh> pmesh = wesh_loader_->read<Vertex3P3N3T2U>(*stream);
     pmesh->set_centered(centered);
 
     return pmesh;

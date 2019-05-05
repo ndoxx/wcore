@@ -37,7 +37,7 @@ WTF bruh?!
 Computations are correct, sources: wiki, matlab code for quat2rotm and
 http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/
 
-Mah code gives good rotation matrices from quats compared to what matlab outputs
+My code gives good rotation matrices from quats compared to what matlab outputs
 for the same quats.
 => wrong axis/angle initialization ? (which also seems mathematically rigorous).
 Same result using Tait-Bryan angles initialization. Damn, nigga.
@@ -143,7 +143,7 @@ quats are constructed from Euler angles with the **ZYX convention** too.
 
 ## Perspective matrix
 World (eye) coords are right-handed, but normalized device coordinates (*NDC*) are left-handed for OpenGL and right-handed for DirectX.
--> Added a bool leftHanded default true to init_perspective just in case (multiply xScale by -1 if right-handed, 1 if left-handed).
+-> Added a bool leftHanded (default true) to init_perspective just in case (multiply xScale by -1 if right-handed, 1 if left-handed).
 
 #[27-06-18] english.remove() french.add()
 Je bosse sur l'idée d'une transition smooth ortho -> perspective et inversement.
@@ -158,7 +158,7 @@ J'ai mesuré auparavant sous Matlab l'"explosivité" de l'interpolation, à savo
 * tout ceci dans le sens ortho->persp et persp->ortho
 J'ai un comportement légèrement divergent à l'approche d'ortho (ce qui j'imagine, devait être attendu).
 
-Voilà du code pour Unity, mentioné dans le lien prec.
+Voilà du code pour Unity, mentionné dans le lien prec.
 
 ```cs
 using UnityEngine;
@@ -236,20 +236,21 @@ Cette classe représente une transformation euclidienne appliquée à un modèle
 Des fonctions translate et rotate permettent d'ajuster la transformation
 courante d'un modèle.
 Un membre get_model_matrix() calcule la matrice monde depuis les trois transformations que l'objet regroupe.
-La classe Transformation est unit testée **à une exception près: rotate_around** qui fait **MEGA** chier. Code actuel:
+La classe _Transformation_ est unit testée **à une exception près: rotate_around** qui fait **MEGA** chier. Code actuel:
 ```cpp
     quat q1(vec4(position_-point, 0.0));
     quat q2(axis, angle);
     quat rot_dist(q2.get_conjugate()*(q1*q2));
     position_ = point+rot_dist.get_as_vec().xyz();
 ```
-Une classe _Model_ regroupe pour l'instant un Mesh<Vertex3P3N>* et une Transformation (plus tard, +Material* ). Model possède des membres
-inline rotate et translate qui agissent sur sa Transformation. Un autre membre inline get_model_matrix() récupère et transmet la matrice modèle de la Transformation.
+Une classe _Model_ regroupe pour l'instant un Mesh<Vertex3P3N>* et une _Transformation_ (plus tard, +Material* ). _Model_ possède des membres
+inline rotate et translate qui agissent sur sa _Transformation_. Un autre membre inline get_model_matrix() récupère et transmet la matrice modèle de la _Transformation_.
 
 ##[BufferUnit]
 Une classe _BufferUnit<VertexType>_ contient et initialise un VBO et un IBO, et peut absorber un Mesh via la méthode submit() et envoyer ses gros buffers vers OpenGL via une fonction upload().
 J'ai choisi la même stratégie que pour WEngine: On enfourne plein de meshs *de même nature* dans un seul gros buffer.
 Mais dans WCore le VAO est découplé du BufferUnit qui n'est plus qu'un VBO indexé. L'idée est que je peux avoir plusieurs VBO semblables dans un Renderer et un seul VAO associé au Renderer. Comme ça on bind le VAO à l'appel de Renderer.draw() et on dessine les multiples VBOs avec le même interfaçage d'attributs.
+    -> Edit : C'est bien sûr n'importe quoi, à ce stade je suis inconscient de mon erreur.
 BufferUnit<VertexType> est friend de Mesh<VertexType>, donc il peut appeler la méthode private Mesh<VertexType>::set_buffer_offset(). Ainsi l'affectation de l'offset se fait en background dans la méthode BufferUnit<VertexType>::submit() et on n'a pas à se casser le cul avec en dehors de ces deux classes.
 
 J'ai une classe GLContext qui permet d'ouvrir une fenêtre avec un render target OpenGL (via glfw) et possède une méthode main_loop() qui exécute
@@ -273,7 +274,7 @@ Mais le truc cool... C'est que l'on peut aussi choisir une projection hybride en
 J'ai pour l'instant une classe _Shader_ fonctionnelle mais définie juste avant main() (en train d'être prototypée). J'ai bien entendu récupéré des bouts de WEngine pour cette classe.
 J'ai récupéré les shaders vertex et fragment de Gebobola pour implémenter un per-vertex Gouraud shading vite tef. Bah, ça fonctionne.
 
-Lors du test de la caméra en revanche, je me suis rendu compte d'un problème dans la multiplication de quats qui très étonnamment m'avait échappée (car je suis _on ne peut plus_ sérieux avec le unit testing bien sûr...). Encore une permutation circulaire des indices due à des conflits de conventions XYZW / WXYZ.
+Lors du test de la caméra en revanche, je me suis rendu compte d'un problème dans la multiplication de quats qui très étonnamment m'avait échappée (car je suis *on ne peut plus* sérieux avec le unit testing bien sûr...). Encore une permutation circulaire des indices due à des conflits de conventions XYZW / WXYZ.
 * Donc déjà faudrait revisiter l'operator/ qui doit aussi être écrit de manière frivole.
 * Et revenir sur le problème d'hier avec le unit test du rotate_around() (qui si ça se trouve doit fonctionner tout seul maintenant).
 
@@ -430,7 +431,7 @@ J'ai bien dû faire un one shot, mais je m'en suis rendu compte après 4h de deb
     width_(2),
     height_(2),
 ```
-Bah ouais, ça réduisait la taille de la texture à 2x2 px, dans une zone blanche... Ce code est sert à réduire la taille de toutes les textures à 2x2 pour faire du profiling (idée de ThinMatrix que j'ai reprise dans WEngine). J'ai juste eu à inverser les couples d'instructions. Quand on dit que **les macros c'est CACA**. Bon, il a aussi fallu que je refasse les coords UV dans le stub mesh factory qui produit le cube.
+Bah ouais, ça réduisait la taille de la texture à 2x2 px, dans une zone blanche... Ce code sert à réduire la taille de toutes les textures à 2x2 pour faire du profiling (idée de ThinMatrix que j'ai reprise dans WEngine). J'ai juste eu à inverser les couples d'instructions. Quand on dit que **les macros c'est CACA**. Bon, il a aussi fallu que je refasse les coords UV dans le stub mesh factory qui produit le cube.
 _Model_ possède maintenant un _Mesh<Vertex3P3N2U>*_ et le _BufferUnit_ est maintenant un _BufferUnit<Vertex3P3N2U>_.
 
 Texture possède un std::shared_ptr sur un objet _TextureInternal_ qui fait le gros de l'initialisation et qui conserve les données utiles à OpenGL. Lors de la construction d'une _Texture_, si c'est le constructeur qui prend un filepath en argument qui est appelé, le filepath est sauvegardé sous forme de hash (ou tel quel si __PRESERVE_STRS__ est défini, voir [H_]) lors du premier accès à la ressource, un nouvel objet _TextureInternal_ est créé et initialisé à travers std::make_shared<TextureInternal>(Args&&...) et le std::shared_ptr résultant est associé au hash du filepath dans une unordered_map. Ainsi lors de futurs accès à la même ressource, je peux simplement fabriquer un shared_ptr à la volée au lieu de générer une nouvelle copie de la texture. L'idée est encore de ThinMatrix.
@@ -592,7 +593,7 @@ La classe _Texture_ ne configure plus des render targets pour CHAQUE putain de t
 Du lourd. On peut maintenant faire du rendu sur une _Texture_ lors d'une première passe, et rendre un quad texturé avec celle-ci à l'écran lors d'une deuxième passe. La deuxième passe utilise un nouveau shader.
 Donc je peux faire du post-processing easy peasy et en théorie ça m'ouvre la voie à l'HDR rendering.
 
-J'ai juste eu une galère en oubliant de déclarer et d'utiliser un VAO pour le quad... Noter que **l'utilisation de VAO n'est pas optionnelle**.
+J'ai juste eu une galère en oubliant de déclarer et d'utiliser un VAO pour le quad... Noter que **l'utilisation de VAO n'est pas optionnelle** dans un contexte OpenGL moderne.
 
 Pour l'instant tout traîne en vrac dans la classe main, il conviendra d'encapsuler tout ça dans du beau code OO.
 
@@ -941,7 +942,7 @@ J'ai pu aujourd'hui valider un certain nombre de features en codant vite taif un
     [x] Ecrire les shaders en se basant sur le code précédent.
 
 #[09-07-18]
-Déjà on commence par régler le problème rencontré hier. Je vais pousser les instrus de debug pour les unifroms et automatiser la collection de leur noms.
+Déjà on commence par régler le problème rencontré hier. Je vais pousser les instrus de debug pour les uniforms et automatiser la collection de leur noms.
 
 ##[DEBUG] Notes de session
 * Ne pas envoyer les uniform samplers ids en unsigned int avec un type sous-jacent uint_8, ça fout évidemment le bordel.
@@ -1180,7 +1181,7 @@ sources : https://learnopengl.com/Lighting/Light-casters
 #[13-07-18]
 Aujourd'hui j'essaye d'implémenter Bloom.
 
-J'ai vu une technique naïve qui consiste à générer une texture *bright pass* (seuillage en fonction de l'intensité lumineuse) puis à convoluer itérativement cette texture avec un noyaux Gaussien 5x5 en alternant passe verticale et passe horizontale. On obtient la version floutée de la texture bright pass, qu'on peut combiner avec le rendu de la scène en post-processing, par *additive blending*.
+J'ai vu une technique naïve qui consiste à générer une texture *bright pass* (seuillage en fonction de l'intensité lumineuse) puis à convoluer itérativement cette texture avec un noyaux Gaussien 5x5 en alternant passe verticale et passe horizontale (principe du filtre séparable). On obtient la version floutée de la texture bright pass, qu'on peut combiner avec le rendu de la scène en post-processing, par *additive blending*.
 Ceci peut être implémenté à l'aide de deux frame buffers qui se renvoient la texture après chaque passe. L'un convolue verticalement et l'autre horizontalement. Un cas typique de *ping-pong buffers*.
 
 Un inconvénient majeur de cette approche est qu'il faut itérer longtemps avant d'obtenir suffisamment de blur, et le flou obtenu est très diffus et manque d'intensité. De plus on itère sur tous les pixels d'une texture de la même résolution que l'écran, ce qui est couteux.
@@ -1190,7 +1191,7 @@ source : https://learnopengl.com/Advanced-Lighting/Bloom
 Une autre approche consiste à *approximer* des noyaux plus gros que 5x5 en exploitant le *downscaling* et le *filtrage bilinéaire* sur la texture bright pass.
 
 En effet, mettons que l'on commence avec une texture 128x128. On downscale cette texture en 64x64, puis on applique un noyau 5x5 avant de rescale en 128x128 avec filtrage bilinéaire. Le résultat est comparable à l'action d'un noyau 11x11 sur la texture 128x128 d'origine.
-Si m'on répète l'opération sur des versions downscalées à 32x32 et 16x16 on obtient respectivement les approximations de noyaux 21x21 et 41x41. En rescalant toutes les textures à la taille d'origine et en les combinant par additive blending (éventuellement avec pondération), on obtient un flou beaucoup plus intéressant artistiquement, et les opérations qui simulent des noyaux plus en plus gros sont en réalité de plus en plus rapides (en 1/N^2) car appliquées à des textures plus petites.
+Si l'on répète l'opération sur des versions downscalées à 32x32 et 16x16 on obtient respectivement les approximations de noyaux 21x21 et 41x41. En rescalant toutes les textures à la taille d'origine et en les combinant par additive blending (éventuellement avec pondération), on obtient un flou beaucoup plus intéressant artistiquement, et les opérations qui simulent des noyaux plus en plus gros sont en réalité de plus en plus rapides (en 1/N^2) car appliquées à des textures plus petites.
 
 On pourrait donc initialiser une texture bright pass avec une résolution valant la moitié de celle de l'écran (ou mieux (?) des tailles puissances de 2 grâce à math::np2() ou math::pp2()), et la downscale N-1 fois dans N-1 textures. Sur les N textures obtenues on calcule les convolutions, puis on rescale tout à la résolution de l'écran avant de blend.
 
@@ -1270,12 +1271,12 @@ Court terme :
 Moyen Terme :
 
     [ ] Implémenter les fonctionnalités suivantes et les shortcuts qui vont avec :
-        [ ] Figer / Reprendre les mouvements dans la scène
-        [ ] Activer / Désactiver certains systèmes
+        [x] Figer / Reprendre les mouvements dans la scène
+        [x] Activer / Désactiver certains systèmes
         [x] Afficher / Masquer les bounding boxes des objets
-        [ ] Afficher / Masquer le wireframe
+        [x] Afficher / Masquer le wireframe
         [ ] Ajouter / Supprimer / Cloner des objets de la scène
-    [ ] Implémenter du ray casting pour pouvoir sélectionner des objets in-game.
+    [x] Implémenter du ray casting pour pouvoir sélectionner des objets in-game.
         [ ] Utiliser un stencil test pour mettre en surbrillance le contour d'un objet sélectionné.
     [ ] Converger vers un éditeur de niveaux in-game basique avec :
         [ ] Undo / Redo
@@ -1288,7 +1289,7 @@ Moyen Terme :
 
 Long terme :
 
-    [ ] Choisir et implémenter un algo de partition de l'espace (BSP, octree, k-D tree).
+    [x] Choisir et implémenter un algo de partition de l'espace (BSP, octree, k-D tree).
     [ ] Ecrire un renderer pour cette structure de données.
     [ ] Ecrire des classes pour (dé)sérialiser cette structure (level loading).
 
@@ -7857,11 +7858,22 @@ D'autre part, la correction de faces dégénérées (faces avec des vertices ide
                                                         | aiPrimitiveType_LINE);
 ```
 
+Le flag *aiProcess_ImproveCacheLocality* est intéressant, il permet de limiter les cache misses lors du rendu, j'avais déjà lu à ce sujet auparavant. L'algo Tipsify est utilisé (voir [3]).
+
 
 
 * sources :
 [1] https://opengl.developpez.com/tutoriels/ogldev-tutoriel/22-assimp/
 [2] http://sir-kimmi.de/assimp/lib_html/postprocess_8h.html
+[3] https://gfx.cs.princeton.edu/pubs/Sander_2007_%3ETR/tipsy.pdf
+
+
+
+
+
+
+
+
 
 
 

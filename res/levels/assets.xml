@@ -353,14 +353,12 @@
                 <TextureScale>3.0f</TextureScale>
             </Generator>
         </Mesh>
-        <Mesh name=".teapot01" type="obj">
-            <Location>teapot.obj</Location>
-            <ProcessUV>false</ProcessUV>
+        <Mesh name=".teapot01" type="wesh">
+            <Location>teapot.wesh</Location>
             <Centered>true</Centered>
         </Mesh>
-        <Mesh name=".anvil01" type="obj">
-            <Location>anvil.obj</Location>
-            <ProcessUV>false</ProcessUV>
+        <Mesh name=".anvil01" type="wesh">
+            <Location>anvil.wesh</Location>
             <Centered>false</Centered>
         </Mesh>
         <Mesh name=".interior01" type="obj">

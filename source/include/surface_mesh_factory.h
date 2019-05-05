@@ -32,11 +32,11 @@ struct SurfaceMeshDescriptor
 };
 
 class ObjLoader;
+class WeshLoader;
 
 class SurfaceMeshFactory
 {
 public:
-    //typedef std::pair<hash_t, std::shared_ptr<SurfaceMesh>> CacheEntryT;
     typedef std::mt19937* OptRngT;
 
     SurfaceMeshFactory();
@@ -54,6 +54,9 @@ public:
                                           bool process_normals=false,
                                           bool centered=true,
                                           int smooth_func=0);
+    // Create a mesh from .wesh fil
+    std::shared_ptr<SurfaceMesh> make_wesh(const char* filename,
+                                           bool centered=false);
     // Create mesh from mesh instance name
     std::shared_ptr<SurfaceMesh> make_instance(hash_t name);
     // Create mesh from XML node and an optional random engine
@@ -68,6 +71,7 @@ private:
     fs::path models_path_;
 
     ObjLoader* obj_loader_;
+    WeshLoader* wesh_loader_;
 };
 
 } // namespace wcore

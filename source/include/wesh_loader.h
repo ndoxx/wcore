@@ -60,6 +60,9 @@ public:
                const std::vector<uint32_t>& indices);
 
     template<typename VertexT>
+    std::shared_ptr<Mesh<VertexT>> read(std::istream& stream);
+
+    template<typename VertexT>
     void write(std::ostream& stream, const Mesh<VertexT>& mesh);
 
 private:
@@ -115,6 +118,15 @@ void WeshLoader::write(std::ostream& stream,
     stream.write(reinterpret_cast<const char*>(&vertices[0]), vsize*sizeof(VertexT));
     // Write index data
     stream.write(reinterpret_cast<const char*>(&indices[0]), isize*sizeof(uint32_t));
+}
+
+template<typename VertexT>
+std::shared_ptr<Mesh<VertexT>> WeshLoader::read(std::istream& stream)
+{
+    std::vector<VertexT> vdata;
+    std::vector<uint32_t> idata;
+    read(stream, vdata, idata);
+    return std::make_shared<Mesh<VertexT>>(std::move(vdata), std::move(idata));
 }
 
 template<typename VertexT>

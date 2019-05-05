@@ -38,14 +38,9 @@ void test_read_binary(const std::string& filename, const wconvert::AnimatedModel
     // Test read binary mesh data
     std::ifstream stream("../res/models/" + stripped_filename + ".wesh", std::ios::in | std::ios::binary);
 
-    std::vector<VertexAnim> vdata;
-    std::vector<uint32_t> idata;
-
     WeshLoader wesh;
-    wesh.read(stream, vdata, idata);
+    auto pmesh = wesh.read<VertexAnim>(stream);
     stream.close();
-
-    auto pmesh = std::make_shared<Mesh<VertexAnim>>(std::move(vdata), std::move(idata));
 
     assert(pmesh->get_nv() == model_info.vertex_data.vertices.size());
     assert(pmesh->get_ni() == model_info.vertex_data.indices.size());
