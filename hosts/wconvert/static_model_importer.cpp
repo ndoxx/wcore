@@ -11,6 +11,8 @@ namespace wconvert
 StaticModelImporter::StaticModelImporter()
 {
     wcore::CONFIG.get("root.folders.modelswork"_h, workdir_);
+    importer_.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, IMPORTER_REMOVE_COMPONENTS);
+    importer_.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, IMPORTER_IGNORE_PRIMITIVES);
 }
 
 StaticModelImporter::~StaticModelImporter()
@@ -22,11 +24,7 @@ bool StaticModelImporter::load_model(const std::string& filename,
                                      StaticModelInfo& model_info)
 {
     // Import file in an Assimp scene object
-    pscene_ = importer_.ReadFile(workdir_ / filename,
-                                 aiProcess_Triangulate |
-                                 aiProcess_GenSmoothNormals |
-                                 aiProcess_CalcTangentSpace |
-                                 aiProcess_FlipUVs);
+    pscene_ = importer_.ReadFile(workdir_ / filename, IMPORTER_POST_PROCESS_FLAGS);
 
     // Sanity check
     if(!pscene_ || pscene_->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !pscene_->mRootNode)

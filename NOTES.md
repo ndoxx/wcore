@@ -7723,9 +7723,14 @@ ATTENTION :
 Je bosse sur l'utilitaire *wconvert* qui permet de convertir un modèle animé au format Collada (.dae) en fichiers lisibles par le moteur.
 Le programme se borne à parcourir un dossier de travail où sont stockés les fichiers d'échange exportés par Blender, et à convertir ces derniers en une paire de fichiers contenant respectivement les données d'animation squelettale (pour l'instant juste la hiérarchie de l'armature) et les données de mesh.
 
-J'ai codé un importer basé sur Assimp du nom de _AnimatedModelImporter_, lequel remplit une structure _ModelInfo_ avec des données de mesh et une hiérarchie squelettale _Tree<BoneInfo>_. Assimp gère automatiquement la triangulation, la génération des normales, tangentes et bi-tangentes. Une des difficultés a été de récupérer les poids et bone IDs qui sont stockées dans les os pour Assimp et d'en faire des données par vertex.
+WConvert a des attentes particulières pour les meshes animés en entrée. Un seul mesh doit être présent dans le fichier d'échange, le cas échéant seul le premier mesh déclaré sera parsé. Le noeud de l'armature __doit__ s'appeler "Armature".
 
-J'ai également deux exporters capables de lire un _ModelInfo_ et d'exporter les données d'armature et de mesh vers des fichiers distincts :
+J'ai codé un importer basé sur Assimp du nom de _AnimatedModelImporter_, lequel remplit une structure _AnimatedModelInfo_ avec des données de mesh et une hiérarchie squelettale _Tree<BoneInfo>_.
+Un autre importer du nom de _StaticModelImporter_ spécialisé pour les meshes statiques remplit une structure _StaticModelInfo_.
+
+Assimp gère automatiquement la triangulation, la génération des normales, tangentes et bi-tangentes. Une des difficultés a été de récupérer les poids et bone IDs qui sont stockées dans les os pour Assimp et d'en faire des données par vertex.
+
+J'ai également deux exporters capables de lire des structures _AnimatedModelInfo_ et _StaticModelInfo_, et d'exporter les données d'armature (dans le cas de meshes animés) et de mesh vers des fichiers distincts :
 
 ## _XMLSkeletonExporter_
 Cette classe exporte une hiérarchie squelettale dans un fichiers XML à l'extension .skel. Un tel fichier tire partie de la hiérarchie du DOM pour représenter la hiérarchie squelettale. Chaque noeud définit en prime une matrice d'offsets en bone space pour le positionnement correct des os :
@@ -7743,7 +7748,7 @@ Cette classe exporte une hiérarchie squelettale dans un fichiers XML à l'exten
 </BoneHierarchy>
 ```
 
-## _BinaryMeshExporter_
+## _BinaryMeshExporter_ et _WeshLoader_
 Cette classe exporte les données de mesh (per-vertex data) dans un fichier binaire .wesh (!), dont le format est pris en charge par la classe WCore _WeshLoader_.
 
 Un wesh file possède la structure suivante :
@@ -7774,15 +7779,6 @@ typedef union
 L'astuce pour forcer une taille de header à 128 octets (padding) consiste à envelopper la structure du header dans une union avec un tableau de 128 octets, et à (dé)sérialiser le wrapper plutôt que le header lui-même.
 En mode lecture, _WeshLoader_ commence par parser le header, et détermine si le wesh file est valide (présence du magic number et numéro de version compatible).
 L'avantage de ce format est que les vertices sont stockées avec des données entrelacées, telles qu'utilisées par le moteur, ainsi je peux directement sérialiser / désérialiser un couple vertex buffer / index buffer de la façon la plus rapide possible.
-Pour l'instant, le format ne prend en charge que les mesh animés, présentant le vertex layout suivant :
-
-    math::vec3 position_;
-    math::vec3 normal_;
-    math::vec3 tangent_;
-    math::vec2 uv_;
-    math::vec4 weight_;
-    math::i32vec4 bone_id_;
-C'est le format de vertex défini par la structure _VertexAnim_ de vertex_format.h. Bientôt le format sera étendu pour gérer les mesh statiques qui n'ont pas besoin des deux derniers attributs (_Vertex3P3N3T2U_).
 
 La lecture et l'écriture se fait au moyen de streams, rendant ce système compatible avec FILESYSTEM :
 
@@ -7803,7 +7799,69 @@ La lecture et l'écriture se fait au moyen de streams, rendant ce système compa
     stream.read(reinterpret_cast<char*>(&vertices[0]), vsize*sizeof(VertexAnim));
 ```
 
+En pratique, _WeshLoader_ possède des méthodes read() et write() paramétrées par le format de vertex, ainsi tous les formats de vertices sont (dé)sérialisables automagiquement.
 
+En particulier, le format wesh prend en charge les mesh animés, présentant le vertex layout suivant :
+
+    math::vec3 position_;
+    math::vec3 normal_;
+    math::vec3 tangent_;
+    math::vec2 uv_;
+    math::vec4 weight_;
+    math::i32vec4 bone_id_;
+
+C'est le format de vertex défini par la structure _VertexAnim_ de vertex_format.h.
+
+
+#[05-05-19]
+
+## Notes sur Assimp
+Je m'étonnais du fait que mes modèles importés comportaient exactement autant d'indices que de vertices. Par ailleurs la liste des indices était simplement la liste des entiers ordonnés. Il se trouve qu'Assimp a recours par défaut à la duplication des vertices lors du post-processing, de telle sorte que seul le vertex buffer est pertinent. Ainsi, en suivant l'écrasante majorité des tutos tels que [1] qui ignorent cette subtilité on se retrouve dans ce cas de figure des plus inefficaces.
+
+Il m'a fallu creuser dans une doc assez mal branlée avant de découvrir les bons flags de post-processing à activer lors de l'import pour pallier ce problème (voir [2] pour une liste complète des flags). Dans assimp_utils.h je déclare les flags utilisés par mes deux importers :
+
+* Convert n-gons to triangles
+    -> *aiProcess_Triangulate*
+* Detect degenerate faces, next flag will ensure they are removed and not simply collapsed
+    -> *aiProcess_FindDegenerates*
+* Split meshes with different primitive types into submeshes. With previous flag, will remove degenerates.
+    -> *aiProcess_SortByPType*
+* Remove/fix zeroed normals / uvs
+    -> *aiProcess_FindInvalidData*
+* Reduce the number of input meshes
+    -> *aiProcess_OptimizeMeshes*
+* Reorder triangles so as to minimize average post-transform vertex cache miss ratio
+    -> *aiProcess_ImproveCacheLocality*
+* Validates indices, bones and animations
+    -> *aiProcess_ValidateDataStructure*
+* Remove parts of input data structure, such as vertex color, to allow for efficient vertex joining
+    -> *aiProcess_RemoveComponent*
+* Allow vertices to be shared by several faces
+    -> *aiProcess_JoinIdenticalVertices*
+* Generate smoothed normals if normals aren't present in input data
+    -> *aiProcess_GenSmoothNormals*
+* Generate tangents and bi-tangents
+    -> *aiProcess_CalcTangentSpace*
+* Flip UVs vertically and adjust bi-tangents
+    -> *aiProcess_FlipUVs*
+
+Si un modèle définit des couleurs per-vertex, ce dont WCore n'a rien à foutre, ces données pourront néanmoins entrainer une duplication de vertex, donc il est important de les filtrer en entrée pour optimiser le vertex joining. Pour ce faire, il faut configurer l'importer avant utilisation :
+```cpp
+    importer_.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, aiComponent_COLORS);
+```
+et utiliser le flag de post-process *aiProcess_RemoveComponent*.
+
+D'autre part, la correction de faces dégénérées (faces avec des vertices identiques) avec *aiProcess_FindDegenerates* produit des faces non triangulaires par collapsing dont il faut se débarrasser. A cet effet, on utilise le flag *aiProcess_SortByPType* qui va séparer un mesh possédant des primitives non-homogènes en divers sub-meshes homogènes, parmi lesquels les non-triangulaires seront ignorés grâce à cette configuration :
+```cpp
+    importer_.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT
+                                                        | aiPrimitiveType_LINE);
+```
+
+
+
+* sources :
+[1] https://opengl.developpez.com/tutoriels/ogldev-tutoriel/22-assimp/
+[2] http://sir-kimmi.de/assimp/lib_html/postprocess_8h.html
 
 
 
