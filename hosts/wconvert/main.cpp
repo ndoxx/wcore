@@ -8,6 +8,7 @@
 #include "logger.h"
 #include "wesh_loader.h"
 #include "animated_model_importer.h"
+#include "static_model_importer.h"
 #include "xml_skeleton_exporter.h"
 #include "binary_mesh_exporter.h"
 #include "mesh.hpp"
@@ -30,15 +31,20 @@ bool check_extension(const std::string& filename, const char* ext)
     return !filename.substr(filename.find('.')).compare(ext);
 }
 
-void test_read_binary(const std::string& filename, const wconvert::ModelInfo& model_info)
+void test_read_binary(const std::string& filename, const wconvert::AnimatedModelInfo& model_info)
 {
     std::string stripped_filename(filename.substr(0, filename.find('.')));
     // Test read binary mesh data
     std::ifstream stream("../res/models/" + stripped_filename + ".wesh", std::ios::in | std::ios::binary);
 
+    std::vector<VertexAnim> vdata;
+    std::vector<uint32_t> idata;
+
     WeshLoader wesh;
-    auto pmesh = wesh.load(stream);
+    wesh.load(stream, vdata, idata);
     stream.close();
+
+    auto pmesh = std::make_shared<AnimMesh>(std::move(vdata), std::move(idata));
 
     assert(pmesh->get_nv() == model_info.vertex_data.vertices.size());
     assert(pmesh->get_ni() == model_info.vertex_data.indices.size());
@@ -76,7 +82,8 @@ int main(int argc, char const *argv[])
         DLOGF("Models work directory does not exist.", "wconvert");
 
     // * Load animated models and export them to my formats
-    wconvert::AnimatedModelImporter importer;
+    wconvert::AnimatedModelImporter am_importer;
+    wconvert::StaticModelImporter sm_importer;
     wconvert::XMLSkeletonExporter skel_exporter;
     wconvert::BinaryMeshExporter mesh_exporter;
 
@@ -89,8 +96,8 @@ int main(int argc, char const *argv[])
         if(check_extension(filename, ".dae"))
         {
             DLOGS("Converting <n>" + filename + "</n>", "wconvert", Severity::LOW);
-            wconvert::ModelInfo model_info;
-            if(importer.load_model(filename, model_info))
+            wconvert::AnimatedModelInfo model_info;
+            if(am_importer.load_model(filename, model_info))
             {
                 skel_exporter.export_skeleton(model_info);
                 mesh_exporter.export_mesh(model_info);
@@ -98,6 +105,15 @@ int main(int argc, char const *argv[])
                 //test_read_binary(filename, model_info);
             }
             DLOGES("wconvert", Severity::LOW);
+        }
+        else if(check_extension(filename, ".obj"))
+        {
+            DLOGS("Converting <n>" + filename + "</n>", "wconvert", Severity::LOW);
+            wconvert::StaticModelInfo model_info;
+            if(sm_importer.load_model(filename, model_info))
+                mesh_exporter.export_mesh(model_info);
+            DLOGES("wconvert", Severity::LOW);
+
         }
     }
 

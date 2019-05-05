@@ -8,7 +8,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "animated_model_data.h"
+#include "model_data.h"
 
 namespace wconvert
 {
@@ -21,13 +21,13 @@ public:
     AnimatedModelImporter();
     ~AnimatedModelImporter();
 
-    bool load_model(const std::string& filename, ModelInfo& model_info);
+    bool load_model(const std::string& filename, AnimatedModelInfo& model_info);
 
 private:
     bool read_mesh(const aiMesh* pmesh,
-                   ModelInfo& model_info);
+                   AnimatedModelInfo& model_info);
     int read_bone_hierarchy(const aiNode* pnode,
-                            ModelInfo& model_info);
+                            AnimatedModelInfo& model_info);
     void reset();
 
 private:

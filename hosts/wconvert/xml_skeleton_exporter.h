@@ -3,7 +3,7 @@
 
 #include <filesystem>
 
-#include "animated_model_data.h"
+#include "model_data.h"
 
 namespace wconvert
 {
@@ -16,7 +16,7 @@ public:
     XMLSkeletonExporter();
     ~XMLSkeletonExporter();
 
-    bool export_skeleton(const ModelInfo& model_info);
+    bool export_skeleton(const AnimatedModelInfo& model_info);
 
 private:
     fs::path exportdir_; // Export directory for meshes and skelettons

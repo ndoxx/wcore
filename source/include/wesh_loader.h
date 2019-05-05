@@ -9,10 +9,10 @@
 
     As of version 1.0 data is layed out like this:
     [HEADER]              -> 128 bytes, padded
-    [size_t vsize]        -> number of vertices
-    [array of VertexAnim] -> vertex buffer content of size vsize
-    [size_t isize]        -> number of indices
-    [array of uint32_t]   -> index buffer content of size isize
+    [array of VertexAnim] -> vertex buffer content
+    [array of uint32_t]   -> index buffer content
+
+    Header contains among other things the number of vertices and indices.
 */
 
 #include <filesystem>
@@ -25,8 +25,10 @@ namespace wcore
 {
 
 template <typename VertexT> class Mesh;
+struct Vertex3P3N3T2U;
 struct VertexAnim;
 using AnimMesh = Mesh<VertexAnim>;
+using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
 
 //#pragma pack(push,1)
 struct WeshHeader
@@ -34,6 +36,9 @@ struct WeshHeader
     uint32_t magic;
     uint8_t version_major;
     uint8_t version_minor;
+    uint16_t is_animated;
+    uint32_t n_vertices;
+    uint32_t n_indices;
 };
 //#pragma pack(pop)
 
@@ -47,15 +52,30 @@ typedef union
 class WeshLoader
 {
 public:
-    std::shared_ptr<AnimMesh> load(std::istream& stream);
-    void write(std::ostream& stream, const AnimMesh& mesh);
+    // Animated mesh
+    bool load(std::istream& stream,
+              std::vector<VertexAnim>& vertices,
+              std::vector<uint32_t>& indices);
     void write(std::ostream& stream,
                const std::vector<VertexAnim>& vertices,
                const std::vector<uint32_t>& indices);
+    void write(std::ostream& stream, const AnimMesh& mesh);
+
+    // Static mesh
+    bool load(std::istream& stream,
+              std::vector<Vertex3P3N3T2U>& vertices,
+              std::vector<uint32_t>& indices);
+    void write(std::ostream& stream,
+               const std::vector<Vertex3P3N3T2U>& vertices,
+               const std::vector<uint32_t>& indices);
+    void write(std::ostream& stream, const SurfaceMesh& mesh);
 
 private:
     bool read_header(std::istream& stream, WeshHeaderWrapper& header);
-    bool write_header(std::ostream& stream);
+    bool write_header(std::ostream& stream,
+                      uint32_t n_vertices,
+                      uint32_t n_indices,
+                      bool is_animated);
 };
 
 } // namespace wcore

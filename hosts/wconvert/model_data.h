@@ -1,5 +1,5 @@
-#ifndef ANIMATED_MODEL_DATA_H
-#define ANIMATED_MODEL_DATA_H
+#ifndef MODEL_DATA_H
+#define MODEL_DATA_H
 
 #include <string>
 #include <vector>
@@ -17,18 +17,30 @@ struct BoneInfo
     wcore::math::mat4 offset_matrix;
 };
 
-struct MeshInfo
+struct AnimatedMeshInfo
 {
     std::vector<wcore::VertexAnim> vertices;
     std::vector<uint32_t> indices;
 };
 
-struct ModelInfo
+struct AnimatedModelInfo
 {
     std::string model_name;
     wcore::math::mat4 root_transform;
     wcore::Tree<BoneInfo> bone_hierarchy;
-    MeshInfo vertex_data;
+    AnimatedMeshInfo vertex_data;
+};
+
+struct StaticMeshInfo
+{
+    std::vector<wcore::Vertex3P3N3T2U> vertices;
+    std::vector<uint32_t> indices;
+};
+
+struct StaticModelInfo
+{
+    std::string model_name;
+    StaticMeshInfo vertex_data;
 };
 
 } // namespace wconvert

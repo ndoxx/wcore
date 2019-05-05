@@ -35,6 +35,7 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(wconvert_SRCS
     main.cpp
     animated_model_importer.cpp
+    static_model_importer.cpp
     xml_skeleton_exporter.cpp
     binary_mesh_exporter.cpp
 )

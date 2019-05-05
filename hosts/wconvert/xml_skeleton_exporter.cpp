@@ -70,7 +70,7 @@ static void make_skeletton_DOM(xml_document<>& doc, rapidxml::xml_node<>* parent
     }
 }
 
-bool XMLSkeletonExporter::export_skeleton(const ModelInfo& model_info)
+bool XMLSkeletonExporter::export_skeleton(const AnimatedModelInfo& model_info)
 {
     std::string filename(model_info.model_name + ".skel");
 
