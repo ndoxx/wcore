@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <cassert>
 
 namespace fs = std::filesystem;
 
@@ -25,18 +26,14 @@ namespace wcore
 {
 
 template <typename VertexT> class Mesh;
-struct Vertex3P3N3T2U;
-struct VertexAnim;
-using AnimMesh = Mesh<VertexAnim>;
-using SurfaceMesh = Mesh<Vertex3P3N3T2U>;
 
 //#pragma pack(push,1)
 struct WeshHeader
 {
     uint32_t magic;
-    uint8_t version_major;
-    uint8_t version_minor;
-    uint16_t is_animated;
+    uint16_t version_major;
+    uint16_t version_minor;
+    uint32_t vertex_size;
     uint32_t n_vertices;
     uint32_t n_indices;
 };
@@ -52,31 +49,82 @@ typedef union
 class WeshLoader
 {
 public:
-    // Animated mesh
-    bool load(std::istream& stream,
-              std::vector<VertexAnim>& vertices,
+    template<typename VertexT>
+    bool read(std::istream& stream,
+              std::vector<VertexT>& vertices,
               std::vector<uint32_t>& indices);
-    void write(std::ostream& stream,
-               const std::vector<VertexAnim>& vertices,
-               const std::vector<uint32_t>& indices);
-    void write(std::ostream& stream, const AnimMesh& mesh);
 
-    // Static mesh
-    bool load(std::istream& stream,
-              std::vector<Vertex3P3N3T2U>& vertices,
-              std::vector<uint32_t>& indices);
+    template<typename VertexT>
     void write(std::ostream& stream,
-               const std::vector<Vertex3P3N3T2U>& vertices,
+               const std::vector<VertexT>& vertices,
                const std::vector<uint32_t>& indices);
-    void write(std::ostream& stream, const SurfaceMesh& mesh);
+
+    template<typename VertexT>
+    void write(std::ostream& stream, const Mesh<VertexT>& mesh);
 
 private:
-    bool read_header(std::istream& stream, WeshHeaderWrapper& header);
-    bool write_header(std::ostream& stream,
+    void read_header(std::istream& stream, WeshHeaderWrapper& header);
+    void write_header(std::ostream& stream,
                       uint32_t n_vertices,
                       uint32_t n_indices,
-                      bool is_animated);
+                      uint32_t vertex_size);
+    bool header_sanity_check(const WeshHeader& header, size_t vertex_size);
 };
+
+
+template<typename VertexT>
+bool WeshLoader::read(std::istream& stream,
+                      std::vector<VertexT>& vertices,
+                      std::vector<uint32_t>& indices)
+{
+    // Check that input vectors are empty
+    assert(vertices.size()==0);
+    assert(indices.size()==0);
+
+    // Read header
+    WeshHeaderWrapper header;
+    read_header(stream, header);
+
+    if(!header_sanity_check(header.h, sizeof(VertexT)))
+        return false;
+
+    size_t vsize = header.h.n_vertices;
+    size_t isize = header.h.n_indices;
+    vertices.resize(vsize);
+    indices.resize(isize);
+
+    // Read vertex data
+    stream.read(reinterpret_cast<char*>(&vertices[0]), vsize*sizeof(VertexT));
+    // Read index data
+    stream.read(reinterpret_cast<char*>(&indices[0]), isize*sizeof(uint32_t));
+
+    return true;
+}
+
+template<typename VertexT>
+void WeshLoader::write(std::ostream& stream,
+                       const std::vector<VertexT>& vertices,
+                       const std::vector<uint32_t>& indices)
+{
+    // Write header
+    size_t vsize = vertices.size();
+    size_t isize = indices.size();
+    write_header(stream, vsize, isize, sizeof(VertexT));
+
+    // Write vertex data
+    stream.write(reinterpret_cast<const char*>(&vertices[0]), vsize*sizeof(VertexT));
+    // Write index data
+    stream.write(reinterpret_cast<const char*>(&indices[0]), isize*sizeof(uint32_t));
+}
+
+template<typename VertexT>
+void WeshLoader::write(std::ostream& stream, const Mesh<VertexT>& mesh)
+{
+    write(stream,
+          mesh.get_vertex_buffer(),
+          mesh.get_index_buffer());
+}
+
 
 } // namespace wcore
 

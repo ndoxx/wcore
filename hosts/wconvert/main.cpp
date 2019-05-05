@@ -7,6 +7,7 @@
 #include "file_system.h"
 #include "logger.h"
 #include "wesh_loader.h"
+#include "vertex_format.h"
 #include "animated_model_importer.h"
 #include "static_model_importer.h"
 #include "xml_skeleton_exporter.h"
@@ -41,10 +42,10 @@ void test_read_binary(const std::string& filename, const wconvert::AnimatedModel
     std::vector<uint32_t> idata;
 
     WeshLoader wesh;
-    wesh.load(stream, vdata, idata);
+    wesh.read(stream, vdata, idata);
     stream.close();
 
-    auto pmesh = std::make_shared<AnimMesh>(std::move(vdata), std::move(idata));
+    auto pmesh = std::make_shared<Mesh<VertexAnim>>(std::move(vdata), std::move(idata));
 
     assert(pmesh->get_nv() == model_info.vertex_data.vertices.size());
     assert(pmesh->get_ni() == model_info.vertex_data.indices.size());
