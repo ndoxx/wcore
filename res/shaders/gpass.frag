@@ -156,7 +156,7 @@ void main()
     // DEBUG wireframe color
     float wireframe = edge_factor() * rd.f_wireframe_mix;
 
-    albedo = mix(albedo, vec3(0.5f), wireframe);
+    albedo = mix(albedo, vec3(1.0f), wireframe);
     out_albedo = vec4(albedo, roughness);
     out_normal = vec4(normal_cmp, metallic, ao);
 

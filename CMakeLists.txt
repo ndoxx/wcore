@@ -74,6 +74,7 @@ set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/height_map.cpp
     ${CMAKE_SOURCE_DIR}/source/src/obj_loader.cpp
     ${CMAKE_SOURCE_DIR}/source/src/wesh_loader.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/wat_loader.cpp
     ${CMAKE_SOURCE_DIR}/source/src/heightmap_generator.cpp
     ${CMAKE_SOURCE_DIR}/source/src/tree_generator.cpp
     ${CMAKE_SOURCE_DIR}/source/src/rock_generator.cpp

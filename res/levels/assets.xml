@@ -53,6 +53,13 @@
             </Override>
         </Material>
 
+        <Material location="beachSand.wat">
+            <Override>
+                <NormalMap>true</NormalMap>
+                <ParallaxMap>false</ParallaxMap>
+            </Override>
+        </Material>
+
         <Material name="testMetalFloor01">
             <Texture>
                 <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
@@ -391,11 +398,11 @@
         </Model>
         <Model name="teapot01">
             <Mesh name=".teapot01"/>
-            <Material name="teapot"/>
+            <Material name="gold"/>
         </Model>
         <Model name="anvil01">
             <Mesh name=".anvil01"/>
-            <Material name="teapot"/>
+            <Material name="chrome"/>
         </Model>
         <Model name="interior01">
             <Mesh name=".interior01"/>

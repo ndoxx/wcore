@@ -14,6 +14,7 @@ namespace wcore
 class Material;
 class Texture;
 class Cubemap;
+class WatLoader;
 class MaterialFactory
 {
 private:
@@ -53,6 +54,7 @@ public:
                                   CubemapDescriptor& descriptor);
 
 private:
+    WatLoader* wat_loader_;
 };
 
 }

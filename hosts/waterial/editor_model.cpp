@@ -8,6 +8,7 @@
 #include "editor_model.h"
 #include "texlist_model.h"
 #include "logger.h"
+#include "wat_loader.h"
 #include "xml_parser.h"
 #include "xml_utils.hpp"
 
@@ -248,34 +249,11 @@ void DepthMap::parse(rapidxml::xml_node<>* node)
 void AOMap::parse(rapidxml::xml_node<>* node)
 {
     xml::parse_attribute(node, "value", u_ao);
-
-    /*xml_node<>* gen_node = node->first_node("Generator");
-    if(gen_node)
-    {
-        xml::parse_node(gen_node, "Invert", gen_invert);
-        xml::parse_node(gen_node, "Strength", gen_strength);
-        xml::parse_node(gen_node, "Mean", gen_mean);
-        xml::parse_node(gen_node, "Range", gen_range);
-        xml::parse_node(gen_node, "BlurSharp", gen_blursharp);
-    }*/
 }
 
 void NormalMap::parse(rapidxml::xml_node<>* node)
 {
-    /*xml_node<>* gen_node = node->first_node("Generator");
-    if(gen_node)
-    {
-        std::string filter_str;
-        if(xml::parse_node(gen_node, "Filter", filter_str))
-            gen_filter = filter_names_to_index[wcore::H_(filter_str.c_str())];
 
-        xml::parse_node(gen_node, "InvertR", gen_invert_r);
-        xml::parse_node(gen_node, "InvertG", gen_invert_g);
-        xml::parse_node(gen_node, "InvertH", gen_invert_h);
-        xml::parse_node(gen_node, "Level", gen_level);
-        xml::parse_node(gen_node, "Strength", gen_strength);
-        xml::parse_node(gen_node, "BlurSharp", gen_blursharp);
-    }*/
 }
 
 
@@ -316,60 +294,11 @@ void AOMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
     std::string value_str(wcore::to_string(u_ao));
     if(value_str.size()!=0)
         node_add_attribute(doc, node, "value", value_str.c_str());
-
-    // Generator options
-    /*xml_node<>* gen_node = doc.allocate_node(node_element, "Generator");
-
-    xml_node<>* inv_node = doc.allocate_node(node_element, "Invert");
-    xml_node<>* strength_node = doc.allocate_node(node_element, "Strength");
-    xml_node<>* mean_node = doc.allocate_node(node_element, "Mean");
-    xml_node<>* range_node = doc.allocate_node(node_element, "Range");
-    xml_node<>* blursharp_node = doc.allocate_node(node_element, "BlurSharp");
-
-    node_set_value(doc, inv_node, gen_invert ? "true" : "false");
-    node_set_value(doc, strength_node, std::to_string(gen_strength).c_str());
-    node_set_value(doc, mean_node, std::to_string(gen_mean).c_str());
-    node_set_value(doc, range_node, std::to_string(gen_range).c_str());
-    node_set_value(doc, blursharp_node, std::to_string(gen_blursharp).c_str());
-
-    gen_node->append_node(inv_node);
-    gen_node->append_node(strength_node);
-    gen_node->append_node(mean_node);
-    gen_node->append_node(range_node);
-    gen_node->append_node(blursharp_node);
-
-    node->append_node(gen_node);*/
 }
 
 void NormalMap::write(rapidxml::xml_document<>& doc, xml_node<>* node)
 {
-    /*xml_node<>* gen_node = doc.allocate_node(node_element, "Generator");
 
-    xml_node<>* filter_node = doc.allocate_node(node_element, "Filter");
-    xml_node<>* invr_node = doc.allocate_node(node_element, "InvertR");
-    xml_node<>* invg_node = doc.allocate_node(node_element, "InvertG");
-    xml_node<>* invh_node = doc.allocate_node(node_element, "InvertH");
-    xml_node<>* level_node = doc.allocate_node(node_element, "Level");
-    xml_node<>* strength_node = doc.allocate_node(node_element, "Strength");
-    xml_node<>* blursharp_node = doc.allocate_node(node_element, "BlurSharp");
-
-    node_set_value(doc, filter_node, filter_names[gen_filter].c_str());
-    node_set_value(doc, invr_node, gen_invert_r ? "true" : "false");
-    node_set_value(doc, invg_node, gen_invert_g ? "true" : "false");
-    node_set_value(doc, invh_node, gen_invert_h ? "true" : "false");
-    node_set_value(doc, level_node, std::to_string(gen_level).c_str());
-    node_set_value(doc, strength_node, std::to_string(gen_strength).c_str());
-    node_set_value(doc, blursharp_node, std::to_string(gen_blursharp).c_str());
-
-    gen_node->append_node(filter_node);
-    gen_node->append_node(invr_node);
-    gen_node->append_node(invg_node);
-    gen_node->append_node(invh_node);
-    gen_node->append_node(level_node);
-    gen_node->append_node(strength_node);
-    gen_node->append_node(blursharp_node);
-
-    node->append_node(gen_node);*/
 }
 
 EditorModel::EditorModel():
@@ -477,7 +406,7 @@ void EditorModel::rename_texture(const QString& old_name, const QString& new_nam
     }
 }
 
-void EditorModel::compile(const QString& texname)
+void EditorModel::compile(const QString& texname, bool export_wat)
 {
     DLOGN("Compiling texture <n>" + texname.toStdString() + "</n>", "waterial");
 
@@ -503,56 +432,77 @@ void EditorModel::compile(const QString& texname)
                 texmaps[ii] = nullptr;
         }
 
-        // Block 0
         for(int xx=0; xx<entry.width; ++xx)
         {
             for(int yy=0; yy<entry.height; ++yy)
             {
+                // Block 0
                 QRgb albedo = texmaps[ALBEDO] ? texmaps[ALBEDO]->pixel(xx,yy) : qRgba(0,0,0,255);
 
-                block0.setPixel(xx, yy, albedo);
-            }
-        }
-
-        // Block 1
-        for(int xx=0; xx<entry.width; ++xx)
-        {
-            for(int yy=0; yy<entry.height; ++yy)
-            {
+                // Block 1
                 QRgb normal = texmaps[NORMAL] ? texmaps[NORMAL]->pixel(xx,yy) : qRgb(0,0,0);
                 int depth   = texmaps[DEPTH]  ? qRed(texmaps[DEPTH]->pixel(xx,yy)) : 0;
 
-                QRgb out_color = qRgba(qRed(normal), qGreen(normal), qBlue(normal), depth);
-                block1.setPixel(xx, yy, out_color);
-            }
-        }
-
-        // Block 2
-        for(int xx=0; xx<entry.width; ++xx)
-        {
-            for(int yy=0; yy<entry.height; ++yy)
-            {
+                // Block 2
                 int metallic  = texmaps[METALLIC]  ? qRed(texmaps[METALLIC]->pixel(xx,yy)) : 0;
                 int ao        = texmaps[AO]        ? qRed(texmaps[AO]->pixel(xx,yy)) : 0;
                 int roughness = texmaps[ROUGHNESS] ? qRed(texmaps[ROUGHNESS]->pixel(xx,yy)) : 0;
 
-                QRgb out_color = qRgba(metallic, ao, roughness, 255);
-                block2.setPixel(xx, yy, out_color);
+                QRgb out_block1 = qRgba(qRed(normal), qGreen(normal), qBlue(normal), depth);
+                QRgb out_block2 = qRgba(metallic, ao, roughness, 255);
+
+                block0.setPixel(xx, yy, albedo);
+                block1.setPixel(xx, yy, out_block1);
+                block2.setPixel(xx, yy, out_block2);
             }
         }
 
-        // Save blocks
-        QString block0_name = texname + "_block0.png";
-        QString block1_name = texname + "_block1.png";
-        QString block2_name = texname + "_block2.png";
+        if(export_wat)
+        {
+            AlbedoMap* albedo_map       = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
+            DepthMap* depth_map         = static_cast<DepthMap*>(entry.texture_maps[DEPTH]);
+            MetallicMap* metallic_map   = static_cast<MetallicMap*>(entry.texture_maps[METALLIC]);
+            RoughnessMap* roughness_map = static_cast<RoughnessMap*>(entry.texture_maps[ROUGHNESS]);
 
-        DLOGI("block0: <p>" + block0_name.toStdString() + "</p>", "waterial");
-        DLOGI("block1: <p>" + block1_name.toStdString() + "</p>", "waterial");
-        DLOGI("block2: <p>" + block2_name.toStdString() + "</p>", "waterial");
+            MaterialInfo mat_info;
+            mat_info.block0_data      = block0.bits();
+            mat_info.block1_data      = block1.bits();
+            mat_info.block2_data      = block2.bits();
+            mat_info.unique_id        = H_(texname.toStdString().c_str());
+            mat_info.width            = entry.width;
+            mat_info.height           = entry.height;
+            mat_info.has_albedo       = entry.texture_maps[ALBEDO]->has_image;
+            mat_info.has_normal       = entry.texture_maps[NORMAL]->has_image;
+            mat_info.has_depth        = entry.texture_maps[DEPTH]->has_image;
+            mat_info.has_metal        = entry.texture_maps[METALLIC]->has_image;
+            mat_info.has_AO           = entry.texture_maps[AO]->has_image;
+            mat_info.has_rough        = entry.texture_maps[ROUGHNESS]->has_image;
+            mat_info.u_albedo         = albedo_map->u_albedo;
+            mat_info.u_parallax_scale = depth_map->u_parallax_scale;
+            mat_info.u_metal          = metallic_map->u_metallic;
+            mat_info.u_rough          = roughness_map->u_roughness;
 
-        block0.save(output_folder_.filePath(block0_name));
-        block1.save(output_folder_.filePath(block1_name));
-        block2.save(output_folder_.filePath(block2_name));
+            WatLoader watfile;
+            QString filename = texname + ".wat";
+            std::ofstream stream(output_folder_.filePath(filename).toStdString(), std::ios::out | std::ios::binary);
+            watfile.write(stream, mat_info);
+            stream.close();
+        }
+        else
+        {
+            // Save blocks
+            QString block0_name = texname + "_block0.png";
+            QString block1_name = texname + "_block1.png";
+            QString block2_name = texname + "_block2.png";
+
+            DLOGI("block0: <p>" + block0_name.toStdString() + "</p>", "waterial");
+            DLOGI("block1: <p>" + block1_name.toStdString() + "</p>", "waterial");
+            DLOGI("block2: <p>" + block2_name.toStdString() + "</p>", "waterial");
+
+            block0.save(output_folder_.filePath(block0_name));
+            block1.save(output_folder_.filePath(block1_name));
+            block2.save(output_folder_.filePath(block2_name));
+        }
 
         delete[] texmaps;
     }

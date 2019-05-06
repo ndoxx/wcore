@@ -52,6 +52,8 @@ public slots:
     void handle_texlist_context_menu(const QPoint& pos);
     void handle_compile_current();
     void handle_compile_all();
+    void handle_compile_wat_current();
+    void handle_compile_wat_all();
     void handle_serialize_project();
     void handle_serialize_project_as();
     void handle_new_project();
@@ -120,6 +122,8 @@ private:
     QAction* delete_tex_action_;
     QAction* compile_tex_action_;
     QAction* compile_all_tex_action_;
+    QAction* compile_wat_tex_action_;
+    QAction* compile_wat_all_tex_action_;
 
     QDir config_folder_;
 };

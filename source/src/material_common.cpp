@@ -37,7 +37,8 @@ has_transparency(false),
 is_textured(false),
 parallax_height_scale(0.1f),
 enable_normal_mapping(true),
-enable_parallax_mapping(true)
+enable_parallax_mapping(true),
+is_wat(false)
 {
 
 }

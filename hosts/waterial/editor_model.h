@@ -98,11 +98,6 @@ struct AOMap: public TextureMap
 #endif
 
     float u_ao;
-    /*bool gen_invert;
-    float gen_strength;
-    float gen_mean;
-    float gen_range;
-    float gen_blursharp;*/
 };
 
 struct DepthMap: public TextureMap
@@ -129,12 +124,6 @@ struct NormalMap: public TextureMap
 #endif
 
     int gen_filter;
-    /*bool gen_invert_r;
-    bool gen_invert_g;
-    bool gen_invert_h;
-    float gen_level;
-    float gen_strength;
-    float gen_blursharp;*/
 };
 
 struct TextureEntry
@@ -186,7 +175,7 @@ public:
     void delete_current_texture(QListView* tex_list);
     void rename_texture(const QString& old_name, const QString& new_name);
 
-    void compile(const QString& texname);
+    void compile(const QString& texname, bool export_wat=false);
 
     // Project management
     void clear();

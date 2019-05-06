@@ -4,8 +4,6 @@
 /*
     WeshLoader class can read and write .wesh files. These binary files
     contain mesh information, data is stored in an interleaved fashion.
-    TMP: For the moment, this format only supports animated meshes with underlying
-    VertexAnim vertex format.
 
     As of version 1.0 data is layed out like this:
     [HEADER]              -> 128 bytes, padded

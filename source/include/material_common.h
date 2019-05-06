@@ -77,6 +77,10 @@ struct MaterialDescriptor
     bool enable_normal_mapping;
     bool enable_parallax_mapping;
 
+    // Wat format
+    bool is_wat;
+    std::string wat_location;
+
     MaterialDescriptor();
 
 #ifdef __DEBUG__

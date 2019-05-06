@@ -2,6 +2,7 @@
 #include "material.h"
 #include "texture.h"
 #include "cubemap.h"
+#include "wat_loader.h"
 #include "colors.h"
 #include "logger.h"
 #include "file_system.h"
@@ -19,7 +20,8 @@ std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
     {TextureUnit::BLOCK2, "Block2"}
 };
 
-MaterialFactory::MaterialFactory(const char* xml_file)
+MaterialFactory::MaterialFactory(const char* xml_file):
+wat_loader_(new WatLoader())
 {
     auto pstream = FILESYSTEM.get_file_as_stream(xml_file, "root.folders.level"_h, "pack0"_h);
     if(pstream == nullptr)
@@ -32,13 +34,15 @@ MaterialFactory::MaterialFactory(const char* xml_file)
     retrieve_material_descriptions(xml_parser_.get_root()->first_node("Materials"));
 }
 
-MaterialFactory::MaterialFactory()
+MaterialFactory::MaterialFactory():
+wat_loader_(new WatLoader())
 {
 
 }
 
 MaterialFactory::~MaterialFactory()
 {
+    delete wat_loader_;
     /*for(auto&& [key, mat_ptr]: cache_)
         delete mat_ptr;*/
 }
@@ -100,7 +104,12 @@ void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* mater
          mat_node=mat_node->next_sibling("Material"))
     {
         std::string material_name;
-        if(xml::parse_attribute(mat_node, "name", material_name))
+        std::string wat_location;
+        xml::parse_attribute(mat_node, "name", material_name);
+        if(xml::parse_attribute(mat_node, "location", wat_location))
+            material_name = wat_location;
+
+        if(material_name.size())
         {
 #ifdef __DEBUG__
             if(material_descriptors_.find(H_(material_name.c_str())) != material_descriptors_.end())
@@ -150,7 +159,6 @@ void MaterialFactory::retrieve_cubemap_descriptions(rapidxml::xml_node<>* cubema
     }
 }
 
-
 Material* MaterialFactory::make_material(hash_t asset_name, uint8_t sampler_group)
 {
     MaterialDescriptor descriptor(get_material_descriptor(asset_name));
@@ -162,7 +170,11 @@ Material* MaterialFactory::make_material(hash_t asset_name, uint8_t sampler_grou
 
 Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
 {
-    return new Material(descriptor);
+    // TMP
+    if(!descriptor.is_wat)
+        return new Material(descriptor);
+    else
+        return nullptr;
 }
 
 Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node,
@@ -198,89 +210,100 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
                                                 MaterialDescriptor& descriptor,
                                                 OptRngT opt_rng)
 {
-    xml_node<>* tex_node = node->first_node("Texture");
-    if(tex_node)
+    // Wat format
+    std::string wat_location;
+    bool is_wat = xml::parse_attribute(node, "location", wat_location);
+    if(is_wat)
     {
-        // Register texture units
-        std::string units_str;
-        if(xml::parse_node(tex_node, "Units", units_str))
+        descriptor.is_wat = true;
+        descriptor.wat_location = wat_location;
+    }
+    else
+    {
+        xml_node<>* tex_node = node->first_node("Texture");
+        if(tex_node)
         {
-            // Units string is a semi-column separated list
-            std::vector<std::string> units(split(units_str, ';'));
-            for(int ii=0; ii<units.size(); ++ii)
+            // Register texture units
+            std::string units_str;
+            if(xml::parse_node(tex_node, "Units", units_str))
             {
-                switch(H_(units[ii].c_str()))
+                // Units string is a semi-column separated list
+                std::vector<std::string> units(split(units_str, ';'));
+                for(int ii=0; ii<units.size(); ++ii)
                 {
-                    case "Albedo"_h:
-                        descriptor.texture_descriptor.add_unit(TextureUnit::ALBEDO);
-                        break;
-                    case "Normal"_h:
-                        descriptor.texture_descriptor.add_unit(TextureUnit::NORMAL);
-                        break;
-                    case "Depth"_h:
-                        descriptor.texture_descriptor.add_unit(TextureUnit::DEPTH);
-                        break;
-                    case "Metallic"_h:
-                        descriptor.texture_descriptor.add_unit(TextureUnit::METALLIC);
-                        break;
-                    case "AO"_h:
-                        descriptor.texture_descriptor.add_unit(TextureUnit::AO);
-                        break;
-                    case "Roughness"_h:
-                        descriptor.texture_descriptor.add_unit(TextureUnit::ROUGHNESS);
-                        break;
+                    switch(H_(units[ii].c_str()))
+                    {
+                        case "Albedo"_h:
+                            descriptor.texture_descriptor.add_unit(TextureUnit::ALBEDO);
+                            break;
+                        case "Normal"_h:
+                            descriptor.texture_descriptor.add_unit(TextureUnit::NORMAL);
+                            break;
+                        case "Depth"_h:
+                            descriptor.texture_descriptor.add_unit(TextureUnit::DEPTH);
+                            break;
+                        case "Metallic"_h:
+                            descriptor.texture_descriptor.add_unit(TextureUnit::METALLIC);
+                            break;
+                        case "AO"_h:
+                            descriptor.texture_descriptor.add_unit(TextureUnit::AO);
+                            break;
+                        case "Roughness"_h:
+                            descriptor.texture_descriptor.add_unit(TextureUnit::ROUGHNESS);
+                            break;
+                    }
+                }
+            }
+            // Register texture block locations
+            std::string texture_map;
+            for(auto&& [unit, node_name]: TEX_SAMPLERS_NODES)
+            {
+                if(xml::parse_node(tex_node, node_name, texture_map))
+                {
+                    descriptor.texture_descriptor.locations[unit] = texture_map;
+                    descriptor.texture_descriptor.add_unit(unit);
+                    descriptor.is_textured = true;
                 }
             }
         }
-        // Register texture block locations
-        std::string texture_map;
-        for(auto&& [unit, node_name]: TEX_SAMPLERS_NODES)
+
+        // Uniform alternatives
+        xml_node<>* uni_node = node->first_node("Uniform");
+        if(uni_node)
         {
-            if(xml::parse_node(tex_node, node_name, texture_map))
+            if(!descriptor.texture_descriptor.has_unit(TextureUnit::ALBEDO))
             {
-                descriptor.texture_descriptor.locations[unit] = texture_map;
-                descriptor.texture_descriptor.add_unit(unit);
-                descriptor.is_textured = true;
+                // Get color space, to convert later to RGB if needed
+                std::string color_space;
+                xml::parse_attribute(uni_node->first_node("Albedo"), "space", color_space);
+                // Get color
+                xml::parse_node(uni_node, "Albedo", descriptor.albedo);
+
+                // Check if an rng is in use
+                if(opt_rng)
+                {
+                    std::mt19937& rng = *opt_rng;
+                    std::uniform_real_distribution<float> var_distrib(-1.0f,1.0f);
+                    math::vec3 color_var(0);
+                    xml::parse_attribute(uni_node->first_node("Albedo"), "variance", color_var);
+                    descriptor.albedo += math::vec3(color_var.x() * var_distrib(rng),
+                                                    color_var.y() * var_distrib(rng),
+                                                    color_var.z() * var_distrib(rng));
+                }
+
+                if(!color_space.compare("hsl"))
+                    descriptor.albedo = color::hsl2rgb(descriptor.albedo);
             }
+            if(!descriptor.texture_descriptor.has_unit(TextureUnit::METALLIC))
+                xml::parse_node(uni_node, "Metallic", descriptor.metallic);
+            if(!descriptor.texture_descriptor.has_unit(TextureUnit::ROUGHNESS))
+                xml::parse_node(uni_node, "Roughness", descriptor.roughness);
+
+            descriptor.has_transparency = xml::parse_node(uni_node, "Transparency", descriptor.transparency);
+
+            // Shading options
+            xml::parse_node(uni_node, "ParallaxHeightScale", descriptor.parallax_height_scale);
         }
-    }
-
-    // Uniform alternatives
-    xml_node<>* uni_node = node->first_node("Uniform");
-    if(uni_node)
-    {
-        if(!descriptor.texture_descriptor.has_unit(TextureUnit::ALBEDO))
-        {
-            // Get color space, to convert later to RGB if needed
-            std::string color_space;
-            xml::parse_attribute(uni_node->first_node("Albedo"), "space", color_space);
-            // Get color
-            xml::parse_node(uni_node, "Albedo", descriptor.albedo);
-
-            // Check if an rng is in use
-            if(opt_rng)
-            {
-                std::mt19937& rng = *opt_rng;
-                std::uniform_real_distribution<float> var_distrib(-1.0f,1.0f);
-                math::vec3 color_var(0);
-                xml::parse_attribute(uni_node->first_node("Albedo"), "variance", color_var);
-                descriptor.albedo += math::vec3(color_var.x() * var_distrib(rng),
-                                                color_var.y() * var_distrib(rng),
-                                                color_var.z() * var_distrib(rng));
-            }
-
-            if(!color_space.compare("hsl"))
-                descriptor.albedo = color::hsl2rgb(descriptor.albedo);
-        }
-        if(!descriptor.texture_descriptor.has_unit(TextureUnit::METALLIC))
-            xml::parse_node(uni_node, "Metallic", descriptor.metallic);
-        if(!descriptor.texture_descriptor.has_unit(TextureUnit::ROUGHNESS))
-            xml::parse_node(uni_node, "Roughness", descriptor.roughness);
-
-        descriptor.has_transparency = xml::parse_node(uni_node, "Transparency", descriptor.transparency);
-
-        // Shading options
-        xml::parse_node(uni_node, "ParallaxHeightScale", descriptor.parallax_height_scale);
     }
 
     // Override

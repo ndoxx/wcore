@@ -353,6 +353,16 @@ void MainWindow::create_actions()
     compile_all_tex_action_->setIcon(QIcon(":/res/icons/compile_all.png"));
     compile_all_tex_action_->setStatusTip(tr("Compile all textures in current project"));
     connect(compile_all_tex_action_, SIGNAL(triggered()), this, SLOT(handle_compile_all()));
+
+    compile_wat_tex_action_ = new QAction(tr("Compile Wat"), this);
+    compile_wat_tex_action_->setIcon(QIcon(":/res/icons/compile.png"));
+    compile_wat_tex_action_->setStatusTip(tr("Compile current texture to wat format"));
+    connect(compile_wat_tex_action_, SIGNAL(triggered()), this, SLOT(handle_compile_wat_current()));
+
+    compile_wat_all_tex_action_ = new QAction(tr("Compile Wat All"), this);
+    compile_wat_all_tex_action_->setIcon(QIcon(":/res/icons/compile_all.png"));
+    compile_wat_all_tex_action_->setStatusTip(tr("Compile all textures in current project to wat format"));
+    connect(compile_wat_all_tex_action_, SIGNAL(triggered()), this, SLOT(handle_compile_wat_all()));
 }
 
 void MainWindow::update_recent_file_actions()
@@ -411,6 +421,8 @@ void MainWindow::create_menus()
 
     tex_menu->addAction(compile_tex_action_);
     tex_menu->addAction(compile_all_tex_action_);
+    tex_menu->addAction(compile_wat_tex_action_);
+    tex_menu->addAction(compile_wat_all_tex_action_);
 }
 
 void MainWindow::create_status_bar()
@@ -446,6 +458,8 @@ void MainWindow::create_toolbars()
 
     toolbar_->addAction(compile_tex_action_);
     toolbar_->addAction(compile_all_tex_action_);
+    toolbar_->addAction(compile_wat_tex_action_);
+    toolbar_->addAction(compile_wat_all_tex_action_);
 
     toolbar_->addSeparator();
 
@@ -618,6 +632,55 @@ void MainWindow::handle_compile_all()
                 return false;
             progress.setLabelText(tr("Compiling %1").arg(texname));
             editor_model_->compile(texname);
+            progress.setValue(++count);
+        }
+        return true;
+    });
+}
+
+void MainWindow::handle_compile_wat_current()
+{
+    // First, save texture to editor model
+    texmap_pane_->handle_save_current_texture();
+
+    const QString& texname = editor_model_->get_current_texture_name();
+    if(!texname.isEmpty())
+    {
+        editor_model_->compile(texname, true);
+        // Swap material in preview
+        handle_material_swap();
+        // Update thumbnail in list
+        const TextureEntry& entry = editor_model_->get_current_texture_entry();
+        if(entry.texture_maps[ALBEDO]->has_image)
+        {
+            QModelIndex index = tex_list_->currentIndex();
+            editor_model_->update_thumbnail_proxy(index, entry.texture_maps[ALBEDO]->source_path);
+        }
+    }
+}
+
+void MainWindow::handle_compile_wat_all()
+{
+    // First, save texture to editor model
+    texmap_pane_->handle_save_current_texture();
+
+    DLOGN("Compiling <h>all</h> textures.", "waterial");
+    QProgressDialog progress(this);
+    progress.setRange(0, editor_model_->get_num_entries());
+    progress.setModal(true);
+    progress.setValue(0);
+    progress.show();
+    int count = 0;
+    editor_model_->traverse_entries([&](TextureEntry& entry)
+    {
+        const QString& texname = entry.name;
+        if(!texname.isEmpty())
+        {
+            qApp->processEvents();
+            if(progress.wasCanceled())
+                return false;
+            progress.setLabelText(tr("Compiling %1").arg(texname));
+            editor_model_->compile(texname, true);
             progress.setValue(++count);
         }
         return true;
