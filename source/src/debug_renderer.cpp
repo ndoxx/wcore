@@ -10,11 +10,11 @@
 #include "lights.h"
 #include "math3d.h"
 #include "scene.h"
-#include "g_buffer.h"
 #include "camera.h"
 #include "globals.h"
 #include "logger.h"
 #include "geometry_common.h"
+#include "buffer_module.h"
 #ifndef __DISABLE_EDITOR__
 #include "editor.h"
 #endif
@@ -44,7 +44,7 @@ void DebugRenderer::render(Scene* pscene)
     mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
-    GBuffer::Instance().blit_depth_to_screen(GLB.WIN_W, GLB.WIN_H);
+    GMODULES::GET("gbuffer"_h).blit_depth_to_screen(GLB.WIN_W, GLB.WIN_H);
     if(enable_depth_test_)
         GFX::enable_depth_testing();
 

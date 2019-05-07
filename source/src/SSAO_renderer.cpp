@@ -4,13 +4,11 @@
 
 #include "SSAO_renderer.h"
 #include "gfx_driver.h"
-#include "SSAO_buffer.h"
-#include "g_buffer.h"
-#include "l_buffer.h"
 #include "scene.h"
 #include "logger.h"
 #include "camera.h"
 #include "lights.h"
+#include "globals.h"
 #include "texture.h"
 #include "geometry_common.h"
 
@@ -32,15 +30,15 @@ SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
 ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VARIANT_R_ONLY"),
            std::make_unique<Texture>(
                        std::vector<hash_t>{"SSAOtmpTex"_h},
-                       SSAOBUFFER.get_width()/2,
-                       SSAOBUFFER.get_height()/2,
+                       GLB.WIN_W/4,
+                       GLB.WIN_H/4,
                        GL_TEXTURE_2D,
                        GL_LINEAR,
                        GL_R8,
                        GL_RED,
                        true)),
-out_size_(SSAOBUFFER.get_width(),
-          SSAOBUFFER.get_height()),
+out_size_(GLB.WIN_W/2,
+          GLB.WIN_H/2),
 noise_scale_(out_size_/(float(NOISE_SQRSIZE_))),
 SSAO_radius_(0.20),
 SSAO_bias_(0.025),
@@ -48,8 +46,8 @@ SSAO_vbias_(0.086),
 SSAO_intensity_(1.3),
 SSAO_scale_(0.375),
 blur_policy_(1,
-             SSAOBUFFER.get_width(),
-             SSAOBUFFER.get_height(),
+             GLB.WIN_W/2,
+             GLB.WIN_H/2,
              0.67f,
              1.0f)
 {
@@ -63,6 +61,9 @@ SSAORenderer::~SSAORenderer()
 
 void SSAORenderer::render(Scene* pscene)
 {
+    auto& ssao_buffer = GMODULES::GET("SSAObuffer"_h);
+    auto& g_buffer    = GMODULES::GET("gbuffer"_h);
+
     // For position reconstruction
     const math::mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     math::vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
@@ -73,11 +74,11 @@ void SSAORenderer::render(Scene* pscene)
     glViewport(0,0,out_size_.x(),out_size_.y());
 
     // Bind textures
-    GBUFFER.bind_as_source(0,0);  // normal
+    g_buffer.bind_as_source(0,0);  // normal
     GFX::bind_texture2D(1, noise_texture_); // random rotations
-    GBUFFER.bind_as_source(2,2);  // depth
+    g_buffer.bind_as_source(2,2);  // depth
     //GFX::bind_texture2D(3, kernel_texture_); // random field (kernel)
-    //GBUFFER.bind_as_source(3,1);  // albedo
+    //g_buffer.bind_as_source(3,1);  // albedo
     //LBUFFER.bind_as_source(3,0); // last frame color
 
     SSAO_shader_.send_uniform<int>("normalTex"_h, 0);
@@ -86,7 +87,7 @@ void SSAORenderer::render(Scene* pscene)
     //SSAO_shader_.send_uniform<int>("albedoTex"_h, 3);
 
     // Render SSAO texture
-    SSAOBUFFER.bind_as_target();
+    ssao_buffer.bind_as_target();
     GFX::clear_color();
     // Send samples to shader
     /*for(uint32_t ii=0; ii<KERNEL_SIZE_; ++ii)
@@ -112,8 +113,8 @@ void SSAORenderer::render(Scene* pscene)
     SSAO_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
 
     CGEOM.draw("quad"_h);
-    SSAOBUFFER.unbind_as_target();
-    GBUFFER.unbind_as_source();
+    ssao_buffer.unbind_as_target();
+    g_buffer.unbind_as_source();
 
     SSAO_shader_.unuse();
 
@@ -121,7 +122,7 @@ void SSAORenderer::render(Scene* pscene)
     if(blur_policy_.n_pass_)
     {
         //GFX::disable_face_culling();
-        ping_pong_.run(*static_cast<BufferModule*>(&SSAOBUFFER),
+        ping_pong_.run(*static_cast<BufferModule*>(&ssao_buffer),
                        blur_policy_,
                        [&]()
                        {

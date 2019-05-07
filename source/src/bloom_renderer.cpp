@@ -1,13 +1,13 @@
 #include "bloom_renderer.h"
 #include "gfx_driver.h"
 #include "texture.h"
-#include "l_buffer.h"
 #include "mesh_factory.h"
 #include "logger.h"
 #include "algorithms.h"
 #include "math3d.h"
 #include "globals.h"
 #include "geometry_common.h"
+#include "buffer_module.h"
 
 namespace wcore
 {
@@ -67,13 +67,16 @@ static inline float bloom_alpha(int index, int n_channels)
 
 void BloomRenderer::render(Scene* pscene)
 {
+    auto& l_buffer = GMODULES::GET("lbuffer"_h);
+
+
     blur_pass_shader_.use();
 
     // Generate mipmaps for brightmap (texture unit 1, 4 levels total)
-    LBUFFER.get_texture().generate_mipmaps(1, 0, 3);
+    l_buffer.get_texture().generate_mipmaps(1, 0, 3);
 
     // Bind bright map texture to texture unit 0
-    LBUFFER.get_texture().bind(0,1);
+    l_buffer.get_texture().bind(0,1);
 
     // HORIZONTAL BLUR PASS
     blur_pass_shader_.send_uniform("horizontal"_h, true);

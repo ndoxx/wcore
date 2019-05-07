@@ -5,6 +5,7 @@
 
 #include "frame_buffer.h"
 #include "wtypes.h"
+#include "logger.h"
 
 namespace wcore
 {
@@ -16,12 +17,12 @@ protected:
     FrameBuffer              frame_buffer_; // FBO, attached to output texture
     uint32_t width_;  // FBO and output texture width
     uint32_t height_; // FBO and output texture height
+    hash_t name_;
 
 public:
     BufferModule(const char* out_tex_name,
                  std::shared_ptr<Texture> ptexture,
-                 std::vector<GLenum>&& attachments,
-                 bool register_as_global=false);
+                 std::vector<GLenum>&& attachments);
 
     virtual ~BufferModule(){}
 
@@ -46,6 +47,8 @@ public:
     inline void blit_depth_to_screen(uint32_t scrWidth, uint32_t scrHeight);
 
     inline Texture& get_texture() { return *out_texture_; }
+
+    inline hash_t get_name() const { return name_; }
 
     GLuint operator[](uint8_t index) const;
 };
@@ -74,6 +77,24 @@ inline void BufferModule::blit_depth_to_screen(uint32_t scrWidth, uint32_t scrHe
 {
     frame_buffer_.blit_depth_default_fb(scrWidth, scrHeight);
 }
+
+
+class GMODULES
+{
+public:
+    static inline BufferModule& GET(hash_t name)
+    {
+        return *modules_[name];
+    }
+
+    static inline void REGISTER(std::unique_ptr<BufferModule> pmodule)
+    {
+        modules_[pmodule->get_name()] = std::move(pmodule);
+    }
+
+private:
+    static std::map<hash_t, std::unique_ptr<BufferModule>> modules_;
+};
 
 }
 

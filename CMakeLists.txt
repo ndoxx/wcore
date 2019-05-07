@@ -85,11 +85,6 @@ set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/frame_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/buffer_module.cpp
     ${CMAKE_SOURCE_DIR}/source/src/ping_pong_buffer.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/g_buffer.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/l_buffer.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/shadow_buffer.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/SSAO_buffer.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/SSR_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/bounding_boxes.cpp
     ${CMAKE_SOURCE_DIR}/source/src/ray.cpp
     ${CMAKE_SOURCE_DIR}/source/src/ray_caster.cpp

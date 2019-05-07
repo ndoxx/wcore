@@ -5,17 +5,20 @@
 namespace wcore
 {
 
+std::map<hash_t, std::unique_ptr<BufferModule>> GMODULES::modules_;
+
+
 BufferModule::BufferModule(const char* out_tex_name,
                            std::shared_ptr<Texture> ptexture,
-                           std::vector<GLenum>&& attachments,
-                           bool register_as_global):
+                           std::vector<GLenum>&& attachments):
 out_texture_(ptexture),
 frame_buffer_(*out_texture_, attachments),
 width_(ptexture->get_width()),
-height_(ptexture->get_height())
+height_(ptexture->get_height()),
+name_(H_(out_tex_name))
 {
     // Register as a named texture
-    Texture::register_named_texture(H_(out_tex_name), out_texture_);
+    Texture::register_named_texture(name_, out_texture_);
 #ifdef __DEBUG__
     HRESOLVE.add_intern_string(out_tex_name);
 #endif

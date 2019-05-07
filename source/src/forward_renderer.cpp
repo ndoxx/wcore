@@ -2,8 +2,6 @@
 
 #include "forward_renderer.h"
 #include "gfx_driver.h"
-#include "g_buffer.h"
-#include "l_buffer.h"
 #include "scene.h"
 #include "math3d.h"
 #include "model.h"
@@ -11,6 +9,7 @@
 #include "camera.h"
 #include "sky.h"
 #include "w_symbols.h"
+#include "buffer_module.h"
 
 namespace wcore
 {
@@ -26,6 +25,8 @@ skybox_shader_(ShaderResource("skybox.vert;skybox.frag"))
 
 void ForwardRenderer::render(Scene* pscene)
 {
+    auto& l_buffer = GMODULES::GET("lbuffer"_h);
+
     // Get camera matrices
     mat4 V = pscene->get_camera().get_view_matrix();       // Camera View matrix
     mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
@@ -35,7 +36,7 @@ void ForwardRenderer::render(Scene* pscene)
 
     forward_stage_shader_.use();
     // Bind VAO, draw, unbind VAO
-    LBuffer::Instance().bind_as_target();
+    l_buffer.bind_as_target();
     // Draw transparent geometry
     GFX::enable_blending();
     GFX::set_std_blending();
@@ -90,7 +91,7 @@ void ForwardRenderer::render(Scene* pscene)
         skybox_shader_.unuse();
         glDepthFunc(GL_LESS);
     }
-    LBuffer::Instance().unbind_as_target();
+    l_buffer.unbind_as_target();
 
     // Restore state
     GFX::disable_depth_testing();

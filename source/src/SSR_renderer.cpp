@@ -1,7 +1,4 @@
 #include "SSR_renderer.h"
-#include "SSR_buffer.h"
-#include "g_buffer.h"
-#include "l_buffer.h"
 #include "gfx_driver.h"
 #include "scene.h"
 #include "camera.h"
@@ -44,16 +41,20 @@ pix_stride_(7.f),
 max_ray_distance_(25.f),
 probe_(1.f)
 {
-    SSRBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
+    //SSRBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
 }
 
 SSRRenderer::~SSRRenderer()
 {
-    SSRBuffer::Kill();
+    //SSRBuffer::Kill();
 }
 
 void SSRRenderer::render(Scene* pscene)
 {
+    auto& l_buffer = GMODULES::GET("lbuffer"_h);
+    auto& g_buffer = GMODULES::GET("gbuffer"_h);
+    auto& ssr_buffer  = GMODULES::GET("SSRbuffer"_h);
+
     // For position reconstruction
     const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     const mat4& V = pscene->get_camera().get_view_matrix(); // Camera View matrix
@@ -63,16 +64,12 @@ void SSRRenderer::render(Scene* pscene)
     mat4 invView;
     math::inverse(V, invView);
 
-    GBuffer& gbuffer = GBuffer::Instance();
-    LBuffer& lbuffer = LBuffer::Instance();
-    SSRBuffer& ssrbuffer = SSRBuffer::Instance();
+    ssr_buffer.bind_as_target();
 
-    ssrbuffer.bind_as_target();
-
-    gbuffer.bind_as_source(0,0);  // normal, metallic, ao
-    gbuffer.bind_as_source(1,1);  // albedo, roughness
-    gbuffer.bind_as_source(2,2);  // depth
-    lbuffer.bind_as_source(3,0);  // screen (last frame)
+    g_buffer.bind_as_source(0,0);  // normal, metallic, ao
+    g_buffer.bind_as_source(1,1);  // albedo, roughness
+    g_buffer.bind_as_source(2,2);  // depth
+    l_buffer.bind_as_source(3,0);  // screen (last frame)
 
     SSR_shader_.use();
     SSR_shader_.send_uniform<int>("normalTex"_h, 0);
@@ -88,8 +85,8 @@ void SSRRenderer::render(Scene* pscene)
     }
     //SSR_shader_.send_uniform<int>("backDepthTex"_h, 4);
 
-    SSR_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/ssrbuffer.get_width(),1.0f/ssrbuffer.get_height()));
-    SSR_shader_.send_uniform("rd.v2_viewportSize"_h, vec2(ssrbuffer.get_width(),ssrbuffer.get_height()));
+    SSR_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/ssr_buffer.get_width(),1.0f/ssr_buffer.get_height()));
+    SSR_shader_.send_uniform("rd.v2_viewportSize"_h, vec2(ssr_buffer.get_width(),ssr_buffer.get_height()));
     SSR_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
@@ -113,9 +110,9 @@ void SSRRenderer::render(Scene* pscene)
 
     CGEOM.draw("quad"_h);
 
-    gbuffer.unbind_as_source();
-    lbuffer.unbind_as_source();
-    ssrbuffer.unbind_as_target();
+    g_buffer.unbind_as_source();
+    l_buffer.unbind_as_source();
+    ssr_buffer.unbind_as_target();
     SSR_shader_.unuse();
 
     if(blur_enabled_)
@@ -124,10 +121,10 @@ void SSRRenderer::render(Scene* pscene)
         int nSamples = 10;
 
         blur_buffer_.bind_as_target();
-        gbuffer.bind_as_source(0,0);   // normal, metallic, ao
-        gbuffer.bind_as_source(1,1);   // albedo, roughness
-        gbuffer.bind_as_source(2,2);   // depth
-        ssrbuffer.bind_as_source(3,0); // raw SSR
+        g_buffer.bind_as_source(0,0);   // normal, metallic, ao
+        g_buffer.bind_as_source(1,1);   // albedo, roughness
+        g_buffer.bind_as_source(2,2);   // depth
+        ssr_buffer.bind_as_source(3,0); // raw SSR
 
         SSR_blur_shader_.use();
         SSR_blur_shader_.send_uniform<int>("normalTex"_h, 0);
@@ -143,21 +140,21 @@ void SSRRenderer::render(Scene* pscene)
         SSR_blur_shader_.send_uniform<int>("rd.i_samples"_h, nSamples);
 
         // Horizontal pass
-        SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(maxBlurRadius/ssrbuffer.get_width(), 0.f));
+        SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(maxBlurRadius/ssr_buffer.get_width(), 0.f));
 
         GFX::clear_color();
 
         CGEOM.draw("quad"_h);
-        gbuffer.unbind_as_source();
-        ssrbuffer.unbind_as_source();
+        g_buffer.unbind_as_source();
+        ssr_buffer.unbind_as_source();
         blur_buffer_.unbind_as_target();
 
         // Vertical pass
-        gbuffer.bind_as_source(0,0);   // normal, metallic, ao
-        gbuffer.bind_as_source(1,1);   // albedo, roughness
-        gbuffer.bind_as_source(2,2);   // depth
+        g_buffer.bind_as_source(0,0);   // normal, metallic, ao
+        g_buffer.bind_as_source(1,1);   // albedo, roughness
+        g_buffer.bind_as_source(2,2);   // depth
         blur_buffer_.bind_as_source(3,0); // hblur SSR
-        ssrbuffer.bind_as_target();
+        ssr_buffer.bind_as_target();
 
         SSR_blur_shader_.send_uniform<int>("normalTex"_h, 0);
         SSR_blur_shader_.send_uniform<int>("albedoTex"_h, 1);
@@ -170,14 +167,14 @@ void SSRRenderer::render(Scene* pscene)
         SSR_blur_shader_.send_uniform("rd.f_normalBias"_h, 0.29f);
         SSR_blur_shader_.send_uniform("rd.f_blurQuality"_h, 2.f);
         SSR_blur_shader_.send_uniform<int>("rd.i_samples"_h, nSamples);
-        SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(0.f, maxBlurRadius/ssrbuffer.get_height()));
+        SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(0.f, maxBlurRadius/ssr_buffer.get_height()));
 
         GFX::enable_blending();
         GFX::set_std_blending();
         CGEOM.draw("quad"_h);
-        gbuffer.unbind_as_source();
+        g_buffer.unbind_as_source();
         blur_buffer_.unbind_as_source();
-        ssrbuffer.unbind_as_target();
+        ssr_buffer.unbind_as_target();
         GFX::disable_blending();
 
         SSR_blur_shader_.unuse();

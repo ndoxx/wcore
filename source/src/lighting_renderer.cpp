@@ -5,17 +5,13 @@
 #include "config.h"
 #include "scene.h"
 #include "camera.h"
-#include "g_buffer.h"
-#include "l_buffer.h"
-#include "SSAO_buffer.h"
-#include "SSR_buffer.h"
-#include "shadow_buffer.h"
 #include "shadow_map_renderer.h"
 #include "lights.h"
 #include "texture.h"
 #include "mesh_factory.h"
 #include "model.h"
 #include "geometry_common.h"
+#include "buffer_module.h"
 
 namespace wcore
 {
@@ -50,6 +46,12 @@ static uint32_t SSR_TEX = 5;
 
 void LightingRenderer::render(Scene* pscene)
 {
+    auto& ssao_buffer   = GMODULES::GET("SSAObuffer"_h);
+    auto& ssr_buffer    = GMODULES::GET("SSRbuffer"_h);
+    auto& l_buffer      = GMODULES::GET("lbuffer"_h);
+    auto& g_buffer      = GMODULES::GET("gbuffer"_h);
+    auto& shadow_buffer = GMODULES::GET("shadowmap"_h);
+
     // Get camera matrices
     const math::mat4& V = pscene->get_camera().get_view_matrix();       // Camera View matrix
     const math::mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
@@ -61,9 +63,9 @@ void LightingRenderer::render(Scene* pscene)
 
     if(lighting_enabled_)
     {
-        GBUFFER.bind_as_source();
-        LBUFFER.bind_as_target();
-        GBUFFER.blit_depth(LBUFFER); // [OPT] Find a workaround
+        g_buffer.bind_as_source();
+        l_buffer.bind_as_target();
+        g_buffer.blit_depth(l_buffer); // [OPT] Find a workaround
         GFX::lock_depth_buffer();
         GFX::clear_color();
 
@@ -95,7 +97,7 @@ void LightingRenderer::render(Scene* pscene)
             null_shader_.unuse();
 
             // Restore writing to color buffers
-            LBUFFER.rebind_draw_buffers();
+            l_buffer.rebind_draw_buffers();
 
         // ---- LIGHT PASS
             GFX::lock_stencil();
@@ -109,13 +111,13 @@ void LightingRenderer::render(Scene* pscene)
             // view position uniform
             //lpass_point_shader_.send_uniform("rd.v3_viewPos"_h, pscene->get_camera()->get_position());
             // G-Buffer texture samplers
-            lpass_point_shader_.send_uniforms(GBUFFER.get_texture());
+            lpass_point_shader_.send_uniforms(g_buffer.get_texture());
             // Bright pass threshold
             lpass_point_shader_.send_uniform("rd.f_bright_threshold"_h, std::max(bright_threshold_, bright_knee_));
             lpass_point_shader_.send_uniform("rd.f_bright_knee"_h, bright_knee_);
             // Screen size
             lpass_point_shader_.send_uniform("rd.v2_screenSize"_h,
-                                             math::vec2(GBUFFER.get_width(),GBUFFER.get_height()));
+                                             math::vec2(g_buffer.get_width(),g_buffer.get_height()));
             // Light uniforms
             lpass_point_shader_.send_uniform("lt.v3_lightPosition"_h, V*light.get_position());
             lpass_point_shader_.send_uniforms(light);
@@ -127,7 +129,7 @@ void LightingRenderer::render(Scene* pscene)
             // SSAO
             if(SSAO_enabled_)
             {
-                SSAOBUFFER.get_texture().bind(SSAO_TEX,0); // Bind ssao[0] to texture unit SSAO_TEX
+                ssao_buffer.get_texture().bind(SSAO_TEX,0); // Bind ssao[0] to texture unit SSAO_TEX
                 lpass_point_shader_.send_uniform<int>("SSAOTex"_h, SSAO_TEX);
             }
             lpass_point_shader_.send_uniform("rd.b_enableSSAO"_h, SSAO_enabled_);
@@ -146,16 +148,16 @@ void LightingRenderer::render(Scene* pscene)
         GFX::disable_stencil();
 
         // Render directional light shadow to shadow buffer
-        GBUFFER.unbind_as_source();
-        LBUFFER.unbind_as_target();
+        g_buffer.unbind_as_source();
+        l_buffer.unbind_as_target();
     }
 
     if(!dirlight_enabled_) return;
     if(auto dir_light = pscene->get_directional_light().lock())
     {
     // ---- DIRECTIONAL LIGHT PASS
-        GBUFFER.bind_as_source();
-        LBUFFER.bind_as_target();
+        g_buffer.bind_as_source();
+        l_buffer.bind_as_target();
 
         if(lighting_enabled_)
             GFX::enable_blending();
@@ -170,14 +172,14 @@ void LightingRenderer::render(Scene* pscene)
         // view position uniform
         //lpass_dir_shader_.send_uniform("rd.v3_viewPos"_h, pscene->get_camera()->get_position());
         // G-Buffer texture samplers
-        lpass_dir_shader_.send_uniforms(GBUFFER.get_texture());
+        lpass_dir_shader_.send_uniforms(g_buffer.get_texture());
         // For position reconstruction
         lpass_dir_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
         // Bright pass threshold
         lpass_dir_shader_.send_uniform("rd.f_bright_threshold"_h, 1.0f);
         // Screen size
         lpass_dir_shader_.send_uniform("rd.v2_screenSize"_h,
-                                           math::vec2(GBUFFER.get_width(),GBUFFER.get_height()));
+                                           math::vec2(g_buffer.get_width(),g_buffer.get_height()));
         // Light uniforms
         lpass_dir_shader_.send_uniform("lt.v3_lightPosition"_h, V.submatrix(3,3)*dir_light->get_position());
         lpass_dir_shader_.send_uniforms(*dir_light);
@@ -189,11 +191,11 @@ void LightingRenderer::render(Scene* pscene)
         {
             math::mat4 lightMatrix = biasMatrix*pscene->get_light_camera().get_view_projection_matrix()*V_inv;
 
-            SHADOWBUFFER.get_texture().bind(SHADOW_TEX,0); // Bind shadow[0] to texture unit SHADOW_TEX
+            shadow_buffer.get_texture().bind(SHADOW_TEX,0); // Bind shadow[0] to texture unit SHADOW_TEX
             lpass_dir_shader_.send_uniform<int>("shadowTex"_h, SHADOW_TEX);
             lpass_dir_shader_.send_uniform("m4_LightSpace"_h, lightMatrix);
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-            SHADOWBUFFER.get_texture().generate_mipmaps(0);
+            shadow_buffer.get_texture().generate_mipmaps(0);
 #else
             lpass_dir_shader_.send_uniform("rd.v2_shadowTexelSize"_h, ShadowMapRenderer::SHADOW_TEXEL_SIZE);
             lpass_dir_shader_.send_uniform("rd.f_shadowBias"_h, shadow_bias_ * ShadowMapRenderer::SHADOW_TEXEL_SIZE.x());
@@ -203,7 +205,7 @@ void LightingRenderer::render(Scene* pscene)
         // SSAO
         if(SSAO_enabled_)
         {
-            SSAOBUFFER.get_texture().bind(SSAO_TEX,0); // Bind ssao[0] to texture unit SSAO_TEX
+            ssao_buffer.get_texture().bind(SSAO_TEX,0); // Bind ssao[0] to texture unit SSAO_TEX
             lpass_dir_shader_.send_uniform<int>("SSAOTex"_h, SSAO_TEX);
         }
         lpass_dir_shader_.send_uniform("rd.b_enableSSAO"_h, SSAO_enabled_);
@@ -211,7 +213,7 @@ void LightingRenderer::render(Scene* pscene)
         // SSR
         if(SSR_enabled_)
         {
-            SSRBUFFER.get_texture().bind(SSR_TEX,0); // Bind ssr[0] to texture unit SSR_TEX
+            ssr_buffer.get_texture().bind(SSR_TEX,0); // Bind ssr[0] to texture unit SSR_TEX
             lpass_dir_shader_.send_uniform<int>("SSRTex"_h, SSR_TEX);
         }
         lpass_dir_shader_.send_uniform("rd.b_enableSSR"_h, SSR_enabled_);

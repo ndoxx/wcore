@@ -15,9 +15,6 @@
 #include "gui_renderer.h"
 
 #include "geometry_common.h"
-#include "l_buffer.h"
-#include "g_buffer.h"
-#include "SSAO_buffer.h"
 #include "debug_info.h"
 #include "logger.h"
 #include "input_handler.h"
@@ -42,13 +39,89 @@ namespace wcore
 
 RenderPipeline::RenderPipeline()
 {
+    /*GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "backfaceDepthBuffer",
+        std::make_shared<Texture>(
+            std::vector<hash_t>{"backfaceDepthTex"_h},
+            std::vector<GLenum>{ GL_NEAREST},
+            std::vector<GLenum>{ GL_DEPTH_COMPONENT32},
+            std::vector<GLenum>{ GL_DEPTH_COMPONENT},
+            GLB.WIN_W,
+            GLB.WIN_H,
+            GL_TEXTURE_2D,
+            true),
+        std::vector<GLenum>({GL_DEPTH_ATTACHMENT})
+    ));*/
+
     // Buffers with facilities for Geometry pass
-    GBuffer::Init(GLB.WIN_W, GLB.WIN_H);
-    BackFaceDepthBuffer::Init(GLB.WIN_W, GLB.WIN_H);
+    GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "gbuffer",
+        std::make_shared<Texture>(
+            std::vector<hash_t>{"normalTex"_h, "albedoTex"_h, "depthTex"_h},
+            std::vector<GLenum>{GL_NEAREST,      GL_NEAREST,   GL_NEAREST},
+            std::vector<GLenum>{GL_RGBA16_SNORM, GL_RGBA,      GL_DEPTH_COMPONENT32},
+            std::vector<GLenum>{GL_RGBA,         GL_RGBA,      GL_DEPTH_COMPONENT},
+            GLB.WIN_W,
+            GLB.WIN_H,
+            GL_TEXTURE_2D,
+            true),
+        std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
+                             GL_COLOR_ATTACHMENT1,
+                             GL_DEPTH_ATTACHMENT})
+    ));
+
     // Buffer with facilities for Lighting pass
-    LBuffer::Init(GLB.WIN_W, GLB.WIN_H);
+    GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "lbuffer",
+        std::make_shared<Texture>(
+            std::vector<hash_t>{"screenTex"_h, "brightTex"_h,         "ldepthStencilTex"_h},
+            std::vector<GLenum> {GL_NEAREST,     GL_LINEAR_MIPMAP_LINEAR, GL_NONE},
+            std::vector<GLenum> {GL_RGB16F,      GL_RGB,                  GL_DEPTH24_STENCIL8},
+            std::vector<GLenum> {GL_RGB,         GL_RGB,                  GL_DEPTH_STENCIL},
+            GLB.WIN_W,            // brightTex will contain the bright map.
+            GLB.WIN_H,           // We use the multiple render target scheme
+            GL_TEXTURE_2D,          // to populate this texture during the
+            true,                   // lighting pass.
+            true), // Lazy mipmap initialization needed
+        std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
+                             GL_COLOR_ATTACHMENT1,
+                             GL_DEPTH_STENCIL_ATTACHMENT})
+    ));
+
     // Buffer for SSAO
-    SSAOBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
+    GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "SSAObuffer",
+        std::make_shared<Texture>(
+            std::vector<hash_t>{"SSAOTex"_h},
+            std::vector<GLenum>{GL_LINEAR},
+            std::vector<GLenum>{GL_R8},
+            std::vector<GLenum>{GL_RED},
+            GLB.WIN_W/2,
+            GLB.WIN_H/2,
+            GL_TEXTURE_2D,
+            true),
+        std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
+    ));
+
+    // Buffer for SSR
+    GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "SSRbuffer",
+        std::make_shared<Texture>(
+            std::vector<hash_t>{"SSRTex"_h},
+            std::vector<GLenum>{GL_LINEAR},
+            std::vector<GLenum>{GL_RGBA16F},
+            std::vector<GLenum>{GL_RGBA},
+            GLB.WIN_W/2,
+            GLB.WIN_H/2,
+            GL_TEXTURE_2D,
+            true),
+        std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
+    ));
 
     // Common utility meshes
     GeometryCommon::Instance();
@@ -86,11 +159,6 @@ RenderPipeline::~RenderPipeline()
     delete geometry_renderer_;
 
     GeometryCommon::Kill();
-
-    SSAOBuffer::Kill();
-    LBuffer::Kill();
-    BackFaceDepthBuffer::Kill();
-    GBuffer::Kill();
 }
 
 void RenderPipeline::init_events(InputHandler& handler)

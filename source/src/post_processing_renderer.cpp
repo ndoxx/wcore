@@ -1,6 +1,5 @@
 #include "post_processing_renderer.h"
 #include "gfx_driver.h"
-#include "l_buffer.h"
 #include "math3d.h"
 #include "texture.h"
 #include "lights.h"
@@ -8,6 +7,7 @@
 #include "scene.h"
 #include "globals.h"
 #include "geometry_common.h"
+#include "buffer_module.h"
 
 namespace wcore
 {
@@ -40,6 +40,8 @@ fog_color_(0.f)
 
 void PostProcessingRenderer::render(Scene* pscene)
 {
+    auto& l_buffer = GMODULES::GET("lbuffer"_h);
+
     post_processing_shader_.use();
     // Texture samplers uniforms
     post_processing_shader_.send_uniform<int>("screenTex"_h, 0);
@@ -81,14 +83,14 @@ void PostProcessingRenderer::render(Scene* pscene)
 
     // Bind relevant textures
     auto pbloom = Texture::get_named_texture("bloom"_h).lock();
-    LBUFFER.bind_as_source(0,0);
+    l_buffer.bind_as_source(0,0);
     if(bloom_enabled_)
         pbloom->bind(1,0);
-    LBUFFER.bind_as_source(2,2);
+    l_buffer.bind_as_source(2,2);
 
     // Draw triangles in screen quad
     CGEOM.draw("quad"_h);
-    LBUFFER.unbind_as_source();
+    l_buffer.unbind_as_source();
     if(bloom_enabled_)
         pbloom->unbind();
     post_processing_shader_.unuse();

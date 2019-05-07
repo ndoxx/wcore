@@ -8,8 +8,8 @@
 #include "scene.h"
 #include "logger.h"
 #include "texture.h"
-#include "shadow_buffer.h"
 #include "geometry_common.h"
+#include "buffer_module.h"
 
 namespace wcore
 {
@@ -38,7 +38,33 @@ normal_offset_(-0.013f)
     CONFIG.get("root.render.shadowmap.height"_h, SHADOW_HEIGHT);
     SHADOW_TEXEL_SIZE = vec2(1.0f/SHADOW_WIDTH, 1.0f/SHADOW_HEIGHT);
 
-    SHADOWBUFFER.Init(SHADOW_WIDTH, SHADOW_HEIGHT);
+    //SHADOWBUFFER.Init(SHADOW_WIDTH, SHADOW_HEIGHT);
+
+    // Shadow map buffer
+    GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "shadowmap",
+        std::make_shared<Texture>(
+            std::vector<hash_t>{"shadowTex"_h},
+        #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
+            std::vector<GLenum>     {GL_LINEAR},
+            std::vector<GLenum>     {GL_RGBA32F},
+            std::vector<GLenum>     {GL_RGBA},
+        #else
+            std::vector<GLenum>     {GL_NEAREST},
+            std::vector<GLenum>     {GL_DEPTH_COMPONENT24},
+            std::vector<GLenum>     {GL_DEPTH_COMPONENT},
+        #endif
+            SHADOW_WIDTH,
+            SHADOW_HEIGHT,
+            GL_TEXTURE_2D,
+            true),
+        #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
+        std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
+        #else
+        std::vector<GLenum>({GL_DEPTH_ATTACHMENT})
+        #endif
+    ));
 }
 
 ShadowMapRenderer::~ShadowMapRenderer()
@@ -58,12 +84,14 @@ void ShadowMapRenderer::render(Scene* pscene)
         pscene->sort_models_light();
 #endif*/
 
+        auto& shadow_buffer = GMODULES::GET("shadowmap"_h);
+
         // Light matrix is light camera view-projection matrix
         light_matrix_ = pscene->get_light_camera().get_view_projection_matrix();
 
         GFX::disable_blending();
         sm_shader_.use();
-        SHADOWBUFFER.bind_as_target();
+        shadow_buffer.bind_as_target();
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
         GFX::clear_color();
 #else
@@ -104,15 +132,15 @@ void ShadowMapRenderer::render(Scene* pscene)
 #endif*/
         );
 
-        SHADOWBUFFER.unbind_as_target();
+        shadow_buffer.unbind_as_target();
         sm_shader_.unuse();
     /*
 #ifdef __EXPERIMENTAL_VSM_BLUR__
         // Blur pass on shadow map
         GFX::disable_face_culling();
-        //SHADOWBUFFER.generate_mipmaps(0, 0, 1);
+        //shadow_buffer.generate_mipmaps(0, 0, 1);
         vertex_array_.bind();
-        ping_pong_.run(*static_cast<BufferModule*>(SHADOWBUFFER),
+        ping_pong_.run(*static_cast<BufferModule*>(shadow_buffer),
                        BlurPassPolicy(1, SHADOW_WIDTH/2, SHADOW_HEIGHT/2),
                        [&]()
                        {

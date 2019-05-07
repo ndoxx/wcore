@@ -9,10 +9,10 @@
 #include "model.h"
 #include "terrain_patch.h"
 #include "math3d.h"
-#include "g_buffer.h"
 #include "bounding_boxes.h"
 #include "material.h"
 #include "texture.h"
+#include "buffer_module.h"
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -42,6 +42,8 @@ allow_parallax_mapping_(true)
 
 void GeometryRenderer::render(Scene* pscene)
 {
+    auto& g_buffer = GMODULES::GET("gbuffer"_h);
+
     // Get camera matrices
     mat4 V = pscene->get_camera().get_view_matrix();       // Camera View matrix
     mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
@@ -61,7 +63,7 @@ void GeometryRenderer::render(Scene* pscene)
     // Camera (eye) position
     //shader->send_uniform("rd.v3_viewPos"_h, pscene->get_camera()->get_position());
     // Draw to G-Buffer
-    GBuffer::Instance().bind_as_target();
+    g_buffer.bind_as_target();
 
     GFX::clear_color_depth(); // Suppressed valgrind false positive in valgrind.supp
 
@@ -172,7 +174,7 @@ void GeometryRenderer::render(Scene* pscene)
     });
     shader->unuse();
 
-    GBuffer::Instance().unbind_as_target();
+    g_buffer.unbind_as_target();
 
 
     // EXP back face depth buffer ---------------------------------------------

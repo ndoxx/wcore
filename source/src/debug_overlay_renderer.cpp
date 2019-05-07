@@ -14,10 +14,8 @@
 #include "png_loader.h"
 
 #include "geometry_common.h"
-#include "g_buffer.h"
-#include "l_buffer.h"
-#include "SSAO_buffer.h"
-#include "SSR_buffer.h"
+#include "buffer_module.h"
+
 
 #ifndef __DISABLE_EDITOR__
     #include "imgui/imgui.h"
@@ -56,14 +54,17 @@ text_renderer_(text_renderer)
 {
     enabled_ = false;
 
-    auto plbuffer = Texture::get_named_texture("lbuffer"_h).lock();
-    auto psbuffer = Texture::get_named_texture("shadowmap"_h).lock();
+    auto& l_buffer      = GMODULES::GET("lbuffer"_h);
+    auto& shadow_buffer = GMODULES::GET("shadowmap"_h);
+
+    //auto plbuffer = Texture::get_named_texture("lbuffer"_h).lock();
+    //auto psbuffer = Texture::get_named_texture("shadowmap"_h).lock();
     auto pbloom   = Texture::get_named_texture("bloom"_h).lock();
 
-    register_debug_pane(GBuffer::Instance());
+    register_debug_pane(GMODULES::GET("gbuffer"_h));
     //register_debug_pane(BackFaceDepthBuffer::Instance());
 
-    register_debug_pane({(*psbuffer)[0]},
+    register_debug_pane({shadow_buffer.get_texture()[0]},
                         {"shadowTex"},
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
                         {false}
@@ -72,11 +73,11 @@ text_renderer_(text_renderer)
 #endif
                         );
 
-    register_debug_pane(LBuffer::Instance());
-    register_debug_pane(SSAOBuffer::Instance());
-    register_debug_pane(SSRBuffer::Instance());
+    register_debug_pane(GMODULES::GET("lbuffer"_h));
+    register_debug_pane(GMODULES::GET("SSAObuffer"_h));
+    register_debug_pane(GMODULES::GET("SSRbuffer"_h));
 
-    register_debug_pane({(*plbuffer)[1], (*pbloom)[0]},
+    register_debug_pane({l_buffer.get_texture()[1], (*pbloom)[0]},
                         {"screenTex", "bloomTex"},
                         {false, false});
 }
