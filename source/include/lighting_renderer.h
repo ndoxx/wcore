@@ -8,8 +8,6 @@ namespace wcore
 {
 
 struct Vertex3P;
-class GBuffer;
-class LBuffer;
 class LightingRenderer : public Renderer
 {
 private:

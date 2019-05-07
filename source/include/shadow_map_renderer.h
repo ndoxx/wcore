@@ -11,8 +11,6 @@
 namespace wcore
 {
 
-class ShadowBuffer;
-
 class ShadowMapRenderer : public Renderer
 {
 public:

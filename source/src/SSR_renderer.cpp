@@ -16,7 +16,7 @@ SSRRenderer::SSRRenderer():
 SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
 SSR_blur_shader_(ShaderResource("SSR_blur.vert;SSR_blur.frag")),
 blur_buffer_("SSRBlurBuffer",
-std::make_shared<Texture>(
+std::make_unique<Texture>(
     std::vector<hash_t>{"SSRBlurTex"_h},
     std::vector<GLenum>{GL_LINEAR},
     std::vector<GLenum>{GL_RGBA16F},

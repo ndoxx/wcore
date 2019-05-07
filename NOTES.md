@@ -7868,12 +7868,28 @@ Le flag *aiProcess_ImproveCacheLocality* est intéressant, il permet de limiter 
 [3] https://gfx.cs.princeton.edu/pubs/Sander_2007_%3ETR/tipsy.pdf
 
 
+#[07-05-19]
+J'essaye d'avancer la content pipeline binaire. Waterial peut désormais exporter les matériaux dans un format binaire proprio : les Wat files. Je documenterai ce format plus tard. Pour l'instant, il me faut refactor la classe _Texture_ qui est vraiment trop merdique, si je veux pouvoir continuer sans peine.
 
+## Textures : MEGA refactor
+J'ai viré les "named textures", artéfact d'un lointain passé. L'objectif que cherchait à accomplir ce feature était de rendre accessibles globalement certaines texture targets internes au moteur. En pratique, seuls les _BufferModule_ globaux comme _GBuffer_, _LBuffer_ et autres, en profitaient. Mais comme tous ces buffers étaient déjà des objets globaux (singletons), le feature faisait doublon, et je me retrouvais avec soit des accès aux textures nommées, soit des accès aux _BufferModule_ globaux, au gré de mon humeur, rendant le code globalement imbitable.
 
+Toutes les classes suivantes ont dégagé : _GBuffer_, _LBuffer_, _SSAOBuffer_, _SSRBuffer_ et _ShadowBuffer_. Tous ces _BufferModule_ sont maintenant enregistrés proprement dans une classe statique _GMODULES_, et sont accessibles via la méthode GMODULES::GET(hash_t name) :
 
+```cpp
+    GMODULES::GET("gbuffer"_h);
+    GMODULES::GET("shadowmap"_h);
+    GMODULES::GET("SSAObuffer"_h);
+    GMODULES::GET("SSRbuffer"_h);
+    GMODULES::GET("bloombuffer"_h);
+    GMODULES::GET("lbuffer"_h);
+```
+Le petit nouveau "bloombuffer" vient d'un refactor de _BloomRenderer_ qui utilisait encore un FBO et une texture séparés, alors que _BufferModule_ est justement fait pour regrouper un FBO et une texture cible.
 
-
-
+Pour enregistrer un _BufferModule_ accessible globalement (qu'on appèlera GModule par la suite), il suffit de faire :
+```cpp
+    GMODULES::REGISTER(std::make_unique<BufferModule>(/*args*/));
+```
 
 
 

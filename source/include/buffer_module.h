@@ -13,7 +13,7 @@ namespace wcore
 class BufferModule
 {
 protected:
-    std::shared_ptr<Texture> out_texture_;
+    std::unique_ptr<Texture> out_texture_;
     FrameBuffer              frame_buffer_; // FBO, attached to output texture
     uint32_t width_;  // FBO and output texture width
     uint32_t height_; // FBO and output texture height
@@ -21,7 +21,7 @@ protected:
 
 public:
     BufferModule(const char* out_tex_name,
-                 std::shared_ptr<Texture> ptexture,
+                 std::unique_ptr<Texture> ptexture,
                  std::vector<GLenum>&& attachments);
 
     virtual ~BufferModule(){}

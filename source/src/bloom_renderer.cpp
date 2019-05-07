@@ -41,7 +41,7 @@ kernel_(9,1.8f)
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "bloombuffer",
-        std::make_shared<Texture>(
+        std::make_unique<Texture>(
             std::vector<hash_t>{"bloomTex"_h},
             std::vector<GLenum>{GL_LINEAR},
             std::vector<GLenum>{GL_RGB},

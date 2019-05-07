@@ -44,7 +44,7 @@ normal_offset_(-0.013f)
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "shadowmap",
-        std::make_shared<Texture>(
+        std::make_unique<Texture>(
             std::vector<hash_t>{"shadowTex"_h},
         #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
             std::vector<GLenum>     {GL_LINEAR},

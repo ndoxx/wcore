@@ -17,7 +17,8 @@
 namespace wcore
 {
 
-#ifdef __TEXTURE_OLD__
+#ifdef __TEXTURE_OLD__ // CURRENT TEXTURE REFACTORING
+
 enum class TextureUnit: uint16_t;
 struct TextureDescriptor;
 

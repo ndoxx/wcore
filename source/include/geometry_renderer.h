@@ -10,7 +10,6 @@ namespace wcore
 struct Vertex3P3N3T2U;
 class Scene;
 class Camera;
-class GBuffer;
 class GeometryRenderer : public Renderer
 {
 private:

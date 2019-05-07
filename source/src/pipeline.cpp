@@ -42,7 +42,7 @@ RenderPipeline::RenderPipeline()
     /*GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "backfaceDepthBuffer",
-        std::make_shared<Texture>(
+        std::make_unique<Texture>(
             std::vector<hash_t>{"backfaceDepthTex"_h},
             std::vector<GLenum>{ GL_NEAREST},
             std::vector<GLenum>{ GL_DEPTH_COMPONENT32},
@@ -58,7 +58,7 @@ RenderPipeline::RenderPipeline()
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "gbuffer",
-        std::make_shared<Texture>(
+        std::make_unique<Texture>(
             std::vector<hash_t>{"normalTex"_h, "albedoTex"_h, "depthTex"_h},
             std::vector<GLenum>{GL_NEAREST,      GL_NEAREST,   GL_NEAREST},
             std::vector<GLenum>{GL_RGBA16_SNORM, GL_RGBA,      GL_DEPTH_COMPONENT32},
@@ -76,7 +76,7 @@ RenderPipeline::RenderPipeline()
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "lbuffer",
-        std::make_shared<Texture>(
+        std::make_unique<Texture>(
             std::vector<hash_t>{"screenTex"_h, "brightTex"_h,         "ldepthStencilTex"_h},
             std::vector<GLenum> {GL_NEAREST,     GL_LINEAR_MIPMAP_LINEAR, GL_NONE},
             std::vector<GLenum> {GL_RGB16F,      GL_RGB,                  GL_DEPTH24_STENCIL8},
@@ -95,7 +95,7 @@ RenderPipeline::RenderPipeline()
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "SSAObuffer",
-        std::make_shared<Texture>(
+        std::make_unique<Texture>(
             std::vector<hash_t>{"SSAOTex"_h},
             std::vector<GLenum>{GL_LINEAR},
             std::vector<GLenum>{GL_R8},
@@ -111,7 +111,7 @@ RenderPipeline::RenderPipeline()
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "SSRbuffer",
-        std::make_shared<Texture>(
+        std::make_unique<Texture>(
             std::vector<hash_t>{"SSRTex"_h},
             std::vector<GLenum>{GL_LINEAR},
             std::vector<GLenum>{GL_RGBA16F},

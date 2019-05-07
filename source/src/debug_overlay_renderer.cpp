@@ -30,7 +30,7 @@ using namespace math;
 DebugOverlayRenderer::DebugOverlayRenderer(TextRenderer& text_renderer):
 peek_shader_(ShaderResource("fb_peek.vert;fb_peek.frag")),
 render_target_("debugOverlayBuffer",
-std::make_shared<Texture>(
+std::make_unique<Texture>(
     std::vector<hash_t>{"debugOverlayTex"_h},
     std::vector<GLenum>{GL_LINEAR},
     std::vector<GLenum>{GL_RGB16F},
@@ -43,7 +43,7 @@ std::make_shared<Texture>(
 current_pane_(0),
 current_tex_(0),
 raw_(false),
-tone_map_(true),
+tone_map_(false),
 show_r_(true),
 show_g_(true),
 show_b_(true),
@@ -54,29 +54,13 @@ text_renderer_(text_renderer)
 {
     enabled_ = false;
 
-    auto& l_buffer      = GMODULES::GET("lbuffer"_h);
-    auto& shadow_buffer = GMODULES::GET("shadowmap"_h);
-    auto& bloom_buffer  = GMODULES::GET("bloombuffer"_h);
-
+    //register_debug_pane(GMODULES::GET("backfaceDepthBuffer"_h));
     register_debug_pane(GMODULES::GET("gbuffer"_h));
-    //register_debug_pane(BackFaceDepthBuffer::Instance());
-
-    register_debug_pane({shadow_buffer.get_texture()[0]},
-                        {"shadowTex"},
-#ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-                        {false}
-#else
-                        {true}
-#endif
-                        );
-
-    register_debug_pane(GMODULES::GET("lbuffer"_h));
+    register_debug_pane(GMODULES::GET("shadowmap"_h));
     register_debug_pane(GMODULES::GET("SSAObuffer"_h));
     register_debug_pane(GMODULES::GET("SSRbuffer"_h));
-
-    register_debug_pane({l_buffer.get_texture()[1], bloom_buffer.get_texture()[0]},
-                        {"screenTex", "bloomTex"},
-                        {false, false});
+    register_debug_pane(GMODULES::GET("bloombuffer"_h));
+    register_debug_pane(GMODULES::GET("lbuffer"_h));
 }
 
 void DebugOverlayRenderer::register_debug_pane(std::vector<unsigned int>&& texture_indices,

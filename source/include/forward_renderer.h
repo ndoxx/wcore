@@ -7,8 +7,6 @@
 namespace wcore
 {
 
-class GBuffer;
-class LBuffer;
 class Camera;
 class ForwardRenderer : public Renderer
 {

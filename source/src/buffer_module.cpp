@@ -9,12 +9,12 @@ std::map<hash_t, std::unique_ptr<BufferModule>> GMODULES::modules_;
 
 
 BufferModule::BufferModule(const char* out_tex_name,
-                           std::shared_ptr<Texture> ptexture,
+                           std::unique_ptr<Texture> ptexture,
                            std::vector<GLenum>&& attachments):
-out_texture_(ptexture),
+out_texture_(std::move(ptexture)),
 frame_buffer_(*out_texture_, attachments),
-width_(ptexture->get_width()),
-height_(ptexture->get_height()),
+width_(out_texture_->get_width()),
+height_(out_texture_->get_height()),
 name_(H_(out_tex_name))
 {
 #ifdef __DEBUG__

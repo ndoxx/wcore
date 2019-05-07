@@ -6,6 +6,7 @@
 #include "math3d.h"
 #include "model.h"
 #include "material.h"
+#include "texture.h"
 #include "camera.h"
 #include "sky.h"
 #include "w_symbols.h"
