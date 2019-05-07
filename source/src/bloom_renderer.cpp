@@ -38,17 +38,20 @@ kernel_(9,1.8f)
         fbo_h_.push_back(new FrameBuffer(*bloom_h_tex_[ii], {GL_COLOR_ATTACHMENT0}));
     }
 
-    auto bloom_tex = std::make_shared<Texture>(
-                            std::vector<hash_t>{"bloomTex"_h},
-                            GLB.WIN_W/2,
-                            GLB.WIN_H/2,
-                            GL_TEXTURE_2D,
-                            GL_LINEAR,
-                            GL_RGB,
-                            GL_RGB,
-                            true);
-    Texture::register_named_texture("bloom"_h, bloom_tex);
-    fbo_ = new FrameBuffer(*bloom_tex, {GL_COLOR_ATTACHMENT0});
+    GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "bloombuffer",
+        std::make_shared<Texture>(
+            std::vector<hash_t>{"bloomTex"_h},
+            std::vector<GLenum>{GL_LINEAR},
+            std::vector<GLenum>{GL_RGB},
+            std::vector<GLenum>{GL_RGB},
+            GLB.WIN_W/2,
+            GLB.WIN_H/2,
+            GL_TEXTURE_2D,
+            true),
+        std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
+    ));
 }
 
 BloomRenderer::~BloomRenderer()
@@ -57,7 +60,7 @@ BloomRenderer::~BloomRenderer()
     {
         delete fbo_h_[ii];
     }
-    delete fbo_;
+    //delete fbo_;
 }
 
 static inline float bloom_alpha(int index, int n_channels)
@@ -67,8 +70,8 @@ static inline float bloom_alpha(int index, int n_channels)
 
 void BloomRenderer::render(Scene* pscene)
 {
-    auto& l_buffer = GMODULES::GET("lbuffer"_h);
-
+    auto& l_buffer     = GMODULES::GET("lbuffer"_h);
+    auto& bloom_buffer = GMODULES::GET("bloombuffer"_h);
 
     blur_pass_shader_.use();
 
@@ -99,21 +102,22 @@ void BloomRenderer::render(Scene* pscene)
     // Blend with previous blur level
     GFX::enable_blending();
     GFX::set_std_blending();
-    fbo_->with_render_target([&]()
-    {
-        for(int ii=0; ii<fbo_h_.size(); ++ii)
-        {
-            if(ii==0)
-                GFX::clear_color();
 
-            // Bind horizontal blur pass texture to texture unit 0
-            bloom_h_tex_[ii]->bind(0, 0);
-            blur_pass_shader_.send_uniform("f_alpha"_h, bloom_alpha(ii, fbo_h_.size()));
-            blur_pass_shader_.send_uniform("v2_texelSize"_h, vec2(1.0f/bloom_h_tex_[ii]->get_width(),
-                                                                    1.0f/bloom_h_tex_[ii]->get_height()));
-            CGEOM.draw("quad"_h);
-        }
-    });
+    bloom_buffer.bind_as_target();
+    for(int ii=0; ii<fbo_h_.size(); ++ii)
+    {
+        if(ii==0)
+            GFX::clear_color();
+
+        // Bind horizontal blur pass texture to texture unit 0
+        bloom_h_tex_[ii]->bind(0, 0);
+        blur_pass_shader_.send_uniform("f_alpha"_h, bloom_alpha(ii, fbo_h_.size()));
+        blur_pass_shader_.send_uniform("v2_texelSize"_h, vec2(1.0f/bloom_h_tex_[ii]->get_width(),
+                                                                1.0f/bloom_h_tex_[ii]->get_height()));
+        CGEOM.draw("quad"_h);
+    }
+    bloom_buffer.unbind_as_target();
+
     GFX::disable_blending();
 
     blur_pass_shader_.unuse();

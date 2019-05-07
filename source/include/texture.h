@@ -44,7 +44,6 @@ private:
     std::map<TextureUnit, uint32_t> unit_indices_;
 
     static RMap RESOURCE_MAP_;   // TextureInternal cache
-    static TMap NAMED_TEXTURES_; // Holds pointers to named textures
     static PngLoader png_loader_;
 
 public:
@@ -83,12 +82,6 @@ public:
             bool lazy_mipmap       = true);
 
     ~Texture();
-
-    // Register texture in the named texture map (DON'T ABUSE, just for special
-    // textures like those with a render attachment)
-    static void register_named_texture(hash_t name, pTexture ptex);
-    // Get a weak pointer to named texture
-    static wpTexture get_named_texture(hash_t name);
 
     void bind(GLuint unit = 0) const;
     void bind(GLuint unit, uint32_t index) const;

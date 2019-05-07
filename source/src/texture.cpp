@@ -20,7 +20,6 @@ namespace wcore
 
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;
-Texture::TMap Texture::NAMED_TEXTURES_;
 
 std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
 {
@@ -129,50 +128,6 @@ void Texture::debug_print_rmap_bindings()
     }
 }
 #endif
-
-void Texture::register_named_texture(hash_t name, pTexture ptex)
-{
-    #if __DEBUG__
-    {
-        std::stringstream ss;
-        ss << "[Texture] Registering new named texture: "
-           << "<n>" << HRESOLVE(name) << "</n>";
-        DLOGN(ss.str(), "texture");
-        DLOGI("width:  <v>" + std::to_string(ptex->get_width()) + "</v>", "texture");
-        DLOGI("height: <v>" + std::to_string(ptex->get_height()) + "</v>", "texture");
-        DLOGI("units:  <v>" + std::to_string(ptex->get_num_units()) + "</v>", "texture");
-
-    }
-    #endif
-    auto it = NAMED_TEXTURES_.find(name);
-    if(it == NAMED_TEXTURES_.end())
-    {
-        NAMED_TEXTURES_[name] = ptex;
-    }
-    else
-    {
-        #if __DEBUG__
-            std::stringstream ss;
-            ss << "[Texture] Ignored duplicate named texture registration for: <n>" << name << "</n>";
-            DLOGW(ss.str(), "texture");
-        #endif
-    }
-}
-
-Texture::wpTexture Texture::get_named_texture(hash_t name)
-{
-    auto it = NAMED_TEXTURES_.find(name);
-    if(it == NAMED_TEXTURES_.end())
-    {
-        std::stringstream ss;
-        ss << "[Texture] Couldn't find named texture: <n>" << name << "</n>";
-        DLOGF(ss.str(), "texture");
-        fatal("Couldn't find named texture.");
-        return wpTexture(); // Never gets here
-    }
-    else
-        return wpTexture(it->second);
-}
 
 Texture::TextureInternal::TextureInternal(const TextureDescriptor& descriptor):
 textureTarget_(GL_TEXTURE_2D),

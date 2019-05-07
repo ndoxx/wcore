@@ -17,8 +17,6 @@ width_(ptexture->get_width()),
 height_(ptexture->get_height()),
 name_(H_(out_tex_name))
 {
-    // Register as a named texture
-    Texture::register_named_texture(name_, out_texture_);
 #ifdef __DEBUG__
     HRESOLVE.add_intern_string(out_tex_name);
 #endif

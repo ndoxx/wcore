@@ -20,7 +20,6 @@ private:
     std::vector<std::shared_ptr<Texture>> bloom_h_tex_;
     std::vector<std::shared_ptr<Texture>> bloom_tex_;
     std::vector<FrameBuffer*> fbo_h_;
-    FrameBuffer* fbo_;
     math::GaussianKernel kernel_;
 
 public:
