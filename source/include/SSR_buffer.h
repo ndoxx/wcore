@@ -18,8 +18,10 @@ public:
 private:
     SSRBuffer(unsigned int screenWidth,
               unsigned int screenHeight);
-   virtual ~SSRBuffer();
+    virtual ~SSRBuffer();
 };
+
+#define SSRBUFFER SSRBuffer::Instance()
 
 }
 

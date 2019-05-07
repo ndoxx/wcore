@@ -21,6 +21,8 @@ private:
    virtual ~SSAOBuffer();
 };
 
+#define SSAOBUFFER SSAOBuffer::Instance()
+
 }
 
 #endif // SSAO_BUFFER_H

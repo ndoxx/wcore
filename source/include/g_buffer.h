@@ -34,6 +34,9 @@ private:
    virtual ~BackFaceDepthBuffer();
 };
 
+#define GBUFFER GBuffer::Instance()
+#define BFDBUFFER BackFaceDepthBuffer::Instance()
+
 }
 
 #endif // G_BUFFER_H

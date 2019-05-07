@@ -14,12 +14,10 @@ FrameBuffer::FrameBuffer(const Texture& texture, const std::vector<GLenum>& atta
 frame_buffer_(0),
 render_buffer_(0),
 draw_buffers_(nullptr),
-n_textures_(texture.get_num_textures()),
+n_textures_(texture.get_num_units()),
 width_(texture.get_width()),
 height_(texture.get_height())
 {
-    GLenum textureTarget = texture.get_texture_target();
-
     assert(attachments.size() == n_textures_);
     assert(n_textures_ <= 32); // Assert to be sure no buffer overrun should occur
     draw_buffers_ = new GLenum[n_textures_];
@@ -68,7 +66,7 @@ height_(texture.get_height())
             draw_buffers_[ii] = attachments[ii];
 
         // Attach texture to frame buffer
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[ii], textureTarget, texture[ii], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[ii], GL_TEXTURE_2D, texture[ii], 0);
     }
 
     // Each attachment was GL_NONE

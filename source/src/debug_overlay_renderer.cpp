@@ -56,13 +56,9 @@ text_renderer_(text_renderer)
 {
     enabled_ = false;
 
-    auto pgbuffer = Texture::get_named_texture("gbuffer"_h).lock();
     auto plbuffer = Texture::get_named_texture("lbuffer"_h).lock();
     auto psbuffer = Texture::get_named_texture("shadowmap"_h).lock();
     auto pbloom   = Texture::get_named_texture("bloom"_h).lock();
-    auto pssao    = Texture::get_named_texture("SSAObuffer"_h).lock();
-    auto pssr     = Texture::get_named_texture("SSRbuffer"_h).lock();
-    auto pssrblur = Texture::get_named_texture("SSRBlurBuffer"_h).lock();
 
     register_debug_pane(GBuffer::Instance());
     //register_debug_pane(BackFaceDepthBuffer::Instance());
@@ -113,11 +109,11 @@ void DebugOverlayRenderer::register_debug_pane(BufferModule& buffer_module)
     dbg::DebugPane dbg_pane;
     for(uint32_t ii=0; ii< n_tex; ++ii)
     {
-        std::string sampler_name(HRESOLVE(buffer_module.get_texture()->get_sampler_name(ii)));
+        std::string sampler_name(HRESOLVE(buffer_module.get_texture().get_sampler_name(ii)));
 
         dbg_pane.push_back(dbg::DebugTextureProperties(buffer_module[ii],
                            sampler_name,
-                           buffer_module.get_texture()->is_depth(ii)));
+                           buffer_module.get_texture().is_depth(ii)));
     }
     debug_panes_.push_back(dbg_pane);
 }
@@ -300,7 +296,7 @@ void DebugOverlayRenderer::framebuffer_peek_widget(Scene* pscene)
     }
     else
     {
-        uint64_t target_id = render_target_.get_texture()->get_texture_id(0);
+        uint64_t target_id = render_target_.get_texture()[0];
         ImGui::GetWindowDrawList()->AddImage((void*)target_id,
                                              ImGui::GetCursorScreenPos(),
                                              ImVec2(winx, winy),

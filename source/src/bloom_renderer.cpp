@@ -1,6 +1,7 @@
 #include "bloom_renderer.h"
 #include "gfx_driver.h"
 #include "texture.h"
+#include "l_buffer.h"
 #include "mesh_factory.h"
 #include "logger.h"
 #include "algorithms.h"
@@ -66,16 +67,13 @@ static inline float bloom_alpha(int index, int n_channels)
 
 void BloomRenderer::render(Scene* pscene)
 {
-    // Get access to lbuffer texture (texture index 1 is "brightTex")
-    auto pscreen = Texture::get_named_texture("lbuffer"_h).lock();
-
     blur_pass_shader_.use();
 
     // Generate mipmaps for brightmap (texture unit 1, 4 levels total)
-    pscreen->generate_mipmaps(1, 0, 3);
+    LBUFFER.get_texture().generate_mipmaps(1, 0, 3);
 
     // Bind bright map texture to texture unit 0
-    pscreen->bind(0,1);
+    LBUFFER.get_texture().bind(0,1);
 
     // HORIZONTAL BLUR PASS
     blur_pass_shader_.send_uniform("horizontal"_h, true);

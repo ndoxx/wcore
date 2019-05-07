@@ -5,6 +5,7 @@
 
 #include "texture.h"
 #include "pixel_buffer.h"
+#include "shader.h"
 #include "logger.h"
 #include "algorithms.h"
 #include "material_common.h"
@@ -15,32 +16,11 @@
 namespace wcore
 {
 
+#ifdef __TEXTURE_OLD__
+
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;
 Texture::TMap Texture::NAMED_TEXTURES_;
-/*
-std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
-{
-    {TextureUnit::ALBEDO,    "mt.sg1.albedoTex"_h},
-    {TextureUnit::AO,        "mt.sg1.AOTex"_h},
-    {TextureUnit::DEPTH,     "mt.sg1.depthTex"_h},
-    {TextureUnit::METALLIC,  "mt.sg1.metallicTex"_h},
-    {TextureUnit::NORMAL,    "mt.sg1.normalTex"_h},
-    {TextureUnit::ROUGHNESS, "mt.sg1.roughnessTex"_h}
-};
-
-// Alternative sampler group for splat mapping
-std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_2_ =
-{
-    {TextureUnit::ALBEDO,    "mt.sg2.albedoTex"_h},
-    {TextureUnit::AO,        "mt.sg2.AOTex"_h},
-    {TextureUnit::DEPTH,     "mt.sg2.depthTex"_h},
-    {TextureUnit::METALLIC,  "mt.sg2.metallicTex"_h},
-    {TextureUnit::NORMAL,    "mt.sg2.normalTex"_h},
-    {TextureUnit::ROUGHNESS, "mt.sg2.roughnessTex"_h}
-};
-
-static uint32_t SAMPLER_GROUP_SIZE = 6;*/
 
 std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
 {
@@ -160,7 +140,7 @@ void Texture::register_named_texture(hash_t name, pTexture ptex)
         DLOGN(ss.str(), "texture");
         DLOGI("width:  <v>" + std::to_string(ptex->get_width()) + "</v>", "texture");
         DLOGI("height: <v>" + std::to_string(ptex->get_height()) + "</v>", "texture");
-        DLOGI("units:  <v>" + std::to_string(ptex->get_num_textures()) + "</v>", "texture");
+        DLOGI("units:  <v>" + std::to_string(ptex->get_num_units()) + "</v>", "texture");
 
     }
     #endif
@@ -614,6 +594,11 @@ void Texture::unbind() const
     }
 }
 
+void Texture::bind_sampler(const Shader& shader, TextureUnit unit) const
+{
+    shader.send_uniform<int>(unit_to_sampler_name(unit), get_unit_index(unit));
+}
+
 void Texture::generate_mipmaps(uint32_t unit,
                                uint32_t base_level,
                                uint32_t max_level) const
@@ -638,5 +623,24 @@ bool Texture::operator!=(const Texture& texture) const
 {
     return !operator==(texture);
 }
+
+
+
+
+
+
+
+
+#else // __TEXTURE_OLD__
+
+
+
+
+
+
+
+
+
+#endif // __TEXTURE_OLD__
 
 }

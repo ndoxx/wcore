@@ -20,6 +20,8 @@ private:
    virtual ~LBuffer();
 };
 
+#define LBUFFER LBuffer::Instance()
+
 }
 
 #endif // SCREEN_RENDERER_H

@@ -74,6 +74,7 @@ set_target_properties(glfw PROPERTIES
 #add_definitions(-D__DISABLE_EDITOR__)
 add_definitions(-D__DEBUG__)
 add_definitions(-D__PROFILE__)
+add_definitions(-D__TEXTURE_OLD__)
 # add_definitions(-D__PRESERVE_STRS__)
 # add_definitions(-D__DEBUG_EXPORT_SPLINES__)
 # add_definitions(-D__PROFILING_GAMELOOP__)

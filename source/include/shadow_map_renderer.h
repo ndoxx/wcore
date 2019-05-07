@@ -33,7 +33,6 @@ private:
 #ifdef __EXPERIMENTAL_VSM_BLUR__
     PingPongBuffer ping_pong_;
 #endif
-    ShadowBuffer* sbuffer_;
 
     float normal_offset_;
     math::mat4 light_matrix_; // Last light view-projection matrix

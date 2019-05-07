@@ -18,11 +18,10 @@ protected:
     uint32_t height_; // FBO and output texture height
 
 public:
-    BufferModule(unsigned int width,
-                 unsigned int height);
     BufferModule(const char* out_tex_name,
                  std::shared_ptr<Texture> ptexture,
-                 std::vector<GLenum>&& attachments);
+                 std::vector<GLenum>&& attachments,
+                 bool register_as_global=false);
 
     virtual ~BufferModule(){}
 
@@ -46,7 +45,7 @@ public:
     inline void blit_depth(BufferModule& destination);
     inline void blit_depth_to_screen(uint32_t scrWidth, uint32_t scrHeight);
 
-    inline std::shared_ptr<Texture> get_texture() { return out_texture_; }
+    inline Texture& get_texture() { return *out_texture_; }
 
     GLuint operator[](uint8_t index) const;
 };

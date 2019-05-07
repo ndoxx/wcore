@@ -7,7 +7,8 @@ namespace wcore
 
 BufferModule::BufferModule(const char* out_tex_name,
                            std::shared_ptr<Texture> ptexture,
-                           std::vector<GLenum>&& attachments):
+                           std::vector<GLenum>&& attachments,
+                           bool register_as_global):
 out_texture_(ptexture),
 frame_buffer_(*out_texture_, attachments),
 width_(ptexture->get_width()),
@@ -18,17 +19,6 @@ height_(ptexture->get_height())
 #ifdef __DEBUG__
     HRESOLVE.add_intern_string(out_tex_name);
 #endif
-}
-
-BufferModule::BufferModule(unsigned int width,
-                           unsigned int height):
-BufferModule("unused",
-             std::make_shared<Texture>(std::vector<hash_t>{"unused"_h},
-                                       width,
-                                       height),
-             std::vector<GLenum>{GL_NONE})
-{
-
 }
 
 void BufferModule::rebind_draw_buffers()
@@ -53,7 +43,7 @@ void BufferModule::unbind_as_source()
 
 uint32_t BufferModule::get_num_textures() const
 {
-    return out_texture_->get_num_textures();
+    return out_texture_->get_num_units();
 }
 
 void BufferModule::generate_mipmaps(uint32_t unit,

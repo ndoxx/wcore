@@ -40,8 +40,6 @@ fog_color_(0.f)
 
 void PostProcessingRenderer::render(Scene* pscene)
 {
-    LBuffer& lbuffer = LBuffer::Instance();
-
     post_processing_shader_.use();
     // Texture samplers uniforms
     post_processing_shader_.send_uniform<int>("screenTex"_h, 0);
@@ -83,14 +81,14 @@ void PostProcessingRenderer::render(Scene* pscene)
 
     // Bind relevant textures
     auto pbloom = Texture::get_named_texture("bloom"_h).lock();
-    lbuffer.bind_as_source(0,0);
+    LBUFFER.bind_as_source(0,0);
     if(bloom_enabled_)
         pbloom->bind(1,0);
-    lbuffer.bind_as_source(2,2);
+    LBUFFER.bind_as_source(2,2);
 
     // Draw triangles in screen quad
     CGEOM.draw("quad"_h);
-    lbuffer.unbind_as_source();
+    LBUFFER.unbind_as_source();
     if(bloom_enabled_)
         pbloom->unbind();
     post_processing_shader_.unuse();

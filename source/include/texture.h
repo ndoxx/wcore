@@ -17,9 +17,11 @@
 namespace wcore
 {
 
+#ifdef __TEXTURE_OLD__
 enum class TextureUnit: uint16_t;
 struct TextureDescriptor;
 
+class Shader;
 class Texture
 {
 private:
@@ -98,23 +100,18 @@ public:
 
     inline uint32_t get_width()  const;
     inline uint32_t get_height() const;
-    inline uint32_t get_num_textures() const;
+    inline uint32_t get_num_units() const;
     inline GLenum get_texture_target() const;
     inline hash_t get_sampler_name(uint32_t index) const { return uniform_sampler_names_.at(index); }
     inline bool is_depth(uint32_t ii) const;
-    inline GLuint get_texture_id(uint32_t index) const;
     inline GLuint operator[](uint32_t index) const;
+
+    void bind_sampler(const Shader& shader, TextureUnit unit) const;
 
     // Check if texture has a given unit (like albedo, normal map...)
     inline bool has_unit(TextureUnit unit) const { return (units_&(uint16_t)unit); }
 
-    inline uint32_t get_unit_index(TextureUnit unit) const { return unit_indices_.at(unit); }
-
     static const std::map<TextureUnit, hash_t>& select_sampler_group(uint8_t group);
-    inline hash_t unit_to_sampler_name(TextureUnit unit) const
-    {
-        return select_sampler_group(sampler_group_).at(unit);
-    }
 
     bool operator==(const Texture& texture) const;
     bool operator!=(const Texture& texture) const;
@@ -124,11 +121,20 @@ public:
     // Active texture is -1 if unbound
     static void debug_print_rmap_bindings();
 #endif
+
+private:
+    inline uint32_t get_unit_index(TextureUnit unit) const { return unit_indices_.at(unit); }
+    inline hash_t unit_to_sampler_name(TextureUnit unit) const
+    {
+        return select_sampler_group(sampler_group_).at(unit);
+    }
 };
 
 class Texture::TextureInternal
 {
 public:
+    friend class Texture;
+
     TextureInternal(const TextureDescriptor& descriptor);
     TextureInternal(std::istream& stream);
 
@@ -156,7 +162,6 @@ public:
     inline uint32_t ID() const      { return ID_; }
     inline uint32_t get_num_textures() const { return numTextures_; }
     inline GLenum get_texture_target() const { return textureTarget_; }
-    inline GLuint get_texture_id(uint32_t index) const { return textureID_[index]; }
 
     virtual ~TextureInternal();
 
@@ -193,14 +198,54 @@ private:
 
 inline uint32_t Texture::get_width()  const { return internal_->get_width(); }
 inline uint32_t Texture::get_height() const { return internal_->get_height(); }
-inline uint32_t Texture::get_num_textures() const { return internal_->get_num_textures(); }
+inline uint32_t Texture::get_num_units() const { return internal_->get_num_textures(); }
 inline GLenum Texture::get_texture_target() const { return internal_->get_texture_target(); }
 inline bool Texture::is_depth(uint32_t ii) const
 {
     return internal_->is_depth(ii);
 }
-inline GLuint Texture::get_texture_id(uint32_t index) const { return internal_->get_texture_id(index); }
-inline GLuint Texture::operator[](uint32_t index) const { return internal_->get_texture_id(index); }
+inline GLuint Texture::operator[](uint32_t index) const { return internal_->textureID_[index]; }
+
+
+
+
+#else // __TEXTURE_OLD__
+
+enum class TextureUnit: uint16_t;
+class Shader;
+class Texture
+{
+public:
+    // Create single texture2D from stream with all default options
+    // These cannot be cached
+    Texture(std::istream& stream);
+
+    // Send sampler uniforms to shader
+    void bind_sampler(const Shader& shader, TextureUnit unit) const;
+
+    // Get the number of texture units in this texture
+    inline uint32_t get_num_units() const               { return n_units; }
+    // Get texture units width
+    inline uint32_t get_width() const                   { return width_; }
+    // Get texture units height
+    inline uint32_t get_height() const                  { return height_; }
+    // Get the sampler name associated to a given texture unit
+    inline hash_t get_sampler_name(uint32_t unit) const { return uniform_sampler_names_.at(unit); }
+    // Get OpenGL texture index for given unit
+    inline uint32_t operator[](uint32_t unit) const     { return units_[unit]; }
+
+
+private:
+    uint32_t n_units; // Number of texture units in this texture
+    uint32_t width_;  // Width of all texture units
+    uint32_t height_; // Height of all texture units
+    std::vector<hash_t> uniform_sampler_names_; // Sampler names used to bind each texture unit to a shader
+
+    uint32_t* units_;
+};
+
+
+#endif // __TEXTURE_OLD__
 
 }
 

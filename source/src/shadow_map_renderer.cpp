@@ -32,19 +32,18 @@ ShadowMapRenderer::ShadowMapRenderer():
 #else
     sm_shader_(ShaderResource("shadowmap.vert;null.frag")),
 #endif
-sbuffer_(nullptr),
 normal_offset_(-0.013f)
 {
     CONFIG.get("root.render.shadowmap.width"_h, SHADOW_WIDTH);
     CONFIG.get("root.render.shadowmap.height"_h, SHADOW_HEIGHT);
     SHADOW_TEXEL_SIZE = vec2(1.0f/SHADOW_WIDTH, 1.0f/SHADOW_HEIGHT);
 
-    sbuffer_ = new ShadowBuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
+    SHADOWBUFFER.Init(SHADOW_WIDTH, SHADOW_HEIGHT);
 }
 
 ShadowMapRenderer::~ShadowMapRenderer()
 {
-    delete sbuffer_;
+
 }
 
 void ShadowMapRenderer::render(Scene* pscene)
@@ -64,7 +63,7 @@ void ShadowMapRenderer::render(Scene* pscene)
 
         GFX::disable_blending();
         sm_shader_.use();
-        sbuffer_->bind_as_target();
+        SHADOWBUFFER.bind_as_target();
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
         GFX::clear_color();
 #else
@@ -105,15 +104,15 @@ void ShadowMapRenderer::render(Scene* pscene)
 #endif*/
         );
 
-        sbuffer_->unbind_as_target();
+        SHADOWBUFFER.unbind_as_target();
         sm_shader_.unuse();
     /*
 #ifdef __EXPERIMENTAL_VSM_BLUR__
         // Blur pass on shadow map
         GFX::disable_face_culling();
-        //sbuffer_->generate_mipmaps(0, 0, 1);
+        //SHADOWBUFFER.generate_mipmaps(0, 0, 1);
         vertex_array_.bind();
-        ping_pong_.run(*static_cast<BufferModule*>(sbuffer_),
+        ping_pong_.run(*static_cast<BufferModule*>(SHADOWBUFFER),
                        BlurPassPolicy(1, SHADOW_WIDTH/2, SHADOW_HEIGHT/2),
                        [&]()
                        {
