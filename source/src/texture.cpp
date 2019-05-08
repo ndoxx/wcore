@@ -21,17 +21,21 @@ namespace wcore
 uint32_t Texture::TextureInternal::Ninst = 0;
 Texture::RMap Texture::RESOURCE_MAP_;
 
-std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_ =
+static std::vector<std::map<TextureUnit, hash_t>> SAMPLER_NAMES_ =
 {
-    {TextureUnit::BLOCK0, "mt.sg1.block0Tex"_h},
-    {TextureUnit::BLOCK1, "mt.sg1.block1Tex"_h},
-    {TextureUnit::BLOCK2, "mt.sg1.block2Tex"_h},
-};
-std::map<TextureUnit, hash_t> Texture::SAMPLER_NAMES_2_ =
-{
-    {TextureUnit::BLOCK0, "mt.sg2.block0Tex"_h},
-    {TextureUnit::BLOCK1, "mt.sg2.block1Tex"_h},
-    {TextureUnit::BLOCK2, "mt.sg2.block2Tex"_h},
+    // Sampler names for sampler group 1
+    {
+        {TextureUnit::BLOCK0, "mt.sg1.block0Tex"_h},
+        {TextureUnit::BLOCK1, "mt.sg1.block1Tex"_h},
+        {TextureUnit::BLOCK2, "mt.sg1.block2Tex"_h}
+    },
+
+    // Sampler names for sampler group 2
+    {
+        {TextureUnit::BLOCK0, "mt.sg2.block0Tex"_h},
+        {TextureUnit::BLOCK1, "mt.sg2.block1Tex"_h},
+        {TextureUnit::BLOCK2, "mt.sg2.block2Tex"_h}
+    }
 };
 
 static uint32_t SAMPLER_GROUP_SIZE = 3;
@@ -50,14 +54,6 @@ static std::map<GLenum, GLenum> DATA_TYPES =
     {GL_RGB8, GL_BYTE},
     {GL_R8, GL_BYTE},
 };
-
-const std::map<TextureUnit, hash_t>& Texture::select_sampler_group(uint8_t group)
-{
-    if(group == 1)
-        return Texture::SAMPLER_NAMES_;
-    else //if(group == 2)
-        return Texture::SAMPLER_NAMES_2_;
-}
 
 static GLenum internal_format_to_data_type(GLenum iformat)
 {
@@ -115,20 +111,6 @@ static void handle_mipmap(bool bound_tex_has_mipmap, GLenum target)
     }
 }
 
-#ifdef __DEBUG__
-void Texture::debug_print_rmap_bindings()
-{
-    DLOG("[Texture] Displaying binding states: ", "texture", Severity::DET);
-    for(auto&& [hash, pinternal]: RESOURCE_MAP_)
-    {
-        auto && states = pinternal->get_binding_states();
-        std::cout << hash << " :" << std::endl;
-        for(auto&& [texID, activeTexID]: states)
-            std::cout << "  -> id: " << texID << " active: " << activeTexID << std::endl;
-    }
-}
-#endif
-
 Texture::TextureInternal::TextureInternal(const TextureDescriptor& descriptor):
 textureTarget_(GL_TEXTURE_2D),
 numTextures_(descriptor.locations.size()),
@@ -141,7 +123,7 @@ ID_(++Ninst)
     GLenum* formats         = new GLenum[numTextures_];
 
     uint32_t ii=0;
-    for(auto&& [key, sampler_name]: Texture::select_sampler_group(descriptor.sampler_group))
+    for(auto&& [key, sampler_name]: SAMPLER_NAMES_[descriptor.sampler_group-1])
     {
         if(!descriptor.has_unit(key))
             continue;
@@ -351,8 +333,11 @@ ID_(++Ninst)
 
 Texture::TextureInternal::~TextureInternal()
 {
-    if(*textureID_) glDeleteTextures(numTextures_, textureID_);
-    if(textureID_) delete[] textureID_;
+    if(textureID_)
+    {
+        glDeleteTextures(numTextures_, textureID_);
+        delete[] textureID_;
+    }
     if(is_depth_) delete[] is_depth_;
 }
 
@@ -362,54 +347,14 @@ void Texture::TextureInternal::bind(GLuint textureNum) const
 }
 
 Texture::Texture(const std::vector<hash_t>& sampler_names,
+                 const std::vector<uint32_t>& filters,
+                 const std::vector<uint32_t>& internalFormats,
+                 const std::vector<uint32_t>& formats,
                  uint32_t width,
                  uint32_t height,
-                 GLenum textureTarget,
-                 GLenum filter,
-                 GLenum internalFormat,
-                 GLenum format,
                  bool clamp,
                  bool lazy_mipmap):
-resourceID_(H_("")),
-units_(0),
-sampler_group_(1),
-uniform_sampler_names_(sampler_names)
-{
-    GLenum* filters         = new GLenum[sampler_names.size()];
-    GLenum* internalFormats = new GLenum[sampler_names.size()];
-    GLenum* formats         = new GLenum[sampler_names.size()];
-    for(uint32_t ii=0; ii<sampler_names.size(); ++ii)
-    {
-        filters[ii] = filter;
-        internalFormats[ii] = internalFormat;
-        formats[ii] = format;
-    }
-
-    internal_ = std::make_shared<TextureInternal>(textureTarget,
-                                                  sampler_names.size(),
-                                                  width,
-                                                  height,
-                                                  nullptr,
-                                                  filters,
-                                                  internalFormats,
-                                                  formats,
-                                                  clamp,
-                                                  lazy_mipmap);
-    delete [] filters;
-    delete [] internalFormats;
-    delete [] formats;
-}
-
-Texture::Texture(const std::vector<hash_t>& sampler_names,
-                 const std::vector<GLenum>& filters,
-                 const std::vector<GLenum>& internalFormats,
-                 const std::vector<GLenum>& formats,
-                 uint32_t width,
-                 uint32_t height,
-                 GLenum textureTarget,
-                 bool clamp,
-                 bool lazy_mipmap):
-internal_(new TextureInternal(textureTarget,
+internal_(new TextureInternal(GL_TEXTURE_2D,
                               sampler_names.size(),
                               width,
                               height,
@@ -443,7 +388,7 @@ units_(descriptor.units)
 
     // Register a sampler name for each unit
     sampler_group_ = descriptor.sampler_group;
-    for(auto&& [key, sampler_name]: Texture::select_sampler_group(descriptor.sampler_group))
+    for(auto&& [key, sampler_name]: SAMPLER_NAMES_[descriptor.sampler_group-1])
     {
         if(descriptor.has_unit(key))
         {
@@ -513,45 +458,35 @@ void Texture::bind(GLuint unit) const
     assert(unit >= 0 && unit <= 31);
     glActiveTexture(GL_TEXTURE0 + unit + (sampler_group_-1)*SAMPLER_GROUP_SIZE);
     internal_->bind(unit);
-
-#ifdef __DEBUG__
-    internal_->set_binding_state(unit, unit);
-#endif
 }
 
 void Texture::bind(GLuint unit, uint32_t index) const
 {
     assert(unit >= 0 && unit <= 31);
-    assert(index >= 0 && index < internal_->get_num_textures());
+    assert(index >= 0 && index < internal_->numTextures_);
     glActiveTexture(GL_TEXTURE0 + unit);
     internal_->bind(index);
-
-#ifdef __DEBUG__
-    internal_->set_binding_state(index, unit);
-#endif
 }
 
 void Texture::bind_all() const
 {
-    for(GLuint ii=0; ii<internal_->get_num_textures(); ++ii)
+    for(GLuint ii=0; ii<internal_->numTextures_; ++ii)
         bind(ii);
 }
 
 void Texture::unbind() const
 {
-    for(GLuint ii=0; ii<internal_->get_num_textures(); ++ii)
+    for(GLuint ii=0; ii<internal_->numTextures_; ++ii)
     {
         glActiveTexture(GL_TEXTURE0 + ii);
         glBindTexture(GL_TEXTURE_2D, 0);
-#ifdef __DEBUG__
-        internal_->set_binding_state(ii, -1);
-#endif
     }
 }
 
 void Texture::bind_sampler(const Shader& shader, TextureUnit unit) const
 {
-    shader.send_uniform<int>(unit_to_sampler_name(unit), get_unit_index(unit));
+    //shader.send_uniform<int>(unit_to_sampler_name(unit), get_unit_index(unit));
+    shader.send_uniform<int>(SAMPLER_NAMES_[sampler_group_-1].at(unit), unit_indices_.at(unit));
 }
 
 void Texture::generate_mipmaps(uint32_t unit,
@@ -571,7 +506,7 @@ void Texture::generate_mipmaps(uint32_t unit,
 
 bool Texture::operator==(const Texture& texture) const
 {
-    return internal_->ID() == texture.internal_->ID();
+    return internal_->ID_ == texture.internal_->ID_;
 }
 
 bool Texture::operator!=(const Texture& texture) const
@@ -588,8 +523,163 @@ bool Texture::operator!=(const Texture& texture) const
 
 #else // __TEXTURE_OLD__
 
+static std::vector<std::map<TextureUnit, hash_t>> SAMPLER_NAMES =
+{
+    // Sampler names for sampler group 1
+    {
+        {TextureUnit::BLOCK0, "mt.sg1.block0Tex"_h},
+        {TextureUnit::BLOCK1, "mt.sg1.block1Tex"_h},
+        {TextureUnit::BLOCK2, "mt.sg1.block2Tex"_h}
+    },
+
+    // Sampler names for sampler group 2
+    {
+        {TextureUnit::BLOCK0, "mt.sg2.block0Tex"_h},
+        {TextureUnit::BLOCK1, "mt.sg2.block1Tex"_h},
+        {TextureUnit::BLOCK2, "mt.sg2.block2Tex"_h}
+    }
+};
+
+static PngLoader PNG_LOADER;
+
+static bool handle_filter(GLenum filter, GLenum target)
+{
+    bool has_mipmap = (filter == GL_NEAREST_MIPMAP_NEAREST ||
+                       filter == GL_NEAREST_MIPMAP_LINEAR ||
+                       filter == GL_LINEAR_MIPMAP_NEAREST ||
+                       filter == GL_LINEAR_MIPMAP_LINEAR);
+
+    // Set filter
+    if(filter != GL_NONE)
+    {
+        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, filter);
+        if(!has_mipmap)
+            glTexParameterf(target, GL_TEXTURE_MAG_FILTER, filter);
+        else
+            glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+
+    return has_mipmap;
+}
+
+static void handle_addressUV(bool clamp, GLenum target)
+{
+    if(clamp)
+    {
+        glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+}
 
 
+Texture::Texture(const TextureDescriptor& descriptor)
+{
+
+}
+
+Texture::Texture(std::istream& stream)
+{
+    // Sanity check on stream
+    if(!stream.good())
+    {
+        DLOGE("[Texture] Failed to create texture from stream: stream is bad.", "texture");
+        return;
+    }
+
+    // ASSUME stream to png file
+    PixelBuffer* px_buf = PNG_LOADER.load_png(stream);
+
+#if __DEBUG__
+    DLOGN("[PixelBuffer]", "texture");
+    if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
+        px_buf->debug_display();
+#endif
+
+    // Generate OpenGL texture with default parameters
+    texture_ids_ = new uint32_t[1];
+    is_depth_.push_back(false);
+
+    glGenTextures(1, texture_ids_);
+    glBindTexture(GL_TEXTURE_2D, texture_ids_[0]);
+
+    handle_filter(GL_LINEAR, GL_TEXTURE_2D);
+    handle_addressUV(true, GL_TEXTURE_2D);
+
+    // Specify OpenGL texture
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB,
+                 px_buf->get_width(),
+                 px_buf->get_height(),
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 px_buf->get_data_pointer());
+
+    delete px_buf;
+}
+
+Texture::Texture(const std::vector<hash_t>& sampler_names,
+        const std::vector<uint32_t>& filters,
+        const std::vector<uint32_t>& internalFormats,
+        const std::vector<uint32_t>& formats,
+        uint32_t width,
+        uint32_t height,
+        bool clamp,
+        bool lazy_mipmap)
+{
+
+}
+
+Texture::~Texture()
+{
+    if(texture_ids_)
+    {
+        glDeleteTextures(n_units, texture_ids_);
+        delete[] texture_ids_;
+    }
+}
+
+void Texture::bind_sampler(const Shader& shader, TextureUnit unit) const
+{
+    shader.send_uniform<int>(SAMPLER_NAMES[sampler_group_].at(unit), unit_indices_.at(unit));
+}
+
+void Texture::bind_all() const
+{
+    for(uint32_t ii=0; ii<n_units; ++ii)
+        bind(ii,ii);
+}
+
+void Texture::bind(uint32_t unit, uint32_t index) const
+{
+    glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(GL_TEXTURE_2D, texture_ids_[index]);
+}
+
+void Texture::unbind() const
+{
+    for(uint32_t ii=0; ii<n_units; ++ii)
+    {
+        glActiveTexture(GL_TEXTURE0 + ii);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+}
+
+void Texture::generate_mipmaps(uint32_t index,
+                               uint32_t base_level,
+                               uint32_t max_level) const
+{
+    glBindTexture(GL_TEXTURE_2D, texture_ids_[index]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, base_level);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, max_level);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    GLfloat maxAnisotropy;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+    glTexParameterf(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                    math::clamp(0.0f, 8.0f, maxAnisotropy));
+}
 
 
 

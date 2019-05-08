@@ -7869,12 +7869,12 @@ Le flag *aiProcess_ImproveCacheLocality* est intéressant, il permet de limiter 
 
 
 #[07-05-19]
-J'essaye d'avancer la content pipeline binaire. Waterial peut désormais exporter les matériaux dans un format binaire proprio : les Wat files. Je documenterai ce format plus tard. Pour l'instant, il me faut refactor la classe _Texture_ qui est vraiment trop merdique, si je veux pouvoir continuer sans peine.
+J'essaye d'avancer la content pipeline binaire. Waterial peut désormais exporter les matériaux dans un format binaire proprio : les Wat files. Je documenterai ce format plus tard. Pour l'instant, il me faut refactor la classe _Texture_ qui est vraiment trop merdique, si je veux pouvoir continuer sans peine. En effet, j'aimerais changer la stratégie de mise en cache des textures, centraliser le cache dans la _MaterialFactory_.
 
 ## Textures : MEGA refactor
 J'ai viré les "named textures", artéfact d'un lointain passé. L'objectif que cherchait à accomplir ce feature était de rendre accessibles globalement certaines texture targets internes au moteur. En pratique, seuls les _BufferModule_ globaux comme _GBuffer_, _LBuffer_ et autres, en profitaient. Mais comme tous ces buffers étaient déjà des objets globaux (singletons), le feature faisait doublon, et je me retrouvais avec soit des accès aux textures nommées, soit des accès aux _BufferModule_ globaux, au gré de mon humeur, rendant le code globalement imbitable.
 
-Toutes les classes suivantes ont dégagé : _GBuffer_, _LBuffer_, _SSAOBuffer_, _SSRBuffer_ et _ShadowBuffer_. Tous ces _BufferModule_ sont maintenant enregistrés proprement dans une classe statique _GMODULES_, et sont accessibles via la méthode GMODULES::GET(hash_t name) :
+Les singletons posaient d'ailleurs un problème en soi. Toutes les classes suivantes ont dégagé : _GBuffer_, _LBuffer_, _SSAOBuffer_, _SSRBuffer_ et _ShadowBuffer_. Tous ces _BufferModule_ sont maintenant enregistrés proprement dans une classe statique _GMODULES_, et sont accessibles via la méthode GMODULES::GET(hash_t name) :
 
 ```cpp
     GMODULES::GET("gbuffer"_h);
@@ -7884,12 +7884,23 @@ Toutes les classes suivantes ont dégagé : _GBuffer_, _LBuffer_, _SSAOBuffer_, 
     GMODULES::GET("bloombuffer"_h);
     GMODULES::GET("lbuffer"_h);
 ```
-Le petit nouveau "bloombuffer" vient d'un refactor de _BloomRenderer_ qui utilisait encore un FBO et une texture séparés, alors que _BufferModule_ est justement fait pour regrouper un FBO et une texture cible.
+Le petit nouveau "bloombuffer" vient d'un refactor de _BloomRenderer_ qui utilisait encore un FBO et une texture séparés, alors que _BufferModule_ est justement fait pour regrouper un FBO et une texture cible. _BloomRenderer_ n'utilise plus que des _BufferModule_ en interne.
 
 Pour enregistrer un _BufferModule_ accessible globalement (qu'on appèlera GModule par la suite), il suffit de faire :
 ```cpp
     GMODULES::REGISTER(std::make_unique<BufferModule>(/*args*/));
 ```
+
+Par ailleurs, les _BufferModule_ utilisent des std::unique_ptr<Texture> en interne, plutôt que des std::shared_ptr.
+
+__ATTENTION__ à bien initialiser des lvalue references avec GMODULES::GET() :
+```cpp
+    auto& l_buffer = GMODULES::GET("lbuffer"_h);
+```
+Sinon le FBO interne pourra être détruit, causant un double-free plus loin.
+
+
+
 
 
 

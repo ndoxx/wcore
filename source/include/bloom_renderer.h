@@ -7,6 +7,7 @@
 #include "shader.h"
 #include "frame_buffer.h"
 #include "gaussian.h"
+#include "buffer_module.h"
 
 namespace wcore
 {
@@ -16,10 +17,7 @@ class BloomRenderer : public Renderer
 {
 private:
     Shader blur_pass_shader_;
-
-    std::vector<std::shared_ptr<Texture>> bloom_h_tex_;
-    std::vector<std::shared_ptr<Texture>> bloom_tex_;
-    std::vector<FrameBuffer*> fbo_h_;
+    std::vector<std::unique_ptr<BufferModule>> blur_stages_;
     math::GaussianKernel kernel_;
 
 public:

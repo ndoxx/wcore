@@ -31,11 +31,7 @@ private:
 
     typedef std::shared_ptr<TextureInternal> pInternal;
     typedef std::shared_ptr<Texture> pTexture;
-    typedef std::weak_ptr<Texture> wpTexture;
-
     typedef std::map<hash_t, pInternal> RMap;
-    typedef std::map<hash_t, pTexture> TMap;
-    typedef std::map<hash_t, std::vector<std::string>> AMap;
 
     pInternal internal_;
     hash_t    resourceID_;
@@ -44,14 +40,11 @@ private:
     std::vector<hash_t> uniform_sampler_names_;
     std::map<TextureUnit, uint32_t> unit_indices_;
 
+    static const std::string TEX_IMAGE_PATH;
     static RMap RESOURCE_MAP_;   // TextureInternal cache
     static PngLoader png_loader_;
 
 public:
-    static const std::string TEX_IMAGE_PATH;
-    static std::map<TextureUnit, hash_t> SAMPLER_NAMES_;
-    static std::map<TextureUnit, hash_t> SAMPLER_NAMES_2_; // Sampler names for alt-materials used in splat-mapping
-
     // Load texture from TextureDescriptor structure
     // Can be obtained from MaterialFactory
     Texture(const TextureDescriptor& descriptor);
@@ -61,26 +54,14 @@ public:
     Texture(std::istream& stream);
 
     // Create an empty texture, ideal for creating a render target for an FBO
-    // Init all units with same filter and format parameters
     Texture(const std::vector<hash_t>& sampler_names,
-            uint32_t width         = 0,
-            uint32_t height        = 0,
-            GLenum textureTarget   = GL_TEXTURE_2D,
-            GLenum filter          = GL_LINEAR,
-            GLenum internalFormat  = GL_RGBA,
-            GLenum format          = GL_RGBA,
-            bool clamp             = false,
-            bool lazy_mipmap       = true);
-
-    Texture(const std::vector<hash_t>& sampler_names,
-            const std::vector<GLenum>& filters,
-            const std::vector<GLenum>& internalFormats,
-            const std::vector<GLenum>& formats,
-            uint32_t width         = 0,
-            uint32_t height        = 0,
-            GLenum textureTarget   = GL_TEXTURE_2D,
-            bool clamp             = false,
-            bool lazy_mipmap       = true);
+            const std::vector<uint32_t>& filters,
+            const std::vector<uint32_t>& internalFormats,
+            const std::vector<uint32_t>& formats,
+            uint32_t width   = 0,
+            uint32_t height  = 0,
+            bool clamp       = false,
+            bool lazy_mipmap = true);
 
     ~Texture();
 
@@ -88,40 +69,25 @@ public:
     void bind(GLuint unit, uint32_t index) const;
     void bind_all() const;
     void unbind() const;
+    void bind_sampler(const Shader& shader, TextureUnit unit) const;
     void generate_mipmaps(uint32_t unit,
                           uint32_t base_level = 0,
                           uint32_t max_level = 3) const;
+
 
     inline uint32_t get_width()  const;
     inline uint32_t get_height() const;
     inline uint32_t get_num_units() const;
     inline GLenum get_texture_target() const;
-    inline hash_t get_sampler_name(uint32_t index) const { return uniform_sampler_names_.at(index); }
-    inline bool is_depth(uint32_t ii) const;
-    inline GLuint operator[](uint32_t index) const;
+    inline bool is_depth(uint32_t unit) const;
+    inline GLuint operator[](uint32_t unit) const;
 
-    void bind_sampler(const Shader& shader, TextureUnit unit) const;
-
+    inline hash_t get_sampler_name(uint32_t unit) const  { return uniform_sampler_names_.at(unit); }
     // Check if texture has a given unit (like albedo, normal map...)
-    inline bool has_unit(TextureUnit unit) const { return (units_&(uint16_t)unit); }
-
-    static const std::map<TextureUnit, hash_t>& select_sampler_group(uint8_t group);
+    inline bool has_unit(TextureUnit unit) const         { return (units_&(uint16_t)unit); }
 
     bool operator==(const Texture& texture) const;
     bool operator!=(const Texture& texture) const;
-
-#ifdef __DEBUG__
-    // For all cached textures, print their current binding state (id, active texture)
-    // Active texture is -1 if unbound
-    static void debug_print_rmap_bindings();
-#endif
-
-private:
-    inline uint32_t get_unit_index(TextureUnit unit) const { return unit_indices_.at(unit); }
-    inline hash_t unit_to_sampler_name(TextureUnit unit) const
-    {
-        return select_sampler_group(sampler_group_).at(unit);
-    }
 };
 
 class Texture::TextureInternal
@@ -145,30 +111,7 @@ public:
 
     void bind(GLuint textureNum) const;
 
-    inline bool is_depth(uint32_t index)
-    {
-        assert(index<numTextures_
-               && "[TextureInternal.is_depth()] index out of bounds.");
-        return is_depth_[index];
-    }
-    inline uint32_t get_width()  const       { return width_; }
-    inline uint32_t get_height() const       { return height_; }
-    inline uint32_t ID() const      { return ID_; }
-    inline uint32_t get_num_textures() const { return numTextures_; }
-    inline GLenum get_texture_target() const { return textureTarget_; }
-
     virtual ~TextureInternal();
-
-#ifdef __DEBUG__
-    inline void set_binding_state(GLuint texID, int activeTexIndex)
-    {
-        binding_states_[texID] = activeTexIndex;
-    }
-    inline const auto& get_binding_states() const
-    {
-        return binding_states_;
-    }
-#endif
 
 private:
     TextureInternal(TextureInternal& other) {}
@@ -183,59 +126,89 @@ private:
     bool* is_depth_;
 
     static uint32_t Ninst;
-
-#ifdef __DEBUG__
-    // Map of texture binding states for debug purposes
-    std::map<GLuint, int> binding_states_;
-#endif
 };
 
-inline uint32_t Texture::get_width()  const { return internal_->get_width(); }
-inline uint32_t Texture::get_height() const { return internal_->get_height(); }
-inline uint32_t Texture::get_num_units() const { return internal_->get_num_textures(); }
-inline GLenum Texture::get_texture_target() const { return internal_->get_texture_target(); }
-inline bool Texture::is_depth(uint32_t ii) const
-{
-    return internal_->is_depth(ii);
-}
-inline GLuint Texture::operator[](uint32_t index) const { return internal_->textureID_[index]; }
-
-
-
+inline uint32_t Texture::get_width()  const            { return internal_->width_; }
+inline uint32_t Texture::get_height() const            { return internal_->height_; }
+inline uint32_t Texture::get_num_units() const         { return internal_->numTextures_; }
+inline GLenum Texture::get_texture_target() const      { return internal_->textureTarget_; }
+inline bool Texture::is_depth(uint32_t unit) const     { return internal_->is_depth_[unit]; }
+inline GLuint Texture::operator[](uint32_t unit) const { return internal_->textureID_[unit]; }
 
 #else // __TEXTURE_OLD__
 
 enum class TextureUnit: uint16_t;
+struct TextureDescriptor;
 class Shader;
 class Texture
 {
 public:
+    // Load texture from TextureDescriptor structure
+    // Can be obtained from MaterialFactory
+    Texture(const TextureDescriptor& descriptor);
+
     // Create single texture2D from stream with all default options
     // These cannot be cached
     Texture(std::istream& stream);
 
+    // Create an empty texture, ideal for creating a render target for an FBO
+    Texture(const std::vector<hash_t>& sampler_names,
+            const std::vector<uint32_t>& filters,
+            const std::vector<uint32_t>& internalFormats,
+            const std::vector<uint32_t>& formats,
+            uint32_t width   = 0,
+            uint32_t height  = 0,
+            bool clamp       = false,
+            bool lazy_mipmap = true);
+
+    ~Texture();
+
     // Send sampler uniforms to shader
     void bind_sampler(const Shader& shader, TextureUnit unit) const;
+    // Bind each texture unit in order
+    void bind_all() const;
+    // Bind texture at a given index to sampler specified by unit
+    void bind(uint32_t unit=0, uint32_t index=0) const;
+    // Unbind all textures
+    void unbind() const;
+
+    // Generate mipmaps for texture at given index, specifying minimum and maximum levels
+    void generate_mipmaps(uint32_t index,
+                          uint32_t base_level = 0,
+                          uint32_t max_level = 3) const;
 
     // Get the number of texture units in this texture
-    inline uint32_t get_num_units() const               { return n_units; }
+    inline uint32_t get_num_units() const                { return n_units; }
     // Get texture units width
-    inline uint32_t get_width() const                   { return width_; }
+    inline uint32_t get_width() const                    { return width_; }
     // Get texture units height
-    inline uint32_t get_height() const                  { return height_; }
+    inline uint32_t get_height() const                   { return height_; }
     // Get the sampler name associated to a given texture unit
-    inline hash_t get_sampler_name(uint32_t unit) const { return uniform_sampler_names_.at(unit); }
+    inline hash_t get_sampler_name(uint32_t index) const { return uniform_sampler_names_.at(index); }
+    // Check if texture has a given special unit (like albedo, normal map...)
+    inline bool has_unit(TextureUnit unit) const         { return (unit_flags_&(uint16_t)unit); }
     // Get OpenGL texture index for given unit
-    inline uint32_t operator[](uint32_t unit) const     { return units_[unit]; }
+    inline uint32_t operator[](uint32_t index) const     { return texture_ids_[index]; }
 
+#ifdef __DEBUG__
+    // Check if texture at given index is a depth map
+    inline bool is_depth(uint32_t index) const           { return is_depth_[index]; }
+#endif
 
 private:
-    uint32_t n_units; // Number of texture units in this texture
-    uint32_t width_;  // Width of all texture units
-    uint32_t height_; // Height of all texture units
-    std::vector<hash_t> uniform_sampler_names_; // Sampler names used to bind each texture unit to a shader
+    uint32_t n_units;       // Number of texture units in this texture
+    uint32_t width_;        // Width of all texture units
+    uint32_t height_;       // Height of all texture units
+    uint32_t* texture_ids_; // Hold texture IDs generated by OpenGL
+    uint16_t unit_flags_;   // Flag special units (albedo, normal, depth...) held in this texture
+    uint8_t sampler_group_; // Sampler group index for splat-mapping
 
-    uint32_t* units_;
+    std::vector<hash_t> uniform_sampler_names_;    // Sampler names used to bind each texture unit to a shader
+    std::map<TextureUnit, uint32_t> unit_indices_; // Associate special texture units to sampler indices
+
+#ifdef __DEBUG__
+    std::vector<bool> is_depth_; // Retain information on whether texture units contain depth info or not
+#endif
 };
 
 
