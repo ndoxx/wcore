@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "math3d.h"
 #include "wtypes.h"
@@ -17,7 +18,11 @@ class Material
 {
 private:
     // Multi-unit image texture
+#ifdef __TEXTURE_OLD__
     Texture* texture_;
+#else
+    std::shared_ptr<Texture> texture_;
+#endif
 
     // Alternative uniforms
     math::vec3 albedo_;
@@ -36,7 +41,11 @@ private:
 
 public:
     Material() = delete;
+#ifdef __TEXTURE_OLD__
     Material(const MaterialDescriptor& descriptor);
+#else
+    Material(const MaterialDescriptor& descriptor, std::shared_ptr<Texture> texture);
+#endif
     Material(const math::vec3& tint,
              float roughness = 0.5f,
              float metallic = 0.0f,

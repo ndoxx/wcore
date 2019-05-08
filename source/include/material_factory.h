@@ -5,6 +5,7 @@
 #include <variant>
 #include <random>
 #include <istream>
+#include <memory>
 #include "xml_parser.h"
 #include "material_common.h"
 
@@ -27,6 +28,9 @@ private:
     std::map<hash_t, Material*> cache_;
     static std::map<TextureUnit, const char*> TEX_SAMPLERS_NODES;
 
+#ifndef __TEXTURE_OLD__
+    std::map<hash_t, std::shared_ptr<Texture>> texture_cache_;
+#endif
 public:
     MaterialFactory(const char* xml_file);
     MaterialFactory();

@@ -9,6 +9,7 @@
 namespace wcore
 {
 
+#ifdef __TEXTURE_OLD__
 Material::Material(const MaterialDescriptor& descriptor):
 texture_(nullptr),
 albedo_(descriptor.albedo),
@@ -25,6 +26,23 @@ blend_(descriptor.has_transparency)
     if(textured_)
         texture_ = new Texture(descriptor.texture_descriptor);
 }
+#else
+Material::Material(const MaterialDescriptor& descriptor, std::shared_ptr<Texture> texture):
+texture_(nullptr),
+albedo_(descriptor.albedo),
+metallic_(descriptor.metallic),
+roughness_(descriptor.roughness),
+parallax_height_scale_(descriptor.parallax_height_scale),
+alpha_(descriptor.transparency),
+textured_(descriptor.is_textured),
+use_normal_map_(descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL) && descriptor.enable_normal_mapping),
+use_parallax_map_(descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH) && descriptor.enable_parallax_mapping),
+use_overlay_(false),
+blend_(descriptor.has_transparency)
+{
+    texture_ = texture;
+}
+#endif
 
 Material::Material(const math::vec3& tint,
                    float roughness,
@@ -47,8 +65,10 @@ blend_(blend)
 
 Material::~Material()
 {
+#ifdef __TEXTURE_OLD__
     if(texture_)
         delete texture_;
+#endif
 }
 
 void Material::bind_texture() const

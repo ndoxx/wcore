@@ -58,10 +58,10 @@ RenderPipeline::RenderPipeline()
     (
         "gbuffer",
         std::make_unique<Texture>(
-            std::vector<hash_t>{"normalTex"_h, "albedoTex"_h, "depthTex"_h},
-            std::vector<uint32_t>{GL_NEAREST,      GL_NEAREST,   GL_NEAREST},
-            std::vector<uint32_t>{GL_RGBA16_SNORM, GL_RGBA,      GL_DEPTH_COMPONENT32},
-            std::vector<uint32_t>{GL_RGBA,         GL_RGBA,      GL_DEPTH_COMPONENT},
+            std::vector<hash_t>{"normalTex"_h,    "albedoTex"_h, "depthTex"_h},
+            std::vector<uint32_t>{GL_NEAREST,      GL_NEAREST,    GL_NEAREST},
+            std::vector<uint32_t>{GL_RGBA16_SNORM, GL_RGBA,       GL_DEPTH_COMPONENT32},
+            std::vector<uint32_t>{GL_RGBA,         GL_RGBA,       GL_DEPTH_COMPONENT},
             GLB.WIN_W,
             GLB.WIN_H,
             true),
@@ -75,7 +75,7 @@ RenderPipeline::RenderPipeline()
     (
         "lbuffer",
         std::make_unique<Texture>(
-            std::vector<hash_t>{"screenTex"_h, "brightTex"_h,         "ldepthStencilTex"_h},
+            std::vector<hash_t>{"screenTex"_h,    "brightTex"_h,           "ldepthStencilTex"_h},
             std::vector<uint32_t> {GL_NEAREST,     GL_LINEAR_MIPMAP_LINEAR, GL_NONE},
             std::vector<uint32_t> {GL_RGB16F,      GL_RGB,                  GL_DEPTH24_STENCIL8},
             std::vector<uint32_t> {GL_RGB,         GL_RGB,                  GL_DEPTH_STENCIL},

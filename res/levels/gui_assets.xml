@@ -3,7 +3,8 @@
     <Materials>
         <Material name="cursor">
             <Texture>
-                <Albedo>cursor.png</Albedo>
+                <Units>Albedo</Units>
+                <Block0>cursor.png</Block0>
             </Texture>
         </Material>
     </Materials>

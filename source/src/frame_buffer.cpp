@@ -100,23 +100,21 @@ height_(texture.get_height())
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(status != GL_FRAMEBUFFER_COMPLETE)
     {
-        DLOGF("[Texture] Framebuffer creation failed!", "buffer");
         switch(status)
         {
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-                DLOGI("Not all framebuffer attachment points are framebuffer attachment complete.", "buffer");
+                DLOGF("[Framebuffer] Not all framebuffer attachment points are framebuffer attachment complete.", "buffer");
                 break;
             /*case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-                DLOGI("Not all attached images have the same width and height.");
+                DLOGF("[Framebuffer] Not all attached images have the same width and height.");
                 break;*/
             case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-                DLOGI("No images are attached to the framebuffer.", "buffer");
+                DLOGF("[Framebuffer] No images are attached to the framebuffer.", "buffer");
                 break;
             case GL_FRAMEBUFFER_UNSUPPORTED:
-                DLOGI("The combination of internal formats of the attached images violates an implementation-dependent set of restrictions.", "buffer");
+                DLOGF("[Framebuffer] The combination of internal formats of the attached images violates an implementation-dependent set of restrictions.", "buffer");
                 break;
         }
-        fatal("Framebuffer creation failed!");
     }
     else
     {

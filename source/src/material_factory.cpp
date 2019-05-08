@@ -164,17 +164,38 @@ Material* MaterialFactory::make_material(hash_t asset_name, uint8_t sampler_grou
     MaterialDescriptor descriptor(get_material_descriptor(asset_name));
     descriptor.texture_descriptor.sampler_group = sampler_group;
 
-    Material* ret = new Material(descriptor);
-    return ret;
+    return make_material(descriptor);
 }
 
 Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
 {
-    // TMP
-    if(!descriptor.is_wat)
-        return new Material(descriptor);
+#ifdef __TEXTURE_OLD__
+    return new Material(descriptor);
+#else
+
+    // Cache lookup
+    auto it = texture_cache_.find(descriptor.texture_descriptor.resource_id);
+    if(it!=texture_cache_.end())
+    {
+#ifdef __DEBUG__
+        DLOGN("[MaterialFactory] Using <h>cache</h> for textured asset: <n>"
+              + HRESOLVE(descriptor.texture_descriptor.resource_id) + "</n>", "texture");
+#endif
+        return new Material(descriptor, it->second);
+    }
     else
-        return nullptr;
+    {
+        std::shared_ptr<Texture> ptex = nullptr;
+        if(descriptor.is_textured)
+        {
+            // Generate texture
+            ptex = std::make_shared<Texture>(descriptor.texture_descriptor);
+            // Cache texture
+            texture_cache_.insert(std::pair(descriptor.texture_descriptor.resource_id, ptex));
+        }
+        return new Material(descriptor, ptex);
+    }
+#endif
 }
 
 Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node,
