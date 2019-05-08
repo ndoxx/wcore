@@ -22,7 +22,7 @@ public:
 
     // Initialize event listener
     //virtual void init_events(InputHandler& handler) override;
-    //virtual void update(const GameClock& clock) override;
+    virtual void update(const GameClock& clock) override;
 
     // Create a model from instance name
     inline std::shared_ptr<Model> make_model_instance(hash_t name)
@@ -70,6 +70,9 @@ public:
     inline std::shared_ptr<SurfaceMesh> preload_mesh_model_instance(hash_t name) { return model_factory_->preload_mesh_model_instance(name); }
     // Create and cache a mesh from entity blueprint
     std::shared_ptr<SurfaceMesh> preload_mesh_entity(hash_t blueprint);
+
+    // Garbage collection for subfactories cache
+    void cache_cleanup();
 
 private:
     ModelFactory*  model_factory_;

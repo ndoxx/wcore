@@ -44,17 +44,28 @@ std::shared_ptr<SurfaceMesh> GameObjectFactory::preload_mesh_entity(hash_t bluep
     return preload_mesh_model_instance(H_(model_name.c_str()));
 }
 
+void GameObjectFactory::cache_cleanup()
+{
+    model_factory_->cache_cleanup();
+}
+
+static int frame_count = 0;
+void GameObjectFactory::update(const GameClock& clock)
+{
+    // Cleanup cache every 10s or so.
+    if(++frame_count > 10*60)
+    {
+        cache_cleanup();
+        frame_count = 0;
+    }
+}
 
 /*
 void GameObjectFactory::init_events(InputHandler& handler)
 {
 
 }
-
-void GameObjectFactory::update(const GameClock& clock)
-{
-
-}
 */
+
 
 } // namespace wcore

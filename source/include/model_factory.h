@@ -56,6 +56,8 @@ public:
     // Preload mesh instance by name
     std::shared_ptr<SurfaceMesh> preload_mesh_instance(hash_t name);
 
+    void cache_cleanup();
+
 private:
     // Parse XML Models node for model descriptions
     void retrieve_asset_descriptions(rapidxml::xml_node<>* models_node);

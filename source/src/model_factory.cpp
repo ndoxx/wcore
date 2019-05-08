@@ -233,6 +233,11 @@ std::shared_ptr<SkyBox> ModelFactory::make_skybox(hash_t cubemap_name)
     return std::make_shared<SkyBox>(cmap);
 }
 
+void ModelFactory::cache_cleanup()
+{
+    material_factory_->cache_cleanup();
+}
+
 
 } // namespace wcore
 

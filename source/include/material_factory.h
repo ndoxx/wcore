@@ -28,9 +28,8 @@ private:
     std::map<hash_t, Material*> cache_;
     static std::map<TextureUnit, const char*> TEX_SAMPLERS_NODES;
 
-#ifndef __TEXTURE_OLD__
     std::map<hash_t, std::shared_ptr<Texture>> texture_cache_;
-#endif
+
 public:
     MaterialFactory(const char* xml_file);
     MaterialFactory();
@@ -56,6 +55,9 @@ public:
                                    OptRngT opt_rng=nullptr);
     void parse_cubemap_descriptor(rapidxml::xml_node<>* node,
                                   CubemapDescriptor& descriptor);
+
+    // Remove cached textures that are not shared anymore
+    void cache_cleanup();
 
 private:
     WatLoader* wat_loader_;

@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "material_factory.h"
 #include "material.h"
 #include "texture.h"
@@ -169,10 +171,6 @@ Material* MaterialFactory::make_material(hash_t asset_name, uint8_t sampler_grou
 
 Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
 {
-#ifdef __TEXTURE_OLD__
-    return new Material(descriptor);
-#else
-
     // Cache lookup
     auto it = texture_cache_.find(descriptor.texture_descriptor.resource_id);
     if(it!=texture_cache_.end())
@@ -195,7 +193,23 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
         }
         return new Material(descriptor, ptex);
     }
-#endif
+}
+
+void MaterialFactory::cache_cleanup()
+{
+    auto it = texture_cache_.begin();
+    while(it != texture_cache_.end())
+    {
+        // Remove textures with unitary use count
+        bool dead = (it->second.use_count() == 1);
+        if(dead)
+        {
+            DLOGN("[MaterialFactory] Removing texture <n>" + HRESOLVE(it->first) + "</n> from cache.", "texture");
+            texture_cache_.erase(it++);
+        }
+        else
+            ++it;
+    }
 }
 
 Material* MaterialFactory::make_material(rapidxml::xml_node<>* material_node,
