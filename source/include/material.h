@@ -38,6 +38,7 @@ private:
 public:
     Material() = delete;
     Material(const MaterialDescriptor& descriptor, std::shared_ptr<Texture> texture);
+    Material(const MaterialDescriptor& descriptor);
     Material(const math::vec3& tint,
              float roughness = 0.5f,
              float metallic = 0.0f,

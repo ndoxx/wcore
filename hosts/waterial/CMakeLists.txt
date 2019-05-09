@@ -13,8 +13,8 @@ endif()
 add_definitions(-D__DEBUG__)
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_BUILD_TYPE Release)
-# set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_BUILD_TYPE MinSizeRel)
 # set(CMAKE_BUILD_TYPE RelWithDebInfo)
 

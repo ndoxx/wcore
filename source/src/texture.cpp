@@ -108,12 +108,12 @@ unit_flags_(descriptor.units)
 
     sampler_group_ = descriptor.sampler_group;
     uint32_t ii=0;
-    for(auto&& [key, sampler_name]: SAMPLER_NAMES[descriptor.sampler_group-1])
+    for(auto&& [key, sampler_name]: SAMPLER_NAMES[sampler_group_-1])
     {
         if(descriptor.has_unit(key))
         {
             // Register a sampler name for each unit
-            unit_indices_[key] = uniform_sampler_names_.size() + (descriptor.sampler_group-1)*SAMPLER_GROUP_SIZE;
+            unit_indices_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
             uniform_sampler_names_.push_back(sampler_name);
 
             filters[ii] = descriptor.parameters.filter;

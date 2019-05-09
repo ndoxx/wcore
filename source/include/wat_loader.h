@@ -18,6 +18,7 @@
 #include <cassert>
 
 #include "math3d.h"
+#include "material_common.h"
 
 namespace fs = std::filesystem;
 
@@ -37,9 +38,11 @@ struct WatHeader
     uint16_t address_V;
     uint16_t width;
     uint16_t height;
+    uint16_t unit_flags;
     uint8_t  has_block0;
     uint8_t  has_block1;
     uint8_t  has_block2;
+    uint8_t  has_transparency;
     float    parallax_height_scale;
 };
 //#pragma pack(pop)
@@ -59,13 +62,16 @@ struct MaterialInfo
     hash_t unique_id;
     uint32_t width;
     uint32_t height;
-    bool has_albedo;
+    uint16_t unit_flags;
+    /*bool has_albedo;
     bool has_normal;
     bool has_depth;
     bool has_metal;
     bool has_AO;
-    bool has_rough;
+    bool has_rough;*/
+    bool has_transparency;
     math::i32vec4 u_albedo;
+    float u_alpha;
     float u_parallax_scale;
     float u_metal;
     float u_rough;
@@ -77,6 +83,8 @@ class WatLoader
 public:
     Material* read(std::istream& stream);
     void write(std::ostream& stream, const MaterialInfo& mat_info);
+
+    void read_descriptor(std::istream& stream, MaterialDescriptor& descriptor);
 
 private:
     void read_header(std::istream& stream, WatHeaderWrapper& header);

@@ -42,7 +42,7 @@ buffer_unit_line_(GL_LINES)
     char_quad_mesh->_push_vertex({vec2(xpos,   ypos+h), vec2(0, 0)});
     char_quad_mesh->_push_triangle(0,  1,  2);
     char_quad_mesh->_push_triangle(0,  2,  3);
-    add_mesh_2P2U("char_quad"_h, scr_quad_mesh);
+    add_mesh_2P2U("char_quad"_h, char_quad_mesh);
 
     buffer_unit_3P_.upload();
     buffer_unit_2P2U_.upload();

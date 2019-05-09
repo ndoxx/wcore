@@ -4,6 +4,8 @@
 #include <QCheckBox>
 #include <QFileInfo>
 
+#include <thread>
+
 #include "preview_gl_widget.h"
 #include "qt_context.h"
 #include "wcore.h"
@@ -11,6 +13,7 @@
 #include "error.h"
 #include "model.h"
 #include "material.h"
+#include "texture.h"
 #include "lights.h"
 #include "camera.h"
 #include "editor_model.h"
@@ -262,7 +265,9 @@ void PreviewGLWidget::handle_material_swap(EditorModel* edmodel)
 {
     const wcore::MaterialDescriptor descriptor = edmodel->get_current_material_descriptor();
     if(edmodel->validate_descriptor(descriptor))
+    {
         new_material_ = new Material(descriptor);
+    }
 }
 
 void PreviewGLWidget::handle_mesh_swap(int newvalue)
