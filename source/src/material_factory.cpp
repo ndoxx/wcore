@@ -203,8 +203,25 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
         std::shared_ptr<Texture> ptex = nullptr;
         if(descriptor.is_textured)
         {
-            // Generate texture from png files
-            ptex = std::make_shared<Texture>(descriptor.texture_descriptor);
+            if(descriptor.is_wat)
+            {
+                auto pstream = FILESYSTEM.get_file_as_stream(descriptor.wat_location.c_str(), "root.folders.texture"_h, "pack0"_h);
+                if(pstream == nullptr)
+                {
+                    DLOGE("[MaterialFactory] Unable to open file:", "material");
+                    DLOGI("<p>" + std::string(descriptor.wat_location) + "</p>", "material");
+                    fatal();
+                }
+                MaterialInfo mat_info;
+                wat_loader_->read(*pstream, mat_info);
+                mat_info.sampler_group = descriptor.texture_descriptor.sampler_group;
+                ptex = std::make_shared<Texture>(mat_info);
+            }
+            else
+            {
+                // Generate texture from png files
+                ptex = std::make_shared<Texture>(descriptor.texture_descriptor);
+            }
             // Cache texture
             texture_cache_.insert(std::pair(descriptor.texture_descriptor.resource_id, ptex));
         }

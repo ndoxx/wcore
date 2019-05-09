@@ -19,6 +19,7 @@ namespace wcore
 
 enum class TextureUnit: uint16_t;
 struct TextureDescriptor;
+struct MaterialInfo;
 class Shader;
 class Texture
 {
@@ -26,6 +27,10 @@ public:
     // Load texture from TextureDescriptor structure
     // Can be obtained from MaterialFactory
     Texture(const TextureDescriptor& descriptor);
+
+    // Load texture from MaterialInfo structure
+    // Obtained by parsing Watfiles
+    Texture(const MaterialInfo& mat_info);
 
     // Create single texture2D from stream with all default options
     // These cannot be cached

@@ -12,6 +12,7 @@
 #include "config.h"
 #include "file_system.h"
 #include "error.h"
+#include "wat_loader.h"
 
 namespace wcore
 {
@@ -129,8 +130,8 @@ unit_flags_(descriptor.units)
             uniform_sampler_names_.push_back(sampler_name);
 
             filters[ii] = descriptor.parameters.filter;
-            internalFormats[ii] = fix_internal_format(descriptor.parameters.internal_format, sampler_name);
             formats[ii] = descriptor.parameters.format;
+            internalFormats[ii] = fix_internal_format(descriptor.parameters.internal_format, sampler_name);
 
             // Load from PNG
             auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations.at(key).c_str(), "root.folders.texture"_h, "pack0"_h);
@@ -164,7 +165,6 @@ unit_flags_(descriptor.units)
                            descriptor.parameters.clamp,
                            false);
 
-
     // Free allocations
     for (uint32_t jj=0; jj<n_units_; ++jj)
         if(px_bufs[jj])
@@ -174,6 +174,59 @@ unit_flags_(descriptor.units)
     delete [] filters;
     delete [] data;
     delete [] px_bufs;
+}
+
+Texture::Texture(const MaterialInfo& mat_info)
+{
+#ifdef __DEBUG__
+    {
+        std::stringstream ss;
+        ss << "[Texture] New texture from Watfile: <n>" << HRESOLVE(mat_info.unique_id) << "</n>";
+        DLOGN(ss.str(), "texture");
+    }
+#endif
+
+    // Textures from watfiles use blocks
+    std::vector<unsigned char*> data_ptrs =
+    {
+        mat_info.block0_data,
+        mat_info.block1_data,
+        mat_info.block2_data
+    };
+
+    sampler_group_ = mat_info.sampler_group;
+
+    std::vector<GLenum> filters;
+    std::vector<GLenum> formats;
+    std::vector<GLenum> internalFormats;
+    std::vector<unsigned char*> data;
+
+    uint32_t ii = 0;
+    for(auto&& [key, sampler_name]: SAMPLER_NAMES[sampler_group_-1])
+    {
+        if(mat_info.has_unit(key))
+        {
+            // Register a sampler name for each unit
+            unit_indices_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
+            uniform_sampler_names_.push_back(sampler_name);
+
+            filters.push_back(GL_LINEAR_MIPMAP_LINEAR);
+            formats.push_back(GL_RGBA);
+            internalFormats.push_back(fix_internal_format(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, sampler_name));
+            data.push_back(data_ptrs[ii]);
+        }
+        ++ii;
+    }
+
+    generate_texture_units(data.size(),
+                           mat_info.width,
+                           mat_info.height,
+                           &data[0],
+                           &filters[0],
+                           &internalFormats[0],
+                           &formats[0],
+                           false,
+                           false);
 }
 
 Texture::Texture(std::istream& stream):

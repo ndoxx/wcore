@@ -60,6 +60,8 @@
             </Override>
         </Material>
 
+        <Material location="testMetalFloor01.wat"/>
+
         <Material name="testMetalFloor01">
             <Texture>
                 <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>

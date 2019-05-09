@@ -56,6 +56,8 @@ typedef union
 
 struct MaterialInfo
 {
+    MaterialInfo();
+
     unsigned char* block0_data; // Pointers to pixel data for block 0
     unsigned char* block1_data; // Pointers to pixel data for block 1
     unsigned char* block2_data; // Pointers to pixel data for block 2
@@ -63,25 +65,22 @@ struct MaterialInfo
     uint32_t width;
     uint32_t height;
     uint16_t unit_flags;
-    /*bool has_albedo;
-    bool has_normal;
-    bool has_depth;
-    bool has_metal;
-    bool has_AO;
-    bool has_rough;*/
+    uint8_t sampler_group;
     bool has_transparency;
     math::i32vec4 u_albedo;
     float u_alpha;
     float u_parallax_scale;
     float u_metal;
     float u_rough;
+
+    inline bool has_unit(TextureUnit unit) const { return (unit_flags&(uint16_t)unit); }
 };
 
-class Material;
+class Texture;
 class WatLoader
 {
 public:
-    Material* read(std::istream& stream);
+    void read(std::istream& stream, MaterialInfo& mat_info);
     void write(std::ostream& stream, const MaterialInfo& mat_info);
 
     void read_descriptor(std::istream& stream, MaterialDescriptor& descriptor);

@@ -9,31 +9,76 @@
 namespace wcore
 {
 
-Material* WatLoader::read(std::istream& stream)
-{
-    return nullptr;
-}
-
 static inline bool has_unit(uint16_t flags, TextureUnit unit)
 {
     return (flags&(uint16_t)unit);
 }
 
+MaterialInfo::MaterialInfo():
+block0_data(nullptr),
+block1_data(nullptr),
+block2_data(nullptr),
+unique_id(0),
+width(0),
+height(0),
+unit_flags(0),
+sampler_group(1),
+has_transparency(0),
+u_albedo(0),
+u_alpha(1),
+u_parallax_scale(0),
+u_metal(0),
+u_rough(1)
+{
+
+}
+
+void WatLoader::read(std::istream& stream, MaterialInfo& mat_info)
+{
+    // * Read header
+    WatHeaderWrapper header;
+    read_header(stream, header);
+    if(!header_sanity_check(header.h))
+        return;
+
+    bool has_block0 = has_unit(header.h.unit_flags, TextureUnit::ALBEDO);
+    bool has_block1 = has_unit(header.h.unit_flags, TextureUnit::NORMAL)
+                   || has_unit(header.h.unit_flags, TextureUnit::DEPTH);
+    bool has_block2 = has_unit(header.h.unit_flags, TextureUnit::METALLIC)
+                   || has_unit(header.h.unit_flags, TextureUnit::AO)
+                   || has_unit(header.h.unit_flags, TextureUnit::ROUGHNESS);
+
+    // * Read uniform data
+    stream.read(reinterpret_cast<char*>(&mat_info.u_albedo), 4*sizeof(float));
+    stream.read(reinterpret_cast<char*>(&mat_info.u_metal), sizeof(float));
+    stream.read(reinterpret_cast<char*>(&mat_info.u_rough), sizeof(float));
+    stream.read(reinterpret_cast<char*>(&mat_info.u_alpha), sizeof(float));
+
+    // * Read texture data
+    size_t block_size = size_t(header.h.width) * size_t(header.h.height) * 4;
+
+    if(has_block0)
+        stream.read(reinterpret_cast<char*>(mat_info.block0_data), block_size);
+    if(has_block1)
+        stream.read(reinterpret_cast<char*>(mat_info.block1_data), block_size);
+    if(has_block2)
+        stream.read(reinterpret_cast<char*>(mat_info.block2_data), block_size);
+}
+
 void WatLoader::write(std::ostream& stream, const MaterialInfo& mat_info)
 {
     // * Write header
-
-
-
-    /*bool has_block0 = mat_info.has_albedo;
-    bool has_block1 = mat_info.has_normal || mat_info.has_depth;
-    bool has_block2 = mat_info.has_metal || mat_info.has_AO || mat_info.has_rough;*/
     bool has_block0 = has_unit(mat_info.unit_flags, TextureUnit::ALBEDO);
     bool has_block1 = has_unit(mat_info.unit_flags, TextureUnit::NORMAL)
                    || has_unit(mat_info.unit_flags, TextureUnit::DEPTH);
     bool has_block2 = has_unit(mat_info.unit_flags, TextureUnit::METALLIC)
                    || has_unit(mat_info.unit_flags, TextureUnit::AO)
                    || has_unit(mat_info.unit_flags, TextureUnit::ROUGHNESS);
+
+    uint16_t unit_flags = mat_info.unit_flags
+                        | (has_block0 ? (uint16_t)TextureUnit::BLOCK0 : 0)
+                        | (has_block1 ? (uint16_t)TextureUnit::BLOCK1 : 0)
+                        | (has_block2 ? (uint16_t)TextureUnit::BLOCK2 : 0);
 
     WatHeaderWrapper header;
     header.h.unique_id             = mat_info.unique_id;
@@ -43,7 +88,7 @@ void WatLoader::write(std::ostream& stream, const MaterialInfo& mat_info)
     header.h.address_V             = 0;
     header.h.width                 = mat_info.width;
     header.h.height                = mat_info.height;
-    header.h.unit_flags            = mat_info.unit_flags;
+    header.h.unit_flags            = unit_flags;
     header.h.has_block0            = (uint8_t) has_block0;
     header.h.has_block1            = (uint8_t) has_block1;
     header.h.has_block2            = (uint8_t) has_block2;
@@ -59,12 +104,14 @@ void WatLoader::write(std::ostream& stream, const MaterialInfo& mat_info)
     stream.write(reinterpret_cast<const char*>(&mat_info.u_alpha), sizeof(float));
 
     // * Write texture data
+    size_t block_size = size_t(mat_info.width) * size_t(mat_info.height) * 4;
+
     if(has_block0)
-        stream.write(reinterpret_cast<const char*>(mat_info.block0_data), mat_info.width*mat_info.height*4);
+        stream.write(reinterpret_cast<const char*>(mat_info.block0_data), block_size);
     if(has_block1)
-        stream.write(reinterpret_cast<const char*>(mat_info.block1_data), mat_info.width*mat_info.height*4);
+        stream.write(reinterpret_cast<const char*>(mat_info.block1_data), block_size);
     if(has_block2)
-        stream.write(reinterpret_cast<const char*>(mat_info.block2_data), mat_info.width*mat_info.height*4);
+        stream.write(reinterpret_cast<const char*>(mat_info.block2_data), block_size);
 }
 
 void WatLoader::read_descriptor(std::istream& stream, MaterialDescriptor& descriptor)
