@@ -133,6 +133,7 @@ void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* mater
                     fatal();
                 }
                 wat_loader_->read_descriptor(*pstream, descriptor);
+                descriptor.wat_location = wat_location;
             }
             else
             {
@@ -202,15 +203,8 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
         std::shared_ptr<Texture> ptex = nullptr;
         if(descriptor.is_textured)
         {
-            if(descriptor.is_wat)
-            {
-
-            }
-            else
-            {
-                // Generate texture from png files
-                ptex = std::make_shared<Texture>(descriptor.texture_descriptor);
-            }
+            // Generate texture from png files
+            ptex = std::make_shared<Texture>(descriptor.texture_descriptor);
             // Cache texture
             texture_cache_.insert(std::pair(descriptor.texture_descriptor.resource_id, ptex));
         }

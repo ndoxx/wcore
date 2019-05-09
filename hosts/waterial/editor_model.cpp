@@ -479,12 +479,6 @@ void EditorModel::compile(const QString& texname, bool export_wat)
             mat_info.unique_id        = H_(texname.toStdString().c_str());
             mat_info.width            = entry.width;
             mat_info.height           = entry.height;
-            /*mat_info.has_albedo       = entry.texture_maps[ALBEDO]->has_image;
-            mat_info.has_normal       = entry.texture_maps[NORMAL]->has_image;
-            mat_info.has_depth        = entry.texture_maps[DEPTH]->has_image;
-            mat_info.has_metal        = entry.texture_maps[METALLIC]->has_image;
-            mat_info.has_AO           = entry.texture_maps[AO]->has_image;
-            mat_info.has_rough        = entry.texture_maps[ROUGHNESS]->has_image;*/
             mat_info.u_albedo         = albedo_map->u_albedo;
             mat_info.u_parallax_scale = depth_map->u_parallax_scale;
             mat_info.u_metal          = metallic_map->u_metallic;

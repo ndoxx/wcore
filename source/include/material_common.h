@@ -46,7 +46,6 @@ struct TextureDescriptor
     uint16_t units;
     // Sampler group number
     uint8_t sampler_group;
-    uint8_t n_units;
     // OpenGL texture parameters
     TextureParameters parameters;
     // Unique id
@@ -55,7 +54,7 @@ struct TextureDescriptor
     TextureDescriptor();
 
     inline bool has_unit(TextureUnit unit) const { return (units&(uint16_t)unit); }
-    inline void add_unit(TextureUnit unit)       { units |= (uint16_t)unit; ++n_units; }
+    inline void add_unit(TextureUnit unit)       { units |= (uint16_t)unit; }
 };
 
 struct MaterialDescriptor

@@ -87,6 +87,18 @@ static GLenum internal_format_to_data_type(GLenum iformat)
     return GL_UNSIGNED_BYTE;
 }
 
+static GLenum fix_internal_format(GLenum iformat, hash_t sampler_name)
+{
+    // Load Albedo / Diffuse textures as sRGB to avoid double gamma-correction.
+    if(sampler_name == "mt.sg1.block0Tex"_h || sampler_name == "mt.sg2.block0Tex"_h)
+        return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+    // Do not use DXT1 compression on normal-depth texure (block1) because it will screw up the normals
+    else if(sampler_name == "mt.sg1.block1Tex"_h || sampler_name == "mt.sg2.block1Tex"_h)
+        return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;//GL_RGBA;
+
+    return iformat;
+}
+
 Texture::Texture(const TextureDescriptor& descriptor):
 n_units_(descriptor.locations.size()),
 unit_flags_(descriptor.units)
@@ -117,15 +129,7 @@ unit_flags_(descriptor.units)
             uniform_sampler_names_.push_back(sampler_name);
 
             filters[ii] = descriptor.parameters.filter;
-
-            // Load Albedo / Diffuse textures as sRGB to avoid double gamma-correction.
-            if(sampler_name == "mt.sg1.block0Tex"_h || sampler_name == "mt.sg2.block0Tex"_h)
-                internalFormats[ii] = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
-            // Do not use DXT1 compression on normal-depth texure (block1) because it will screw up the normals
-            else if(sampler_name == "mt.sg1.block1Tex"_h || sampler_name == "mt.sg2.block1Tex"_h)
-                internalFormats[ii] = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;//GL_RGBA;
-            else
-                internalFormats[ii] = descriptor.parameters.internal_format;
+            internalFormats[ii] = fix_internal_format(descriptor.parameters.internal_format, sampler_name);
             formats[ii] = descriptor.parameters.format;
 
             // Load from PNG
@@ -309,7 +313,8 @@ void Texture::generate_texture_units(uint32_t n_units,
     for(uint32_t ii = 0; ii < n_units; ++ii)
     {
         // Bind unit
-        bind(ii, ii);
+        glBindTexture(GL_TEXTURE_2D, texture_ids_[ii]);
+
         // Generate filter and check whether this unit has mipmaps
         bool has_mipmap = handle_filter(filters[ii], GL_TEXTURE_2D);
         // Set clamp/wrap parameters

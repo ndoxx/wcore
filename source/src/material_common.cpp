@@ -20,7 +20,6 @@ lazy_mipmap(false)
 TextureDescriptor::TextureDescriptor():
 units(0),
 sampler_group(1),
-n_units(0),
 parameters(),
 resource_id(""_h)
 {
