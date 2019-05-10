@@ -283,7 +283,7 @@
                     <ProcessUV>true</ProcessUV>
                     <Centered>true</Centered>
                 </Mesh>
-                <Material name="ball01"/>
+                <Material name="ball01.wat"/>
                 <Transform>
                     <Position>(43,4,10)</Position>
                     <Scale>3.0</Scale>
@@ -298,7 +298,7 @@
                     <ProcessNormals>true</ProcessNormals>
                     <SmoothNormals>max</SmoothNormals>
                 </Mesh>
-                <Material name="dome01"/>
+                <Material name="dome01.wat"/>
                 <Transform>
                     <Position>(43,2,17)</Position>
                     <Scale>3.0</Scale>

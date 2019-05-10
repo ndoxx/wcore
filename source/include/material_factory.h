@@ -47,8 +47,13 @@ public:
     Texture* make_texture(std::istream& stream);
     Cubemap* make_cubemap(hash_t cubemap_name);
 
+#ifdef __DEBUG__
+    const MaterialDescriptor& get_material_descriptor(hash_t asset_name);
+    const CubemapDescriptor& get_cubemap_descriptor(hash_t asset_name);
+#else
     inline const MaterialDescriptor& get_material_descriptor(hash_t asset_name) { return material_descriptors_.at(asset_name); }
     inline const CubemapDescriptor& get_cubemap_descriptor(hash_t asset_name)   { return cubemap_descriptors_.at(asset_name); }
+#endif
 
     void parse_material_descriptor(rapidxml::xml_node<>* node,
                                    MaterialDescriptor& descriptor,

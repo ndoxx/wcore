@@ -30,7 +30,7 @@ public:
 
     // Load texture from MaterialInfo structure
     // Obtained by parsing Watfiles
-    Texture(const MaterialInfo& mat_info);
+    Texture(MaterialInfo& mat_info);
 
     // Create single texture2D from stream with all default options
     // These cannot be cached
@@ -81,6 +81,9 @@ public:
 #endif
 
 private:
+    // Add a texture unit flag (used by watfile import)
+    //inline bool add_unit(TextureUnit unit) const         { unit_flags_ |= (uint16_t)unit; }
+
     // Generic helper function to initialize OpenGL state for this texture
     void generate_texture_units(uint32_t n_units,
                                 uint32_t width,

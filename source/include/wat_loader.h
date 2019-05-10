@@ -56,7 +56,8 @@ typedef union
 
 struct MaterialInfo
 {
-    MaterialInfo();
+    MaterialInfo(bool owns_data=false);
+    ~MaterialInfo();
 
     unsigned char* block0_data; // Pointers to pixel data for block 0
     unsigned char* block1_data; // Pointers to pixel data for block 1
@@ -73,7 +74,10 @@ struct MaterialInfo
     float u_metal;
     float u_rough;
 
+    bool owns_data_;
+
     inline bool has_unit(TextureUnit unit) const { return (unit_flags&(uint16_t)unit); }
+    inline void add_unit(TextureUnit unit)       { unit_flags |= (uint16_t)unit; }
 };
 
 class Texture;

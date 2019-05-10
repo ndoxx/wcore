@@ -7900,7 +7900,13 @@ __ATTENTION__ à bien initialiser des lvalue references avec GMODULES::GET() :
 Sinon le FBO interne pourra être détruit, causant un double-free plus loin.
 
 
+#[10-05-19]
 
+## BUGS
+[ ] Parallax mapping fails with watfiles
+[ ] In debug target
+    [ ] _SoundSystem_ fail FMOD assert (lib version != header version)
+    [ ] Imgui fail assert (InitFrame() not called before Render())
 
 
 

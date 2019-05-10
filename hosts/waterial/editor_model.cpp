@@ -460,23 +460,25 @@ void EditorModel::compile(const QString& texname, bool export_wat)
 
         if(export_wat)
         {
+            QString filename = texname + ".wat";
+
             MaterialInfo mat_info;
             AlbedoMap* albedo_map       = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
             DepthMap* depth_map         = static_cast<DepthMap*>(entry.texture_maps[DEPTH]);
             MetallicMap* metallic_map   = static_cast<MetallicMap*>(entry.texture_maps[METALLIC]);
             RoughnessMap* roughness_map = static_cast<RoughnessMap*>(entry.texture_maps[ROUGHNESS]);
 
-            mat_info.unit_flags = (entry.texture_maps[ALBEDO]->has_image    ? (uint16_t)TextureUnit::ALBEDO    : 0)
-                                | (entry.texture_maps[NORMAL]->has_image    ? (uint16_t)TextureUnit::NORMAL    : 0)
-                                | (entry.texture_maps[DEPTH]->has_image     ? (uint16_t)TextureUnit::DEPTH     : 0)
-                                | (entry.texture_maps[METALLIC]->has_image  ? (uint16_t)TextureUnit::METALLIC  : 0)
-                                | (entry.texture_maps[AO]->has_image        ? (uint16_t)TextureUnit::AO        : 0)
-                                | (entry.texture_maps[ROUGHNESS]->has_image ? (uint16_t)TextureUnit::ROUGHNESS : 0);
+            if(entry.texture_maps[ALBEDO]->has_image)    mat_info.add_unit(TextureUnit::ALBEDO);
+            if(entry.texture_maps[NORMAL]->has_image)    mat_info.add_unit(TextureUnit::NORMAL);
+            if(entry.texture_maps[DEPTH]->has_image)     mat_info.add_unit(TextureUnit::DEPTH);
+            if(entry.texture_maps[METALLIC]->has_image)  mat_info.add_unit(TextureUnit::METALLIC);
+            if(entry.texture_maps[AO]->has_image)        mat_info.add_unit(TextureUnit::AO);
+            if(entry.texture_maps[ROUGHNESS]->has_image) mat_info.add_unit(TextureUnit::ROUGHNESS);
 
             mat_info.block0_data      = block0.bits();
             mat_info.block1_data      = block1.bits();
             mat_info.block2_data      = block2.bits();
-            mat_info.unique_id        = H_(texname.toStdString().c_str());
+            mat_info.unique_id        = H_(filename.toStdString().c_str());
             mat_info.width            = entry.width;
             mat_info.height           = entry.height;
             mat_info.u_albedo         = albedo_map->u_albedo;
@@ -486,14 +488,13 @@ void EditorModel::compile(const QString& texname, bool export_wat)
             mat_info.u_alpha          = 1; // TMP
 
             WatLoader watfile;
-            QString filename = texname + ".wat";
             std::ofstream stream(output_folder_.filePath(filename).toStdString(), std::ios::out | std::ios::binary);
             watfile.write(stream, mat_info);
             stream.close();
         }
         else
         {
-            // Save blocks
+            // Save blocks to png files
             QString block0_name = texname + "_block0.png";
             QString block1_name = texname + "_block1.png";
             QString block2_name = texname + "_block2.png";

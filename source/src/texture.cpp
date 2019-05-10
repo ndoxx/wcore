@@ -176,7 +176,7 @@ unit_flags_(descriptor.units)
     delete [] px_bufs;
 }
 
-Texture::Texture(const MaterialInfo& mat_info)
+Texture::Texture(MaterialInfo& mat_info)
 {
 #ifdef __DEBUG__
     {
@@ -195,6 +195,7 @@ Texture::Texture(const MaterialInfo& mat_info)
     };
 
     sampler_group_ = mat_info.sampler_group;
+    unit_flags_ = mat_info.unit_flags;
 
     std::vector<GLenum> filters;
     std::vector<GLenum> formats;
@@ -228,11 +229,6 @@ Texture::Texture(const MaterialInfo& mat_info)
                            &formats[0],
                            false,
                            false);
-
-    // Free resources
-    delete mat_info.block0_data;
-    delete mat_info.block1_data;
-    delete mat_info.block2_data;
 }
 
 Texture::Texture(std::istream& stream):

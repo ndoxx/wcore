@@ -33,10 +33,10 @@
             <Transform>
                 <Position>(0,0,0)</Position>
             </Transform>
-            <Material name="grass"/>
+            <Material name="grass.wat"/>
             <!--<Splat>
-                <Material name="beachSand"/>
-                <Material name="sandstone"/>
+                <Material name="beachSand.wat"/>
+                <Material name="sandstone.wat"/>
             </Splat>-->
             <Shadow>
                 <CullFace>1</CullFace>

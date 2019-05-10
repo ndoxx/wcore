@@ -97,6 +97,30 @@ std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc)
 
     return stream;
 }
+
+
+const MaterialDescriptor& MaterialFactory::get_material_descriptor(hash_t asset_name)
+{
+    auto it = material_descriptors_.find(asset_name);
+    if(it==material_descriptors_.end())
+    {
+        DLOGF("[MaterialFactory] Unknown material descriptor key: " + std::to_string(asset_name) + " -> " + HRESOLVE(asset_name), "material");
+    }
+
+    return it->second;
+}
+
+const CubemapDescriptor& MaterialFactory::get_cubemap_descriptor(hash_t asset_name)
+{
+    auto it = cubemap_descriptors_.find(asset_name);
+    if(it==cubemap_descriptors_.end())
+    {
+        DLOGF("[MaterialFactory] Unknown cubemap descriptor key: " + std::to_string(asset_name) + " -> " + HRESOLVE(asset_name), "material");
+    }
+
+    return it->second;
+}
+
 #endif
 
 void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* materials_node)
@@ -132,6 +156,8 @@ void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* mater
                     DLOGI("<p>" + wat_location + "</p>", "material");
                     fatal();
                 }
+                DLOGN("[MaterialFactory] reading descriptor for <h>Watfile</h>: ", "material");
+                DLOGI("<p>" + wat_location + "</p>", "material");
                 wat_loader_->read_descriptor(*pstream, descriptor);
                 descriptor.wat_location = wat_location;
             }
@@ -212,7 +238,7 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
                     DLOGI("<p>" + std::string(descriptor.wat_location) + "</p>", "material");
                     fatal();
                 }
-                MaterialInfo mat_info;
+                MaterialInfo mat_info(true); // true: struct owns pointers to data
                 wat_loader_->read(*pstream, mat_info);
                 mat_info.sampler_group = descriptor.texture_descriptor.sampler_group;
                 ptex = std::make_shared<Texture>(mat_info);
@@ -225,6 +251,7 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
             // Cache texture
             texture_cache_.insert(std::pair(descriptor.texture_descriptor.resource_id, ptex));
         }
+
         return new Material(descriptor, ptex);
     }
 }

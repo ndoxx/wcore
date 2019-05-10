@@ -20,51 +20,28 @@
     </Cubemaps>
 
     <Materials>
-        <Material name="ball01">
-            <Texture>
-                <Units>Albedo</Units>
-                <Block0>ball01_block0.png</Block0>
-            </Texture>
-            <Uniform>
-                <Metallic>0</Metallic>
-                <Roughness>0.3</Roughness>
-            </Uniform>
-        </Material>
-
-        <Material name="beachSand">
-            <Texture>
-                <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
-                <Block0>beachSand_block0.png</Block0>
-                <Block1>beachSand_block1.png</Block1>
-                <Block2>beachSand_block2.png</Block2>
-                <Parameters>
-                    <MinFilter>nearest_mipmap_linear</MinFilter>
-                    <MagFilter>linear</MagFilter>
-                    <AddressU>wrap</AddressU>
-                    <AddressV>wrap</AddressV>
-                </Parameters>
-            </Texture>
-            <Uniform>
-                <ParallaxHeightScale>0.10</ParallaxHeightScale>
-            </Uniform>
-            <Override>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>false</ParallaxMap>
-            </Override>
-        </Material>
-
         <Material location="beachSand.wat"/>
-        <Material location="sandstone.wat"/>
         <Material location="testMetalFloor01.wat"/>
         <Material location="testMetalFloor02.wat"/>
+        <Material location="pavedFloor.wat"/>
+        <Material location="sandstone.wat"/>
+        <Material location="rockTiling01.wat"/>
+        <Material location="treeBark01.wat"/>
+        <Material location="dirt01.wat"/>
+        <Material location="dirt02.wat"/>
+        <Material location="brickWall.wat"/>
         <Material location="grass.wat"/>
+        <Material location="ball01.wat"/>
+        <Material location="erwinCube.wat"/>
+        <Material location="dome01.wat"/>
 
-        <Material name="grass">
+<!--
+        <Material name="testMetalFloor01">
             <Texture>
-                <Units>Albedo;Normal;Depth;AO;Roughness</Units>
-                <Block0>grass_block0.png</Block0>
-                <Block1>grass_block1.png</Block1>
-                <Block2>grass_block2.png</Block2>
+                <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
+                <Block0>testMetalFloor01_block0.png</Block0>
+                <Block1>testMetalFloor01_block1.png</Block1>
+                <Block2>testMetalFloor01_block2.png</Block2>
                 <Parameters>
                     <MinFilter>nearest_mipmap_linear</MinFilter>
                     <MagFilter>linear</MagFilter>
@@ -73,39 +50,14 @@
                 </Parameters>
             </Texture>
             <Uniform>
-                <ParallaxHeightScale>0.05</ParallaxHeightScale>
+                <ParallaxHeightScale>0.01</ParallaxHeightScale>
             </Uniform>
             <Override>
                 <NormalMap>true</NormalMap>
                 <ParallaxMap>true</ParallaxMap>
             </Override>
         </Material>
-
-        <Material name="brickWall">
-            <Texture>
-                <Units>Albedo;Normal;Depth;AO;Roughness</Units>
-                <Block0>brickWall_block0.png</Block0>
-                <Block1>brickWall_block1.png</Block1>
-                <Block2>brickWall_block2.png</Block2>
-            </Texture>
-            <Uniform>
-                <Metallic>0</Metallic>
-                <ParallaxHeightScale>0.025</ParallaxHeightScale>
-            </Uniform>
-            <Override>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>false</ParallaxMap>
-            </Override>
-        </Material>
-
-        <Material name="cube">
-            <Texture>
-                <Units>Albedo;Metallic;Roughness</Units>
-                <Block0>erwinCube_block0.png</Block0>
-                <Block1>erwinCube_block1.png</Block1>
-                <Block2>erwinCube_block2.png</Block2>
-            </Texture>
-        </Material>
+-->
 
         <Material name="default">
             <Uniform>
@@ -113,65 +65,6 @@
                 <Metallic>0</Metallic>
                 <Roughness>1.0</Roughness>
             </Uniform>
-        </Material>
-
-        <Material name="dome01">
-            <Texture>
-                <Units>Albedo</Units>
-                <Block0>dome01_block0.png</Block0>
-            </Texture>
-            <Uniform>
-                <Metallic>0</Metallic>
-                <Roughness>0.1</Roughness>
-            </Uniform>
-        </Material>
-
-        <Material name="pavedFloor">
-            <Texture>
-                <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
-                <Block0>pavedFloor_block0.png</Block0>
-                <Block1>pavedFloor_block1.png</Block1>
-                <Block2>pavedFloor_block2.png</Block2>
-            </Texture>
-            <Uniform>
-                <ParallaxHeightScale>0.15</ParallaxHeightScale>
-            </Uniform>
-            <Override>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>true</ParallaxMap>
-            </Override>
-        </Material>
-
-        <Material name="sandstone">
-            <Texture>
-                <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
-                <Block0>sandstone_block0.png</Block0>
-                <Block1>sandstone_block1.png</Block1>
-                <Block2>sandstone_block2.png</Block2>
-            </Texture>
-            <Uniform>
-                <ParallaxHeightScale>0.15</ParallaxHeightScale>
-            </Uniform>
-            <Override>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>true</ParallaxMap>
-            </Override>
-        </Material>
-
-        <Material name="treeBark01">
-            <Texture>
-                <Units>Albedo;Normal;Depth;AO;Roughness</Units>
-                <Block0>treeBark01_block0.png</Block0>
-                <Block1>treeBark01_block1.png</Block1>
-                <Block2>treeBark01_block2.png</Block2>
-            </Texture>
-            <Uniform>
-                <ParallaxHeightScale>0.025</ParallaxHeightScale>
-            </Uniform>
-            <Override>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>true</ParallaxMap>
-            </Override>
         </Material>
 
         <Material name="darkWood">
@@ -339,7 +232,7 @@
     <Models>
         <Model name="brickWall01">
             <Mesh name=".wall01"/>
-            <Material name="brickWall"/>
+            <Material name="brickWall.wat"/>
         </Model>
         <Model name="tree03">
             <Mesh name=".tree03"/>
@@ -352,7 +245,7 @@
         </Model>
         <Model name="earthSquare01">
             <Mesh name=".earthSquare01"/>
-            <Material name="beachSand"/>
+            <Material name="beachSand.wat"/>
         </Model>
         <Model name="teapot01">
             <Mesh name=".teapot01"/>

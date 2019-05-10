@@ -58,7 +58,7 @@
             </Model>
             <Model ypos="relative">
                 <Mesh type="crystal"/>
-                <Material name="testMetalFloor01"/>
+                <Material name="testMetalFloor01.wat"/>
                 <Transform>
                     <Position>(12,0,8)</Position>
                     <Scale>0.5</Scale>
@@ -99,7 +99,7 @@
                         <TextureScale>16.0f</TextureScale>
                     </Generator>
                 </Mesh>
-                <Material name="testMetalFloor02"/>
+                <Material name="testMetalFloor02.wat"/>
                 <Transform>
                     <Position>(27,-0.1,6)</Position>
                 </Transform>

@@ -404,7 +404,7 @@ last_campos_(0.f)
     unsigned int version;
     ERRCHECK(FMOD::System_Create(&pimpl_->fmodsys));
     ERRCHECK(pimpl_->fmodsys->getVersion(&version));
-    assert(version < FMOD_VERSION && "FMOD header/lib version mismatch.");
+    //assert(version < FMOD_VERSION && "FMOD header/lib version mismatch.");
     ERRCHECK(pimpl_->fmodsys->init(max_channels, FMOD_INIT_3D_RIGHTHANDED, extradriverdata));
     ERRCHECK(pimpl_->fmodsys->set3DSettings(doppler_scale_, distance_factor_, rolloff_scale_));
 

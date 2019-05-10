@@ -11,7 +11,7 @@
             <Transform>
                 <Position>(0,0,0)</Position>
             </Transform>
-            <Material name="pavedFloor"/>
+            <Material name="pavedFloor.wat"/>
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>
