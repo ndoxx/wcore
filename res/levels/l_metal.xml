@@ -14,9 +14,8 @@
             <Transform>
                 <Position>(0,0,0)</Position>
             </Transform>
-            <!--<Material name="chrome"/>-->
-            <Material name="testMetalFloor01"/>
-            <!--<Material name="testMetalFloor02"/>-->
+            <Material name="testMetalFloor01.wat"/>
+            <!--<Material name="testMetalFloor02.wat"/>-->
             <Shadow>
                 <CullFace>1</CullFace>
             </Shadow>

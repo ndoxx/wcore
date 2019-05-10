@@ -33,6 +33,7 @@ u_rough(1)
 
 }
 
+
 void WatLoader::read(std::istream& stream, MaterialInfo& mat_info)
 {
     // * Read header
@@ -48,6 +49,13 @@ void WatLoader::read(std::istream& stream, MaterialInfo& mat_info)
                    || has_unit(header.h.unit_flags, TextureUnit::AO)
                    || has_unit(header.h.unit_flags, TextureUnit::ROUGHNESS);
 
+    mat_info.unit_flags       = header.h.unit_flags;
+    mat_info.unique_id        = header.h.unique_id;
+    mat_info.width            = header.h.width;
+    mat_info.height           = header.h.height;
+    mat_info.u_parallax_scale = header.h.parallax_height_scale;
+    mat_info.has_transparency = bool(header.h.has_transparency);
+
     // * Read uniform data
     stream.read(reinterpret_cast<char*>(&mat_info.u_albedo), 4*sizeof(float));
     stream.read(reinterpret_cast<char*>(&mat_info.u_metal), sizeof(float));
@@ -58,11 +66,20 @@ void WatLoader::read(std::istream& stream, MaterialInfo& mat_info)
     size_t block_size = size_t(header.h.width) * size_t(header.h.height) * 4;
 
     if(has_block0)
+    {
+        mat_info.block0_data = new unsigned char[block_size];
         stream.read(reinterpret_cast<char*>(mat_info.block0_data), block_size);
+    }
     if(has_block1)
+    {
+        mat_info.block1_data = new unsigned char[block_size];
         stream.read(reinterpret_cast<char*>(mat_info.block1_data), block_size);
+    }
     if(has_block2)
+    {
+        mat_info.block2_data = new unsigned char[block_size];
         stream.read(reinterpret_cast<char*>(mat_info.block2_data), block_size);
+    }
 }
 
 void WatLoader::write(std::ostream& stream, const MaterialInfo& mat_info)
@@ -79,6 +96,7 @@ void WatLoader::write(std::ostream& stream, const MaterialInfo& mat_info)
                         | (has_block0 ? (uint16_t)TextureUnit::BLOCK0 : 0)
                         | (has_block1 ? (uint16_t)TextureUnit::BLOCK1 : 0)
                         | (has_block2 ? (uint16_t)TextureUnit::BLOCK2 : 0);
+
 
     WatHeaderWrapper header;
     header.h.unique_id             = mat_info.unique_id;

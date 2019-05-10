@@ -202,6 +202,7 @@ Texture::Texture(const MaterialInfo& mat_info)
     std::vector<unsigned char*> data;
 
     uint32_t ii = 0;
+
     for(auto&& [key, sampler_name]: SAMPLER_NAMES[sampler_group_-1])
     {
         if(mat_info.has_unit(key))
@@ -227,6 +228,11 @@ Texture::Texture(const MaterialInfo& mat_info)
                            &formats[0],
                            false,
                            false);
+
+    // Free resources
+    delete mat_info.block0_data;
+    delete mat_info.block1_data;
+    delete mat_info.block2_data;
 }
 
 Texture::Texture(std::istream& stream):

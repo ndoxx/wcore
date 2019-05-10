@@ -53,55 +53,11 @@
             </Override>
         </Material>
 
-        <Material location="beachSand.wat">
-            <Override>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>false</ParallaxMap>
-            </Override>
-        </Material>
-
+        <Material location="beachSand.wat"/>
+        <Material location="sandstone.wat"/>
         <Material location="testMetalFloor01.wat"/>
-
-        <Material name="testMetalFloor01">
-            <Texture>
-                <Units>Albedo;Normal;Depth;Metallic;AO;Roughness</Units>
-                <Block0>testMetalFloor01_block0.png</Block0>
-                <Block1>testMetalFloor01_block1.png</Block1>
-                <Block2>testMetalFloor01_block2.png</Block2>
-                <Parameters>
-                    <MinFilter>nearest_mipmap_linear</MinFilter>
-                    <MagFilter>linear</MagFilter>
-                    <AddressU>wrap</AddressU>
-                    <AddressV>wrap</AddressV>
-                </Parameters>
-            </Texture>
-            <Uniform>
-                <ParallaxHeightScale>0.01</ParallaxHeightScale>
-            </Uniform>
-            <Override>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>true</ParallaxMap>
-            </Override>
-        </Material>
-
-        <Material name="testMetalFloor02">
-            <Texture>
-                <Units>Albedo;Normal;Metallic;Roughness</Units>
-                <Block0>testMetalFloor02_block0.png</Block0>
-                <Block1>testMetalFloor02_block1.png</Block1>
-                <Block2>testMetalFloor02_block2.png</Block2>
-                <Parameters>
-                    <MinFilter>nearest_mipmap_linear</MinFilter>
-                    <MagFilter>linear</MagFilter>
-                    <AddressU>wrap</AddressU>
-                    <AddressV>wrap</AddressV>
-                </Parameters>
-            </Texture>
-            <Override>
-                <NormalMap>true</NormalMap>
-                <ParallaxMap>false</ParallaxMap>
-            </Override>
-        </Material>
+        <Material location="testMetalFloor02.wat"/>
+        <Material location="grass.wat"/>
 
         <Material name="grass">
             <Texture>
