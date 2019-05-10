@@ -245,7 +245,7 @@
         </Model>
         <Model name="earthSquare01">
             <Mesh name=".earthSquare01"/>
-            <Material name="beachSand.wat"/>
+            <Material name="dirt02.wat"/>
         </Model>
         <Model name="teapot01">
             <Mesh name=".teapot01"/>

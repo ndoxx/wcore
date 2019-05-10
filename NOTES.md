@@ -7902,11 +7902,60 @@ Sinon le FBO interne pourra être détruit, causant un double-free plus loin.
 
 #[10-05-19]
 
+## Textures : MEGA refactor -> suite et fin
+Ré-écriture complète de la classe _Texture_. J'ai viré cette horreur de Texture::TextureInternal qui était mon moyen jusque-là d'assurer le caching des textures (je crois me souvenir que l'idée venait de BennyBox@yt). Toutes les méthodes inutiles ont été supprimées, l'interface est propre, quasi-OpenGL-agnostique et largement commentée, beaucoup de simplifications ont été réalisées dans l'implémentation (meilleure gestion des sampler groups, fonctions helpers...).
+La mise en cache des textures est réalisée par _MaterialFactory_. La méthode MaterialFactory::cache_cleanup() est utilisée pour supprimer du cache les textures non partagées (sorte de garbage collector). Cette méthode est appelée par la fonction update() de _GameObjectFactory_ à intervalle régulier (toutes les 10s).
+Et surtout, les textures peuvent être chargées depuis des **WatFiles** !
+
+De nombreux bugs m'ont pourri la vie. Notamment un avec Waterial, très étrange. Lors de la compilation d'une texture, toute la surface du contexte était remplacée par la texture, mais en bleu (blue texture of death)... J'ai mis du temps à me rendre compte que j'appelais glActiveTexture juste avant de bind lors de la génération des textures OpenGL, ce qui vraisemblablement rentrait en concurrence avec un des threads de Qt. Apitrace a encore été de bon secours. En revanche, Valgrind beaucoup moins !
+
+J'ai eu ce bug affreux de Valgrind décrit en [1], qui ne reconnait pas l'instruction assembleur correspondant à l'OpCode RDRAND (génération de nombre aléatoire avec une source d'entropie hardware du CPU). Qt a je pense mis à jour ses libs, et semble maintenant utiliser cette instruction (en tout cas chez-moi) dans une de ses fonctions rand. Quoi qu'il en soit, valgrind échoue à débugger Waterial à cause de ça.
+J'ai essayé de patcher la source de Valgrind à la main (en suivant le conseil d'un gars, mais sans réellement comprendre ce que je faisais), rien n'y faisait. Le problème semble être résolu après un changement de version de valgrind. Noter qu'on peut compiler Qt avec QT_NO_CPU_FEATURE=rdrnd pour éviter l'utilisation de RDRAND.
+
+* Sources :
+[1] https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=823610
+
+## WatFiles
+Sur le modèle de _WeshLoader_ j'ai conçu _WatLoader_, capable d'écrire et de lire des matériaux au format Wat. Ce format commence par un header de 128 octets qui contient un ensemble de paramètres pour le modèle, la taille des textures s'il y en a. Le header comporte à l'instar de _WeshHeader_ un magic number (0x4C544157 = ASCII(WATL)) et un numéro de version. Après le header on trouve des données uniformes (albédo, métallicité, rugosité et alpha). Puis on trouve les texture blocks s'il y en a.
+
+_WatLoader_ se sert d'une structure _MaterialInfo_ intermédiaire pour stocker les donnée sur le point d'être écrites ou qui viennent d'être lues. Cette structure permet à elle seule d'initialiser une _Texture_ si tant est que des texture blocks existent.
+_WatLoader_ peut aussi initialiser des _MaterialDescriptor_, essentiellement en se bornant à lire le header et les données uniformes d'un watfile. Ceci est utilisé par _MaterialFactory_ pour chercher et stocker des données de base sur les matériaux des watfiles, comme elle le ferait pour des matériaux décrits par du XML.
+
+Pour l'instant, il faut toujours déclarer les matérieaux dans assets.xml :
+```xml
+    <Materials>
+        <Material location="beachSand.wat"/>
+        <Material location="testMetalFloor01.wat"/>
+        <Material location="testMetalFloor02.wat"/>
+    </Materials>
+```
+Noter l'attribut *location* en lieu et place de *name*. C'est comme ça que le parser identifie qu'il s'agit d'un watfile. La chaîne contenue dans *location* sert cependant de nom pour l'identification ultérieure de l'asset. Ainsi on utilise toujours l'attribut *name* pour faire référence à un watfile, et on n'oublie pas le ".wat" :
+```xml
+    <Model>
+        <Mesh type="cube"></Mesh>
+        <Material name="erwinCube.wat"/>
+    </Model>
+```
+
+Waterial a été modifié pour pouvoir exporter les matériaux sous ce format. Toutes les maps ont été modifiées pour se servir de watfiles là où c'est possible, et les watfiles sont naturellement compatibles avec les archives (pack0 en contient).
+
+### Améliorations possibles
+[ ] Supporter les cubemaps
+[ ] Supporter les paramètres de textures suivants :
+    [ ] Address UV (wrap/clamp)
+    [ ] Min/Mag filter
+
+
 ## BUGS
-[ ] Parallax mapping fails with watfiles
 [ ] In debug target
     [ ] _SoundSystem_ fail FMOD assert (lib version != header version)
     [ ] Imgui fail assert (InitFrame() not called before Render())
+
+
+
+
+
+
 
 
 

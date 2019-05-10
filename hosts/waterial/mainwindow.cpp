@@ -343,7 +343,7 @@ void MainWindow::create_actions()
     delete_tex_action_->setIcon(QIcon(":/res/icons/delete.png"));
     delete_tex_action_->setStatusTip(tr("Delete current texture"));
     connect(delete_tex_action_, SIGNAL(triggered()), this, SLOT(handle_delete_current_texture()));
-
+/*
     compile_tex_action_ = new QAction(tr("Compile"), this);
     compile_tex_action_->setIcon(QIcon(":/res/icons/compile.png"));
     compile_tex_action_->setStatusTip(tr("Compile current texture"));
@@ -353,7 +353,7 @@ void MainWindow::create_actions()
     compile_all_tex_action_->setIcon(QIcon(":/res/icons/compile_all.png"));
     compile_all_tex_action_->setStatusTip(tr("Compile all textures in current project"));
     connect(compile_all_tex_action_, SIGNAL(triggered()), this, SLOT(handle_compile_all()));
-
+*/
     compile_wat_tex_action_ = new QAction(tr("Compile Wat"), this);
     compile_wat_tex_action_->setIcon(QIcon(":/res/icons/compile.png"));
     compile_wat_tex_action_->setStatusTip(tr("Compile current texture to wat format"));
@@ -419,8 +419,8 @@ void MainWindow::create_menus()
 
     tex_menu->addSeparator();
 
-    tex_menu->addAction(compile_tex_action_);
-    tex_menu->addAction(compile_all_tex_action_);
+    //tex_menu->addAction(compile_tex_action_);
+    //tex_menu->addAction(compile_all_tex_action_);
     tex_menu->addAction(compile_wat_tex_action_);
     tex_menu->addAction(compile_wat_all_tex_action_);
 }
@@ -456,8 +456,8 @@ void MainWindow::create_toolbars()
 
     toolbar_->addSeparator();
 
-    toolbar_->addAction(compile_tex_action_);
-    toolbar_->addAction(compile_all_tex_action_);
+    //toolbar_->addAction(compile_tex_action_);
+    //toolbar_->addAction(compile_all_tex_action_);
     toolbar_->addAction(compile_wat_tex_action_);
     toolbar_->addAction(compile_wat_all_tex_action_);
 

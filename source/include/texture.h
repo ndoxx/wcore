@@ -9,7 +9,6 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <GL/glew.h>
 
 #include "wtypes.h"
 #include "png_loader.h"
@@ -30,7 +29,7 @@ public:
 
     // Load texture from MaterialInfo structure
     // Obtained by parsing Watfiles
-    Texture(MaterialInfo& mat_info);
+    Texture(const MaterialInfo& mat_info);
 
     // Create single texture2D from stream with all default options
     // These cannot be cached

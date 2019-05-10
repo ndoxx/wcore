@@ -4,7 +4,7 @@
 #include <QCheckBox>
 #include <QFileInfo>
 
-#include <thread>
+#include <fstream>
 
 #include "preview_gl_widget.h"
 #include "qt_context.h"
@@ -19,6 +19,7 @@
 #include "editor_model.h"
 #include "mesh_factory.h"
 #include "surface_mesh.h"
+#include "wat_loader.h"
 
 using namespace wcore;
 
@@ -263,10 +264,36 @@ void PreviewGLWidget::handle_z_changed(double newvalue)
 
 void PreviewGLWidget::handle_material_swap(EditorModel* edmodel)
 {
-    const wcore::MaterialDescriptor descriptor = edmodel->get_current_material_descriptor();
+    /*const wcore::MaterialDescriptor descriptor = edmodel->get_current_material_descriptor();
     if(edmodel->validate_descriptor(descriptor))
     {
         new_material_ = new Material(descriptor);
+    }*/
+
+    // Locate watfile and check existence
+    QString watfilename(edmodel->get_current_texture_name());
+    watfilename += ".wat";
+
+    auto filepath = edmodel->get_output_folder().filePath(watfilename);
+
+    QFileInfo check_file(filepath);
+    if(check_file.exists() && check_file.isFile())
+    {
+        // Read descriptor
+        wcore::WatLoader wat_loader;
+        std::ifstream ifs(filepath.toStdString(), std::ios::in | std::ios::binary);
+        wcore::MaterialDescriptor descriptor;
+        wat_loader.read_descriptor(ifs, descriptor);
+        descriptor.wat_location = watfilename.toStdString();
+
+        // Rewind and read material data
+        ifs.seekg(0, ifs.beg);
+        wcore::MaterialInfo mat_info(true); // true: struct owns pointers to data
+        wat_loader.read(ifs, mat_info);
+        mat_info.sampler_group = 1;
+        auto ptex = std::make_shared<wcore::Texture>(mat_info);
+
+        new_material_ = new Material(descriptor, ptex);
     }
 }
 

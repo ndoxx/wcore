@@ -1,6 +1,7 @@
 #include <cassert>
 #include <vector>
 #include <sstream>
+#include <GL/glew.h>
 
 
 #include "texture.h"
@@ -176,7 +177,7 @@ unit_flags_(descriptor.units)
     delete [] px_bufs;
 }
 
-Texture::Texture(MaterialInfo& mat_info)
+Texture::Texture(const MaterialInfo& mat_info)
 {
 #ifdef __DEBUG__
     {
