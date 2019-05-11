@@ -16,6 +16,7 @@ static inline bool has_unit(uint16_t flags, TextureUnit unit)
     return (flags&(uint16_t)unit);
 }
 
+/*
 MaterialInfo::MaterialInfo(bool owns_data):
 block0_data(nullptr),
 block1_data(nullptr),
@@ -44,9 +45,9 @@ MaterialInfo::~MaterialInfo()
         delete[] block1_data;
         delete[] block2_data;
     }
-}
+}*/
 
-void WatLoader::read(std::istream& stream, MaterialInfo& mat_info)
+void WatLoader::read(std::istream& stream, MaterialDescriptor& descriptor)
 {
     // * Read header
     WatHeaderWrapper header;
@@ -54,94 +55,100 @@ void WatLoader::read(std::istream& stream, MaterialInfo& mat_info)
     if(!header_sanity_check(header.h))
         return;
 
-    bool has_block0 = has_unit(header.h.unit_flags, TextureUnit::ALBEDO);
+    /*bool has_block0 = has_unit(header.h.unit_flags, TextureUnit::ALBEDO);
     bool has_block1 = has_unit(header.h.unit_flags, TextureUnit::NORMAL)
                    || has_unit(header.h.unit_flags, TextureUnit::DEPTH);
     bool has_block2 = has_unit(header.h.unit_flags, TextureUnit::METALLIC)
                    || has_unit(header.h.unit_flags, TextureUnit::AO)
-                   || has_unit(header.h.unit_flags, TextureUnit::ROUGHNESS);
+                   || has_unit(header.h.unit_flags, TextureUnit::ROUGHNESS);*/
 
-    mat_info.unit_flags       = header.h.unit_flags;
-    mat_info.unique_id        = header.h.unique_id;
-    mat_info.width            = header.h.width;
-    mat_info.height           = header.h.height;
-    mat_info.u_parallax_scale = header.h.parallax_height_scale;
-    mat_info.has_transparency = bool(header.h.has_transparency);
+    bool has_block0 = (bool)header.h.has_block0;
+    bool has_block1 = (bool)header.h.has_block1;
+    bool has_block2 = (bool)header.h.has_block2;
+    bool is_textured = has_block0 || has_block1 || has_block2;
+    descriptor.is_textured = is_textured;
+
+    descriptor.texture_descriptor.unit_flags  = header.h.unit_flags;
+    descriptor.texture_descriptor.width       = header.h.width;
+    descriptor.texture_descriptor.height      = header.h.height;
+    descriptor.texture_descriptor.resource_id = header.h.unique_id;
+    descriptor.parallax_height_scale = header.h.parallax_height_scale;
+    descriptor.has_transparency      = bool(header.h.has_transparency);
 
     // * Read uniform data
-    stream.read(reinterpret_cast<char*>(&mat_info.u_albedo), 4*sizeof(float));
-    stream.read(reinterpret_cast<char*>(&mat_info.u_metal), sizeof(float));
-    stream.read(reinterpret_cast<char*>(&mat_info.u_rough), sizeof(float));
-    stream.read(reinterpret_cast<char*>(&mat_info.u_alpha), sizeof(float));
+    stream.read(reinterpret_cast<char*>(&descriptor.albedo), 3*sizeof(float));
+    stream.read(reinterpret_cast<char*>(&descriptor.metallic), sizeof(float));
+    stream.read(reinterpret_cast<char*>(&descriptor.roughness), sizeof(float));
+    stream.read(reinterpret_cast<char*>(&descriptor.transparency), sizeof(float));
 
     // * Read texture data
     size_t block_size = size_t(header.h.width) * size_t(header.h.height) * 4;
 
     if(has_block0)
     {
-        mat_info.block0_data = new unsigned char[block_size];
-        stream.read(reinterpret_cast<char*>(mat_info.block0_data), block_size);
+        descriptor.texture_descriptor.block0_data = new unsigned char[block_size];
+        stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block0_data), block_size);
     }
     if(has_block1)
     {
-        mat_info.block1_data = new unsigned char[block_size];
-        stream.read(reinterpret_cast<char*>(mat_info.block1_data), block_size);
+        descriptor.texture_descriptor.block1_data = new unsigned char[block_size];
+        stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block1_data), block_size);
     }
     if(has_block2)
     {
-        mat_info.block2_data = new unsigned char[block_size];
-        stream.read(reinterpret_cast<char*>(mat_info.block2_data), block_size);
+        descriptor.texture_descriptor.block2_data = new unsigned char[block_size];
+        stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block2_data), block_size);
     }
 }
 
-void WatLoader::write(std::ostream& stream, const MaterialInfo& mat_info)
+void WatLoader::write(std::ostream& stream, const MaterialDescriptor& descriptor)
 {
     // * Write header
-    bool has_block0 = has_unit(mat_info.unit_flags, TextureUnit::ALBEDO);
-    bool has_block1 = has_unit(mat_info.unit_flags, TextureUnit::NORMAL)
-                   || has_unit(mat_info.unit_flags, TextureUnit::DEPTH);
-    bool has_block2 = has_unit(mat_info.unit_flags, TextureUnit::METALLIC)
-                   || has_unit(mat_info.unit_flags, TextureUnit::AO)
-                   || has_unit(mat_info.unit_flags, TextureUnit::ROUGHNESS);
+    bool has_block0 = descriptor.texture_descriptor.has_unit(TextureUnit::ALBEDO);
+    bool has_block1 = descriptor.texture_descriptor.has_unit(TextureUnit::NORMAL)
+                   || descriptor.texture_descriptor.has_unit(TextureUnit::DEPTH);
+    bool has_block2 = descriptor.texture_descriptor.has_unit(TextureUnit::METALLIC)
+                   || descriptor.texture_descriptor.has_unit(TextureUnit::AO)
+                   || descriptor.texture_descriptor.has_unit(TextureUnit::ROUGHNESS);
 
-    uint16_t unit_flags = mat_info.unit_flags
+    uint16_t unit_flags = descriptor.texture_descriptor.unit_flags
                         | (has_block0 ? (uint16_t)TextureUnit::BLOCK0 : 0)
                         | (has_block1 ? (uint16_t)TextureUnit::BLOCK1 : 0)
                         | (has_block2 ? (uint16_t)TextureUnit::BLOCK2 : 0);
 
 
     WatHeaderWrapper header;
-    header.h.unique_id             = mat_info.unique_id;
+    header.h.unique_id             = descriptor.texture_descriptor.resource_id;
     header.h.min_filter            = 0;
     header.h.mag_filter            = 0;
     header.h.address_U             = 0;
     header.h.address_V             = 0;
-    header.h.width                 = mat_info.width;
-    header.h.height                = mat_info.height;
+    header.h.width                 = descriptor.texture_descriptor.width;
+    header.h.height                = descriptor.texture_descriptor.height;
     header.h.unit_flags            = unit_flags;
     header.h.has_block0            = (uint8_t) has_block0;
     header.h.has_block1            = (uint8_t) has_block1;
     header.h.has_block2            = (uint8_t) has_block2;
-    header.h.has_transparency      = (uint8_t) mat_info.has_transparency;
-    header.h.parallax_height_scale = mat_info.u_parallax_scale;
+    header.h.has_transparency      = (uint8_t) descriptor.has_transparency;
+    header.h.parallax_height_scale = descriptor.parallax_height_scale;
 
     write_header(stream, header);
 
     // * Write uniform data
-    stream.write(reinterpret_cast<const char*>(&mat_info.u_albedo), 4*sizeof(float));
-    stream.write(reinterpret_cast<const char*>(&mat_info.u_metal), sizeof(float));
-    stream.write(reinterpret_cast<const char*>(&mat_info.u_rough), sizeof(float));
-    stream.write(reinterpret_cast<const char*>(&mat_info.u_alpha), sizeof(float));
+    stream.write(reinterpret_cast<const char*>(&descriptor.albedo), 3*sizeof(float));
+    stream.write(reinterpret_cast<const char*>(&descriptor.metallic), sizeof(float));
+    stream.write(reinterpret_cast<const char*>(&descriptor.roughness), sizeof(float));
+    stream.write(reinterpret_cast<const char*>(&descriptor.transparency), sizeof(float));
 
     // * Write texture data
-    size_t block_size = size_t(mat_info.width) * size_t(mat_info.height) * 4;
+    size_t block_size = size_t(descriptor.texture_descriptor.width) * size_t(descriptor.texture_descriptor.height) * 4;
 
     if(has_block0)
-        stream.write(reinterpret_cast<const char*>(mat_info.block0_data), block_size);
+        stream.write(reinterpret_cast<const char*>(descriptor.texture_descriptor.block0_data), block_size);
     if(has_block1)
-        stream.write(reinterpret_cast<const char*>(mat_info.block1_data), block_size);
+        stream.write(reinterpret_cast<const char*>(descriptor.texture_descriptor.block1_data), block_size);
     if(has_block2)
-        stream.write(reinterpret_cast<const char*>(mat_info.block2_data), block_size);
+        stream.write(reinterpret_cast<const char*>(descriptor.texture_descriptor.block2_data), block_size);
 }
 
 void WatLoader::read_descriptor(std::istream& stream, MaterialDescriptor& descriptor)
@@ -164,15 +171,15 @@ void WatLoader::read_descriptor(std::istream& stream, MaterialDescriptor& descri
     descriptor.texture_descriptor.unit_flags = header.h.unit_flags;
 
     // * Read uniform data
-    math::i32vec4 u_albedo;
-    stream.read(reinterpret_cast<char*>(&u_albedo), 4*sizeof(float));
+    //math::i32vec4 u_albedo;
+    stream.read(reinterpret_cast<char*>(&descriptor.albedo), 3*sizeof(float));
     stream.read(reinterpret_cast<char*>(&descriptor.metallic), sizeof(float));
     stream.read(reinterpret_cast<char*>(&descriptor.roughness), sizeof(float));
     stream.read(reinterpret_cast<char*>(&descriptor.transparency), sizeof(float));
 
-    descriptor.albedo = math::vec3(u_albedo.x() / 255.f,
+    /*descriptor.albedo = math::vec3(u_albedo.x() / 255.f,
                                    u_albedo.y() / 255.f,
-                                   u_albedo.z() / 255.f);
+                                   u_albedo.z() / 255.f);*/
 
     bool has_normal = has_unit(header.h.unit_flags, TextureUnit::NORMAL);
     bool has_depth  = has_unit(header.h.unit_flags, TextureUnit::DEPTH);

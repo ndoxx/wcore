@@ -462,30 +462,34 @@ void EditorModel::compile(const QString& texname, bool export_wat)
         {
             QString filename = texname + ".wat";
 
-            MaterialInfo mat_info;
+            MaterialDescriptor mat_info;
             AlbedoMap* albedo_map       = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
             DepthMap* depth_map         = static_cast<DepthMap*>(entry.texture_maps[DEPTH]);
             MetallicMap* metallic_map   = static_cast<MetallicMap*>(entry.texture_maps[METALLIC]);
             RoughnessMap* roughness_map = static_cast<RoughnessMap*>(entry.texture_maps[ROUGHNESS]);
 
-            if(entry.texture_maps[ALBEDO]->has_image)    mat_info.add_unit(TextureUnit::ALBEDO);
-            if(entry.texture_maps[NORMAL]->has_image)    mat_info.add_unit(TextureUnit::NORMAL);
-            if(entry.texture_maps[DEPTH]->has_image)     mat_info.add_unit(TextureUnit::DEPTH);
-            if(entry.texture_maps[METALLIC]->has_image)  mat_info.add_unit(TextureUnit::METALLIC);
-            if(entry.texture_maps[AO]->has_image)        mat_info.add_unit(TextureUnit::AO);
-            if(entry.texture_maps[ROUGHNESS]->has_image) mat_info.add_unit(TextureUnit::ROUGHNESS);
+            if(entry.texture_maps[ALBEDO]->has_image)    mat_info.texture_descriptor.add_unit(TextureUnit::ALBEDO);
+            if(entry.texture_maps[NORMAL]->has_image)    mat_info.texture_descriptor.add_unit(TextureUnit::NORMAL);
+            if(entry.texture_maps[DEPTH]->has_image)     mat_info.texture_descriptor.add_unit(TextureUnit::DEPTH);
+            if(entry.texture_maps[METALLIC]->has_image)  mat_info.texture_descriptor.add_unit(TextureUnit::METALLIC);
+            if(entry.texture_maps[AO]->has_image)        mat_info.texture_descriptor.add_unit(TextureUnit::AO);
+            if(entry.texture_maps[ROUGHNESS]->has_image) mat_info.texture_descriptor.add_unit(TextureUnit::ROUGHNESS);
 
-            mat_info.block0_data      = block0.bits();
-            mat_info.block1_data      = block1.bits();
-            mat_info.block2_data      = block2.bits();
-            mat_info.unique_id        = H_(filename.toStdString().c_str());
-            mat_info.width            = entry.width;
-            mat_info.height           = entry.height;
-            mat_info.u_albedo         = albedo_map->u_albedo;
-            mat_info.u_parallax_scale = depth_map->u_parallax_scale;
-            mat_info.u_metal          = metallic_map->u_metallic;
-            mat_info.u_rough          = roughness_map->u_roughness;
-            mat_info.u_alpha          = 1; // TMP
+            mat_info.texture_descriptor.block0_data = block0.bits();
+            mat_info.texture_descriptor.block1_data = block1.bits();
+            mat_info.texture_descriptor.block2_data = block2.bits();
+            mat_info.texture_descriptor.resource_id = H_(filename.toStdString().c_str());
+            mat_info.texture_descriptor.width       = entry.width;
+            mat_info.texture_descriptor.height      = entry.height;
+
+            wcore::math::vec3 u_albedo(albedo_map->u_albedo.x() / 255.f,
+                                       albedo_map->u_albedo.y() / 255.f,
+                                       albedo_map->u_albedo.z() / 255.f);
+            mat_info.albedo                = u_albedo;
+            mat_info.metallic              = metallic_map->u_metallic;
+            mat_info.roughness             = roughness_map->u_roughness;
+            mat_info.parallax_height_scale = depth_map->u_parallax_scale;
+            mat_info.transparency          = 1; // TMP
 
             WatLoader watfile;
             std::ofstream stream(output_folder_.filePath(filename).toStdString(), std::ios::out | std::ios::binary);

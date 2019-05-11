@@ -238,10 +238,12 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
                     DLOGI("<p>" + std::string(descriptor.texture_descriptor.wat_location) + "</p>", "material");
                     fatal();
                 }
-                MaterialInfo mat_info(true); // true: struct owns pointers to data
+                MaterialDescriptor mat_info;
+                mat_info.texture_descriptor.owns_data = true;
+                mat_info.texture_descriptor.is_wat = true;
                 wat_loader_->read(*pstream, mat_info);
-                mat_info.sampler_group = descriptor.texture_descriptor.sampler_group;
-                ptex = std::make_shared<Texture>(mat_info);
+                mat_info.texture_descriptor.sampler_group = descriptor.texture_descriptor.sampler_group;
+                ptex = std::make_shared<Texture>(mat_info.texture_descriptor);
             }
             else
             {

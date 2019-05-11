@@ -22,10 +22,27 @@ unit_flags(0),
 sampler_group(1),
 parameters(),
 resource_id(""_h),
-is_wat(false)
+is_wat(false),
+owns_data(false),
+width(0),
+height(0),
+block0_data(nullptr),
+block1_data(nullptr),
+block2_data(nullptr)
 {
 
 }
+
+TextureDescriptor::~TextureDescriptor()
+{
+    if(owns_data)
+    {
+        delete[] block0_data;
+        delete[] block1_data;
+        delete[] block2_data;
+    }
+}
+
 
 MaterialDescriptor::MaterialDescriptor():
 texture_descriptor(),

@@ -53,7 +53,7 @@ typedef union
     struct WatHeader h;
     uint8_t padding[WAT_HEADER_SIZE];
 } WatHeaderWrapper;
-
+/*
 struct MaterialInfo
 {
     MaterialInfo(bool owns_data=false);
@@ -78,14 +78,14 @@ struct MaterialInfo
 
     inline bool has_unit(TextureUnit unit) const { return (unit_flags&(uint16_t)unit); }
     inline void add_unit(TextureUnit unit)       { unit_flags |= (uint16_t)unit; }
-};
+};*/
 
 class Texture;
 class WatLoader
 {
 public:
-    void read(std::istream& stream, MaterialInfo& mat_info);
-    void write(std::ostream& stream, const MaterialInfo& mat_info);
+    void read(std::istream& stream, MaterialDescriptor& descriptor);
+    void write(std::ostream& stream, const MaterialDescriptor& descriptor);
 
     void read_descriptor(std::istream& stream, MaterialDescriptor& descriptor);
 

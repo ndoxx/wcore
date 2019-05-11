@@ -73,9 +73,16 @@ struct TextureDescriptor
 
     // Wat format
     bool is_wat;
+    bool owns_data;
     std::string wat_location;
+    uint32_t width;
+    uint32_t height;
+    unsigned char* block0_data; // Pointers to pixel data for block 0
+    unsigned char* block1_data; // Pointers to pixel data for block 1
+    unsigned char* block2_data; // Pointers to pixel data for block 2
 
     TextureDescriptor();
+    ~TextureDescriptor();
 
     inline bool has_unit(TextureUnit unit) const { return (unit_flags&(uint16_t)unit); }
     inline void add_unit(TextureUnit unit)       { unit_flags |= (uint16_t)unit; }

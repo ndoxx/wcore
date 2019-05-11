@@ -27,7 +27,7 @@ public:
 
     // Load texture from MaterialInfo structure
     // Obtained by parsing Watfiles
-    Texture(const MaterialInfo& mat_info);
+    //Texture(const MaterialInfo& mat_info);
 
     // Create single texture2D from stream with all default options
     Texture(std::istream& stream);

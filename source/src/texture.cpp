@@ -162,26 +162,38 @@ static GLenum fix_internal_format(GLenum iformat, hash_t sampler_name)
     return iformat;
 }
 
-Texture::Texture(const TextureDescriptor& descriptor):
-n_units_(descriptor.locations.size()),
-unit_flags_(descriptor.unit_flags)
+Texture::Texture(const TextureDescriptor& descriptor)
 {
 #ifdef __DEBUG__
-    {
-        std::stringstream ss;
+    std::stringstream ss;
+    if(descriptor.is_wat)
+        ss << "[Texture] New texture from Watfile: <n>" << HRESOLVE(descriptor.resource_id) << "</n>";
+    else
         ss << "[Texture] New texture from asset: <n>" << HRESOLVE(descriptor.resource_id) << "</n>";
-        DLOGN(ss.str(), "texture");
-    }
+    DLOGN(ss.str(), "texture");
 #endif
+
+    // Textures from watfiles use blocks
+    std::vector<unsigned char*> data_ptrs =
+    {
+        descriptor.block0_data,
+        descriptor.block1_data,
+        descriptor.block2_data
+    };
 
     // Load data
     std::vector<TextureFilter> filters;
     std::vector<GLenum> formats;
     std::vector<GLenum> internalFormats;
     std::vector<unsigned char*> data;
-    uint32_t width, height;
+    uint32_t width  = 0;
+    uint32_t height = 0;
+
+    std::vector<PixelBuffer*> px_bufs;
 
     sampler_group_ = descriptor.sampler_group;
+    unit_flags_    = descriptor.unit_flags;
+
     uint32_t ii=0;
     for(auto&& [key, sampler_name]: SAMPLER_NAMES[sampler_group_-1])
     {
@@ -195,33 +207,43 @@ unit_flags_(descriptor.unit_flags)
             formats.push_back(descriptor.parameters.format);
             internalFormats.push_back(fix_internal_format(descriptor.parameters.internal_format, sampler_name));
 
-            // Load from PNG
-            auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations.at(key).c_str(), "root.folders.texture"_h, "pack0"_h);
-            PixelBuffer* px_buf = PNG_LOADER.load_png(*stream);
-
-            if(px_buf)
+            if(descriptor.is_wat)
             {
-                if(ii==0)
-                {
-                    width  = px_buf->get_width();
-                    height = px_buf->get_height();
-                }
-                data.push_back(px_buf->get_data_pointer());
-#ifdef __DEBUG__
-                DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture");
-                if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
-                    px_buf->debug_display();
-#endif
+                data.push_back(data_ptrs[ii]);
+                width = descriptor.width;
+                height = descriptor.height;
             }
             else
             {
-                DLOGF("[Texture] Unable to load Texture.", "texture");
-                fatal();
+                // Load from PNG
+                auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations.at(key).c_str(), "root.folders.texture"_h, "pack0"_h);
+                PixelBuffer* px_buf = PNG_LOADER.load_png(*stream);
+                px_bufs.push_back(px_buf);
+                if(px_buf)
+                {
+                    if(ii==0)
+                    {
+                        width  = px_buf->get_width();
+                        height = px_buf->get_height();
+                    }
+                    data.push_back(px_buf->get_data_pointer());
+#ifdef __DEBUG__
+                    DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture");
+                    if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
+                        px_buf->debug_display();
+#endif
+                }
+                else
+                {
+                    DLOGF("[Texture] Unable to load Texture.", "texture");
+                    fatal();
+                }
             }
-            ++ii;
         }
+        ++ii;
     }
 
+    n_units_ = data.size();
     generate_texture_units(n_units_,
                            width,
                            height,
@@ -231,8 +253,11 @@ unit_flags_(descriptor.unit_flags)
                            filters,
                            descriptor.parameters.wrap,
                            false);
-}
 
+    for(auto* px_buf: px_bufs)
+        delete px_buf;
+}
+/*
 Texture::Texture(const MaterialInfo& mat_info)
 {
 #ifdef __DEBUG__
@@ -287,7 +312,7 @@ Texture::Texture(const MaterialInfo& mat_info)
                            TextureWrap::REPEAT, // TMP
                            false);
 }
-
+*/
 Texture::Texture(std::istream& stream):
 unit_flags_(0),
 sampler_group_(1)
