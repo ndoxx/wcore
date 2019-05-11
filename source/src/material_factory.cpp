@@ -159,7 +159,7 @@ void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* mater
                 DLOGN("[MaterialFactory] reading descriptor for <h>Watfile</h>: ", "material");
                 DLOGI("<p>" + wat_location + "</p>", "material");
                 wat_loader_->read_descriptor(*pstream, descriptor);
-                descriptor.wat_location = wat_location;
+                descriptor.texture_descriptor.wat_location = wat_location;
             }
             else
             {
@@ -229,13 +229,13 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
         std::shared_ptr<Texture> ptex = nullptr;
         if(descriptor.is_textured)
         {
-            if(descriptor.is_wat)
+            if(descriptor.texture_descriptor.is_wat)
             {
-                auto pstream = FILESYSTEM.get_file_as_stream(descriptor.wat_location.c_str(), "root.folders.texture"_h, "pack0"_h);
+                auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.wat_location.c_str(), "root.folders.texture"_h, "pack0"_h);
                 if(pstream == nullptr)
                 {
                     DLOGE("[MaterialFactory] Unable to open file:", "material");
-                    DLOGI("<p>" + std::string(descriptor.wat_location) + "</p>", "material");
+                    DLOGI("<p>" + std::string(descriptor.texture_descriptor.wat_location) + "</p>", "material");
                     fatal();
                 }
                 MaterialInfo mat_info(true); // true: struct owns pointers to data

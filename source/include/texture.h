@@ -11,13 +11,11 @@
 #include <string>
 
 #include "wtypes.h"
-#include "png_loader.h"
+#include "material_common.h"
 
 namespace wcore
 {
 
-enum class TextureUnit: uint16_t;
-struct TextureDescriptor;
 struct MaterialInfo;
 class Shader;
 class Texture
@@ -32,17 +30,16 @@ public:
     Texture(const MaterialInfo& mat_info);
 
     // Create single texture2D from stream with all default options
-    // These cannot be cached
     Texture(std::istream& stream);
 
     // Create an empty texture, ideal for creating a render target for an FBO
     Texture(const std::vector<hash_t>& sampler_names,
-            const std::vector<uint32_t>& filters,
+            const std::vector<TextureFilter>& filters,
             const std::vector<uint32_t>& internalFormats,
             const std::vector<uint32_t>& formats,
             uint32_t width   = 0,
             uint32_t height  = 0,
-            bool clamp       = false,
+            TextureWrap wrap_param = TextureWrap::REPEAT,
             bool lazy_mipmap = true);
 
     ~Texture();
@@ -80,18 +77,15 @@ public:
 #endif
 
 private:
-    // Add a texture unit flag (used by watfile import)
-    //inline bool add_unit(TextureUnit unit) const         { unit_flags_ |= (uint16_t)unit; }
-
     // Generic helper function to initialize OpenGL state for this texture
     void generate_texture_units(uint32_t n_units,
                                 uint32_t width,
                                 uint32_t height,
                                 unsigned char** data,
-                                unsigned int* filters,
                                 unsigned int* internalFormats,
                                 unsigned int* formats,
-                                bool clamp,
+                                const std::vector<TextureFilter>& filters,
+                                TextureWrap wrap_param,
                                 bool lazy_mipmap = false);
 
 private:

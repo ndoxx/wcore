@@ -12,6 +12,26 @@
 namespace wcore
 {
 
+enum TextureFilter: uint8_t
+{
+    MAG_NEAREST = 0,
+    MAG_LINEAR  = 1,
+
+    MIN_NEAREST = 2,
+    MIN_LINEAR  = 4,
+    MIN_NEAREST_MIPMAP_NEAREST = 8,
+    MIN_LINEAR_MIPMAP_NEAREST  = 16,
+    MIN_NEAREST_MIPMAP_LINEAR  = 32,
+    MIN_LINEAR_MIPMAP_LINEAR   = 64
+};
+
+enum class TextureWrap: uint8_t
+{
+    REPEAT,
+    MIRRORED_REPEAT,
+    CLAMP_TO_EDGE
+};
+
 enum class TextureUnit: uint16_t
 {
     ALBEDO    = 1,
@@ -27,10 +47,10 @@ enum class TextureUnit: uint16_t
 
 struct TextureParameters
 {
-    uint32_t filter;
+    TextureFilter filter;
     uint32_t internal_format;
     uint32_t format;
-    bool clamp;
+    TextureWrap wrap;
     bool lazy_mipmap;
 
     TextureParameters();
@@ -43,7 +63,7 @@ struct TextureDescriptor
     // Image texture file names by map type
     TexMap locations;
     // Flags for each unit
-    uint16_t units;
+    uint16_t unit_flags;
     // Sampler group number
     uint8_t sampler_group;
     // OpenGL texture parameters
@@ -51,10 +71,14 @@ struct TextureDescriptor
     // Unique id
     hash_t resource_id;
 
+    // Wat format
+    bool is_wat;
+    std::string wat_location;
+
     TextureDescriptor();
 
-    inline bool has_unit(TextureUnit unit) const { return (units&(uint16_t)unit); }
-    inline void add_unit(TextureUnit unit)       { units |= (uint16_t)unit; }
+    inline bool has_unit(TextureUnit unit) const { return (unit_flags&(uint16_t)unit); }
+    inline void add_unit(TextureUnit unit)       { unit_flags |= (uint16_t)unit; }
 };
 
 struct MaterialDescriptor
@@ -75,10 +99,6 @@ struct MaterialDescriptor
     // Override
     bool enable_normal_mapping;
     bool enable_parallax_mapping;
-
-    // Wat format
-    bool is_wat;
-    std::string wat_location;
 
     MaterialDescriptor();
 

@@ -47,17 +47,17 @@ normal_offset_(-0.013f)
         std::make_unique<Texture>(
             std::vector<hash_t>{"shadowTex"_h},
         #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-            std::vector<uint32_t>{GL_LINEAR},
+            std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
             std::vector<uint32_t>{GL_RGBA32F},
             std::vector<uint32_t>{GL_RGBA},
         #else
-            std::vector<uint32_t>{GL_NEAREST},
+            std::vector<TextureFilter>{TextureFilter::MAG_NEAREST | TextureFilter::MIN_NEAREST},
             std::vector<uint32_t>{GL_DEPTH_COMPONENT24},
             std::vector<uint32_t>{GL_DEPTH_COMPONENT},
         #endif
             SHADOW_WIDTH,
             SHADOW_HEIGHT,
-            true),
+            TextureWrap::CLAMP_TO_EDGE),
         #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
         #else

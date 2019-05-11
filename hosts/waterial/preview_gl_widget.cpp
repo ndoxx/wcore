@@ -284,7 +284,7 @@ void PreviewGLWidget::handle_material_swap(EditorModel* edmodel)
         std::ifstream ifs(filepath.toStdString(), std::ios::in | std::ios::binary);
         wcore::MaterialDescriptor descriptor;
         wat_loader.read_descriptor(ifs, descriptor);
-        descriptor.wat_location = watfilename.toStdString();
+        descriptor.texture_descriptor.wat_location = watfilename.toStdString();
 
         // Rewind and read material data
         ifs.seekg(0, ifs.beg);

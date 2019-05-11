@@ -9,11 +9,11 @@
 #include "shader.h"
 #include "logger.h"
 #include "algorithms.h"
-#include "material_common.h"
 #include "config.h"
 #include "file_system.h"
 #include "error.h"
 #include "wat_loader.h"
+#include "png_loader.h"
 
 namespace wcore
 {
@@ -52,9 +52,9 @@ static std::map<GLenum, GLenum> DATA_TYPES =
 
 static PngLoader PNG_LOADER;
 
-static bool handle_filter(GLenum filter, GLenum target)
+static bool handle_filter(TextureFilter filter, GLenum target)
 {
-    bool has_mipmap = (filter == GL_NEAREST_MIPMAP_NEAREST ||
+    /*bool has_mipmap = (filter == GL_NEAREST_MIPMAP_NEAREST ||
                        filter == GL_NEAREST_MIPMAP_LINEAR ||
                        filter == GL_LINEAR_MIPMAP_NEAREST ||
                        filter == GL_LINEAR_MIPMAP_LINEAR);
@@ -67,17 +67,78 @@ static bool handle_filter(GLenum filter, GLenum target)
             glTexParameterf(target, GL_TEXTURE_MAG_FILTER, filter);
         else
             glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }*/
+
+    bool has_mipmap = (filter & TextureFilter::MIN_NEAREST_MIPMAP_NEAREST)
+                   || (filter & TextureFilter::MIN_LINEAR_MIPMAP_NEAREST)
+                   || (filter & TextureFilter::MIN_NEAREST_MIPMAP_LINEAR)
+                   || (filter & TextureFilter::MIN_LINEAR_MIPMAP_LINEAR);
+
+    // Magnification filter
+    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, bool(filter & MAG_LINEAR) ? GL_LINEAR : GL_NEAREST);
+
+    // Minification filter
+    uint16_t minfilter = filter & ~(1 << 0); // Clear mag filter bit
+
+    switch(minfilter)
+    {
+        case MIN_NEAREST:
+        {
+            glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            break;
+        }
+        case MIN_LINEAR:
+        {
+            glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            break;
+        }
+        case MIN_NEAREST_MIPMAP_NEAREST:
+        {
+            glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            break;
+        }
+        case MIN_LINEAR_MIPMAP_NEAREST:
+        {
+            glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            break;
+        }
+        case MIN_NEAREST_MIPMAP_LINEAR:
+        {
+            glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+            break;
+        }
+        case MIN_LINEAR_MIPMAP_LINEAR:
+        {
+            glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            break;
+        }
     }
 
     return has_mipmap;
 }
 
-static void handle_addressUV(bool clamp, GLenum target)
+static void handle_addressUV(TextureWrap wrap_param, GLenum target)
 {
-    if(clamp)
+    switch(wrap_param)
     {
-        glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        case TextureWrap::REPEAT:
+        {
+            glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            break;
+        }
+        case TextureWrap::MIRRORED_REPEAT:
+        {
+            glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+            glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+            break;
+        }
+        case TextureWrap::CLAMP_TO_EDGE:
+        {
+            glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            break;
+        }
     }
 }
 
@@ -103,7 +164,7 @@ static GLenum fix_internal_format(GLenum iformat, hash_t sampler_name)
 
 Texture::Texture(const TextureDescriptor& descriptor):
 n_units_(descriptor.locations.size()),
-unit_flags_(descriptor.units)
+unit_flags_(descriptor.unit_flags)
 {
 #ifdef __DEBUG__
     {
@@ -114,11 +175,11 @@ unit_flags_(descriptor.units)
 #endif
 
     // Load data
-    unsigned char** data    = new unsigned char*[n_units_];
-    PixelBuffer** px_bufs   = new PixelBuffer*[n_units_];
-    GLenum* filters         = new GLenum[n_units_];
-    GLenum* internalFormats = new GLenum[n_units_];
-    GLenum* formats         = new GLenum[n_units_];
+    std::vector<TextureFilter> filters;
+    std::vector<GLenum> formats;
+    std::vector<GLenum> internalFormats;
+    std::vector<unsigned char*> data;
+    uint32_t width, height;
 
     sampler_group_ = descriptor.sampler_group;
     uint32_t ii=0;
@@ -130,21 +191,26 @@ unit_flags_(descriptor.units)
             unit_indices_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
             uniform_sampler_names_.push_back(sampler_name);
 
-            filters[ii] = descriptor.parameters.filter;
-            formats[ii] = descriptor.parameters.format;
-            internalFormats[ii] = fix_internal_format(descriptor.parameters.internal_format, sampler_name);
+            filters.push_back(descriptor.parameters.filter);
+            formats.push_back(descriptor.parameters.format);
+            internalFormats.push_back(fix_internal_format(descriptor.parameters.internal_format, sampler_name));
 
             // Load from PNG
             auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations.at(key).c_str(), "root.folders.texture"_h, "pack0"_h);
-            px_bufs[ii] = PNG_LOADER.load_png(*stream);
+            PixelBuffer* px_buf = PNG_LOADER.load_png(*stream);
 
-            if(px_bufs[ii])
+            if(px_buf)
             {
-                data[ii] = px_bufs[ii]->get_data_pointer();
+                if(ii==0)
+                {
+                    width  = px_buf->get_width();
+                    height = px_buf->get_height();
+                }
+                data.push_back(px_buf->get_data_pointer());
 #ifdef __DEBUG__
                 DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture");
                 if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
-                    px_bufs[ii]->debug_display();
+                    px_buf->debug_display();
 #endif
             }
             else
@@ -157,24 +223,14 @@ unit_flags_(descriptor.units)
     }
 
     generate_texture_units(n_units_,
-                           px_bufs[0]->get_width(),
-                           px_bufs[0]->get_height(),
-                           data,
+                           width,
+                           height,
+                           &data[0],
+                           &internalFormats[0],
+                           &formats[0],
                            filters,
-                           internalFormats,
-                           formats,
-                           descriptor.parameters.clamp,
+                           descriptor.parameters.wrap,
                            false);
-
-    // Free allocations
-    for (uint32_t jj=0; jj<n_units_; ++jj)
-        if(px_bufs[jj])
-            delete px_bufs[jj];
-    delete [] formats;
-    delete [] internalFormats;
-    delete [] filters;
-    delete [] data;
-    delete [] px_bufs;
 }
 
 Texture::Texture(const MaterialInfo& mat_info)
@@ -198,7 +254,7 @@ Texture::Texture(const MaterialInfo& mat_info)
     sampler_group_ = mat_info.sampler_group;
     unit_flags_ = mat_info.unit_flags;
 
-    std::vector<GLenum> filters;
+    std::vector<TextureFilter> filters;
     std::vector<GLenum> formats;
     std::vector<GLenum> internalFormats;
     std::vector<unsigned char*> data;
@@ -213,7 +269,7 @@ Texture::Texture(const MaterialInfo& mat_info)
             unit_indices_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
             uniform_sampler_names_.push_back(sampler_name);
 
-            filters.push_back(GL_LINEAR_MIPMAP_LINEAR);
+            filters.push_back(TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR)); // TMP
             formats.push_back(GL_RGBA);
             internalFormats.push_back(fix_internal_format(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, sampler_name));
             data.push_back(data_ptrs[ii]);
@@ -225,10 +281,10 @@ Texture::Texture(const MaterialInfo& mat_info)
                            mat_info.width,
                            mat_info.height,
                            &data[0],
-                           &filters[0],
                            &internalFormats[0],
                            &formats[0],
-                           false,
+                           filters,
+                           TextureWrap::REPEAT, // TMP
                            false);
 }
 
@@ -252,7 +308,7 @@ sampler_group_(1)
         px_buf->debug_display();
 #endif
 
-    GLenum filter = GL_LINEAR;
+    TextureFilter filter = TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR);
     GLenum internal_format = GL_RGB;
     GLenum format = GL_RGB;
     unsigned char* data = px_buf->get_data_pointer();
@@ -260,22 +316,22 @@ sampler_group_(1)
                            px_buf->get_width(),
                            px_buf->get_height(),
                            &data,
-                           &filter,
                            &internal_format,
                            &format,
-                           true,
+                           std::vector<TextureFilter>{filter},
+                           TextureWrap::CLAMP_TO_EDGE,
                            false);
 
     delete px_buf;
 }
 
 Texture::Texture(const std::vector<hash_t>& sampler_names,
-        const std::vector<uint32_t>& filters,
+        const std::vector<TextureFilter>& filters,
         const std::vector<uint32_t>& internalFormats,
         const std::vector<uint32_t>& formats,
         uint32_t width,
         uint32_t height,
-        bool clamp,
+        TextureWrap wrap_param,
         bool lazy_mipmap):
 unit_flags_(0),
 sampler_group_(1),
@@ -285,10 +341,10 @@ uniform_sampler_names_(sampler_names)
                            width,
                            height,
                            nullptr,
-                           (GLenum*)&filters[0],
                            (GLenum*)&internalFormats[0],
                            (GLenum*)&formats[0],
-                           clamp,
+                           filters,
+                           wrap_param,
                            lazy_mipmap);
 }
 
@@ -346,10 +402,10 @@ void Texture::generate_texture_units(uint32_t n_units,
                                      uint32_t width,
                                      uint32_t height,
                                      unsigned char** data,
-                                     unsigned int* filters,
                                      unsigned int* internalFormats,
                                      unsigned int* formats,
-                                     bool clamp,
+                                     const std::vector<TextureFilter>& filters,
+                                     TextureWrap wrap_param,
                                      bool lazy_mipmap)
 {
     n_units_ = n_units;
@@ -373,8 +429,8 @@ void Texture::generate_texture_units(uint32_t n_units,
 
         // Generate filter and check whether this unit has mipmaps
         bool has_mipmap = handle_filter(filters[ii], GL_TEXTURE_2D);
-        // Set clamp/wrap parameters
-        handle_addressUV(clamp, GL_TEXTURE_2D);
+        // Set wrap parameters
+        handle_addressUV(wrap_param, GL_TEXTURE_2D);
         // Check whether this unit has depth information
         is_depth_.push_back((formats[ii] == GL_DEPTH_COMPONENT ||
                              formats[ii] == GL_DEPTH_STENCIL));

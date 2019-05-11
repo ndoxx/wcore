@@ -7903,20 +7903,39 @@ Sinon le FBO interne pourra être détruit, causant un double-free plus loin.
 #[10-05-19]
 
 ## Textures : MEGA refactor -> suite et fin
-Ré-écriture complète de la classe _Texture_. J'ai viré cette horreur de Texture::TextureInternal qui était mon moyen jusque-là d'assurer le caching des textures (je crois me souvenir que l'idée venait de BennyBox@yt). Toutes les méthodes inutiles ont été supprimées, l'interface est propre, quasi-OpenGL-agnostique et largement commentée, beaucoup de simplifications ont été réalisées dans l'implémentation (meilleure gestion des sampler groups, fonctions helpers...).
+Ré-écriture complète de la classe _Texture_. J'ai viré cette horreur de Texture::TextureInternal qui était mon moyen jusque-là d'assurer le caching des textures (je crois me souvenir que l'idée venait de BennyBox@yt, sympa au départ mais plus du tout adaptée à mon moteur). Toutes les méthodes inutiles ont été supprimées, l'interface est propre, quasi-OpenGL-agnostique et largement commentée, beaucoup de simplifications ont été réalisées dans l'implémentation (meilleure gestion des sampler groups, fonctions helpers...).
 La mise en cache des textures est réalisée par _MaterialFactory_. La méthode MaterialFactory::cache_cleanup() est utilisée pour supprimer du cache les textures non partagées (sorte de garbage collector). Cette méthode est appelée par la fonction update() de _GameObjectFactory_ à intervalle régulier (toutes les 10s).
 Et surtout, les textures peuvent être chargées depuis des **WatFiles** !
 
 De nombreux bugs m'ont pourri la vie. Notamment un avec Waterial, très étrange. Lors de la compilation d'une texture, toute la surface du contexte était remplacée par la texture, mais en bleu (blue texture of death)... J'ai mis du temps à me rendre compte que j'appelais glActiveTexture juste avant de bind lors de la génération des textures OpenGL, ce qui vraisemblablement rentrait en concurrence avec un des threads de Qt. Apitrace a encore été de bon secours. En revanche, Valgrind beaucoup moins !
 
-J'ai eu ce bug affreux de Valgrind décrit en [1], qui ne reconnait pas l'instruction assembleur correspondant à l'OpCode RDRAND (génération de nombre aléatoire avec une source d'entropie hardware du CPU). Qt a je pense mis à jour ses libs, et semble maintenant utiliser cette instruction (en tout cas chez-moi) dans une de ses fonctions rand. Quoi qu'il en soit, valgrind échoue à débugger Waterial à cause de ça.
+J'ai eu ce bug affreux de Valgrind décrit en [1], qui ne reconnait pas l'instruction assembleur correspondant à l'OpCode RDRAND (génération de nombre aléatoire avec une source d'entropie hardware du CPU). Qt a je pense mis à jour ses libs, et semble maintenant utiliser cette instruction (en tout cas chez-moi) dans une de ses fonctions rand. Quoi qu'il en soit, valgrind échouait à débugger Waterial à cause de ça.
 J'ai essayé de patcher la source de Valgrind à la main (en suivant le conseil d'un gars, mais sans réellement comprendre ce que je faisais), rien n'y faisait. Le problème semble être résolu après un changement de version de valgrind. Noter qu'on peut compiler Qt avec QT_NO_CPU_FEATURE=rdrnd pour éviter l'utilisation de RDRAND.
+
+Pour référence, voici les typedefs d'OpenGL :
+```cpp
+    typedef unsigned int  GLenum;
+    typedef unsigned char GLboolean;
+    typedef unsigned int  GLbitfield;
+    typedef void    GLvoid;
+    typedef signed char GLbyte;   /* 1-byte signed */
+    typedef short   GLshort;  /* 2-byte signed */
+    typedef int   GLint;    /* 4-byte signed */
+    typedef unsigned char GLubyte;  /* 1-byte unsigned */
+    typedef unsigned short  GLushort; /* 2-byte unsigned */
+    typedef unsigned int  GLuint;   /* 4-byte unsigned */
+    typedef int   GLsizei;  /* 4-byte signed */
+    typedef float   GLfloat;  /* single precision float */
+    typedef float   GLclampf; /* single precision float in [0,1] */
+    typedef double    GLdouble; /* double precision float */
+    typedef double    GLclampd; /* double precision float in [0,1] */
+```
 
 * Sources :
 [1] https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=823610
 
 ## WatFiles
-Sur le modèle de _WeshLoader_ j'ai conçu _WatLoader_, capable d'écrire et de lire des matériaux au format Wat. Ce format commence par un header de 128 octets qui contient un ensemble de paramètres pour le modèle, la taille des textures s'il y en a. Le header comporte à l'instar de _WeshHeader_ un magic number (0x4C544157 = ASCII(WATL)) et un numéro de version. Après le header on trouve des données uniformes (albédo, métallicité, rugosité et alpha). Puis on trouve les texture blocks s'il y en a.
+Sur le modèle de _WeshLoader_ j'ai conçu _WatLoader_, capable d'écrire et de lire des matériaux au format Wat. Ce format commence par un header de 128 octets qui contient un ensemble de paramètres pour le modèle et la taille des textures s'il y en a. Le header comporte à l'instar de _WeshHeader_ un magic number (0x4C544157 = ASCII(WATL)) et un numéro de version. Après le header on trouve des données uniformes (albédo, métallicité, rugosité et alpha). Puis les texture blocks (optionnels).
 
 _WatLoader_ se sert d'une structure _MaterialInfo_ intermédiaire pour stocker les donnée sur le point d'être écrites ou qui viennent d'être lues. Cette structure permet à elle seule d'initialiser une _Texture_ si tant est que des texture blocks existent.
 _WatLoader_ peut aussi initialiser des _MaterialDescriptor_, essentiellement en se bornant à lire le header et les données uniformes d'un watfile. Ceci est utilisé par _MaterialFactory_ pour chercher et stocker des données de base sur les matériaux des watfiles, comme elle le ferait pour des matériaux décrits par du XML.

@@ -44,7 +44,7 @@ RenderPipeline::RenderPipeline()
         "backfaceDepthBuffer",
         std::make_unique<Texture>(
             std::vector<hash_t>{"backfaceDepthTex"_h},
-            std::vector<uint32_t>{ GL_NEAREST},
+            std::vector<TextureFilter>{TextureFilter::MIN_NEAREST},
             std::vector<uint32_t>{ GL_DEPTH_COMPONENT32},
             std::vector<uint32_t>{ GL_DEPTH_COMPONENT},
             GLB.WIN_W,
@@ -58,13 +58,15 @@ RenderPipeline::RenderPipeline()
     (
         "gbuffer",
         std::make_unique<Texture>(
-            std::vector<hash_t>{"normalTex"_h,    "albedoTex"_h, "depthTex"_h},
-            std::vector<uint32_t>{GL_NEAREST,      GL_NEAREST,    GL_NEAREST},
-            std::vector<uint32_t>{GL_RGBA16_SNORM, GL_RGBA,       GL_DEPTH_COMPONENT32},
-            std::vector<uint32_t>{GL_RGBA,         GL_RGBA,       GL_DEPTH_COMPONENT},
+            std::vector<hash_t>{"normalTex"_h, "albedoTex"_h, "depthTex"_h},
+            std::vector<TextureFilter>{TextureFilter::MIN_NEAREST,
+                                       TextureFilter::MIN_NEAREST,
+                                       TextureFilter::MIN_NEAREST},
+            std::vector<uint32_t>{GL_RGBA16_SNORM, GL_RGBA, GL_DEPTH_COMPONENT32},
+            std::vector<uint32_t>{GL_RGBA, GL_RGBA, GL_DEPTH_COMPONENT},
             GLB.WIN_W,
             GLB.WIN_H,
-            true),
+            TextureWrap::CLAMP_TO_EDGE),
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
                              GL_COLOR_ATTACHMENT1,
                              GL_DEPTH_ATTACHMENT})
@@ -75,13 +77,15 @@ RenderPipeline::RenderPipeline()
     (
         "lbuffer",
         std::make_unique<Texture>(
-            std::vector<hash_t>{"screenTex"_h,    "brightTex"_h,           "ldepthStencilTex"_h},
-            std::vector<uint32_t> {GL_NEAREST,     GL_LINEAR_MIPMAP_LINEAR, GL_NONE},
-            std::vector<uint32_t> {GL_RGB16F,      GL_RGB,                  GL_DEPTH24_STENCIL8},
-            std::vector<uint32_t> {GL_RGB,         GL_RGB,                  GL_DEPTH_STENCIL},
-            GLB.WIN_W,           // brightTex will contain the bright map.
-            GLB.WIN_H,           // We use the multiple render target scheme
-            true,                // to populate this texture during the lighting pass.
+            std::vector<hash_t>{"screenTex"_h, "brightTex"_h, "ldepthStencilTex"_h},
+            std::vector<TextureFilter> {TextureFilter::MIN_NEAREST,
+                                        TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR),
+                                        TextureFilter::MIN_NEAREST},
+            std::vector<uint32_t> {GL_RGBA16F, GL_RGBA, GL_DEPTH24_STENCIL8},
+            std::vector<uint32_t> {GL_RGBA, GL_RGBA, GL_DEPTH_STENCIL},
+            GLB.WIN_W,                   // brightTex will contain the bright map.
+            GLB.WIN_H,                   // We use the multiple render target scheme
+            TextureWrap::CLAMP_TO_EDGE,  // to populate this texture during the lighting pass.
             true), // Lazy mipmap initialization needed
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
                              GL_COLOR_ATTACHMENT1,
@@ -94,12 +98,12 @@ RenderPipeline::RenderPipeline()
         "SSAObuffer",
         std::make_unique<Texture>(
             std::vector<hash_t>{"SSAOTex"_h},
-            std::vector<uint32_t>{GL_LINEAR},
+            std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
             std::vector<uint32_t>{GL_R8},
             std::vector<uint32_t>{GL_RED},
             GLB.WIN_W/2,
             GLB.WIN_H/2,
-            true),
+            TextureWrap::CLAMP_TO_EDGE),
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
     ));
 
@@ -109,12 +113,12 @@ RenderPipeline::RenderPipeline()
         "SSRbuffer",
         std::make_unique<Texture>(
             std::vector<hash_t>{"SSRTex"_h},
-            std::vector<uint32_t>{GL_LINEAR},
+            std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
             std::vector<uint32_t>{GL_RGBA16F},
             std::vector<uint32_t>{GL_RGBA},
             GLB.WIN_W/2,
             GLB.WIN_H/2,
-            true),
+            TextureWrap::CLAMP_TO_EDGE),
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
     ));
 

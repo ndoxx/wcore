@@ -146,7 +146,7 @@ void WatLoader::write(std::ostream& stream, const MaterialInfo& mat_info)
 
 void WatLoader::read_descriptor(std::istream& stream, MaterialDescriptor& descriptor)
 {
-    descriptor.is_wat = true;
+    descriptor.texture_descriptor.is_wat = true;
 
     WatHeaderWrapper header;
     read_header(stream, header);
@@ -161,7 +161,7 @@ void WatLoader::read_descriptor(std::istream& stream, MaterialDescriptor& descri
     bool has_block2 = (bool)header.h.has_block2;
     bool is_textured = has_block0 || has_block1 || has_block2;
     descriptor.is_textured = is_textured;
-    descriptor.texture_descriptor.units = header.h.unit_flags;
+    descriptor.texture_descriptor.unit_flags = header.h.unit_flags;
 
     // * Read uniform data
     math::i32vec4 u_albedo;
