@@ -16,38 +16,7 @@ static inline bool has_unit(uint16_t flags, TextureUnit unit)
     return (flags&(uint16_t)unit);
 }
 
-/*
-MaterialInfo::MaterialInfo(bool owns_data):
-block0_data(nullptr),
-block1_data(nullptr),
-block2_data(nullptr),
-unique_id(0),
-width(0),
-height(0),
-unit_flags(0),
-sampler_group(1),
-has_transparency(0),
-u_albedo(0),
-u_alpha(1),
-u_parallax_scale(0),
-u_metal(0),
-u_rough(1),
-owns_data_(owns_data)
-{
-
-}
-
-MaterialInfo::~MaterialInfo()
-{
-    if(owns_data_)
-    {
-        delete[] block0_data;
-        delete[] block1_data;
-        delete[] block2_data;
-    }
-}*/
-
-void WatLoader::read(std::istream& stream, MaterialDescriptor& descriptor)
+void WatLoader::read(std::istream& stream, MaterialDescriptor& descriptor, bool read_texture_data)
 {
     // * Read header
     WatHeaderWrapper header;
@@ -55,25 +24,20 @@ void WatLoader::read(std::istream& stream, MaterialDescriptor& descriptor)
     if(!header_sanity_check(header.h))
         return;
 
-    /*bool has_block0 = has_unit(header.h.unit_flags, TextureUnit::ALBEDO);
-    bool has_block1 = has_unit(header.h.unit_flags, TextureUnit::NORMAL)
-                   || has_unit(header.h.unit_flags, TextureUnit::DEPTH);
-    bool has_block2 = has_unit(header.h.unit_flags, TextureUnit::METALLIC)
-                   || has_unit(header.h.unit_flags, TextureUnit::AO)
-                   || has_unit(header.h.unit_flags, TextureUnit::ROUGHNESS);*/
-
     bool has_block0 = (bool)header.h.has_block0;
     bool has_block1 = (bool)header.h.has_block1;
     bool has_block2 = (bool)header.h.has_block2;
     bool is_textured = has_block0 || has_block1 || has_block2;
-    descriptor.is_textured = is_textured;
 
+    descriptor.texture_descriptor.owns_data   = read_texture_data;
+    descriptor.texture_descriptor.is_wat      = true;
     descriptor.texture_descriptor.unit_flags  = header.h.unit_flags;
     descriptor.texture_descriptor.width       = header.h.width;
     descriptor.texture_descriptor.height      = header.h.height;
     descriptor.texture_descriptor.resource_id = header.h.unique_id;
-    descriptor.parallax_height_scale = header.h.parallax_height_scale;
-    descriptor.has_transparency      = bool(header.h.has_transparency);
+    descriptor.parallax_height_scale          = header.h.parallax_height_scale;
+    descriptor.has_transparency               = bool(header.h.has_transparency);
+    descriptor.is_textured                    = is_textured;
 
     // * Read uniform data
     stream.read(reinterpret_cast<char*>(&descriptor.albedo), 3*sizeof(float));
@@ -82,22 +46,46 @@ void WatLoader::read(std::istream& stream, MaterialDescriptor& descriptor)
     stream.read(reinterpret_cast<char*>(&descriptor.transparency), sizeof(float));
 
     // * Read texture data
-    size_t block_size = size_t(header.h.width) * size_t(header.h.height) * 4;
+    if(read_texture_data)
+    {
+        size_t block_size = size_t(header.h.width) * size_t(header.h.height) * 4;
 
-    if(has_block0)
-    {
-        descriptor.texture_descriptor.block0_data = new unsigned char[block_size];
-        stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block0_data), block_size);
+        if(has_block0)
+        {
+            descriptor.texture_descriptor.block0_data = new unsigned char[block_size];
+            stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block0_data), block_size);
+        }
+        if(has_block1)
+        {
+            descriptor.texture_descriptor.block1_data = new unsigned char[block_size];
+            stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block1_data), block_size);
+        }
+        if(has_block2)
+        {
+            descriptor.texture_descriptor.block2_data = new unsigned char[block_size];
+            stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block2_data), block_size);
+        }
     }
-    if(has_block1)
+    else
     {
-        descriptor.texture_descriptor.block1_data = new unsigned char[block_size];
-        stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block1_data), block_size);
-    }
-    if(has_block2)
-    {
-        descriptor.texture_descriptor.block2_data = new unsigned char[block_size];
-        stream.read(reinterpret_cast<char*>(descriptor.texture_descriptor.block2_data), block_size);
+        bool has_normal = has_unit(header.h.unit_flags, TextureUnit::NORMAL);
+        bool has_depth  = has_unit(header.h.unit_flags, TextureUnit::DEPTH);
+
+        DLOGI("Unique id:  <v>" + std::to_string(header.h.unique_id) + "</v>",               "material");
+        DLOGI("Min filter: <v>" + std::to_string(header.h.min_filter) + "</v>",              "material");
+        DLOGI("Mag filter: <v>" + std::to_string(header.h.mag_filter) + "</v>",              "material");
+        DLOGI("Address U:  <v>" + std::to_string(header.h.address_U) + "</v>",               "material");
+        DLOGI("Address V:  <v>" + std::to_string(header.h.address_V) + "</v>",               "material");
+        DLOGI("Width:      <v>" + std::to_string(header.h.width) + "</v>",                   "material");
+        DLOGI("Height:     <v>" + std::to_string(header.h.height) + "</v>",                  "material");
+        DLOGI("Units:      <v>" + std::bitset<16>(header.h.unit_flags).to_string() + "</v>", "material");
+        DLOGI("Has Block0: <v>" + std::to_string(bool(header.h.has_block0)) + "</v>",        "material");
+        DLOGI("Has Block1: <v>" + std::to_string(bool(header.h.has_block1)) + "</v>",        "material");
+        DLOGI("Has Block2: <v>" + std::to_string(bool(header.h.has_block2)) + "</v>",        "material");
+        DLOGI("Has alpha:  <v>" + std::to_string(bool(header.h.has_transparency)) + "</v>",  "material");
+        DLOGI("Normal map: " + (has_normal?std::string("<g>yes</g>"):"<b>no</b>"),           "material");
+        DLOGI("Depth map:  " + (has_depth?std::string("<g>yes</g>"):"<b>no</b>"),            "material");
+        DLOGI("Parallax:   <v>" + std::to_string(header.h.parallax_height_scale) + "</v>",   "material");
     }
 }
 
@@ -149,56 +137,6 @@ void WatLoader::write(std::ostream& stream, const MaterialDescriptor& descriptor
         stream.write(reinterpret_cast<const char*>(descriptor.texture_descriptor.block1_data), block_size);
     if(has_block2)
         stream.write(reinterpret_cast<const char*>(descriptor.texture_descriptor.block2_data), block_size);
-}
-
-void WatLoader::read_descriptor(std::istream& stream, MaterialDescriptor& descriptor)
-{
-    descriptor.texture_descriptor.is_wat = true;
-
-    WatHeaderWrapper header;
-    read_header(stream, header);
-    if(!header_sanity_check(header.h))
-        return;
-
-    descriptor.has_transparency = header.h.has_transparency;
-    descriptor.parallax_height_scale = header.h.parallax_height_scale;
-
-    bool has_block0 = (bool)header.h.has_block0;
-    bool has_block1 = (bool)header.h.has_block1;
-    bool has_block2 = (bool)header.h.has_block2;
-    bool is_textured = has_block0 || has_block1 || has_block2;
-    descriptor.is_textured = is_textured;
-    descriptor.texture_descriptor.unit_flags = header.h.unit_flags;
-
-    // * Read uniform data
-    //math::i32vec4 u_albedo;
-    stream.read(reinterpret_cast<char*>(&descriptor.albedo), 3*sizeof(float));
-    stream.read(reinterpret_cast<char*>(&descriptor.metallic), sizeof(float));
-    stream.read(reinterpret_cast<char*>(&descriptor.roughness), sizeof(float));
-    stream.read(reinterpret_cast<char*>(&descriptor.transparency), sizeof(float));
-
-    /*descriptor.albedo = math::vec3(u_albedo.x() / 255.f,
-                                   u_albedo.y() / 255.f,
-                                   u_albedo.z() / 255.f);*/
-
-    bool has_normal = has_unit(header.h.unit_flags, TextureUnit::NORMAL);
-    bool has_depth  = has_unit(header.h.unit_flags, TextureUnit::DEPTH);
-
-    DLOGI("Unique id:  <v>" + std::to_string(header.h.unique_id) + "</v>",               "material");
-    DLOGI("Min filter: <v>" + std::to_string(header.h.min_filter) + "</v>",              "material");
-    DLOGI("Mag filter: <v>" + std::to_string(header.h.mag_filter) + "</v>",              "material");
-    DLOGI("Address U:  <v>" + std::to_string(header.h.address_U) + "</v>",               "material");
-    DLOGI("Address V:  <v>" + std::to_string(header.h.address_V) + "</v>",               "material");
-    DLOGI("Width:      <v>" + std::to_string(header.h.width) + "</v>",                   "material");
-    DLOGI("Height:     <v>" + std::to_string(header.h.height) + "</v>",                  "material");
-    DLOGI("Units:      <v>" + std::bitset<16>(header.h.unit_flags).to_string() + "</v>", "material");
-    DLOGI("Has Block0: <v>" + std::to_string(bool(header.h.has_block0)) + "</v>",        "material");
-    DLOGI("Has Block1: <v>" + std::to_string(bool(header.h.has_block1)) + "</v>",        "material");
-    DLOGI("Has Block2: <v>" + std::to_string(bool(header.h.has_block2)) + "</v>",        "material");
-    DLOGI("Has alpha:  <v>" + std::to_string(bool(header.h.has_transparency)) + "</v>",  "material");
-    DLOGI("Normal map: " + (has_normal?std::string("<g>yes</g>"):"<b>no</b>"),              "material");
-    DLOGI("Depth map:  " + (has_depth?std::string("<g>yes</g>"):"<b>no</b>"),               "material");
-    DLOGI("Parallax:   <v>" + std::to_string(header.h.parallax_height_scale) + "</v>",   "material");
 }
 
 void WatLoader::read_header(std::istream& stream, WatHeaderWrapper& header)

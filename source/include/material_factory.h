@@ -16,6 +16,7 @@ class Material;
 class Texture;
 class Cubemap;
 class WatLoader;
+class PngLoader;
 class MaterialFactory
 {
 private:
@@ -66,6 +67,7 @@ public:
 
 private:
     WatLoader* wat_loader_;
+    PngLoader* png_loader_;
 };
 
 }

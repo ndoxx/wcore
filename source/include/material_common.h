@@ -86,6 +86,7 @@ struct TextureDescriptor
 
     inline bool has_unit(TextureUnit unit) const { return (unit_flags&(uint16_t)unit); }
     inline void add_unit(TextureUnit unit)       { unit_flags |= (uint16_t)unit; }
+    void release_data();
 };
 
 struct MaterialDescriptor

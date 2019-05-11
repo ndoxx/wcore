@@ -5,6 +5,8 @@
 #include "texture.h"
 #include "cubemap.h"
 #include "wat_loader.h"
+#include "png_loader.h"
+#include "pixel_buffer.h"
 #include "colors.h"
 #include "logger.h"
 #include "file_system.h"
@@ -23,7 +25,8 @@ std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
 };
 
 MaterialFactory::MaterialFactory(const char* xml_file):
-wat_loader_(new WatLoader())
+wat_loader_(new WatLoader()),
+png_loader_(new PngLoader())
 {
     auto pstream = FILESYSTEM.get_file_as_stream(xml_file, "root.folders.level"_h, "pack0"_h);
     if(pstream == nullptr)
@@ -37,7 +40,8 @@ wat_loader_(new WatLoader())
 }
 
 MaterialFactory::MaterialFactory():
-wat_loader_(new WatLoader())
+wat_loader_(new WatLoader()),
+png_loader_(new PngLoader())
 {
 
 }
@@ -45,8 +49,7 @@ wat_loader_(new WatLoader())
 MaterialFactory::~MaterialFactory()
 {
     delete wat_loader_;
-    /*for(auto&& [key, mat_ptr]: cache_)
-        delete mat_ptr;*/
+    delete png_loader_;
 }
 
 #ifdef __DEBUG__
@@ -158,7 +161,8 @@ void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* mater
                 }
                 DLOGN("[MaterialFactory] reading descriptor for <h>Watfile</h>: ", "material");
                 DLOGI("<p>" + wat_location + "</p>", "material");
-                wat_loader_->read_descriptor(*pstream, descriptor);
+                // Read descriptor but omit texture data
+                wat_loader_->read(*pstream, descriptor, false);
                 descriptor.texture_descriptor.wat_location = wat_location;
             }
             else
@@ -212,6 +216,8 @@ Material* MaterialFactory::make_material(hash_t asset_name, uint8_t sampler_grou
     return make_material(descriptor);
 }
 
+static std::vector<PixelBuffer*> PX_BUFS;
+
 Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
 {
     // Cache lookup
@@ -229,6 +235,7 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
         std::shared_ptr<Texture> ptex = nullptr;
         if(descriptor.is_textured)
         {
+            // Load texture from Watfile
             if(descriptor.texture_descriptor.is_wat)
             {
                 auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.wat_location.c_str(), "root.folders.texture"_h, "pack0"_h);
@@ -238,18 +245,43 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
                     DLOGI("<p>" + std::string(descriptor.texture_descriptor.wat_location) + "</p>", "material");
                     fatal();
                 }
-                MaterialDescriptor mat_info;
-                mat_info.texture_descriptor.owns_data = true;
-                mat_info.texture_descriptor.is_wat = true;
-                wat_loader_->read(*pstream, mat_info);
-                mat_info.texture_descriptor.sampler_group = descriptor.texture_descriptor.sampler_group;
-                ptex = std::make_shared<Texture>(mat_info.texture_descriptor);
+                // Read texture data
+                wat_loader_->read(*pstream, descriptor, true);
             }
+            // Load texture from multiple PNG files
             else
             {
-                // Generate texture from png files
-                ptex = std::make_shared<Texture>(descriptor.texture_descriptor);
+                if(descriptor.texture_descriptor.has_unit(TextureUnit::BLOCK0))
+                {
+                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureUnit::BLOCK0).c_str(), "root.folders.texture"_h, "pack0"_h);
+                    PixelBuffer* px_buf = png_loader_->load_png(*pstream);
+                    descriptor.texture_descriptor.block0_data = px_buf->get_data_pointer();
+                    descriptor.texture_descriptor.width  = px_buf->get_width();
+                    descriptor.texture_descriptor.height = px_buf->get_height();
+                    PX_BUFS.push_back(px_buf);
+                }
+                if(descriptor.texture_descriptor.has_unit(TextureUnit::BLOCK1))
+                {
+                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureUnit::BLOCK1).c_str(), "root.folders.texture"_h, "pack0"_h);
+                    PixelBuffer* px_buf = png_loader_->load_png(*pstream);
+                    descriptor.texture_descriptor.block1_data = px_buf->get_data_pointer();
+                    PX_BUFS.push_back(px_buf);
+                }
+                if(descriptor.texture_descriptor.has_unit(TextureUnit::BLOCK2))
+                {
+                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureUnit::BLOCK2).c_str(), "root.folders.texture"_h, "pack0"_h);
+                    PixelBuffer* px_buf = png_loader_->load_png(*pstream);
+                    descriptor.texture_descriptor.block2_data = px_buf->get_data_pointer();
+                    PX_BUFS.push_back(px_buf);
+                }
             }
+            // Generate texture
+            ptex = std::make_shared<Texture>(descriptor.texture_descriptor);
+            // Free memory
+            descriptor.texture_descriptor.release_data();
+            for(auto* px_buf: PX_BUFS)
+                delete px_buf;
+            PX_BUFS.clear();
             // Cache texture
             texture_cache_.insert(std::pair(descriptor.texture_descriptor.resource_id, ptex));
         }

@@ -264,12 +264,6 @@ void PreviewGLWidget::handle_z_changed(double newvalue)
 
 void PreviewGLWidget::handle_material_swap(EditorModel* edmodel)
 {
-    /*const wcore::MaterialDescriptor descriptor = edmodel->get_current_material_descriptor();
-    if(edmodel->validate_descriptor(descriptor))
-    {
-        new_material_ = new Material(descriptor);
-    }*/
-
     // Locate watfile and check existence
     QString watfilename(edmodel->get_current_texture_name());
     watfilename += ".wat";
@@ -283,19 +277,10 @@ void PreviewGLWidget::handle_material_swap(EditorModel* edmodel)
         wcore::WatLoader wat_loader;
         std::ifstream ifs(filepath.toStdString(), std::ios::in | std::ios::binary);
         wcore::MaterialDescriptor descriptor;
-        //wat_loader.read_descriptor(ifs, descriptor);
-        descriptor.texture_descriptor.wat_location = watfilename.toStdString();
-        descriptor.texture_descriptor.owns_data = true;
-        descriptor.texture_descriptor.is_wat = true;
-
-        // Rewind and read material data
-        //ifs.seekg(0, ifs.beg);
-        //wcore::MaterialInfo mat_info(true); // true: struct owns pointers to data
-        wat_loader.read(ifs, descriptor);
+        wat_loader.read(ifs, descriptor, true);
+        descriptor.texture_descriptor.wat_location  = watfilename.toStdString();
         descriptor.texture_descriptor.sampler_group = 1;
-        auto ptex = std::make_shared<wcore::Texture>(descriptor.texture_descriptor);
-
-        new_material_ = new Material(descriptor, ptex);
+        new_material_ = new Material(descriptor);
     }
 }
 

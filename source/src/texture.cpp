@@ -12,7 +12,6 @@
 #include "config.h"
 #include "file_system.h"
 #include "error.h"
-#include "wat_loader.h"
 #include "png_loader.h"
 
 namespace wcore
@@ -54,21 +53,6 @@ static PngLoader PNG_LOADER;
 
 static bool handle_filter(TextureFilter filter, GLenum target)
 {
-    /*bool has_mipmap = (filter == GL_NEAREST_MIPMAP_NEAREST ||
-                       filter == GL_NEAREST_MIPMAP_LINEAR ||
-                       filter == GL_LINEAR_MIPMAP_NEAREST ||
-                       filter == GL_LINEAR_MIPMAP_LINEAR);
-
-    // Set filter
-    if(filter != GL_NONE)
-    {
-        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, filter);
-        if(!has_mipmap)
-            glTexParameterf(target, GL_TEXTURE_MAG_FILTER, filter);
-        else
-            glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }*/
-
     bool has_mipmap = (filter & TextureFilter::MIN_NEAREST_MIPMAP_NEAREST)
                    || (filter & TextureFilter::MIN_LINEAR_MIPMAP_NEAREST)
                    || (filter & TextureFilter::MIN_NEAREST_MIPMAP_LINEAR)
@@ -167,13 +151,13 @@ Texture::Texture(const TextureDescriptor& descriptor)
 #ifdef __DEBUG__
     std::stringstream ss;
     if(descriptor.is_wat)
-        ss << "[Texture] New texture from Watfile: <n>" << HRESOLVE(descriptor.resource_id) << "</n>";
+        ss << "[Texture] New texture from <h>Watfile</h>: <n>" << HRESOLVE(descriptor.resource_id) << "</n>";
     else
-        ss << "[Texture] New texture from asset: <n>" << HRESOLVE(descriptor.resource_id) << "</n>";
+        ss << "[Texture] New texture from <h>XML</h>: <n>" << HRESOLVE(descriptor.resource_id) << "</n>";
     DLOGN(ss.str(), "texture");
 #endif
 
-    // Textures from watfiles use blocks
+    // Texture data blocks
     std::vector<unsigned char*> data_ptrs =
     {
         descriptor.block0_data,
@@ -181,18 +165,16 @@ Texture::Texture(const TextureDescriptor& descriptor)
         descriptor.block2_data
     };
 
-    // Load data
+    sampler_group_ = descriptor.sampler_group;
+    unit_flags_    = descriptor.unit_flags;
+
+    // Containers to be submitted to OpenGL
     std::vector<TextureFilter> filters;
     std::vector<GLenum> formats;
     std::vector<GLenum> internalFormats;
     std::vector<unsigned char*> data;
     uint32_t width  = 0;
     uint32_t height = 0;
-
-    std::vector<PixelBuffer*> px_bufs;
-
-    sampler_group_ = descriptor.sampler_group;
-    unit_flags_    = descriptor.unit_flags;
 
     uint32_t ii=0;
     for(auto&& [key, sampler_name]: SAMPLER_NAMES[sampler_group_-1])
@@ -203,46 +185,17 @@ Texture::Texture(const TextureDescriptor& descriptor)
             unit_indices_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
             uniform_sampler_names_.push_back(sampler_name);
 
+            data.push_back(data_ptrs[ii]);
             filters.push_back(descriptor.parameters.filter);
             formats.push_back(descriptor.parameters.format);
             internalFormats.push_back(fix_internal_format(descriptor.parameters.internal_format, sampler_name));
-
-            if(descriptor.is_wat)
-            {
-                data.push_back(data_ptrs[ii]);
-                width = descriptor.width;
-                height = descriptor.height;
-            }
-            else
-            {
-                // Load from PNG
-                auto stream = FILESYSTEM.get_file_as_stream(descriptor.locations.at(key).c_str(), "root.folders.texture"_h, "pack0"_h);
-                PixelBuffer* px_buf = PNG_LOADER.load_png(*stream);
-                px_bufs.push_back(px_buf);
-                if(px_buf)
-                {
-                    if(ii==0)
-                    {
-                        width  = px_buf->get_width();
-                        height = px_buf->get_height();
-                    }
-                    data.push_back(px_buf->get_data_pointer());
-#ifdef __DEBUG__
-                    DLOGN("[PixelBuffer] <z>[" + std::to_string(ii) + "]</z>", "texture");
-                    if(dbg::LOG.get_channel_verbosity("texture"_h) == 3u)
-                        px_buf->debug_display();
-#endif
-                }
-                else
-                {
-                    DLOGF("[Texture] Unable to load Texture.", "texture");
-                    fatal();
-                }
-            }
+            width = descriptor.width;
+            height = descriptor.height;
         }
         ++ii;
     }
 
+    // Send to OpenGL
     n_units_ = data.size();
     generate_texture_units(n_units_,
                            width,
@@ -253,66 +206,8 @@ Texture::Texture(const TextureDescriptor& descriptor)
                            filters,
                            descriptor.parameters.wrap,
                            false);
-
-    for(auto* px_buf: px_bufs)
-        delete px_buf;
 }
-/*
-Texture::Texture(const MaterialInfo& mat_info)
-{
-#ifdef __DEBUG__
-    {
-        std::stringstream ss;
-        ss << "[Texture] New texture from Watfile: <n>" << HRESOLVE(mat_info.unique_id) << "</n>";
-        DLOGN(ss.str(), "texture");
-    }
-#endif
 
-    // Textures from watfiles use blocks
-    std::vector<unsigned char*> data_ptrs =
-    {
-        mat_info.block0_data,
-        mat_info.block1_data,
-        mat_info.block2_data
-    };
-
-    sampler_group_ = mat_info.sampler_group;
-    unit_flags_ = mat_info.unit_flags;
-
-    std::vector<TextureFilter> filters;
-    std::vector<GLenum> formats;
-    std::vector<GLenum> internalFormats;
-    std::vector<unsigned char*> data;
-
-    uint32_t ii = 0;
-
-    for(auto&& [key, sampler_name]: SAMPLER_NAMES[sampler_group_-1])
-    {
-        if(mat_info.has_unit(key))
-        {
-            // Register a sampler name for each unit
-            unit_indices_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
-            uniform_sampler_names_.push_back(sampler_name);
-
-            filters.push_back(TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR)); // TMP
-            formats.push_back(GL_RGBA);
-            internalFormats.push_back(fix_internal_format(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, sampler_name));
-            data.push_back(data_ptrs[ii]);
-        }
-        ++ii;
-    }
-
-    generate_texture_units(data.size(),
-                           mat_info.width,
-                           mat_info.height,
-                           &data[0],
-                           &internalFormats[0],
-                           &formats[0],
-                           filters,
-                           TextureWrap::REPEAT, // TMP
-                           false);
-}
-*/
 Texture::Texture(std::istream& stream):
 unit_flags_(0),
 sampler_group_(1)

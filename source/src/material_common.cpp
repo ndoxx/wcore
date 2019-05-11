@@ -35,11 +35,17 @@ block2_data(nullptr)
 
 TextureDescriptor::~TextureDescriptor()
 {
+    release_data();
+}
+
+void TextureDescriptor::release_data()
+{
     if(owns_data)
     {
         delete[] block0_data;
         delete[] block1_data;
         delete[] block2_data;
+        owns_data = false;
     }
 }
 
