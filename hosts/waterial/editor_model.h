@@ -193,10 +193,6 @@ public:
 
     void traverse_entries(std::function<bool(TextureEntry&)> func);
 
-    // Get engine material descriptor for current material
-    wcore::MaterialDescriptor get_current_material_descriptor();
-    bool validate_descriptor(const wcore::MaterialDescriptor& descriptor);
-
     void update_thumbnail_proxy(QModelIndex index, const QString& path);
 
 protected:

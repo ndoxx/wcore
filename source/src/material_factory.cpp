@@ -17,11 +17,11 @@ namespace wcore
 
 using namespace rapidxml;
 
-std::map<TextureUnit, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
+std::map<TextureBlock, const char*> MaterialFactory::TEX_SAMPLERS_NODES =
 {
-    {TextureUnit::BLOCK0, "Block0"},
-    {TextureUnit::BLOCK1, "Block1"},
-    {TextureUnit::BLOCK2, "Block2"}
+    {TextureBlock::BLOCK0, "Block0"},
+    {TextureBlock::BLOCK1, "Block1"},
+    {TextureBlock::BLOCK2, "Block2"}
 };
 
 MaterialFactory::MaterialFactory(const char* xml_file):
@@ -53,55 +53,6 @@ MaterialFactory::~MaterialFactory()
 }
 
 #ifdef __DEBUG__
-std::ostream& operator<< (std::ostream& stream, const MaterialDescriptor& desc)
-{
-    TextureDescriptor::TexMap::const_iterator it;
-
-    stream << "Albedo: ";
-    if((it = desc.texture_descriptor.locations.find(TextureUnit::ALBEDO)) != desc.texture_descriptor.locations.end())
-        stream << it->second << std::endl;
-    else
-        stream <<  desc.albedo << std::endl;
-
-    stream << "Metallic: ";
-    if((it = desc.texture_descriptor.locations.find(TextureUnit::METALLIC)) != desc.texture_descriptor.locations.end())
-        stream << it->second << std::endl;
-    else
-        stream <<  desc.metallic << std::endl;
-
-    stream << "Roughness: ";
-    if((it = desc.texture_descriptor.locations.find(TextureUnit::ROUGHNESS)) != desc.texture_descriptor.locations.end())
-        stream << it->second << std::endl;
-    else
-        stream <<  desc.roughness << std::endl;
-
-    if((it = desc.texture_descriptor.locations.find(TextureUnit::AO)) != desc.texture_descriptor.locations.end())
-    {
-        stream << "Ambient Occlusion: " << it->second << std::endl;
-    }
-
-    if((it = desc.texture_descriptor.locations.find(TextureUnit::NORMAL)) != desc.texture_descriptor.locations.end())
-    {
-        stream << "Normal map: " << it->second << std::endl;
-        if(!desc.enable_normal_mapping)
-            stream << "Normal map disabled." << std::endl;
-    }
-
-    if((it = desc.texture_descriptor.locations.find(TextureUnit::DEPTH)) != desc.texture_descriptor.locations.end())
-    {
-        stream << "Depth: " << it->second << " & Parallax height scale: " << desc.parallax_height_scale << std::endl;
-        if(!desc.enable_parallax_mapping)
-            stream << "Parallax map disabled." << std::endl;
-    }
-
-    if(desc.has_transparency)
-        stream << "Transparency: " << desc.transparency << std::endl;
-
-
-    return stream;
-}
-
-
 const MaterialDescriptor& MaterialFactory::get_material_descriptor(hash_t asset_name)
 {
     auto it = material_descriptors_.find(asset_name);
@@ -123,7 +74,6 @@ const CubemapDescriptor& MaterialFactory::get_cubemap_descriptor(hash_t asset_na
 
     return it->second;
 }
-
 #endif
 
 void MaterialFactory::retrieve_material_descriptions(rapidxml::xml_node<>* materials_node)
@@ -251,25 +201,25 @@ Material* MaterialFactory::make_material(MaterialDescriptor& descriptor)
             // Load texture from multiple PNG files
             else
             {
-                if(descriptor.texture_descriptor.has_unit(TextureUnit::BLOCK0))
+                if(descriptor.texture_descriptor.has_block(TextureBlock::BLOCK0))
                 {
-                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureUnit::BLOCK0).c_str(), "root.folders.texture"_h, "pack0"_h);
+                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureBlock::BLOCK0).c_str(), "root.folders.texture"_h, "pack0"_h);
                     PixelBuffer* px_buf = png_loader_->load_png(*pstream);
                     descriptor.texture_descriptor.block0_data = px_buf->get_data_pointer();
                     descriptor.texture_descriptor.width  = px_buf->get_width();
                     descriptor.texture_descriptor.height = px_buf->get_height();
                     PX_BUFS.push_back(px_buf);
                 }
-                if(descriptor.texture_descriptor.has_unit(TextureUnit::BLOCK1))
+                if(descriptor.texture_descriptor.has_block(TextureBlock::BLOCK1))
                 {
-                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureUnit::BLOCK1).c_str(), "root.folders.texture"_h, "pack0"_h);
+                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureBlock::BLOCK1).c_str(), "root.folders.texture"_h, "pack0"_h);
                     PixelBuffer* px_buf = png_loader_->load_png(*pstream);
                     descriptor.texture_descriptor.block1_data = px_buf->get_data_pointer();
                     PX_BUFS.push_back(px_buf);
                 }
-                if(descriptor.texture_descriptor.has_unit(TextureUnit::BLOCK2))
+                if(descriptor.texture_descriptor.has_block(TextureBlock::BLOCK2))
                 {
-                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureUnit::BLOCK2).c_str(), "root.folders.texture"_h, "pack0"_h);
+                    auto pstream = FILESYSTEM.get_file_as_stream(descriptor.texture_descriptor.locations.at(TextureBlock::BLOCK2).c_str(), "root.folders.texture"_h, "pack0"_h);
                     PixelBuffer* px_buf = png_loader_->load_png(*pstream);
                     descriptor.texture_descriptor.block2_data = px_buf->get_data_pointer();
                     PX_BUFS.push_back(px_buf);
@@ -376,12 +326,12 @@ void MaterialFactory::parse_material_descriptor(rapidxml::xml_node<>* node,
         }
         // Register texture block locations
         std::string texture_map;
-        for(auto&& [unit, node_name]: TEX_SAMPLERS_NODES)
+        for(auto&& [block, node_name]: TEX_SAMPLERS_NODES)
         {
             if(xml::parse_node(tex_node, node_name, texture_map))
             {
-                descriptor.texture_descriptor.locations[unit] = texture_map;
-                descriptor.texture_descriptor.add_unit(unit);
+                descriptor.texture_descriptor.locations[block] = texture_map;
+                //descriptor.texture_descriptor.add_unit(block);
                 descriptor.is_textured = true;
             }
         }

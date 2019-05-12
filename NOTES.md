@@ -7970,6 +7970,7 @@ Waterial a été modifié pour pouvoir exporter les matériaux sous ce format. T
 ## Watfile support refactor
 J'ai fait de grosses simplifications. L'ancienne structure _MaterialInfo_ faisait pour l'essentiel doublon avec _MaterialDescriptor_. C'était voulu au départ, afin de forcer une séparation du traitement. J'ai viré _MaterialInfo_ et augmenté _MaterialDescriptor_ et _TextureDescriptor_ afin d'y inclure les données essentielles au traitement des Watfiles. On peut maintenant utiliser la même structure pour gérer des Watfiles ou des matériaux XML.
 _MaterialFactory_ est chargée de sélectionner le bon loader (_WatLoader_ ou _PngLoader_) en fonction de l'origine des données, lors du chargement des textures. Elle alloue les buffers nécessaires et initialise des pointeurs de données dans le _TextureDescriptor_. _Texture_ n'a que faire de l'origine des données et se sert simplement des pointeurs contenus dans le descripteur.
+_WatLoader_ n'a plus de méthode read_descriptor(), juste une méthode read(3) qui prend en argument supplémentaire un booléen qui décide si les données de texture doivent être chargées ou non. L'idée est qu'on peut éviter de charger les données de texture tant qu'on n'en a pas besoin.
 
 
 ## BUGS

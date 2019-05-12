@@ -751,7 +751,7 @@ bool Shader::send_uniforms<Material>(const Material& material) const
 
     if(has_albedo)
     {
-        material.get_texture().bind_sampler(*this, TextureUnit::BLOCK0);
+        material.get_texture().bind_sampler(*this, TextureBlock::BLOCK0);
     }
     else
         send_uniform("mt.v3_albedo"_h, material.get_albedo());
@@ -759,7 +759,7 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     // Block 1 -> Normal & Depth
     if(has_normal || has_depth)
     {
-        material.get_texture().bind_sampler(*this, TextureUnit::BLOCK1);
+        material.get_texture().bind_sampler(*this, TextureBlock::BLOCK1);
     }
     if(has_depth)
         send_uniform("mt.f_parallax_height_scale"_h, material.get_parallax_height_scale());
@@ -767,7 +767,7 @@ bool Shader::send_uniforms<Material>(const Material& material) const
     // Block 2 -> Metallic, AO & Roughness
     if(has_metallic || has_ao || has_roughness)
     {
-        material.get_texture().bind_sampler(*this, TextureUnit::BLOCK2);
+        material.get_texture().bind_sampler(*this, TextureBlock::BLOCK2);
     }
     if(!has_metallic)
         send_uniform("mt.f_metallic"_h, material.get_metallic());

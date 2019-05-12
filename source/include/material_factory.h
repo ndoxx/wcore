@@ -27,7 +27,7 @@ private:
     MaterialMap material_descriptors_;
     CubemapsMap cubemap_descriptors_;
     std::map<hash_t, Material*> cache_;
-    static std::map<TextureUnit, const char*> TEX_SAMPLERS_NODES;
+    static std::map<TextureBlock, const char*> TEX_SAMPLERS_NODES;
 
     std::map<hash_t, std::shared_ptr<Texture>> texture_cache_;
 

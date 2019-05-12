@@ -12,6 +12,7 @@
 #include "xml_parser.h"
 #include "xml_utils.hpp"
 #include "material_common.h"
+#include "config.h"
 
 #include "vendor/rapidxml/rapidxml_print.hpp"
 
@@ -131,6 +132,11 @@ TextureEntry::~TextureEntry()
 
 hash_t TextureEntry::parse_node(xml_node<>* mat_node)
 {
+    // Get work directory from config so as to import absolute paths
+    fs::path matswork;
+    wcore::CONFIG.get("root.folders.matswork"_h, matswork);
+    QDir workdir(QString::fromStdString(matswork.string()));
+
     // Parse entry name
     std::string entryname;
     xml::parse_attribute(mat_node, "name", entryname);
@@ -153,12 +159,12 @@ hash_t TextureEntry::parse_node(xml_node<>* mat_node)
             if(xml::parse_node(texmap_node, "Source", texmap_path))
             {
                 texture_maps[index]->has_image = true;
-                texture_maps[index]->source_path = QString::fromStdString(texmap_path);
+                texture_maps[index]->source_path = workdir.absoluteFilePath(QString::fromStdString(texmap_path));
             }
             if(xml::parse_node(texmap_node, "Tweak", tweak_path))
             {
                 texture_maps[index]->has_tweak = true;
-                texture_maps[index]->tweak_path = QString::fromStdString(tweak_path);
+                texture_maps[index]->tweak_path = workdir.absoluteFilePath(QString::fromStdString(tweak_path));
             }
             // Parse common per-map properties
             xml::parse_node(texmap_node, "TextureMapEnabled", texture_maps[index]->use_image);
@@ -186,6 +192,11 @@ static void node_set_value(xml_document<>& doc, xml_node<>* node, const char* va
 
 void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materials_node)
 {
+    // Get work directory from config so as to export paths relative to it
+    fs::path matswork;
+    wcore::CONFIG.get("root.folders.matswork"_h, matswork);
+    QDir workdir(QString::fromStdString(matswork.string()));
+
     // Material node with name attribute
     xml_node<>* mat_node = doc.allocate_node(node_element, "Material");
     node_add_attribute(doc, mat_node, "name", name.toUtf8().constData());
@@ -200,14 +211,19 @@ void TextureEntry::write_node(rapidxml::xml_document<>& doc, xml_node<>* materia
         node_add_attribute(doc, tex_node, "name", texmap_names[ii].c_str());
         if(texture_maps[ii]->has_image)
         {
+            // File path relative to work directory
+            QString rel_source_path(workdir.relativeFilePath(texture_maps[ii]->source_path));
+
             xml_node<>* path_node = doc.allocate_node(node_element, "Source");
-            node_set_value(doc, path_node, texture_maps[ii]->source_path.toUtf8().constData());
+            node_set_value(doc, path_node, rel_source_path.toUtf8().constData());
             tex_node->append_node(path_node);
 
             if(texture_maps[ii]->has_tweak)
             {
+                QString rel_tweak_path(workdir.relativeFilePath(texture_maps[ii]->tweak_path));
+
                 xml_node<>* tweak_node = doc.allocate_node(node_element, "Tweak");
-                node_set_value(doc, tweak_node, texture_maps[ii]->tweak_path.toUtf8().constData());
+                node_set_value(doc, tweak_node, rel_tweak_path.toUtf8().constData());
                 tex_node->append_node(tweak_node);
             }
         }
@@ -675,117 +691,6 @@ void EditorModel::traverse_entries(std::function<bool(TextureEntry&)> func)
     for(auto&& [key, entry]: texture_descriptors_)
         if(!func(entry))
             break;
-}
-
-/*
-    [   Block0   ]  [     Block1   ]  [     Block2       ]
-    [[R][G][B][A]]  [[R][G][B]  [A]]  [[R]  [G] [B]   [A]]
-      Albedo           Normal  Depth  Metal AO  Rough  ?
-*/
-
-wcore::MaterialDescriptor EditorModel::get_current_material_descriptor()
-{
-    TextureEntry& entry = get_current_texture_entry();
-
-    MaterialDescriptor desc;
-    // Leave desc.texture_descriptor.resource_id blank
-    // so that texture is never cached
-
-    // BLOCK0 -> ALBEDO
-    AlbedoMap* albedo_map = static_cast<AlbedoMap*>(entry.texture_maps[ALBEDO]);
-    if(albedo_map->has_image && albedo_map->use_image)
-    {
-        desc.texture_descriptor.add_unit(TextureUnit::ALBEDO);
-        desc.texture_descriptor.add_unit(TextureUnit::BLOCK0);
-        desc.texture_descriptor.locations[TextureUnit::BLOCK0] = current_texname_.toStdString() + "_block0.png";
-        desc.is_textured = true;
-    }
-    else
-    {
-        math::vec4 albedo(albedo_map->u_albedo.x()/255.f,
-                          albedo_map->u_albedo.y()/255.f,
-                          albedo_map->u_albedo.z()/255.f,
-                          1.f);
-        desc.albedo = albedo;
-    }
-
-    // BLOCK1 -> NORMAL / DEPTH
-    NormalMap* normal_map = static_cast<NormalMap*>(entry.texture_maps[NORMAL]);
-    DepthMap* depth_map   = static_cast<DepthMap*>(entry.texture_maps[DEPTH]);
-    bool has_block1 = false;
-    if(normal_map->has_image && normal_map->use_image)
-    {
-        desc.texture_descriptor.add_unit(TextureUnit::NORMAL);
-        has_block1 = true;
-    }
-    if(depth_map->has_image && depth_map->use_image)
-    {
-        desc.texture_descriptor.add_unit(TextureUnit::DEPTH);
-        desc.parallax_height_scale = depth_map->u_parallax_scale;
-        has_block1 = true;
-    }
-    if(has_block1)
-    {
-        desc.is_textured = true;
-        desc.texture_descriptor.add_unit(TextureUnit::BLOCK1);
-        desc.texture_descriptor.locations[TextureUnit::BLOCK1] = current_texname_.toStdString() + "_block1.png";
-    }
-
-    // BLOCK2 -> METALLIC / AO / ROUGHNESS
-    MetallicMap* metallic_map   = static_cast<MetallicMap*>(entry.texture_maps[METALLIC]);
-    AOMap* ao_map               = static_cast<AOMap*>(entry.texture_maps[AO]);
-    RoughnessMap* roughness_map = static_cast<RoughnessMap*>(entry.texture_maps[ROUGHNESS]);
-    bool has_block2 = false;
-    if(metallic_map->has_image && metallic_map->use_image)
-    {
-        desc.texture_descriptor.add_unit(TextureUnit::METALLIC);
-        has_block2 = true;
-    }
-    else
-    {
-        desc.metallic = metallic_map->u_metallic;
-    }
-    if(roughness_map->has_image && roughness_map->use_image)
-    {
-        desc.texture_descriptor.add_unit(TextureUnit::ROUGHNESS);
-        has_block2 = true;
-    }
-    else
-    {
-        desc.roughness = roughness_map->u_roughness;
-    }
-    if(ao_map->has_image && ao_map->use_image)
-    {
-        desc.texture_descriptor.add_unit(TextureUnit::AO);
-        has_block2 = true;
-    }
-    if(has_block2)
-    {
-        desc.is_textured = true;
-        desc.texture_descriptor.add_unit(TextureUnit::BLOCK2);
-        desc.texture_descriptor.locations[TextureUnit::BLOCK2] = current_texname_.toStdString() + "_block2.png";
-    }
-
-
-    return desc;
-}
-
-std::array<TextureUnit,3> units_to_check = {TextureUnit::BLOCK0, TextureUnit::BLOCK1, TextureUnit::BLOCK2};
-
-bool EditorModel::validate_descriptor(const wcore::MaterialDescriptor& descriptor)
-{
-    // Check that each needed image file exists
-    bool success = true;
-    for(int ii=0; ii<units_to_check.size(); ++ii)
-    {
-        if(descriptor.texture_descriptor.has_unit(units_to_check[ii]))
-        {
-            QString filename = QString::fromStdString(descriptor.texture_descriptor.locations.at(units_to_check[ii]));
-            QFileInfo check_file(output_folder_.filePath(filename));
-            success &= (check_file.exists() && check_file.isFile());
-        }
-    }
-    return success;
 }
 
 } // namespace waterial

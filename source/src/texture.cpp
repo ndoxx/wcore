@@ -17,20 +17,20 @@
 namespace wcore
 {
 
-static std::vector<std::map<TextureUnit, hash_t>> SAMPLER_NAMES =
+static std::vector<std::map<TextureBlock, hash_t>> SAMPLER_NAMES =
 {
     // Sampler names for sampler group 1
     {
-        {TextureUnit::BLOCK0, "mt.sg1.block0Tex"_h},
-        {TextureUnit::BLOCK1, "mt.sg1.block1Tex"_h},
-        {TextureUnit::BLOCK2, "mt.sg1.block2Tex"_h}
+        {TextureBlock::BLOCK0, "mt.sg1.block0Tex"_h},
+        {TextureBlock::BLOCK1, "mt.sg1.block1Tex"_h},
+        {TextureBlock::BLOCK2, "mt.sg1.block2Tex"_h}
     },
 
     // Sampler names for sampler group 2
     {
-        {TextureUnit::BLOCK0, "mt.sg2.block0Tex"_h},
-        {TextureUnit::BLOCK1, "mt.sg2.block1Tex"_h},
-        {TextureUnit::BLOCK2, "mt.sg2.block2Tex"_h}
+        {TextureBlock::BLOCK0, "mt.sg2.block0Tex"_h},
+        {TextureBlock::BLOCK1, "mt.sg2.block1Tex"_h},
+        {TextureBlock::BLOCK2, "mt.sg2.block2Tex"_h}
     }
 };
 
@@ -179,10 +179,10 @@ Texture::Texture(const TextureDescriptor& descriptor)
     uint32_t ii=0;
     for(auto&& [key, sampler_name]: SAMPLER_NAMES[sampler_group_-1])
     {
-        if(descriptor.has_unit(key))
+        if(descriptor.has_block(key))
         {
-            // Register a sampler name for each unit
-            unit_indices_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
+            // Register a sampler name for each block
+            block_to_sampler_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
             uniform_sampler_names_.push_back(sampler_name);
 
             data.push_back(data_ptrs[ii]);
@@ -228,7 +228,7 @@ sampler_group_(1)
         px_buf->debug_display();
 #endif
 
-    TextureFilter filter = TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR);
+    TextureFilter filter = TextureFilter(TextureFilter::MIN_LINEAR);
     GLenum internal_format = GL_RGB;
     GLenum format = GL_RGB;
     unsigned char* data = px_buf->get_data_pointer();
@@ -277,9 +277,9 @@ Texture::~Texture()
     }
 }
 
-void Texture::bind_sampler(const Shader& shader, TextureUnit unit) const
+void Texture::bind_sampler(const Shader& shader, TextureBlock block) const
 {
-    shader.send_uniform<int>(SAMPLER_NAMES[sampler_group_-1].at(unit), unit_indices_.at(unit));
+    shader.send_uniform<int>(SAMPLER_NAMES[sampler_group_-1].at(block), block_to_sampler_.at(block));
 }
 
 void Texture::bind_all() const

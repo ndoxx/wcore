@@ -26,6 +26,7 @@ public:
     Texture(const TextureDescriptor& descriptor);
 
     // Create single texture2D from stream with all default options
+    // Used only for splatmap loading atm.
     Texture(std::istream& stream);
 
     // Create an empty texture, ideal for creating a render target for an FBO
@@ -41,7 +42,7 @@ public:
     ~Texture();
 
     // Send sampler uniforms to shader
-    void bind_sampler(const Shader& shader, TextureUnit unit) const;
+    void bind_sampler(const Shader& shader, TextureBlock unit) const;
     // Bind each texture unit in order
     void bind_all() const;
     // Bind texture at a given index to sampler specified by unit
@@ -92,8 +93,8 @@ private:
     uint16_t unit_flags_;   // Flag special units (albedo, normal, depth...) held in this texture
     uint8_t sampler_group_; // Sampler group index for splat-mapping
 
-    std::vector<hash_t> uniform_sampler_names_;    // Sampler names used to bind each texture unit to a shader
-    std::map<TextureUnit, uint32_t> unit_indices_; // Associate special texture units to sampler indices
+    std::vector<hash_t> uniform_sampler_names_;         // Sampler names used to bind each texture block to a shader
+    std::map<TextureBlock, uint32_t> block_to_sampler_; // Associate texture blocks to sampler indices
 
 #ifdef __DEBUG__
     std::vector<bool> is_depth_; // Retain information on whether texture units contain depth info or not

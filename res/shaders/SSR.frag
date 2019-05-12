@@ -280,7 +280,7 @@ void main()
 
     // TMP dithering
     vec3 wp = vec3(rd.m4_invView * vec4(rayOrigin, 1.0));
-    vec3 dither = rd.f_ditherAmount * (hash(wp) * 2.f - 1.f);//mix(vec3(0.0), hash(wp), fragRoughness);
+    vec3 dither = rd.f_ditherAmount * (hash(wp) * 2.f - 1.f) * fragRoughness;//mix(vec3(0.0), hash(wp), fragRoughness);
     rayDirection = normalize(rayDirection + dither);
 
     bool intersect = ray_march(rayOrigin, rayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);

@@ -48,7 +48,7 @@
             </Transform>
             <Splat>
                 <Material name="beachSand.wat"/>
-                <Material name="sandstone.wat"/>
+                <Material name="dirt02.wat"/>
             </Splat>
             <Shadow>
                 <CullFace>1</CullFace>

@@ -99,12 +99,6 @@ void WatLoader::write(std::ostream& stream, const MaterialDescriptor& descriptor
                    || descriptor.texture_descriptor.has_unit(TextureUnit::AO)
                    || descriptor.texture_descriptor.has_unit(TextureUnit::ROUGHNESS);
 
-    uint16_t unit_flags = descriptor.texture_descriptor.unit_flags
-                        | (has_block0 ? (uint16_t)TextureUnit::BLOCK0 : 0)
-                        | (has_block1 ? (uint16_t)TextureUnit::BLOCK1 : 0)
-                        | (has_block2 ? (uint16_t)TextureUnit::BLOCK2 : 0);
-
-
     WatHeaderWrapper header;
     header.h.unique_id             = descriptor.texture_descriptor.resource_id;
     header.h.min_filter            = 0;
@@ -113,7 +107,7 @@ void WatLoader::write(std::ostream& stream, const MaterialDescriptor& descriptor
     header.h.address_V             = 0;
     header.h.width                 = descriptor.texture_descriptor.width;
     header.h.height                = descriptor.texture_descriptor.height;
-    header.h.unit_flags            = unit_flags;
+    header.h.unit_flags            = descriptor.texture_descriptor.unit_flags;
     header.h.has_block0            = (uint8_t) has_block0;
     header.h.has_block1            = (uint8_t) has_block1;
     header.h.has_block2            = (uint8_t) has_block2;

@@ -39,10 +39,17 @@ enum class TextureUnit: uint16_t
     DEPTH     = 4,
     METALLIC  = 8,
     NORMAL    = 16,
-    ROUGHNESS = 32,
-    BLOCK0    = 64,
-    BLOCK1    = 128,
-    BLOCK2    = 256
+    ROUGHNESS = 32
+};
+
+enum class TextureBlock: uint16_t
+{
+    BLOCK0 = uint16_t(TextureUnit::ALBEDO),
+    BLOCK1 = uint16_t(TextureUnit::NORMAL)
+           | uint16_t(TextureUnit::DEPTH),
+    BLOCK2 = uint16_t(TextureUnit::METALLIC)
+           | uint16_t(TextureUnit::AO)
+           | uint16_t(TextureUnit::ROUGHNESS)
 };
 
 struct TextureParameters
@@ -58,7 +65,7 @@ struct TextureParameters
 
 struct TextureDescriptor
 {
-    typedef std::map<TextureUnit, std::string> TexMap;
+    typedef std::map<TextureBlock, std::string> TexMap;
 
     // Image texture file names by map type
     TexMap locations;
@@ -84,8 +91,9 @@ struct TextureDescriptor
     TextureDescriptor();
     ~TextureDescriptor();
 
-    inline bool has_unit(TextureUnit unit) const { return (unit_flags&(uint16_t)unit); }
-    inline void add_unit(TextureUnit unit)       { unit_flags |= (uint16_t)unit; }
+    inline bool has_block(TextureBlock block) const { return (unit_flags&(uint16_t)block); }
+    inline bool has_unit(TextureUnit unit) const    { return (unit_flags&(uint16_t)unit); }
+    inline void add_unit(TextureUnit unit)          { unit_flags |= (uint16_t)unit; }
     void release_data();
 };
 

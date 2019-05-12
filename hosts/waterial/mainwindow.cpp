@@ -168,9 +168,9 @@ file_dialog_(new QFileDialog(this))
     // Get texture working directory from config
     fs::path work_path;
     QString work_path_qstr;
-    if(!CONFIG.get<fs::path>("root.folders.texwork"_h, work_path))
+    if(!CONFIG.get<fs::path>("root.folders.matswork"_h, work_path))
     {
-        DLOGW("Unable to read root.folders.texwork node in config.", "waterial");
+        DLOGW("Unable to read root.folders.matswork node in config.", "waterial");
         DLOGI("Using current directory instead.", "waterial");
         work_path_qstr = QDir::currentPath();
     }

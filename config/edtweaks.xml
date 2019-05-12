@@ -33,14 +33,14 @@
 	</postproc>
 	<ssao>
 		<float name="radius" value="0.205000"/>
-		<float name="bias" value="0.224000"/>
-		<float name="vbias" value="0.213000"/>
+		<float name="bias" value="0.400000"/>
+		<float name="vbias" value="0.038000"/>
 		<float name="intensity" value="1.704000"/>
-		<float name="scale" value="0.525000"/>
+		<float name="scale" value="0.201000"/>
 		<blur>
 			<int name="passes" value="1"/>
 			<int name="kernel_half_size" value="3"/>
-			<float name="kernel_sigma" value="0.809000"/>
+			<float name="kernel_sigma" value="1.400000"/>
 			<float name="compression" value="1.000000"/>
 		</blur>
 	</ssao>

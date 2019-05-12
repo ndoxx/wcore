@@ -8,6 +8,7 @@ namespace wcore
 
 TextureParameters::TextureParameters():
 filter(TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR)),
+//filter(TextureFilter(TextureFilter::MIN_NEAREST_MIPMAP_LINEAR)),
 internal_format(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT),
 //internal_format(GL_RGBA),
 format(GL_RGBA),
@@ -48,7 +49,6 @@ void TextureDescriptor::release_data()
         owns_data = false;
     }
 }
-
 
 MaterialDescriptor::MaterialDescriptor():
 texture_descriptor(),
