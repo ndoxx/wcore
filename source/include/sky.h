@@ -3,7 +3,7 @@
 
 #include <memory>
 #include "mesh.hpp"
-#include "buffer_unit.hpp"
+#include "render_batch.hpp"
 
 namespace wcore
 {
@@ -26,7 +26,7 @@ private:
     Cubemap* cubemap_;
     std::shared_ptr<MeshP> mesh_;
 
-    BufferUnit<Vertex3P> buffer_unit_;
+    RenderBatch<Vertex3P> render_batch_;
 };
 
 }

@@ -9,6 +9,7 @@
     <string key="258029378701860198" value="v4_line_color"/>
     <string key="271672890340345462" value="path"/>
     <string key="317037702647585448" value="f_splitPos"/>
+    <string key="325992459591498421" value="char_quad"/>
     <string key="332692525705157832" value="k_run"/>
     <string key="360889090461457270" value="rd.v3_fogColor"/>
     <string key="397725169173227793" value="root.ssao.radius"/>
@@ -16,6 +17,7 @@
     <string key="486138627366577352" value="rd.f_ditherAmount"/>
     <string key="493120509362761803" value="tr.m3_Normal"/>
     <string key="524679559595785586" value="rd.i_blindness_type"/>
+    <string key="576247480144861334" value="3p"/>
     <string key="580772045163143161" value="max"/>
     <string key="619319748659883923" value="fx"/>
     <string key="649929052871594752" value="F9"/>
@@ -31,14 +33,13 @@
     <string key="662339240616752384" value="UP"/>
     <string key="750393415753537846" value="sdiChunk"/>
     <string key="784379219033146998" value="rd.f_contrast"/>
-    <string key="846030630359076500" value="mt.sg1.AOTex"/>
     <string key="861027079397864862" value="core"/>
     <string key="868596975789480376" value="skyboxTex"/>
+    <string key="879968426078726651" value="cross"/>
     <string key="897897987978198084" value="v3_channelFilter"/>
     <string key="916638524616673858" value="v3_color"/>
     <string key="940534571439560742" value="SCROLL_LOCK"/>
     <string key="940676371841988263" value="inv_gamma_r"/>
-    <string key="1004713592463535000" value="SSRBlurBuffer"/>
     <string key="1009809161560322634" value="rd.f_radius"/>
     <string key="1116916425875636143" value="rd.v2_viewportSize"/>
     <string key="1257079576020054407" value="PAGE_DOWN"/>
@@ -46,13 +47,10 @@
     <string key="1261501771575938509" value="ENTER"/>
     <string key="1294221133309910365" value="root.sound.general.rolloff_scale"/>
     <string key="1326587244035926933" value="root.postproc.vignette.falloff"/>
-    <string key="1345558381599645151" value="mt.sg2.roughnessTex"/>
     <string key="1354332443335044921" value="m3_Normal"/>
-    <string key="1494619669263255324" value="bloom"/>
     <string key="1504076681243320533" value="rd.f_maxRayDistance"/>
     <string key="1533019300363245691" value="root.ssao.scale"/>
     <string key="1543481305136561041" value="rd.f_screenEdgeFadeStart"/>
-    <string key="1599008660829963376" value="mt.sg2.normalTex"/>
     <string key="1668764284665207626" value="KP_DIVIDE"/>
     <string key="1822684255179955993" value="rd.f_inv_far"/>
     <string key="1835899233338147479" value="KP_SUBTRACT"/>
@@ -60,6 +58,7 @@
     <string key="1887491037416224730" value="obj"/>
     <string key="2030094403841163005" value="root.debug.logger.print_backtrace_on_error"/>
     <string key="2073735945648089989" value="root.folders.model"/>
+    <string key="2164402965988149710" value="quad"/>
     <string key="2166173889985096846" value="rd.f_pixelStrideZCuttoff"/>
     <string key="2213964022818352189" value="shadowmap"/>
     <string key="2314149089763396818" value="mt.sg2.block2Tex"/>
@@ -90,7 +89,6 @@
     <string key="3706796968326362662" value="rd.m4_projection"/>
     <string key="3819434040143752392" value="cube_uniface"/>
     <string key="3819861783549592146" value="rd.f_bright_knee"/>
-    <string key="3856466037883943387" value="unused"/>
     <string key="3903139162218036086" value="root.folders.config"/>
     <string key="3960499203144025830" value="sdiPosition"/>
     <string key="4000193554061510222" value="RIGHT_SHIFT"/>
@@ -106,18 +104,23 @@
     <string key="4327140908117611899" value="none"/>
     <string key="4330663222551518790" value="rd.f_cam_near"/>
     <string key="4397639838508282278" value="root.display.vsync"/>
+    <string key="4445053889214231090" value="wesh"/>
     <string key="4475574453243228111" value="root.folders.soundbgm"/>
     <string key="4533975874953402374" value="rd.f_vibrance"/>
     <string key="4547761445480584395" value="icosphere"/>
     <string key="4551762947800415439" value="EQUAL"/>
     <string key="4558523308072059171" value="root.render.shadowmap.width"/>
+    <string key="4578760715504805550" value="terrain"/>
     <string key="4626457119930511105" value="mt.sg2.block1Tex"/>
     <string key="4630334286561570845" value="lt.f_light_radius"/>
     <string key="4665132351978436081" value="root.sound.general.volume_master"/>
     <string key="4669242267773575440" value="root.postproc.color.vibrance.balance"/>
     <string key="4673174041737129020" value="root.display.full"/>
+    <string key="4704593978500022610" value="instance"/>
     <string key="4740562018029365625" value="k_tg_debug_overlay"/>
     <string key="4749526036288485924" value="PERIOD"/>
+    <string key="4771232824107645910" value="bloombuffer"/>
+    <string key="4797913654769286886" value="2p2u"/>
     <string key="4914543474118228582" value=".vert"/>
     <string key="4964869673430461174" value="rd.f_minGlossiness"/>
     <string key="4985104378177092864" value="root.ssao.intensity"/>
@@ -164,7 +167,6 @@
     <string key="6325457071842862761" value="k_tg_chunk_mgr"/>
     <string key="6397362739859996101" value="rd.f_intensity"/>
     <string key="6412403349859836949" value="root.postproc.color.vibrance.strength"/>
-    <string key="6412751975946041216" value="mt.sg1.roughnessTex"/>
     <string key="6443438359041303644" value="rd.f_fogDensity"/>
     <string key="6461287345427881327" value="WORLD_1"/>
     <string key="6461288444939509538" value="WORLD_2"/>
@@ -182,7 +184,6 @@
     <string key="6776674288011162496" value="k_cam_new_keyframe"/>
     <string key="6852621249730883206" value="KP_ADD"/>
     <string key="7007482603673366505" value="root.sound.general.doppler_scale"/>
-    <string key="7067202264915700150" value="mt.sg2.metallicTex"/>
     <string key="7072071965576282124" value="m4_view_projection"/>
     <string key="7085902643359509389" value="k_ascend"/>
     <string key="7147820914469755098" value="rd.b_lighting_enabled"/>
@@ -196,13 +197,14 @@
     <string key="7425191142704782914" value="vec3"/>
     <string key="7425192242216411125" value="vec2"/>
     <string key="7431789928335961910" value="rd.f_pixelThickness"/>
-    <string key="7464274105254009398" value="mt.sg2.depthTex"/>
     <string key="7480038081765558619" value="heaviside"/>
+    <string key="7524598203667753182" value="backfaceDepthBuffer"/>
     <string key="7540258471201886724" value="root.sound.general.channel_fadeout_s"/>
     <string key="7541065405451692864" value="rd.f_iterations"/>
     <string key="7543418176468789887" value="root.display.width"/>
     <string key="7594148913845135673" value="SSRbuffer"/>
     <string key="7730174703060374294" value="rd.f_probe"/>
+    <string key="7739002390436072312" value="blend"/>
     <string key="7763496791160610254" value="RIGHT_BRACKET"/>
     <string key="7807768329891329634" value="GameObjectFactory"/>
     <string key="7814851573345229548" value="TAB"/>
@@ -221,6 +223,7 @@
     <string key="8653713800365802599" value="m4_transform"/>
     <string key="8693947887275505987" value="mt.v3_albedo"/>
     <string key="8710115332184903050" value="k_walk"/>
+    <string key="8726718400214209214" value="opaque"/>
     <string key="8733447476909273272" value="k_tg_daysys"/>
     <string key="8736392868697252967" value="k_descend"/>
     <string key="8765055733592539675" value="root.sound.general.distance_factor"/>
@@ -235,13 +238,14 @@
     <string key="9208007087286972917" value="root.camera.speed_rot"/>
     <string key="9267355454750825242" value="MENU"/>
     <string key="9290956324708965906" value="shadowTex"/>
-    <string key="9294616819712044073" value="mt.sg1.normalTex"/>
     <string key="9303086797489380362" value="k_tg_editor"/>
     <string key="9307225793441675233" value="rd.f_pixelStride"/>
     <string key="9312070011128083972" value="SCR_H"/>
     <string key="9312077707709481449" value="SCR_W"/>
     <string key="9327451726228105544" value="rd.f_depthBias"/>
+    <string key="9386220812977584310" value="sky"/>
     <string key="9399542793727688674" value="input.mouse.locked"/>
+    <string key="9436932633483288019" value="root.display.topmost"/>
     <string key="9515249342394563380" value="sdiFPS"/>
     <string key="9583412447785380786" value="k_backward"/>
     <string key="9624714238657457210" value="rd.b_shadow_enabled"/>
@@ -249,11 +253,15 @@
     <string key="9686246174941609651" value="rd.f_ca_shift"/>
     <string key="9693792892718156591" value="compress_linear"/>
     <string key="9871780175443147334" value="LEFT_CONTROL"/>
+    <string key="9915782786907616376" value="sphere"/>
     <string key="9942377493854456016" value="pack0"/>
     <string key="9942867538528568546" value="root.display.height"/>
     <string key="9992812768470212201" value="SCR_FULL"/>
     <string key="10131965007227580052" value="input.mouse.focus"/>
     <string key="10197399472104546985" value="horizontal"/>
+    <string key="10216681390120178803" value="segment_z"/>
+    <string key="10216682489631807014" value="segment_y"/>
+    <string key="10216683589143435225" value="segment_x"/>
     <string key="10226166488886035387" value="k_test_key"/>
     <string key="10242940794757314318" value="root.geometry.parallax.min_distance"/>
     <string key="10287213848402896983" value="mt.b_use_normal_map"/>
@@ -270,7 +278,6 @@
     <string key="10910956258448488348" value="k_forward"/>
     <string key="10925683996511890393" value="LAST"/>
     <string key="10986755340644892234" value="SLASH"/>
-    <string key="11031387749758185530" value="mt.sg2.albedoTex"/>
     <string key="11158050064215466014" value="root.render.shadowmap.height"/>
     <string key="11168070871793128834" value="m4_ModelViewProjection"/>
     <string key="11172949248662994988" value="k_editor_deselect"/>
@@ -288,14 +295,12 @@
     <string key="11805411964498681057" value="swish"/>
     <string key="12032221677502956178" value="icosahedron"/>
     <string key="12059396907497688696" value="Editor"/>
-    <string key="12087927464889887995" value="mt.sg1.metallicTex"/>
     <string key="12094814583269164686" value="rd.f_scale"/>
     <string key="12329333359250199469" value="rd.v2_texelSize"/>
     <string key="12342839200479500345" value="mt.b_has_albedo"/>
     <string key="12407858727649439328" value="linear"/>
     <string key="12478602338661553948" value="arial"/>
     <string key="12562532267625770907" value="rd.v3_vibrance_bal"/>
-    <string key="12619697744259456877" value="mt.sg2.AOTex"/>
     <string key="12638130025950975024" value="5"/>
     <string key="12638131125462603235" value="4"/>
     <string key="12638132224974231446" value="7"/>
@@ -343,6 +348,7 @@
     <string key="13060999753206511191" value="RayCaster"/>
     <string key="13206569557431889284" value="rd.f_eyeFadeEnd"/>
     <string key="13266389867668131512" value="root.display.target_fps"/>
+    <string key="13293150509805447224" value="k_hotswap_shaders"/>
     <string key="13299179948045175049" value="root.render.override.allow_normal_mapping"/>
     <string key="13306031419076402870" value="VARIANT_R_ONLY"/>
     <string key="13562996776508296560" value="LEFT"/>
@@ -350,8 +356,8 @@
     <string key="13565850423286419713" value="rd.i_daltonize_mode"/>
     <string key="13655078268800881723" value="root.postproc.vignette.balance"/>
     <string key="13677753513359909797" value="GRAVE_ACCENT"/>
+    <string key="13784293248712268039" value="line"/>
     <string key="13846512612090863089" value="root.input.mouse.y_inverted"/>
-    <string key="14025262221873303767" value="mt.sg1.albedoTex"/>
     <string key="14035664742179330174" value="brightTex"/>
     <string key="14036129794298887022" value="input.keyboard"/>
     <string key="14039659329443927417" value="rd.v2_shadowTexelSize"/>
@@ -401,6 +407,7 @@
     <string key="16530587003638916335" value="k_cam_gen_track"/>
     <string key="16548070634278642392" value="k_tg_line_models"/>
     <string key="16567012654237903811" value="tentacle"/>
+    <string key="16607045797884530727" value="sphere_line"/>
     <string key="16679013307405797229" value="mt.b_has_metallic"/>
     <string key="16733900363094892041" value="KP_EQUAL"/>
     <string key="16804498396030224938" value="f_alpha"/>
@@ -433,10 +440,10 @@
     <string key="17418898723818815743" value="F24"/>
     <string key="17453382643516468302" value="rd.f_vignette_bal"/>
     <string key="17607934400217285021" value="root.camera.speed_slow"/>
-    <string key="17661753592772283449" value="mt.sg1.depthTex"/>
     <string key="17720195001682701390" value="CameraController"/>
     <string key="17793400099383336470" value="root.folders.res"/>
     <string key="17953394579615142639" value="cursor"/>
+    <string key="17985114526582975545" value="screen_quad"/>
     <string key="18097647533062089343" value="maze_bgm"/>
     <string key="18100165628774196105" value=".geom"/>
     <string key="18113394795135099680" value="b_toneMap"/>
@@ -446,4 +453,5 @@
     <string key="18285992376333672458" value="root.ssao.bias"/>
     <string key="18364607093200934249" value="rd.f_exposure"/>
     <string key="18395973286856620803" value="drumloop"/>
+    <string key="18431954412583980831" value="cube_line"/>
 </InternStrings>

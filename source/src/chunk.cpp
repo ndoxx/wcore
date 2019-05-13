@@ -33,10 +33,10 @@ cLightEvaluator DEFAULT_CLIGHT_EVALUATOR([](const Light& p){return true;});
 Chunk::Chunk(i32vec2 coords):
 coords_(coords),
 index_(std::hash<i32vec2>{}(coords)),
-buffer_unit_(),
-terrain_buffer_unit_(),
-blend_buffer_unit_(),
-line_buffer_unit_(GL_LINES),
+render_batch_("opaque"_h),
+terrain_render_batch_("terrain"_h),
+blend_render_batch_("blend"_h),
+line_render_batch_("line"_h, GL_LINES),
 terrain_(nullptr)
 {
 
@@ -282,7 +282,7 @@ void Chunk::traverse_lights(cLightVisitor func,
 
 void Chunk::load_geometry()
 {
-    // Submit models mesh to buffer unit then upload to OpenGL
+    // Submit models mesh to render batch then upload to OpenGL
     for(pModel pmodel: models_)
     {
 #ifdef __DEBUG__
@@ -292,34 +292,26 @@ void Chunk::load_geometry()
            << "\tne=" << pmodel->get_mesh().get_n_elements();
         DLOG(ss.str(), "model", Severity::DET);
 #endif //__DEBUG__
-        buffer_unit_.submit(pmodel->get_mesh());
-        pmodel->get_mesh().set_buffer_batch(BufferToken::Batch::OPAQUE);
+        render_batch_.submit(pmodel->get_mesh());
     }
-    buffer_unit_.upload();
+    render_batch_.upload();
 
     // Terrain
     if(terrain_ != nullptr)
     {
-        terrain_buffer_unit_.submit(terrain_->get_mesh());
-        terrain_->get_mesh().set_buffer_batch(BufferToken::Batch::TERRAIN);
-        terrain_buffer_unit_.upload();
+        terrain_render_batch_.submit(terrain_->get_mesh());
+        terrain_render_batch_.upload();
     }
 
     // Geometry with alpha blending
     for(pModel pmodel: models_blend_)
-    {
-        blend_buffer_unit_.submit(pmodel->get_mesh());
-        pmodel->get_mesh().set_buffer_batch(BufferToken::Batch::BLEND);
-    }
-    blend_buffer_unit_.upload();
+        blend_render_batch_.submit(pmodel->get_mesh());
+    blend_render_batch_.upload();
 
     // Line geometry
     for(pLineModel pmodel: line_models_)
-    {
-        line_buffer_unit_.submit(pmodel->get_mesh());
-        pmodel->get_mesh().set_buffer_batch(BufferToken::Batch::LINE);
-    }
-    line_buffer_unit_.upload();
+        line_render_batch_.submit(pmodel->get_mesh());
+    line_render_batch_.upload();
 }
 
 void Chunk::add_position_updater(PositionUpdater* updater)
@@ -335,24 +327,22 @@ void Chunk::add_rotator(ConstantRotator* rotator)
 void Chunk::draw(const BufferToken& buffer_token) const
 {
     // OPTIMIZE
-    switch(buffer_token.batch)
+    switch(buffer_token.batch_category)
     {
-        case BufferToken::Batch::INSTANCE:
+        case "instance"_h:
             return;
-        case BufferToken::Batch::OPAQUE:
-            buffer_unit_.draw(buffer_token);
+        case "opaque"_h:
+            render_batch_.draw(buffer_token);
             break;
-        case BufferToken::Batch::TERRAIN:
+        case "terrain"_h:
             if(terrain_ != nullptr)
-            {
-                terrain_buffer_unit_.draw(buffer_token);
-            }
+                terrain_render_batch_.draw(buffer_token);
             break;
-        case BufferToken::Batch::BLEND:
-            blend_buffer_unit_.draw(buffer_token);
+        case "blend"_h:
+            blend_render_batch_.draw(buffer_token);
             break;
-        case BufferToken::Batch::LINE:
-            line_buffer_unit_.draw(buffer_token);
+        case "line"_h:
+            line_render_batch_.draw(buffer_token);
             break;
     }
 }

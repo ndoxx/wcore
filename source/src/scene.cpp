@@ -33,7 +33,7 @@ namespace wcore
 using namespace math;
 
 Scene::Scene():
-instance_buffer_unit_(),
+instance_render_batch_("instance"_h),
 skybox_(nullptr),
 camera_(std::make_shared<Camera>(GLB.WIN_W, GLB.WIN_H)),
 light_camera_(std::make_shared<Camera>(1, 1)),
@@ -70,13 +70,12 @@ void Scene::set_chunk_size_meters(uint32_t chunk_size_m)
 
 void Scene::submit_mesh_instance(std::shared_ptr<SurfaceMesh> mesh)
 {
-    instance_buffer_unit_.submit(*mesh);
-    mesh->set_buffer_batch(BufferToken::Batch::INSTANCE);
+    instance_render_batch_.submit(*mesh);
 }
 
 void Scene::load_instance_geometry()
 {
-    instance_buffer_unit_.upload();
+    instance_render_batch_.upload();
 }
 
 void Scene::add_chunk(const math::i32vec2& coords)
@@ -258,10 +257,10 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
             {
                 prepare(model);
                 const BufferToken& token = model.get_mesh().get_buffer_token();
-                if(token.batch == BufferToken::Batch::INSTANCE)
+                if(token.batch_category == "instance"_h)
                 {
                     // Instance buffers are owned by scene
-                    instance_buffer_unit_.draw(token);
+                    instance_render_batch_.draw(token);
                 }
                 else
                     chunk->draw(token);
@@ -277,10 +276,10 @@ void Scene::draw_models(std::function<void(const Model&)> prepare,
             {
                 prepare(e_model);
                 const BufferToken& token = e_model.get_mesh().get_buffer_token();
-                if(token.batch == BufferToken::Batch::INSTANCE)
+                if(token.batch_category == "instance"_h)
                 {
                     // Instance buffers are owned by scene
-                    instance_buffer_unit_.draw(token);
+                    instance_render_batch_.draw(token);
                 }
             }
         }
@@ -513,9 +512,7 @@ void Scene::add_model_instance(std::shared_ptr<Model> model, uint32_t chunk_inde
 {
     chunks_.at(chunk_index)->add_model(model,true);
     if(model->has_reference())
-    {
         ref_models_.insert(std::pair(model->get_reference(), model));
-    }
 }
 
 void Scene::add_model(std::shared_ptr<Model> model, uint32_t chunk_index)

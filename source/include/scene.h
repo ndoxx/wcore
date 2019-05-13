@@ -7,7 +7,7 @@
 
 #include "singleton.hpp"
 #include "game_system.h"
-#include "buffer_unit.hpp"
+#include "render_batch.hpp"
 #include "chunk.h"
 #include "wentity.h"
 #include "octree.hpp"
@@ -43,7 +43,7 @@ class Scene: public GameSystem
 private:
     typedef Octree<BoundingRegion, StaticOctreeData> StaticOctree;
 
-    BufferUnit<Vertex3P3N3T2U>  instance_buffer_unit_;
+    RenderBatch<Vertex3P3N3T2U>  instance_render_batch_;
 
     std::map<uint32_t, Chunk*> chunks_;
     std::map<hash_t, std::weak_ptr<Model>> ref_models_;

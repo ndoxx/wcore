@@ -16,24 +16,19 @@ namespace wcore
 {
 
 template <typename VertexT>
-class BufferUnit;
+class RenderBatch;
 
 struct BufferToken
 {
-    enum class Batch
-    {
-        INSTANCE, OPAQUE, TERRAIN, BLEND, LINE
-    };
-
-    Batch batch            = Batch::OPAQUE;
-    uint32_t buffer_offset = 0;
-    uint32_t n_elements    = 0;
+    hash_t   batch_category = ""_h;
+    uint32_t buffer_offset  = 0;
+    uint32_t n_elements     = 0;
 };
 
 template <typename VertexT>
 class Mesh
 {
-    friend class BufferUnit<VertexT>;
+    friend class RenderBatch<VertexT>;
 
 protected:
     std::vector<VertexT>  vertices_;
@@ -65,7 +60,7 @@ public:
     inline uint32_t get_buffer_offset() const { return buffer_token_.buffer_offset; }
     inline const BufferToken& get_buffer_token() const { return buffer_token_; }
 
-    inline void set_buffer_batch(BufferToken::Batch value) { buffer_token_.batch = value; }
+    inline void set_batch_category(hash_t category) { buffer_token_.batch_category = category; }
 
     inline bool is_centered() const           { return centered_; }
     inline void set_centered(bool value)      { centered_ = value; }

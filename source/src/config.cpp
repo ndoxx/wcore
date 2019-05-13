@@ -80,7 +80,7 @@ void Config::init()
 static std::vector<std::string> LOGGER_CHANNELS
 {
     "texture", "material",  "model",  "shader",
-    "text",    "input",     "buffer", "chunk",
+    "text",    "input",     "fbo",    "batch", "chunk",
     "parsing", "entity",    "scene",  "ios",
     "profile", "collision", "sound",  "editor"
 };

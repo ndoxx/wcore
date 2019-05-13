@@ -1,5 +1,5 @@
-#ifndef BUFFER_UNIT_HPP
-#define BUFFER_UNIT_HPP
+#ifndef RENDER_BATCH_HPP
+#define RENDER_BATCH_HPP
 
 #include <GL/glew.h>
 
@@ -25,36 +25,36 @@ static inline uint32_t dimensionality(GLenum primitive)
 }
 
 template <typename VertexT>
-class BufferUnit
+class RenderBatch
 {
 private:
     GLuint VBO_;
     GLuint IBO_;
     GLuint VAO_;
     GLenum primitive_;
+    hash_t category_;
 
     std::vector<VertexT> vertices_;
     std::vector<GLuint>  indices_;
 
 public:
-    explicit BufferUnit(GLenum primitive = GL_TRIANGLES):
+    explicit RenderBatch(hash_t category,
+                         GLenum primitive = GL_TRIANGLES):
     VBO_(0),
     IBO_(0),
     VAO_(0),
-    primitive_(primitive)
+    primitive_(primitive),
+    category_(category)
     {
-#ifdef __DEBUG__
-        DLOGN("Generating Buffer Unit:", "buffer");
-#endif
+        DLOGN("New render batch:", "batch");
+        DLOGI("Category: <n>" + HRESOLVE(category_) + "</n>", "batch");
         glGenBuffers(1, &VBO_);
-#ifdef __DEBUG__
-        DLOGI("VBO created. id=" + std::to_string(VBO_), "buffer");
-#endif
+
+        DLOGI("VBO created. id=" + std::to_string(VBO_), "batch");
         glGenBuffers(1, &IBO_);
-#ifdef __DEBUG__
-        DLOGI("IBO created. id=" + std::to_string(IBO_), "buffer");
-        DLOGI("dimensionality= " + std::to_string(dimensionality(primitive_)), "buffer");
-#endif
+
+        DLOGI("IBO created. id=" + std::to_string(IBO_), "batch");
+        DLOGI("dimensionality= " + std::to_string(dimensionality(primitive_)), "batch");
 
         // Generate and init VAO
         glGenVertexArrays(1, &VAO_);
@@ -63,18 +63,16 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
         VertexT::enable_vertex_attrib_array();
         glBindVertexArray(0);
-#ifdef __DEBUG__
-        DLOGI("VAO created. id=" + std::to_string(VAO_), "buffer");
-#endif
+
+        DLOGI("VAO created. id=" + std::to_string(VAO_), "batch");
     }
 
-    ~BufferUnit()
+    ~RenderBatch()
     {
-        // BufferUnit objects are life-bound to their server-side counterparts
+        // RenderBatch objects are life-bound to their server-side counterparts
         // When they die, the OpenGL object dies as well
-#ifdef __DEBUG__
-        DLOGN("Destroying Buffer Unit:", "buffer");
-#endif
+        DLOGN("Destroying render batch cat(<n>" + HRESOLVE(category_) + "</n>)", "batch");
+
         // First unbind
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -82,18 +80,14 @@ public:
 
         // Release VAO
         glDeleteVertexArrays(1, &VAO_);
-#ifdef __DEBUG__
-        DLOGI("VAO destroyed. id=" + std::to_string(VAO_), "buffer");
-#endif
+        DLOGI("VAO destroyed. id=" + std::to_string(VAO_), "batch");
+
         // Then delete buffers
         glDeleteBuffers(1, &IBO_);
-#ifdef __DEBUG__
-        DLOGI("IBO destroyed. id=" + std::to_string(IBO_), "buffer");
-#endif
+        DLOGI("IBO destroyed. id=" + std::to_string(IBO_), "batch");
+
         glDeleteBuffers(1, &VBO_);
-#ifdef __DEBUG__
-        DLOGI("VBO destroyed. id=" + std::to_string(VBO_), "buffer");
-#endif
+        DLOGI("VBO destroyed. id=" + std::to_string(VBO_), "batch");
         //check_gl_error();
     }
 
@@ -106,6 +100,7 @@ public:
     {
         uint32_t vert_offset = vertices_.size();
         mesh.set_buffer_offset(indices_.size());
+        mesh.set_batch_category(category_);
 
         const std::vector<VertexT>& vertices = mesh.get_vertex_buffer();
         const std::vector<GLuint>&  indices  = mesh.get_index_buffer();
@@ -126,7 +121,23 @@ public:
     {
         nvert = (nvert==0) ? vertices_.size() : nvert;
         nind  = (nind==0) ? indices_.size() : nind;
+
+        if(nvert==0 && nind==0)
+            return;
+
         GLenum draw_type = dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
+
+#ifdef __DEBUG__
+        size_t size_vertex_kb = (nvert * sizeof(VertexT)) / 1024;
+        size_t size_index_kb  = (nind  * sizeof(GLuint))  / 1024;
+        DLOGN("Sending render batch cat(<n>" + HRESOLVE(category_) + "</n>)", "batch");
+        DLOGI("#vertices: " + std::to_string(nvert) + "/"
+                            + std::to_string(vertices_.size()) + " -> <v>"
+                            + std::to_string(size_vertex_kb) + "kB</v>", "batch");
+        DLOGI("#indices:  " + std::to_string(nind) + "/"
+                            + std::to_string(indices_.size()) + " -> <v>"
+                            + std::to_string(size_index_kb) + "kB</v>", "batch");
+#endif
 
         // Upload Vertex Data
         glBindBuffer(GL_ARRAY_BUFFER, VBO_);
@@ -155,9 +166,9 @@ public:
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (GLuint)offset, mesh.get_ni()*sizeof(GLuint), &indices[0]);
     }
 
-    void draw(uint32_t n_elements, uint32_t offset, bool condition=true) const
+    void draw(uint32_t n_elements, uint32_t offset) const
     {
-        if(n_elements==0 || !condition) return;
+        if(n_elements==0) return;
 
         glBindVertexArray(VAO_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
@@ -166,12 +177,12 @@ public:
         //glBindVertexArray(0);
     }
 
-    inline void draw(const BufferToken& buffer_token, bool condition=true) const
+    inline void draw(const BufferToken& buffer_token) const
     {
-        draw(buffer_token.n_elements, buffer_token.buffer_offset, condition);
+        draw(buffer_token.n_elements, buffer_token.buffer_offset);
     }
 };
 
 }
 
-#endif // BUFFER_UNIT_HPP
+#endif // RENDER_BATCH_HPP

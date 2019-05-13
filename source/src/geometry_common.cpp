@@ -8,7 +8,9 @@ namespace wcore
 using namespace math;
 
 GeometryCommon::GeometryCommon():
-buffer_unit_line_(GL_LINES)
+render_batch_3P_("3p"_h),
+render_batch_line_("line"_h, GL_LINES),
+render_batch_2P2U_("2p2u"_h)
 {
     add_mesh_3P("quad"_h, factory::make_quad_3P());
     add_mesh_3P("sphere"_h, factory::make_uv_sphere_3P(4, 7));
@@ -44,9 +46,9 @@ buffer_unit_line_(GL_LINES)
     char_quad_mesh->_push_triangle(0,  2,  3);
     add_mesh_2P2U("char_quad"_h, char_quad_mesh);
 
-    buffer_unit_3P_.upload();
-    buffer_unit_2P2U_.upload();
-    buffer_unit_line_.upload();
+    render_batch_3P_.upload();
+    render_batch_2P2U_.upload();
+    render_batch_line_.upload();
 }
 
 GeometryCommon::~GeometryCommon()
@@ -56,7 +58,7 @@ GeometryCommon::~GeometryCommon()
 
 void GeometryCommon::add_mesh_3P(hash_t hname, Mesh<Vertex3P>* pmesh)
 {
-    buffer_unit_3P_.submit(*pmesh);
+    render_batch_3P_.submit(*pmesh);
 
     MeshInfo mesh_info;
     mesh_info.offset = pmesh->get_buffer_offset();
@@ -69,7 +71,7 @@ void GeometryCommon::add_mesh_3P(hash_t hname, Mesh<Vertex3P>* pmesh)
 
 void GeometryCommon::add_mesh_2P2U(hash_t hname, Mesh<Vertex2P2U>* pmesh)
 {
-    buffer_unit_2P2U_.submit(*pmesh);
+    render_batch_2P2U_.submit(*pmesh);
 
     MeshInfo mesh_info;
     mesh_info.offset = pmesh->get_buffer_offset();
@@ -82,7 +84,7 @@ void GeometryCommon::add_mesh_2P2U(hash_t hname, Mesh<Vertex2P2U>* pmesh)
 
 void GeometryCommon::add_mesh_line(hash_t hname, Mesh<Vertex3P>* pmesh)
 {
-    buffer_unit_line_.submit(*pmesh);
+    render_batch_line_.submit(*pmesh);
 
     MeshInfo mesh_info;
     mesh_info.offset = pmesh->get_buffer_offset();
@@ -104,13 +106,13 @@ void GeometryCommon::draw(hash_t hname)
         switch(info.buffer)
         {
             case MeshInfo::BufferIndex::BUFFER_3P:
-                buffer_unit_3P_.draw(info.n_elem, info.offset);
+                render_batch_3P_.draw(info.n_elem, info.offset);
                 break;
             case MeshInfo::BufferIndex::BUFFER_2P2U:
-                buffer_unit_2P2U_.draw(info.n_elem, info.offset);
+                render_batch_2P2U_.draw(info.n_elem, info.offset);
                 break;
             case MeshInfo::BufferIndex::BUFFER_LINE:
-                buffer_unit_line_.draw(info.n_elem, info.offset);
+                render_batch_line_.draw(info.n_elem, info.offset);
                 break;
         }
     }

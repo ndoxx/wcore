@@ -67,7 +67,6 @@ void GeometryRenderer::render(Scene* pscene)
 
     GFX::clear_color_depth(); // Suppressed valgrind false positive in valgrind.supp
 
-    // Bind VAO, draw, unbind VAO
     pscene->draw_models([&](const Model& model)
     {
         // Get model matrix and compute products

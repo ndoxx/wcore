@@ -7979,6 +7979,25 @@ _WatLoader_ n'a plus de méthode read_descriptor(), juste une méthode read(3) q
     [ ] Imgui fail assert (InitFrame() not called before Render())
 
 
+#[13-05-19]
+En lisant un peu sur le batch rendering ([1] et [2]), après avoir un moment pesté contre mon incapacité à y avoir pensé plus tôt, j'ai remarqué que c'était déjà ce que je faisais dans les grandes lignes sans vraiment le savoir. Mes _BufferUnits_ sont en réalité des render batches. J'ai donc renommé cette classe en _RenderBatch_ et je compte l'équiper de quelques méthodes supplémentaires afin d'en assurer l'optimalité.
+
+L'échange suivant entre Marek de marekknows.com et un autre gars dans [1] m'a fait assez sourire après avoir saisi la vraie nature de mes _BufferUnits_ :
+
+    unbird> Nice article. One suggestion, though: I'd make the batch generic for arbitrary vertex types.
+
+    mmakrzem> Are you suggesting templating the Batch class to hold different types of vertices?  That's a good idea.
+
+    unbird> Precisely. :D
+
+Yep. Les miens sont déjà templatés :)
+
+[1] propose un système pour manager automatiquement des render batches. Chez-moi, cette tâche incombe au chunk system.
+
+
+* Sources :
+[1] https://www.gamedev.net/articles/programming/graphics/opengl-batch-rendering-r3900/
+[2] https://gamedev.stackexchange.com/questions/65847/batching-elements
 
 
 

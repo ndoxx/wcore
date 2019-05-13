@@ -10,11 +10,11 @@ namespace wcore
 SkyBox::SkyBox(Cubemap* cubemap):
 cubemap_(cubemap),
 mesh_(factory::make_skybox_3P()),
-buffer_unit_()
+render_batch_("sky"_h)
 {
     // Upload geometry
-    buffer_unit_.submit(*mesh_);
-    buffer_unit_.upload();
+    render_batch_.submit(*mesh_);
+    render_batch_.upload();
 }
 
 SkyBox::~SkyBox()
@@ -30,7 +30,7 @@ void SkyBox::bind() const
 void SkyBox::draw() const
 {
     // Bind vertex array and draw geometry
-    buffer_unit_.draw(mesh_->get_buffer_token());
+    render_batch_.draw(mesh_->get_buffer_token());
 }
 
 

@@ -18,7 +18,7 @@ entity_factory_(new EntityFactory("entity.xml"))
         if(xml::parse_attribute(cmp_node, "name", model_name))
         {
             cmp_model->model = model_factory_->make_model_instance(H_(model_name.c_str()));
-            cmp_model->model->get_mesh().set_buffer_batch(BufferToken::Batch::INSTANCE);
+            cmp_model->model->get_mesh().set_batch_category("instance"_h);
             return true;
         }
         return false;

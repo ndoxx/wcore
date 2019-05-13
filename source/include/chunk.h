@@ -6,7 +6,7 @@
 #include <functional>
 
 #include "w_symbols.h"
-#include "buffer_unit.hpp"
+#include "render_batch.hpp"
 #include "math3d.h"
 #include "vertex_format.h"
 
@@ -64,10 +64,10 @@ private:
 
     math::i32vec2 coords_;
     uint32_t index_;
-    BufferUnit<Vertex3P3N3T2U>  buffer_unit_;
-    BufferUnit<Vertex3P3N3T2U>  terrain_buffer_unit_;
-    BufferUnit<Vertex3P3N3T2U>  blend_buffer_unit_;
-    BufferUnit<Vertex3P>        line_buffer_unit_;
+    RenderBatch<Vertex3P3N3T2U> render_batch_;
+    RenderBatch<Vertex3P3N3T2U> terrain_render_batch_;
+    RenderBatch<Vertex3P3N3T2U> blend_render_batch_;
+    RenderBatch<Vertex3P>       line_render_batch_;
     pTerrain terrain_;
 
     std::vector<pModel> models_;
@@ -123,8 +123,8 @@ public:
 
     void dbg_show_statistics();
 
-    inline uint32_t get_vertex_count() const    { return buffer_unit_.get_n_vertices(); }
-    inline uint32_t get_triangles_count() const { return buffer_unit_.get_n_indices()/3; }
+    inline uint32_t get_vertex_count() const    { return render_batch_.get_n_vertices(); }
+    inline uint32_t get_triangles_count() const { return render_batch_.get_n_indices()/3; }
 };
 
 }

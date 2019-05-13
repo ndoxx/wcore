@@ -23,9 +23,9 @@ height_(texture.get_height())
     draw_buffers_ = new GLenum[n_textures_];
 
     #if __DEBUG__
-        DLOGN("[FrameBuffer] Initializing as render target.", "buffer");
-        DLOGI("width:  <v>" + std::to_string(width_)  + "</v>", "buffer");
-        DLOGI("height: <v>" + std::to_string(height_) + "</v>", "buffer");
+        DLOGN("[FrameBuffer] Initializing as render target.", "fbo");
+        DLOGI("width:  <v>" + std::to_string(width_)  + "</v>", "fbo");
+        DLOGI("height: <v>" + std::to_string(height_) + "</v>", "fbo");
     #endif
 
     /*
@@ -51,7 +51,7 @@ height_(texture.get_height())
             glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_);
 
             #if __DEBUG__
-                DLOGI("Generated new FBO.", "buffer");
+                DLOGI("Generated new FBO.", "fbo");
             #endif
         }
 
@@ -103,23 +103,23 @@ height_(texture.get_height())
         switch(status)
         {
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-                DLOGF("[Framebuffer] Not all framebuffer attachment points are framebuffer attachment complete.", "buffer");
+                DLOGF("[Framebuffer] Not all framebuffer attachment points are framebuffer attachment complete.", "fbo");
                 break;
             /*case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
                 DLOGF("[Framebuffer] Not all attached images have the same width and height.");
                 break;*/
             case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-                DLOGF("[Framebuffer] No images are attached to the framebuffer.", "buffer");
+                DLOGF("[Framebuffer] No images are attached to the framebuffer.", "fbo");
                 break;
             case GL_FRAMEBUFFER_UNSUPPORTED:
-                DLOGF("[Framebuffer] The combination of internal formats of the attached images violates an implementation-dependent set of restrictions.", "buffer");
+                DLOGF("[Framebuffer] The combination of internal formats of the attached images violates an implementation-dependent set of restrictions.", "fbo");
                 break;
         }
     }
     else
     {
         #if __DEBUG__
-            DLOGI("Framebuffer creation <g>complete</g>.", "buffer");
+            DLOGI("Framebuffer creation <g>complete</g>.", "fbo");
         #endif
         // Save texture indices
             for(uint32_t ii=0; ii<n_textures_; ++ii)
