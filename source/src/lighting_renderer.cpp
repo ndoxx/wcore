@@ -65,7 +65,7 @@ void LightingRenderer::render(Scene* pscene)
     {
         g_buffer.bind_as_source();
         l_buffer.bind_as_target();
-        g_buffer.blit_depth(l_buffer); // [OPT] Find a workaround
+        //g_buffer.blit_depth(l_buffer); // [OPT] Find a workaround
         GFX::lock_depth_buffer();
         GFX::clear_color();
 

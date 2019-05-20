@@ -24,13 +24,21 @@ public:
     TextureUnitInfo(hash_t sampler_name,
                     TextureFilter filter,
                     uint32_t internal_format,
-                    uint32_t format);
+                    uint32_t format,
+                    unsigned char* data = nullptr);
+
+    TextureUnitInfo(hash_t sampler_name,
+                    uint32_t texture_id);
 
 protected:
     hash_t sampler_name_;
     TextureFilter filter_;
     uint32_t internal_format_;
     uint32_t format_;
+    unsigned char* data_;
+
+    bool is_shared_;
+    uint32_t texture_id_;
 };
 
 struct MaterialInfo;
@@ -69,6 +77,9 @@ public:
                           uint32_t base_level = 0,
                           uint32_t max_level = 3) const;
 
+    // Get structure that allows texture unit sharing between multiple Textures
+    TextureUnitInfo share_unit(uint32_t index);
+
     // Get the number of texture units in this texture
     inline uint32_t get_num_units() const                { return n_units_; }
     // Get texture units width
@@ -89,11 +100,8 @@ public:
 
 private:
     // Generic helper function to generate a texture unit inside this texture
-    void generate_texture_unit(unsigned int internal_format,
-                               unsigned int format,
-                               TextureFilter filter,
+    void generate_texture_unit(const TextureUnitInfo& unit_info,
                                TextureWrap wrap_param,
-                               unsigned char* data = nullptr,
                                bool lazy_mipmap = false);
 
 private:

@@ -84,7 +84,8 @@ RenderPipeline::RenderPipeline()
             {
                 TextureUnitInfo("screenTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16F, GL_RGBA),
                 TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), GL_RGBA, GL_RGBA),
-                TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+                //TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+                GMODULES::GET("gbuffer"_h).get_texture().share_unit(2) // G-Buffer and L-Buffer share the same depth buffer
             },
             GLB.WIN_W,
             GLB.WIN_H,
