@@ -28,14 +28,16 @@ static float SSAO_sigma = 1.8f;*/
 SSAORenderer::SSAORenderer():
 SSAO_shader_(ShaderResource("SSAO.vert;SSAO.frag")),
 ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VARIANT_R_ONLY"),
-           std::make_unique<Texture>(
-                       std::vector<hash_t>{"SSAOtmpTex"_h},
-                       std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
-                       std::vector<uint32_t>{GL_R8},
-                       std::vector<uint32_t>{GL_RED},
-                       GLB.WIN_W/4,
-                       GLB.WIN_H/4,
-                       TextureWrap::CLAMP_TO_EDGE)),
+           std::make_unique<Texture>
+            (
+                std::initializer_list<TextureUnitInfo>
+                {
+                    TextureUnitInfo("SSAOtmpTex"_h, TextureFilter::MIN_LINEAR, GL_R8, GL_RED),
+                },
+                GLB.WIN_W/4,
+                GLB.WIN_H/4,
+                TextureWrap::CLAMP_TO_EDGE
+            )),
 out_size_(GLB.WIN_W/2,
           GLB.WIN_H/2),
 noise_scale_(out_size_/(float(NOISE_SQRSIZE_))),

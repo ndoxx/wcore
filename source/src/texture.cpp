@@ -146,7 +146,20 @@ static GLenum fix_internal_format(GLenum iformat, hash_t sampler_name)
     return iformat;
 }
 
-Texture::Texture(const TextureDescriptor& descriptor)
+TextureUnitInfo::TextureUnitInfo(hash_t sampler_name,
+                                 TextureFilter filter,
+                                 uint32_t internal_format,
+                                 uint32_t format):
+sampler_name_(sampler_name),
+filter_(filter),
+internal_format_(internal_format),
+format_(format)
+{
+
+}
+
+Texture::Texture(const TextureDescriptor& descriptor):
+n_units_(0)
 {
 #ifdef __DEBUG__
     std::stringstream ss;
@@ -167,14 +180,8 @@ Texture::Texture(const TextureDescriptor& descriptor)
 
     sampler_group_ = descriptor.sampler_group;
     unit_flags_    = descriptor.unit_flags;
-
-    // Containers to be submitted to OpenGL
-    std::vector<TextureFilter> filters;
-    std::vector<GLenum> formats;
-    std::vector<GLenum> internalFormats;
-    std::vector<unsigned char*> data;
-    uint32_t width  = 0;
-    uint32_t height = 0;
+    width_  = descriptor.width;
+    height_ = descriptor.height;
 
     uint32_t ii=0;
     for(auto&& [key, sampler_name]: SAMPLER_NAMES[sampler_group_-1])
@@ -185,30 +192,19 @@ Texture::Texture(const TextureDescriptor& descriptor)
             block_to_sampler_[key] = uniform_sampler_names_.size() + (sampler_group_-1)*SAMPLER_GROUP_SIZE;
             uniform_sampler_names_.push_back(sampler_name);
 
-            data.push_back(data_ptrs[ii]);
-            filters.push_back(descriptor.parameters.filter);
-            formats.push_back(descriptor.parameters.format);
-            internalFormats.push_back(fix_internal_format(descriptor.parameters.internal_format, sampler_name));
-            width = descriptor.width;
-            height = descriptor.height;
+            generate_texture_unit(fix_internal_format(descriptor.parameters.internal_format, sampler_name),
+                                  descriptor.parameters.format,
+                                  descriptor.parameters.filter,
+                                  descriptor.parameters.wrap,
+                                  data_ptrs[ii],
+                                  false);
         }
         ++ii;
     }
-
-    // Send to OpenGL
-    n_units_ = data.size();
-    generate_texture_units(n_units_,
-                           width,
-                           height,
-                           &data[0],
-                           &internalFormats[0],
-                           &formats[0],
-                           filters,
-                           descriptor.parameters.wrap,
-                           false);
 }
 
 Texture::Texture(std::istream& stream):
+n_units_(0),
 unit_flags_(0),
 sampler_group_(1)
 {
@@ -228,53 +224,50 @@ sampler_group_(1)
         px_buf->debug_display();
 #endif
 
-    TextureFilter filter = TextureFilter(TextureFilter::MIN_LINEAR);
-    GLenum internal_format = GL_RGB;
-    GLenum format = GL_RGB;
-    unsigned char* data = px_buf->get_data_pointer();
-    generate_texture_units(1,
-                           px_buf->get_width(),
-                           px_buf->get_height(),
-                           &data,
-                           &internal_format,
-                           &format,
-                           std::vector<TextureFilter>{filter},
-                           TextureWrap::CLAMP_TO_EDGE,
-                           false);
+    generate_texture_unit(GL_RGBA,
+                          GL_RGBA,
+                          TextureFilter::MIN_LINEAR,
+                          TextureWrap::CLAMP_TO_EDGE,
+                          px_buf->get_data_pointer(),
+                          false);
 
     delete px_buf;
 }
 
-Texture::Texture(const std::vector<hash_t>& sampler_names,
-        const std::vector<TextureFilter>& filters,
-        const std::vector<uint32_t>& internalFormats,
-        const std::vector<uint32_t>& formats,
-        uint32_t width,
-        uint32_t height,
-        TextureWrap wrap_param,
-        bool lazy_mipmap):
+Texture::Texture(std::initializer_list<TextureUnitInfo> units,
+                 uint32_t width,
+                 uint32_t height,
+                 TextureWrap wrap_param,
+                 bool lazy_mipmap):
+n_units_(0),
 unit_flags_(0),
-sampler_group_(1),
-uniform_sampler_names_(sampler_names)
+sampler_group_(1)
 {
-    generate_texture_units(sampler_names.size(),
-                           width,
-                           height,
-                           nullptr,
-                           (GLenum*)&internalFormats[0],
-                           (GLenum*)&formats[0],
-                           filters,
-                           wrap_param,
-                           lazy_mipmap);
+    //n_units_ = units.size();
+#ifdef __PROFILING_SET_2x2_TEXTURE__
+    width_  = 2;
+    height_ = 2;
+#else
+    width_  = width;
+    height_ = height;
+#endif
+
+    for(auto&& unit: units)
+    {
+        uniform_sampler_names_.push_back(unit.sampler_name_);
+        generate_texture_unit(unit.internal_format_,
+                              unit.format_,
+                              unit.filter_,
+                              wrap_param,
+                              nullptr,
+                              lazy_mipmap);
+    }
 }
 
 Texture::~Texture()
 {
-    if(texture_ids_)
-    {
-        glDeleteTextures(n_units_, texture_ids_);
-        delete[] texture_ids_;
-    }
+    if(texture_ids_.size())
+        glDeleteTextures(n_units_, &texture_ids_[0]);
 }
 
 void Texture::bind_sampler(const Shader& shader, TextureBlock block) const
@@ -318,65 +311,50 @@ void Texture::generate_mipmaps(uint32_t index,
                     math::clamp(0.0f, 8.0f, maxAnisotropy));
 }
 
-void Texture::generate_texture_units(uint32_t n_units,
-                                     uint32_t width,
-                                     uint32_t height,
-                                     unsigned char** data,
-                                     unsigned int* internalFormats,
-                                     unsigned int* formats,
-                                     const std::vector<TextureFilter>& filters,
-                                     TextureWrap wrap_param,
-                                     bool lazy_mipmap)
+void Texture::generate_texture_unit(unsigned int internal_format,
+                                    unsigned int format,
+                                    TextureFilter filter,
+                                    TextureWrap wrap_param,
+                                    unsigned char* data,
+                                    bool lazy_mipmap)
 {
-    n_units_ = n_units;
-#ifdef __PROFILING_SET_2x2_TEXTURE__
-    width_  = 2;
-    height_ = 2;
-#else
-    width_  = width;
-    height_ = height;
-#endif
+    size_t index = texture_ids_.size();
+    texture_ids_.push_back(0);
+    // Generate one texture unit
+    glGenTextures(1, &texture_ids_[index]);
+    // Bind unit
+    glBindTexture(GL_TEXTURE_2D, texture_ids_[index]);
+    // Generate filter and check whether this unit has mipmaps
+    bool has_mipmap = handle_filter(filter, GL_TEXTURE_2D);
+    // Set wrap parameters
+    handle_addressUV(wrap_param, GL_TEXTURE_2D);
+    // Check whether this unit has depth information
+    is_depth_.push_back((format == GL_DEPTH_COMPONENT ||
+                         format == GL_DEPTH_STENCIL));
+    // Get data type relative to internal format
+    GLenum dataType = internal_format_to_data_type(internal_format);
 
-    texture_ids_ = new GLuint[n_units];
+    // Specify OpenGL texture
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 internal_format,
+                 width_,
+                 height_,
+                 0,
+                 format,
+                 dataType,
+                 data);
 
-    // Generate the right amount of texture units
-    glGenTextures(n_units, texture_ids_);
-    // For each unit
-    for(uint32_t ii = 0; ii < n_units; ++ii)
+    // Handle mipmap if specified
+    if(has_mipmap && !lazy_mipmap)
+        generate_mipmaps(index);
+    else
     {
-        // Bind unit
-        glBindTexture(GL_TEXTURE_2D, texture_ids_[ii]);
-
-        // Generate filter and check whether this unit has mipmaps
-        bool has_mipmap = handle_filter(filters[ii], GL_TEXTURE_2D);
-        // Set wrap parameters
-        handle_addressUV(wrap_param, GL_TEXTURE_2D);
-        // Check whether this unit has depth information
-        is_depth_.push_back((formats[ii] == GL_DEPTH_COMPONENT ||
-                             formats[ii] == GL_DEPTH_STENCIL));
-        // Get data type relative to internal format
-        GLenum dataType = internal_format_to_data_type(internalFormats[ii]);
-
-        // Specify OpenGL texture
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     internalFormats[ii],
-                     width_,
-                     height_,
-                     0,
-                     formats[ii],
-                     dataType,
-                     (data)?data[ii]:nullptr);
-
-        // Handle mipmap if specified
-        if(has_mipmap && !lazy_mipmap)
-            generate_mipmaps(ii);
-        else
-        {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-        }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     }
+
+    ++n_units_;
 }
 
 }

@@ -31,10 +31,10 @@ DebugOverlayRenderer::DebugOverlayRenderer(TextRenderer& text_renderer):
 peek_shader_(ShaderResource("fb_peek.vert;fb_peek.frag")),
 render_target_("debugOverlayBuffer",
 std::make_unique<Texture>(
-    std::vector<hash_t>{"debugOverlayTex"_h},
-    std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
-    std::vector<uint32_t>{GL_RGBA16F},
-    std::vector<uint32_t>{GL_RGBA},
+    std::initializer_list<TextureUnitInfo>
+    {
+        TextureUnitInfo("debugOverlayTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA16F, GL_RGBA),
+    },
     GLB.WIN_W,
     GLB.WIN_H,
     TextureWrap::CLAMP_TO_EDGE),

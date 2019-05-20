@@ -57,36 +57,40 @@ RenderPipeline::RenderPipeline()
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "gbuffer",
-        std::make_unique<Texture>(
-            std::vector<hash_t>{"normalTex"_h, "albedoTex"_h, "depthTex"_h},
-            std::vector<TextureFilter>{TextureFilter::MIN_NEAREST,
-                                       TextureFilter::MIN_NEAREST,
-                                       TextureFilter::MIN_NEAREST},
-            std::vector<uint32_t>{GL_RGBA16_SNORM, GL_RGBA, GL_DEPTH_COMPONENT32},
-            std::vector<uint32_t>{GL_RGBA, GL_RGBA, GL_DEPTH_COMPONENT},
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("normalTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16_SNORM,     GL_RGBA),
+                TextureUnitInfo("albedoTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA,             GL_RGBA),
+                TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+            },
             GLB.WIN_W,
             GLB.WIN_H,
-            TextureWrap::CLAMP_TO_EDGE),
+            TextureWrap::CLAMP_TO_EDGE
+        ),
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
                              GL_COLOR_ATTACHMENT1,
-                             GL_DEPTH_ATTACHMENT})
+                             GL_DEPTH_STENCIL_ATTACHMENT})
     ));
 
     // Buffer with facilities for Lighting pass
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "lbuffer",
-        std::make_unique<Texture>(
-            std::vector<hash_t>{"screenTex"_h, "brightTex"_h, "ldepthStencilTex"_h},
-            std::vector<TextureFilter> {TextureFilter::MIN_NEAREST,
-                                        TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR),
-                                        TextureFilter::MIN_NEAREST},
-            std::vector<uint32_t> {GL_RGBA16F, GL_RGBA, GL_DEPTH24_STENCIL8},
-            std::vector<uint32_t> {GL_RGBA, GL_RGBA, GL_DEPTH_STENCIL},
-            GLB.WIN_W,                   // brightTex will contain the bright map.
-            GLB.WIN_H,                   // We use the multiple render target scheme
-            TextureWrap::CLAMP_TO_EDGE,  // to populate this texture during the lighting pass.
-            true), // Lazy mipmap initialization needed
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("screenTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16F, GL_RGBA),
+                TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), GL_RGBA, GL_RGBA),
+                TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+            },
+            GLB.WIN_W,
+            GLB.WIN_H,
+            TextureWrap::CLAMP_TO_EDGE,
+            true
+        ),
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
                              GL_COLOR_ATTACHMENT1,
                              GL_DEPTH_STENCIL_ATTACHMENT})
@@ -96,14 +100,16 @@ RenderPipeline::RenderPipeline()
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "SSAObuffer",
-        std::make_unique<Texture>(
-            std::vector<hash_t>{"SSAOTex"_h},
-            std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
-            std::vector<uint32_t>{GL_R8},
-            std::vector<uint32_t>{GL_RED},
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("SSAOTex"_h, TextureFilter::MIN_LINEAR, GL_R8, GL_RED),
+            },
             GLB.WIN_W/2,
             GLB.WIN_H/2,
-            TextureWrap::CLAMP_TO_EDGE),
+            TextureWrap::CLAMP_TO_EDGE
+        ),
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
     ));
 
@@ -111,14 +117,16 @@ RenderPipeline::RenderPipeline()
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "SSRbuffer",
-        std::make_unique<Texture>(
-            std::vector<hash_t>{"SSRTex"_h},
-            std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
-            std::vector<uint32_t>{GL_RGBA16F},
-            std::vector<uint32_t>{GL_RGBA},
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("SSRTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA16F, GL_RGBA),
+            },
             GLB.WIN_W/2,
             GLB.WIN_H/2,
-            TextureWrap::CLAMP_TO_EDGE),
+            TextureWrap::CLAMP_TO_EDGE
+        ),
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
     ));
 

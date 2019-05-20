@@ -17,10 +17,10 @@ SSR_shader_(ShaderResource("SSR.vert;SSR.frag")),
 SSR_blur_shader_(ShaderResource("SSR_blur.vert;SSR_blur.frag")),
 blur_buffer_("SSRBlurBuffer",
 std::make_unique<Texture>(
-    std::vector<hash_t>{"SSRBlurTex"_h},
-    std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
-    std::vector<uint32_t>{GL_RGBA16F},
-    std::vector<uint32_t>{GL_RGBA},
+    std::initializer_list<TextureUnitInfo>
+    {
+        TextureUnitInfo("SSRBlurTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA16F, GL_RGBA),
+    },
     GLB.WIN_W/2,
     GLB.WIN_H/2,
     TextureWrap::CLAMP_TO_EDGE),

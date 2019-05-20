@@ -22,11 +22,12 @@ kernel_(9,1.8f)
         blur_stages_.push_back(std::make_unique<BufferModule>
         (
             "dontcare",
-            std::make_unique<Texture>(
-                std::vector<hash_t>{"brightTex"_h},
-                std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
-                std::vector<uint32_t>{GL_RGBA},
-                std::vector<uint32_t>{GL_RGBA},
+            std::make_unique<Texture>
+            (
+                std::initializer_list<TextureUnitInfo>
+                {
+                    TextureUnitInfo("brightTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA, GL_RGBA),
+                },
 #ifdef __OPTIM_BLOOM_USE_PP2__
                 math::pp2(GLB.WIN_W/pow(2,ii+1)),
                 math::pp2(GLB.WIN_H/pow(2,ii+1)),
@@ -34,7 +35,8 @@ kernel_(9,1.8f)
                 GLB.WIN_W/pow(2,ii+1),
                 GLB.WIN_H/pow(2,ii+1),
 #endif // __OPTIM_BLOOM_USE_PP2__
-                TextureWrap::CLAMP_TO_EDGE),
+                TextureWrap::CLAMP_TO_EDGE
+            ),
             std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
         ));
     }
@@ -42,14 +44,16 @@ kernel_(9,1.8f)
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "bloombuffer",
-        std::make_unique<Texture>(
-            std::vector<hash_t>{"bloomTex"_h},
-            std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
-            std::vector<uint32_t>{GL_RGBA},
-            std::vector<uint32_t>{GL_RGBA},
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("bloomTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA, GL_RGBA),
+            },
             GLB.WIN_W/2,
             GLB.WIN_H/2,
-            TextureWrap::CLAMP_TO_EDGE),
+            TextureWrap::CLAMP_TO_EDGE
+        ),
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
     ));
 }

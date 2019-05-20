@@ -44,20 +44,20 @@ normal_offset_(-0.013f)
     GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "shadowmap",
-        std::make_unique<Texture>(
-            std::vector<hash_t>{"shadowTex"_h},
-        #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-            std::vector<TextureFilter>{TextureFilter::MIN_LINEAR},
-            std::vector<uint32_t>{GL_RGBA32F},
-            std::vector<uint32_t>{GL_RGBA},
-        #else
-            std::vector<TextureFilter>{TextureFilter::MAG_NEAREST | TextureFilter::MIN_NEAREST},
-            std::vector<uint32_t>{GL_DEPTH_COMPONENT24},
-            std::vector<uint32_t>{GL_DEPTH_COMPONENT},
-        #endif
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+            #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
+                TextureUnitInfo("shadowTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA32F, GL_RGBA),
+            #else
+                TextureUnitInfo("shadowTex"_h, TextureFilter(TextureFilter::MAG_NEAREST | TextureFilter::MIN_NEAREST), GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT),
+            #endif
+            },
             SHADOW_WIDTH,
             SHADOW_HEIGHT,
-            TextureWrap::CLAMP_TO_EDGE),
+            TextureWrap::CLAMP_TO_EDGE
+        ),
         #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
         std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
         #else
