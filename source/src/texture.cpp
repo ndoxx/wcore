@@ -224,8 +224,11 @@ sampler_group_(1)
         px_buf->debug_display();
 #endif
 
-    generate_texture_unit(GL_RGBA,
-                          GL_RGBA,
+    width_  = px_buf->get_width();
+    height_ = px_buf->get_height();
+
+    generate_texture_unit(GL_RGB,
+                          GL_RGB,
                           TextureFilter::MIN_LINEAR,
                           TextureWrap::CLAMP_TO_EDGE,
                           px_buf->get_data_pointer(),
@@ -243,7 +246,6 @@ n_units_(0),
 unit_flags_(0),
 sampler_group_(1)
 {
-    //n_units_ = units.size();
 #ifdef __PROFILING_SET_2x2_TEXTURE__
     width_  = 2;
     height_ = 2;
@@ -319,9 +321,10 @@ void Texture::generate_texture_unit(unsigned int internal_format,
                                     bool lazy_mipmap)
 {
     size_t index = texture_ids_.size();
-    texture_ids_.push_back(0);
     // Generate one texture unit
-    glGenTextures(1, &texture_ids_[index]);
+    GLuint tex_id;
+    glGenTextures(1, &tex_id);
+    texture_ids_.push_back(tex_id);
     // Bind unit
     glBindTexture(GL_TEXTURE_2D, texture_ids_[index]);
     // Generate filter and check whether this unit has mipmaps

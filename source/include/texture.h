@@ -88,7 +88,7 @@ public:
 #endif
 
 private:
-    // Generic helper function to submit a texture unit to OpenGL
+    // Generic helper function to generate a texture unit inside this texture
     void generate_texture_unit(unsigned int internal_format,
                                unsigned int format,
                                TextureFilter filter,

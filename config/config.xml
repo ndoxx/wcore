@@ -63,14 +63,14 @@
             <bool name="print_backtrace_on_error" value="false"/>
         </logger>
         <channel_verbosity>
-            <uint name="texture"   value="0"/>
+            <uint name="texture"   value="3"/>
             <uint name="material"  value="0"/>
             <uint name="model"     value="0"/>
             <uint name="shader"    value="0"/>
             <uint name="text"      value="0"/>
             <uint name="input"     value="0"/>
             <uint name="fbo"       value="0"/>
-            <uint name="batch"     value="3"/>
+            <uint name="batch"     value="0"/>
             <uint name="chunk"     value="0"/>
             <uint name="parsing"   value="0"/>
             <uint name="entity"    value="0"/>
