@@ -160,12 +160,21 @@ is_shared_(false)
 {
 
 }
-
+#ifdef __DEBUG__
+TextureUnitInfo::TextureUnitInfo(hash_t sampler_name,
+                                 uint32_t texture_id,
+                                 bool is_depth):
+sampler_name_(sampler_name),
+is_shared_(true),
+texture_id_(texture_id),
+is_depth_(is_depth)
+#else
 TextureUnitInfo::TextureUnitInfo(hash_t sampler_name,
                                  uint32_t texture_id):
 sampler_name_(sampler_name),
 is_shared_(true),
 texture_id_(texture_id)
+#endif
 {
 
 }
@@ -274,7 +283,6 @@ Texture::~Texture()
 {
     if(texture_ids_.size())
         glDeleteTextures(n_units_, &texture_ids_[0]);
-    // TODO: check that texture units are not shared before trying to destroy them
 }
 
 void Texture::bind_sampler(const Shader& shader, TextureBlock block) const
@@ -370,8 +378,7 @@ void Texture::generate_texture_unit(const TextureUnitInfo& unit_info,
         texture_ids_.push_back(unit_info.texture_id_);
         uniform_sampler_names_.push_back(unit_info.sampler_name_);
 #ifdef __DEBUG__
-        // Check whether this unit has depth information
-        is_depth_.push_back(true); // TMP
+        is_depth_.push_back(unit_info.is_depth_);
 #endif
     }
 
@@ -381,7 +388,12 @@ void Texture::generate_texture_unit(const TextureUnitInfo& unit_info,
 TextureUnitInfo Texture::share_unit(uint32_t index)
 {
     assert(index<n_units_ && "Texture::share_unit() index out of bounds.");
+
+#ifdef __DEBUG__
+    return TextureUnitInfo(uniform_sampler_names_.at(index), texture_ids_.at(index), is_depth_.at(index));
+#else
     return TextureUnitInfo(uniform_sampler_names_.at(index), texture_ids_.at(index));
+#endif
 }
 
 

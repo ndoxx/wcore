@@ -7,12 +7,12 @@ namespace wcore
 #ifdef __PROFILE__
 #define PROFILING_MAX_SAMPLES 1000
 bool Renderer::PROFILING_ACTIVE = false;
-nanoClock Renderer::profile_clock_;
 #endif
 
 Renderer::Renderer():
 enabled_(true)
 #ifdef __PROFILE__
+, query_timer_()
 , dt_fifo_(PROFILING_MAX_SAMPLES)
 #endif
 {
@@ -26,20 +26,12 @@ void Renderer::Render(Scene* pscene)
         return;
 
     if(PROFILING_ACTIVE)
-    {
-        GFX::finish();
-        profile_clock_.restart();
-    }
+        query_timer_.start();
 
     render(pscene);
 
     if(PROFILING_ACTIVE)
-    {
-        GFX::finish();
-        std::chrono::nanoseconds period = profile_clock_.get_elapsed_time();
-        float dt = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
-        dt_fifo_.push(dt);
-    }
+        dt_fifo_.push(query_timer_.stop());
 }
 #endif
 

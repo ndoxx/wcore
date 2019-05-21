@@ -274,7 +274,7 @@ Mais le truc cool... C'est que l'on peut aussi choisir une projection hybride en
 J'ai pour l'instant une classe _Shader_ fonctionnelle mais définie juste avant main() (en train d'être prototypée). J'ai bien entendu récupéré des bouts de WEngine pour cette classe.
 J'ai récupéré les shaders vertex et fragment de Gebobola pour implémenter un per-vertex Gouraud shading vite tef. Bah, ça fonctionne.
 
-Lors du test de la caméra en revanche, je me suis rendu compte d'un problème dans la multiplication de quats qui très étonnamment m'avait échappée (car je suis *on ne peut plus* sérieux avec le unit testing bien sûr...). Encore une permutation circulaire des indices due à des conflits de conventions XYZW / WXYZ.
+Lors du test de la caméra en revanche, je me suis rendu compte d'un problème dans la multiplication de quats qui très étonnamment m'avait échappé (car je suis *on ne peut plus* sérieux avec le unit testing bien sûr...). Encore une permutation circulaire des indices due à des conflits de conventions XYZW / WXYZ.
 * Donc déjà faudrait revisiter l'operator/ qui doit aussi être écrit de manière frivole.
 * Et revenir sur le problème d'hier avec le unit test du rotate_around() (qui si ça se trouve doit fonctionner tout seul maintenant).
 
@@ -283,7 +283,7 @@ J'ai aussi testé la transition ortho->persp et inverse en me servant de cette s
 
 ##[Shader]
 * Nous avons maintenant une classe _Shader_ toute propre.
-* Geometry shader opérationnel, j'ai rendu vie à ce bon vieux bout de code qui me permettait d'afficher le wireframe dans WEngine. Plutôt que d'activer/désactiver cette fonctionnalité en tout ou rien, j'ai paramétré le blend du wireframe avec un float in[0,1].
+* Geometry shader opérationnel, j'ai rendu vie à ce bon vieux bout de code qui me permettait d'afficher le wireframe dans WEngine. Plutôt que d'activer/désactiver cette fonctionnalité en tout ou rien, j'ai paramétré le blend du wireframe avec un float $\in[0,1]$.
 
 #[02-07-18]
 
@@ -610,6 +610,7 @@ Je ne sais pas encore si c'est bien ou pas bien, mais j'ai ajouté une méthode 
     });
 ```
 Le même code hors du contexte d'exécution offert par le foncteur de with_render_target() dessinerait tout simplement à l'écran. J'ai trouvé ça esthétique...
+    -> Edit: pas bien.
 
 #[BUG][fixed] Test overlay not displaying
 L'overlay que j'utilise comme test pour les textures multiples n'est plus affiché quand j'utilise le rendu sur texture.
@@ -933,7 +934,7 @@ On peut générer dynamiquement une string
     std::string defines("#define NR_POINT_LIGHTS ");
     defines += std::to_string(n_lights);
 ```
-puis concaténer cette string à la string sourccce du fragment shader avant compilation. A chaque changement de scène, on peut recalculer le nombre de lumières dont on a besoin et compiler un shader à la volée.
+puis concaténer cette string à la string source du fragment shader avant compilation. A chaque changement de scène, on peut recalculer le nombre de lumières dont on a besoin et compiler un shader à la volée.
 
 ##[TODO] Suite du programme : Going full PBR
 J'ai pu aujourd'hui valider un certain nombre de features en codant vite taif un Phong model. Maintenant je dois attaquer le plat de résistance.
@@ -1042,7 +1043,7 @@ La classe _ScreenRenderer_ a été modifiée en conséquence et donne accès au 
 Voilà qui préparera la voie au *deferred shading*. L'idée derrière le deferred shading est de réaliser une première passe de rendu dans une texture (plusieurs units) appelée le *G-buffer* pour y écrire l'information géométrique brute (*geometry pass*). Une deuxième passe (*lighting pass*) utilise l'information du G-buffer pour éclairer chaque fragment.
 Avantages princpiaux :
 * La deuxième passe travaille sur un quad, donc autant de fragments que de pixels. En effet, la passe précédente a déjà depth-testé et l'information géométrique qui subsiste est l'information *visible* (top-most fragments). De fait le lighting est beaucoup plus économique, car le fragment shader ne travaillera pas sur des fragments invisibles comme c'est le cas en forward rendering.
-* L'utilisation de *light volumes* permet de traiter une large quantité de lumières sans effondrement des performances. L'idée est qu'on n'effectue les calculs de lumières pour un fragment donné et une source donnée ssi le fragment est dans le light volume, c'est à dire la zone d'influence, de la source.
+* L'utilisation de *light volumes* permet de traiter une large quantité de lumières sans effondrement des performances. L'idée est qu'on effectue les calculs de lumières pour un fragment donné et une source donnée ssi le fragment est dans le light volume, c'est à dire la zone d'influence, de la source.
 
 Inconvénients:
 * Incompatible avec le MSAA.
@@ -1265,7 +1266,7 @@ Court terme :
 
     [x] Implémenter des contrôles basiques pour bouger dans la scène.
     [x] Implémenter du rendu de texte (FreeType a priori).
-    [o] Implémenter du parsing XML basique pour pouvoir construire des scènes test plus rapidement. Ce sera provisoire, donc ne pas y passer trop de temps.
+    [x] Implémenter du parsing XML basique pour pouvoir construire des scènes test plus rapidement. Ce sera provisoire, donc ne pas y passer trop de temps.
         ->[23-07-18] Je risque de tout faire avec Flatbuffers.
 
 Moyen Terme :
@@ -7998,6 +7999,59 @@ Yep. Les miens sont déjà templatés :)
 * Sources :
 [1] https://www.gamedev.net/articles/programming/graphics/opengl-batch-rendering-r3900/
 [2] https://gamedev.stackexchange.com/questions/65847/batching-elements
+
+
+#[20-05-19]
+
+## Grosse optimisation
+Le G-Buffer et le L-Buffer partagent le même depth-buffer. Il s'ensuit que j'économise un blit lors de la light pass, et je gagne entre 2 et 3ms sur une frame.
+
+Pour ce faire, j'ai modifié davantage le constructeur de _Texture_ spécifique aux render targets pour prendre en premier argument une std::initializer_list<TextureUnitInfo>. _TextureUnitInfo_ regroupe les divers paramètres d'une texture unit et possède deux constructeurs. Le premier est publique et permet l'initialisation d'une texture unit depuis zéro. Le second est protégé (accessible depuis la friend class _Texture_) et génère un handle vers une texture unit déjà existante. La méthode Texture::share_unit(uint32_t index) permet de récupérer un tel handle depuis l'extérieur, qui servira à l'initialisation d'une autre texture :
+
+```cpp
+    GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "gbuffer",
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("normalTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16_SNORM,     GL_RGBA),
+                TextureUnitInfo("albedoTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA,             GL_RGBA),
+                TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+            },
+            GLB.WIN_W,
+            GLB.WIN_H,
+            TextureWrap::CLAMP_TO_EDGE
+        ),
+        std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
+                             GL_COLOR_ATTACHMENT1,
+                             GL_DEPTH_STENCIL_ATTACHMENT})
+    ));
+
+    GMODULES::REGISTER(std::make_unique<BufferModule>
+    (
+        "lbuffer",
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("screenTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16F, GL_RGBA),
+                TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), GL_RGBA, GL_RGBA),
+                GMODULES::GET("gbuffer"_h).get_texture().share_unit(2)
+            },
+            GLB.WIN_W,
+            GLB.WIN_H,
+            TextureWrap::CLAMP_TO_EDGE,
+            true
+        ),
+        std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
+                             GL_COLOR_ATTACHMENT1,
+                             GL_DEPTH_STENCIL_ATTACHMENT})
+    ));
+```
+Ici le L-Buffer récupère un tel handle sur la texture "depthTex" du G-Buffer, aucune nouvelle texture unit ne sera créée, le L-Buffer utilise effectivement le depth-buffer du G-Buffer.
+
 
 
 

@@ -2,8 +2,8 @@
 #define RENDERER_HPP
 
 #ifdef __PROFILE__
-    #include "clock.hpp"
     #include "moving_average.h"
+    #include "gpu_query_timer.h"
 #endif
 
 namespace wcore
@@ -41,7 +41,7 @@ protected:
 
 private:
 #ifdef __PROFILE__
-    static nanoClock profile_clock_;
+    GPUQueryTimer query_timer_;
     MovingAverage dt_fifo_;
 #endif
 };

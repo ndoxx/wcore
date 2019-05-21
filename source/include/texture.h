@@ -27,8 +27,15 @@ public:
                     uint32_t format,
                     unsigned char* data = nullptr);
 
+protected:
+#ifdef __DEBUG__
+    TextureUnitInfo(hash_t sampler_name,
+                    uint32_t texture_id,
+                    bool is_depth);
+#else
     TextureUnitInfo(hash_t sampler_name,
                     uint32_t texture_id);
+#endif
 
 protected:
     hash_t sampler_name_;
@@ -39,6 +46,9 @@ protected:
 
     bool is_shared_;
     uint32_t texture_id_;
+#ifdef __DEBUG__
+    bool is_depth_;
+#endif
 };
 
 struct MaterialInfo;
