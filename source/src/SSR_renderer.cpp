@@ -34,25 +34,26 @@ fade_eye_start_(0.8f),
 fade_eye_end_(1.f),
 fade_screen_edge_(0.85f),
 min_glossiness_(0.01f),
-pix_thickness_(0.4f),
+//pix_thickness_(0.0f),
 pix_stride_cuttoff_(30.f),
 pix_stride_(7.f),
 max_ray_distance_(25.f),
 probe_(1.f)
 {
-    //SSRBuffer::Init(GLB.WIN_W/2, GLB.WIN_H/2);
+
 }
 
 SSRRenderer::~SSRRenderer()
 {
-    //SSRBuffer::Kill();
+
 }
 
 void SSRRenderer::render(Scene* pscene)
 {
     auto& l_buffer = GMODULES::GET("lbuffer"_h);
     auto& g_buffer = GMODULES::GET("gbuffer"_h);
-    auto& ssr_buffer  = GMODULES::GET("SSRbuffer"_h);
+    auto& ssr_buffer = GMODULES::GET("SSRbuffer"_h);
+    auto& bfd_buffer = GMODULES::GET("backfaceDepthBuffer"_h);
 
     // For position reconstruction
     const mat4& P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
@@ -69,6 +70,7 @@ void SSRRenderer::render(Scene* pscene)
     g_buffer.bind_as_source(1,1);  // albedo, roughness
     g_buffer.bind_as_source(2,2);  // depth
     l_buffer.bind_as_source(3,0);  // screen (last frame)
+    bfd_buffer.bind_as_source(4,0); // backface depth buffer
 
     SSR_shader_.use();
     SSR_shader_.send_uniform<int>("normalTex"_h, 0);
@@ -82,7 +84,7 @@ void SSRRenderer::render(Scene* pscene)
         SSR_shader_.send_uniform<int>("lastFrameTex"_h, 1);
         nonce_ = false;
     }
-    //SSR_shader_.send_uniform<int>("backDepthTex"_h, 4);
+    SSR_shader_.send_uniform<int>("backDepthTex"_h, 4);
 
     SSR_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/ssr_buffer.get_width(),1.0f/ssr_buffer.get_height()));
     SSR_shader_.send_uniform("rd.v2_viewportSize"_h, vec2(ssr_buffer.get_width(),ssr_buffer.get_height()));
@@ -91,7 +93,7 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
     SSR_shader_.send_uniform("rd.f_near"_h, near);
     SSR_shader_.send_uniform("rd.f_minGlossiness"_h, min_glossiness_);
-    SSR_shader_.send_uniform("rd.f_pixelThickness"_h, pix_thickness_);
+    //SSR_shader_.send_uniform("rd.f_pixelThickness"_h, pix_thickness_);
     SSR_shader_.send_uniform("rd.f_maxRayDistance"_h, max_ray_distance_);
     SSR_shader_.send_uniform("rd.f_pixelStride"_h, pix_stride_);
     SSR_shader_.send_uniform("rd.f_pixelStrideZCuttoff"_h, 1.f/pix_stride_cuttoff_);

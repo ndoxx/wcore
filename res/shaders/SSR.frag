@@ -18,7 +18,7 @@ struct render_data
     mat4 m4_invView;
     float f_near;
     float f_minGlossiness;
-    float f_pixelThickness;
+    //float f_pixelThickness;
     float f_maxRayDistance;
     float f_pixelStride;         // number of pixels per ray step close to camera
     float f_pixelStrideZCuttoff; // ray origin Z at this distance will have a pixel stride of 1.0
@@ -40,7 +40,7 @@ uniform sampler2D normalTex;
 uniform sampler2D albedoTex;
 uniform sampler2D depthTex;
 uniform sampler2D lastFrameTex;
-//uniform sampler2D backDepthTex;
+uniform sampler2D backDepthTex;
 
 layout(location = 0) out vec4 out_SSR;
 
@@ -59,27 +59,24 @@ void swap_if_bigger(inout float aa, inout float bb)
     bb = bigger ? tmp: bb;
 }
 
-bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
+/*bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 {
     swap_if_bigger(rayZFar, rayZNear);
     float cameraZ = -depth_view_from_tex(depthTex, hitPixel.xy, rd.v4_proj_params.zw);
     // Cross z
     return rayZFar <= cameraZ && rayZNear >= cameraZ - rd.f_pixelThickness;
-}
+}*/
 
-/*
+
 bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 {
     // Swap if bigger
-    if(rayZFar > rayZNear)
-    {
-        float t = rayZFar; rayZFar = rayZNear; rayZNear = t;
-    }
+    swap_if_bigger(rayZFar, rayZNear);
     float cameraZ = -depth_view_from_tex(depthTex, hitPixel.xy, rd.v4_proj_params.zw);
     float backZ = -depth_view_from_tex(backDepthTex, hitPixel.xy, rd.v4_proj_params.zw);
     // Cross z
-    return rayZFar <= cameraZ && rayZNear >= backZ - rd.f_pixelThickness;
-}*/
+    return rayZFar <= cameraZ && rayZNear >= backZ;
+}
 
 bool ray_march(vec3 rayOrigin,
                vec3 rayDirection,

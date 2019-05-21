@@ -38,19 +38,21 @@ namespace wcore
 
 RenderPipeline::RenderPipeline()
 {
-    /*GMODULES::REGISTER(std::make_unique<BufferModule>
+    GMODULES::REGISTER(std::make_unique<BufferModule>
     (
         "backfaceDepthBuffer",
-        std::make_unique<Texture>(
-            std::vector<hash_t>{"backfaceDepthTex"_h},
-            std::vector<TextureFilter>{TextureFilter::MIN_NEAREST},
-            std::vector<uint32_t>{ GL_DEPTH_COMPONENT32},
-            std::vector<uint32_t>{ GL_DEPTH_COMPONENT},
+        std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("backfaceDepthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+            },
             GLB.WIN_W,
             GLB.WIN_H,
-            true),
+            TextureWrap::CLAMP_TO_EDGE
+        ),
         std::vector<GLenum>({GL_DEPTH_ATTACHMENT})
-    ));*/
+    ));
 
     // Buffers with facilities for Geometry pass
     GMODULES::REGISTER(std::make_unique<BufferModule>
@@ -455,7 +457,7 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Max ray dist", &SSR_renderer_->get_max_ray_distance(), 0.0f, 50.0f);
             ImGui::SliderFloat("Px stride", &SSR_renderer_->get_pix_stride(), 1.0f, 20.0f);
             ImGui::SliderFloat("Px stride cuttoff", &SSR_renderer_->get_pix_stride_cuttoff(), 0.0f, 200.0f);
-            ImGui::SliderFloat("Px thickness", &SSR_renderer_->get_pix_thickness(), 0.0f, 5.0f);
+            //ImGui::SliderFloat("Px thickness", &SSR_renderer_->get_pix_thickness(), 0.0f, 5.0f);
             ImGui::SliderFloat("Min gloss", &SSR_renderer_->get_min_glossiness(), 0.0f, 1.0f);
             ImGui::SliderFloat("Dither amt.", &SSR_renderer_->get_dither_amount(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade eye start", &SSR_renderer_->get_fade_eye_start(), 0.0f, 1.0f);

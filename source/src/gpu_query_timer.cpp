@@ -15,7 +15,8 @@ query_front_buffer_(1)
     glGenQueries(1, &query_ID_[query_front_buffer_]);
 
     // dummy query to prevent OpenGL errors from popping out during first frame
-    //glQueryCounter(query_ID_[query_front_buffer_], GL_TIMESTAMP);
+    glBeginQuery(GL_TIME_ELAPSED, query_ID_[query_front_buffer_]);
+    glEndQuery(GL_TIME_ELAPSED);
 }
 
 GPUQueryTimer::~GPUQueryTimer()

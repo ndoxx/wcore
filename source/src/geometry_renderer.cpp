@@ -177,9 +177,10 @@ void GeometryRenderer::render(Scene* pscene)
 
 
     // EXP back face depth buffer ---------------------------------------------
-    /*null_shader_.use();
+    auto& bfd_buffer  = GMODULES::GET("backfaceDepthBuffer"_h);
+    null_shader_.use();
     GFX::cull_front();
-    BackFaceDepthBuffer::Instance().bind_as_target();
+    bfd_buffer.bind_as_target();
     GFX::clear_depth();
 
     pscene->draw_models([&](const Model& model)
@@ -207,9 +208,9 @@ void GeometryRenderer::render(Scene* pscene)
         null_shader_.send_uniform("m4_ModelViewProjection"_h, MVP);
     });
 
-    BackFaceDepthBuffer::Instance().unbind_as_target();
+    bfd_buffer.unbind_as_target();
     null_shader_.unuse();
-    GFX::cull_back();*/
+    GFX::cull_back();
     // EXP back face depth buffer ---------------------------------------------
 
 

@@ -326,7 +326,6 @@ void Chunk::add_rotator(ConstantRotator* rotator)
 
 void Chunk::draw(const BufferToken& buffer_token) const
 {
-    // OPTIMIZE
     switch(buffer_token.batch_category)
     {
         case "instance"_h:

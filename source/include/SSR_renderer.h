@@ -26,7 +26,7 @@ public:
     inline float& get_fade_eye_end()       { return fade_eye_end_; }
     inline float& get_fade_screen_edge()   { return fade_screen_edge_; }
     inline float& get_min_glossiness()     { return min_glossiness_; }
-    inline float& get_pix_thickness()      { return pix_thickness_; }
+    //inline float& get_pix_thickness()      { return pix_thickness_; }
     inline float& get_pix_stride_cuttoff() { return pix_stride_cuttoff_; }
     inline float& get_pix_stride()         { return pix_stride_; }
     inline float& get_max_ray_distance()   { return max_ray_distance_; }
@@ -49,7 +49,7 @@ private:
     float fade_eye_end_;
     float fade_screen_edge_;
     float min_glossiness_;
-    float pix_thickness_;
+    //float pix_thickness_;
     float pix_stride_cuttoff_;
     float pix_stride_;
     float max_ray_distance_;

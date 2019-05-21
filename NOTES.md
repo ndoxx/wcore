@@ -7537,6 +7537,7 @@ Bien entendu on a un beau bestiaire d'artéfactes dégueulasses à gérer, et pl
 * *Banding* Comme on itère avec un pas fixé, la position finale du hit point obtenue par l'algo précédent est systématiquement derrière l'objet, et le bruit de quantification qui en résulte provoque des bandes sur les réflexions. Une solution efficace est de lancer quelques itérations de recherche binaire pour affiner la position du hit point. [1] et [2] proposent une implémentation.
 * *Toujours du banding* On peut ajouter un peu de bruit à la position de départ du rayon pour améliorer le résultat davantage (dithering).
 * *Faux positifs* Liés au fait que le depth buffer n'a pas d'épaisseur. On peut simuler une épaisseur homogène ou bien se servir d'un *backface depth buffer* obtenu avec un rendu cull front dont la différence avec le front depth buffer est un bon estimateur de l'épaisseur de la géométrie visible. J'avais lu un papier impressionnant utilisant de telles *thickness maps* pour estimer du SSS. [4] mentionne cette possibilité. Mon moteur est capable de produire un backface depth buffer, mais j'ai eu peu de succès avec cette méthode.
+    -> Implémentation réussie, voir le [21-05-19]
 * Et bien d'autres.
 
 A ce stade, plutôt que de poursuivre la résolution de problèmes sur du code-jouet, je me suis intéressé à des implémentations plus sérieuses, dont beaucoup semblent reprendre le travail de Morgan McGuire [3]. Notamment deux implémentations intéressantes par Kode80 [4] et [5] en HLSL et Pissang [6] en GLSL (qui d'ailleurs recolle la SSR avec du physically based, et fait du importance sampling sur une GGX Schlick pour simuler les réflexions diffuses des matériaux rugueux).
@@ -7913,7 +7914,7 @@ De nombreux bugs m'ont pourri la vie. Notamment un avec Waterial, très étrange
 J'ai eu ce bug affreux de Valgrind décrit en [1], qui ne reconnait pas l'instruction assembleur correspondant à l'OpCode RDRAND (génération de nombre aléatoire avec une source d'entropie hardware du CPU). Qt a je pense mis à jour ses libs, et semble maintenant utiliser cette instruction (en tout cas chez-moi) dans une de ses fonctions rand. Quoi qu'il en soit, valgrind échouait à débugger Waterial à cause de ça.
 J'ai essayé de patcher la source de Valgrind à la main (en suivant le conseil d'un gars, mais sans réellement comprendre ce que je faisais), rien n'y faisait. Le problème semble être résolu après un changement de version de valgrind. Noter qu'on peut compiler Qt avec QT_NO_CPU_FEATURE=rdrnd pour éviter l'utilisation de RDRAND.
 
-Pour référence, voici les typedefs d'OpenGL :
+Pour référence, voici les typedefs d'OpenGL (voir aussi [2]) :
 ```cpp
     typedef unsigned int  GLenum;
     typedef unsigned char GLboolean;
@@ -7934,6 +7935,7 @@ Pour référence, voici les typedefs d'OpenGL :
 
 * Sources :
 [1] https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=823610
+[2] https://www.khronos.org/opengl/wiki/OpenGL_Type
 
 ## WatFiles
 Sur le modèle de _WeshLoader_ j'ai conçu _WatLoader_, capable d'écrire et de lire des matériaux au format Wat. Ce format commence par un header de 128 octets qui contient un ensemble de paramètres pour le modèle et la taille des textures s'il y en a. Le header comporte à l'instar de _WeshHeader_ un magic number (0x4C544157 = ASCII(WATL)) et un numéro de version. Après le header on trouve des données uniformes (albédo, métallicité, rugosité et alpha). Puis les texture blocks (optionnels).
@@ -8051,6 +8053,104 @@ Pour ce faire, j'ai modifié davantage le constructeur de _Texture_ spécifique 
     ));
 ```
 Ici le L-Buffer récupère un tel handle sur la texture "depthTex" du G-Buffer, aucune nouvelle texture unit ne sera créée, le L-Buffer utilise effectivement le depth-buffer du G-Buffer.
+
+#[21-05-19]
+
+## GPU timer query
+J'ai changé ma façon de mesurer les performances. J'y parviens maintenant sans recours à glFinish(), en utilisant une extension OpenGL timer query. La méthode adoptée n'introduit aucun pipeline stall et mesure effectivement le temps côté GPU. Les résultats des queries ne sont pas immédiatement disponibles, ainsi pour éviter de forcer une synchronisation je fais du query double buffering (voir [1] en fin de page) : je lance une "back query" avant le rendu, effectue le rendu, puis je stop la back query et lis le résultat de la "front query" avant de permuter les front/back query IDs.
+
+```cpp
+    // * Initialization (just once)
+    unsigned int[2] query_ID_;
+    unsigned int query_back_buffer_ = 0;
+    unsigned int query_front_buffer_ = 1;
+
+    glGenQueries(1, &query_ID_[query_back_buffer_]);
+    glGenQueries(1, &query_ID_[query_front_buffer_]);
+
+    // dummy query to prevent OpenGL errors from popping out during first frame
+    glBeginQuery(GL_TIME_ELAPSED, query_ID_[query_front_buffer_]);
+    glEndQuery(GL_TIME_ELAPSED);
+
+    // * Start
+    glBeginQuery(GL_TIME_ELAPSED, query_ID_[query_back_buffer_]);
+
+    // * Render stuff
+    // glDrawMesCouilles()
+
+    // * Stop
+    glEndQuery(GL_TIME_ELAPSED);
+    glGetQueryObjectuiv(query_ID_[query_front_buffer_], GL_QUERY_RESULT, (GLuint*)&timer_);
+
+    // * Swap query buffers
+    if(query_back_buffer_)
+    {
+        query_back_buffer_ = 0;
+        query_front_buffer_ = 1;
+    }
+    else
+    {
+        query_back_buffer_ = 1;
+        query_front_buffer_ = 0;
+    }
+```
+
+La classe _GPUQueryTimer_ encapsule ces fonctionnalités, et est utilisée par l'interface _Renderer_ pour les mesures de performances :
+
+```cpp
+void Renderer::Render(Scene* pscene)
+{
+    if(!enabled_)
+        return;
+
+    if(PROFILING_ACTIVE)
+        query_timer_.start();
+
+    render(pscene);
+
+    if(PROFILING_ACTIVE)
+        dt_fifo_.push(query_timer_.stop());
+}
+```
+
+La _RenderPipeline_ va maintenant sommer les contributions de tous les renderers (non-debug) pour aboutir au draw time et n'utilise plus glFinish(). Le coût CPU pour la mesure de performances est drastiquement réduit. Les temps observés sont un poil plus faibles que précédemment.
+
+## Backface depth-buffer enabled SSR
+La SSR utilise maintenant le backface depth buffer afin d'estimer l'épaisseur de la géométrie. Je constate une baisse significative des artéfacts liés aux faux positifs, au prix d'environ 1ms sur ma frame (ce que je peux maintenant me permettre).
+
+La passe géométrique remplit un nouveau depth buffer (le GModule nommé *backfaceDepthBuffer*), mais cette fois en mode cull front. Ce depth-buffer contient donc l'information de profondeur des faces cachées de la géométrie. Cette information est utilisée à la place de l'offset constant (pixel thickness) dans la fonction d'évaluation d'intersection :
+
+```c
+bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
+{
+    // Swap if bigger
+    swap_if_bigger(rayZFar, rayZNear);
+    float cameraZ = -depth_view_from_tex(depthTex, hitPixel.xy, rd.v4_proj_params.zw);
+    float backZ = -depth_view_from_tex(backDepthTex, hitPixel.xy, rd.v4_proj_params.zw);
+    // Cross z
+    return rayZFar <= cameraZ && rayZNear >= backZ;
+}
+```
+
+* Sources :
+[1] http://www.lighthouse3d.com/tutorials/opengl-timer-query/
+[2] https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_timer_query.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
