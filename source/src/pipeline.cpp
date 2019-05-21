@@ -28,7 +28,6 @@
 #endif
 
 #ifdef __PROFILE__
-    #include "clock.hpp"
     #include "moving_average.h"
     #include "gfx_driver.h"
     #define PROFILING_MAX_SAMPLES 1000
@@ -308,7 +307,6 @@ bool RenderPipeline::onMouseEvent(const WData& data)
 static bool profile_renderers = false;
 static uint32_t frame_cnt = 0;
 static float last_render_time_ = 0.0f;
-static nanoClock frame_clock_;
 #endif
 
 #ifndef __DISABLE_EDITOR__
@@ -604,7 +602,7 @@ void RenderPipeline::generate_widget()
         if(ImGui::CollapsingHeader("Render time"))
         {
             ImGui::PlotVar("Draw time", 1e3*last_render_time_, 0.0f, 16.66f);
-            ImGui::PlotVar("Geometry pass", geometry_renderer_->last_dt(), 0.0f, 16.66f);
+            ImGui::PlotVar("Geometry pass", 1e3*geometry_renderer_->last_dt(), 0.0f, 16.66f);
             if(SSAO_renderer_->is_enabled())
                 ImGui::PlotVar("SSAO", 1e3*SSAO_renderer_->last_dt(), 0.0f, 16.66f);
             if(SSR_renderer_->is_enabled())
@@ -646,14 +644,6 @@ void RenderPipeline::render()
     }
 #endif
 
-#ifdef __PROFILE__
-    if(profile_renderers)
-    {
-        GFX::finish();
-        frame_clock_.restart();
-    }
-#endif
-
     geometry_renderer_->Render(pscene);
     SSAO_renderer_->Render(pscene);
     SSR_renderer_->Render(pscene);
@@ -669,9 +659,14 @@ void RenderPipeline::render()
 #ifdef __PROFILE__
     if(profile_renderers)
     {
-        GFX::finish();
-        std::chrono::nanoseconds period = frame_clock_.get_elapsed_time();
-        last_render_time_ = std::chrono::duration_cast<std::chrono::duration<float>>(period).count();
+        last_render_time_ = geometry_renderer_->last_dt()
+                          + SSAO_renderer_->last_dt()
+                          + SSR_renderer_->last_dt()
+                          + shadow_map_renderer_->last_dt()
+                          + lighting_renderer_->last_dt()
+                          + bloom_renderer_->last_dt()
+                          + forward_renderer_->last_dt()
+                          + post_processing_renderer_->last_dt();
     }
 #endif
 }
