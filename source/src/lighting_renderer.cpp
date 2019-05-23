@@ -215,6 +215,9 @@ void LightingRenderer::render(Scene* pscene)
         {
             ssr_buffer.get_texture().bind(SSR_TEX,0); // Bind ssr[0] to texture unit SSR_TEX
             lpass_dir_shader_.send_uniform<int>("SSRTex"_h, SSR_TEX);
+
+            //l_buffer.get_texture().bind(6,0);  // screen (last frame)
+            //lpass_dir_shader_.send_uniform<int>("lastFrameTex"_h, 6);
         }
         lpass_dir_shader_.send_uniform("rd.b_enableSSR"_h, SSR_enabled_);
 

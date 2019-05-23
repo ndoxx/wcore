@@ -62,8 +62,7 @@ vec3 CookTorrance(vec3 lightColor,
                   vec3 viewDir,
                   vec3 albedo,
                   float fragMetallic,
-                  float fragRoughness,
-                  float visibility)
+                  float fragRoughness)
 {
     // Calculate reflectance at normal incidence; if dielectric (like plastic) use F0
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
@@ -98,5 +97,5 @@ vec3 CookTorrance(vec3 lightColor,
     // Specular term already multiplied by kS==F
     vec3 Lo = (kD * albedo) + specular;
 
-    return Lo * ((NdotL * visibility) * radiance);
+    return Lo * (NdotL * radiance);
 }

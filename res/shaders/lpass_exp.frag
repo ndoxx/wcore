@@ -50,6 +50,7 @@ uniform sampler2D depthTex;
 uniform sampler2D shadowTex;
 uniform sampler2D SSAOTex;
 uniform sampler2D SSRTex;
+//uniform sampler2D lastFrameTex;
 
 uniform render_data rd;
 uniform light       lt;
@@ -130,8 +131,8 @@ void main()
             #endif
 
             // Falloff around map edges
-            float falloff = square_falloff(shadowMapCoords.xy, 0.5f);
-            visibility = mix(1.0f, visibility, falloff);
+            float falloff = square_falloff(shadowMapCoords.xy, 0.3f);
+            visibility = mix(1.0f, visibility, smoothstep(0.2f, 0.8f, falloff));
         }
         if(rd.b_lighting_enabled)
         {
@@ -141,14 +142,19 @@ void main()
                                          viewDir,
                                          fragAlbedo,
                                          fragMetallic,
-                                         fragRoughness,
-                                         visibility);
+                                         fragRoughness);
             vec3 ambient = (fragAO * lt.f_ambientStrength) * fragAlbedo;
-            total_light = radiance + ambient;
+            total_light = visibility*radiance + ambient;
             if(rd.b_enableSSR)
             {
                 vec4 reflection = texture(SSRTex, texCoord);
-                total_light += reflection.rgb * reflection.a;
+                vec3 F0 = vec3(0.04);
+                F0 = mix(F0, fragAlbedo, fragMetallic);
+                vec3 fresnel = FresnelGS(max(dot(fragNormal, viewDir), 0.f), F0);
+                total_light += reflection.rgb * fresnel * reflection.a;
+                /*vec4 ssr = texture(SSRTex, texCoord);
+                vec3 ssr_sample = texture(lastFrameTex, ssr.xy).rgb * fresnel * ssr.a;
+                total_light += ssr_sample;*/
             }
         }
         else
@@ -168,8 +174,7 @@ void main()
                                      viewDir,
                                      fragAlbedo,
                                      fragMetallic,
-                                     fragRoughness,
-                                     1.0f);
+                                     fragRoughness);
         vec3 ambient = (fragAO * lt.f_ambientStrength) * fragAlbedo;
         vec3 point_contrib = radiance + ambient;
 

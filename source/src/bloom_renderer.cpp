@@ -26,7 +26,7 @@ kernel_(9,1.8f)
             (
                 std::initializer_list<TextureUnitInfo>
                 {
-                    TextureUnitInfo("brightTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA, GL_RGBA),
+                    TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR), GL_RGBA, GL_RGBA),
                 },
 #ifdef __OPTIM_BLOOM_USE_PP2__
                 math::pp2(GLB.WIN_W/pow(2,ii+1)),
@@ -48,7 +48,7 @@ kernel_(9,1.8f)
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("bloomTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA, GL_RGBA),
+                TextureUnitInfo("bloomTex"_h, TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR), GL_RGBA, GL_RGBA),
             },
             GLB.WIN_W/2,
             GLB.WIN_H/2,

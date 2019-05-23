@@ -30,7 +30,7 @@ blur_enabled_(false),
 ray_steps_(20),
 bin_steps_(6),
 dither_amount_(0.09f),
-fade_eye_start_(0.8f),
+fade_eye_start_(0.05f),
 fade_eye_end_(1.f),
 fade_screen_edge_(0.85f),
 min_glossiness_(0.01f),
@@ -63,7 +63,7 @@ void SSRRenderer::render(Scene* pscene)
 
     static mat4 UNBIAS(2, 0, 0, -1,
                        0, 2, 0, -1,
-                       0, 0, 2, 1,
+                       0, 0, 2, -1,
                        0, 0, 0, 1);
     static mat4   BIAS(0.5, 0,   0,   0.5,
                        0,   0.5, 0,   0.5,
@@ -83,22 +83,22 @@ void SSRRenderer::render(Scene* pscene)
     g_buffer.bind_as_source(0,0);  // normal, metallic, ao
     g_buffer.bind_as_source(1,1);  // albedo, roughness
     g_buffer.bind_as_source(2,2);  // depth
-    l_buffer.bind_as_source(3,0);  // screen (last frame)
-    bfd_buffer.bind_as_source(4,0); // backface depth buffer
+    bfd_buffer.bind_as_source(3,0); // backface depth buffer
+    l_buffer.bind_as_source(4,0);  // screen (last frame)
 
     SSR_shader_.use();
     SSR_shader_.send_uniform<int>("normalTex"_h, 0);
     SSR_shader_.send_uniform<int>("albedoTex"_h, 1);
     SSR_shader_.send_uniform<int>("depthTex"_h, 2);
+    SSR_shader_.send_uniform<int>("backDepthTex"_h, 3);
     if(!nonce_)
-        SSR_shader_.send_uniform<int>("lastFrameTex"_h, 3);
+        SSR_shader_.send_uniform<int>("lastFrameTex"_h, 4);
     else
     {
         // Use albedo map as "last frame" for first frame
         SSR_shader_.send_uniform<int>("lastFrameTex"_h, 1);
         nonce_ = false;
     }
-    SSR_shader_.send_uniform<int>("backDepthTex"_h, 4);
 
     SSR_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/ssr_buffer.get_width(),1.0f/ssr_buffer.get_height()));
     SSR_shader_.send_uniform("rd.v2_viewportSize"_h, vec2(ssr_buffer.get_width(),ssr_buffer.get_height()));

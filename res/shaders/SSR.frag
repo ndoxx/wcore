@@ -40,8 +40,8 @@ uniform render_data rd;
 uniform sampler2D normalTex;
 uniform sampler2D albedoTex;
 uniform sampler2D depthTex;
-uniform sampler2D lastFrameTex;
 uniform sampler2D backDepthTex;
+uniform sampler2D lastFrameTex;
 
 layout(location = 0) out vec4 out_SSR;
 
@@ -248,7 +248,10 @@ void main()
     vec4 fNormMetAO = texture(normalTex, texCoord);
     float fragMetallic = fNormMetAO.b;
     if(fragMetallic < rd.f_minGlossiness)
-        discard;
+    {
+        out_SSR = vec4(0.f, 0.f, 0.f, 0.f);
+        return;
+    }
 
     vec3 fragNormal = normalize(decompress_normal(fNormMetAO.xy));
 
@@ -259,13 +262,6 @@ void main()
     float fragRoughness = fAlbRough.a;
     float reflectivity = fragMetallic*(1.f-fragRoughness);
     reflectivity = (reflectivity - rd.f_minGlossiness) / (1.f - rd.f_minGlossiness);
-
-    // Fresnel coefficient vector
-    vec3 F0 = vec3(0.04);
-    F0 = mix(F0, fAlbRough.rgb, fragMetallic);
-    vec4 fresnel = vec4(FresnelGS(max(dot(fragNormal, normalize(rayOrigin)), 0.f), F0), 1.f);
-    // NOTE(ndx) Try adding a Geometry Smith GGX
-
     vec3 rayDirection = normalize(reflect(normalize(rayOrigin), fragNormal));
 
     vec2 hitPixel;
@@ -282,12 +278,13 @@ void main()
     rayDirection = normalize(rayDirection + dither);
 
     bool intersect = ray_march(rayOrigin, rayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
-    float alpha = ssr_attenuation(intersect, iterationCount, reflectivity, hitPixel, hitPoint, rayOrigin, rayDirection);
 
     // Temporal reprojection
-    vec4 reproj_hitpx = rd.m4_reproj*vec4(hitPixel,0.f,1.f);
-    reproj_hitpx /= reproj_hitpx.w;
-    hitPixel = clamp(/*hitPixel*/reproj_hitpx.xy, 0.f, 1.f);
+    vec4 reproj_hitpx = rd.m4_reproj*vec4(hitPixel, 1.f, 1.f);
+    hitPixel = clamp(reproj_hitpx.xy / reproj_hitpx.w, 0.f, 1.f);
 
-    out_SSR = (intersect ? vec4(texture(lastFrameTex, hitPixel).rgb, alpha) : vec4(0.f)) /* fresnel*/;
+    float alpha = ssr_attenuation(intersect, iterationCount, reflectivity, hitPixel, hitPoint, rayOrigin, rayDirection);
+
+    out_SSR = (intersect ? vec4(texture(lastFrameTex, hitPixel).rgb, alpha) : vec4(0.f));
+    //out_SSR = vec4(hitPixel.xy, 0.f, alpha);
 }
