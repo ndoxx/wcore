@@ -215,8 +215,8 @@
                 <Material>
                     <Uniform>
                         <Albedo space="hsl" variance="(0.15,0.1,0.0)">(0.45,0.9,0.5)</Albedo>
-                        <Roughness>0.3</Roughness>
-                        <Metallic>0.5</Metallic>
+                        <Roughness>0.01</Roughness>
+                        <Metallic>1.0</Metallic>
                     </Uniform>
                 </Material>
                 <Transform>
@@ -234,8 +234,8 @@
                 <Material>
                     <Uniform>
                         <Albedo space="hsl" variance="(0.05,0.1,0.0)">(0.052,0.9,0.5)</Albedo>
-                        <Roughness>0.3</Roughness>
-                        <Metallic>0.5</Metallic>
+                        <Roughness>0.2</Roughness>
+                        <Metallic>0.8</Metallic>
                     </Uniform>
                 </Material>
                 <Transform>
@@ -254,7 +254,7 @@
                     <Uniform>
                         <Albedo space="hsl" variance="(0.05,0.1,0.1)">(0.15,0.9,0.5)</Albedo>
                         <Roughness>0.3</Roughness>
-                        <Metallic>0.5</Metallic>
+                        <Metallic>0.8</Metallic>
                     </Uniform>
                 </Material>
                 <Transform>

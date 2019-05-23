@@ -123,7 +123,7 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("SSRTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA16F, GL_RGBA),
+                TextureUnitInfo("SSRTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR), GL_RGBA16F, GL_RGBA),
             },
             GLB.WIN_W/2,
             GLB.WIN_H/2,
@@ -459,7 +459,7 @@ void RenderPipeline::generate_widget()
             ImGui::SliderFloat("Px stride cuttoff", &SSR_renderer_->get_pix_stride_cuttoff(), 0.0f, 200.0f);
             //ImGui::SliderFloat("Px thickness", &SSR_renderer_->get_pix_thickness(), 0.0f, 5.0f);
             ImGui::SliderFloat("Min gloss", &SSR_renderer_->get_min_glossiness(), 0.0f, 1.0f);
-            ImGui::SliderFloat("Dither amt.", &SSR_renderer_->get_dither_amount(), 0.0f, 1.0f);
+            ImGui::SliderFloat("Dither amt.", &SSR_renderer_->get_dither_amount(), 0.0f, 0.1f);
             ImGui::SliderFloat("Fade eye start", &SSR_renderer_->get_fade_eye_start(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade eye end", &SSR_renderer_->get_fade_eye_end(), 0.0f, 1.0f);
             ImGui::SliderFloat("Fade screen edge", &SSR_renderer_->get_fade_screen_edge(), 0.0f, 1.0f);

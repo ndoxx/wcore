@@ -29,7 +29,7 @@ nonce_(true),
 blur_enabled_(false),
 ray_steps_(20),
 bin_steps_(6),
-dither_amount_(0.01f),
+dither_amount_(0.09f),
 fade_eye_start_(0.8f),
 fade_eye_end_(1.f),
 fade_screen_edge_(0.85f),
@@ -40,7 +40,7 @@ pix_stride_(7.f),
 max_ray_distance_(25.f),
 probe_(1.f)
 {
-
+    old_VP_.init_identity();
 }
 
 SSRRenderer::~SSRRenderer()
@@ -60,6 +60,20 @@ void SSRRenderer::render(Scene* pscene)
     const mat4& V = pscene->get_camera().get_view_matrix(); // Camera View matrix
     vec4 proj_params(1.0f/P(0,0), 1.0f/P(1,1), P(2,2)-1.0f, P(2,3));
     float near = pscene->get_camera().get_near();
+
+    static mat4 UNBIAS(2, 0, 0, -1,
+                       0, 2, 0, -1,
+                       0, 0, 2, 1,
+                       0, 0, 0, 1);
+    static mat4   BIAS(0.5, 0,   0,   0.5,
+                       0,   0.5, 0,   0.5,
+                       0,   0,   0.5, 0.5,
+                       0,   0,   0,   1);
+    mat4 VP(P*V);
+
+    mat4 reproj;
+    math::inverse(VP, reproj);
+    reproj = BIAS * old_VP_ * reproj * UNBIAS;
 
     mat4 invView;
     math::inverse(V, invView);
@@ -91,6 +105,7 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.v4_proj_params"_h, proj_params);
     SSR_shader_.send_uniform("rd.m4_projection"_h, P);
     SSR_shader_.send_uniform("rd.m4_invView"_h, invView);
+    SSR_shader_.send_uniform("rd.m4_reproj"_h, reproj);
     SSR_shader_.send_uniform("rd.f_near"_h, near);
     SSR_shader_.send_uniform("rd.f_minGlossiness"_h, min_glossiness_);
     //SSR_shader_.send_uniform("rd.f_pixelThickness"_h, pix_thickness_);
@@ -103,8 +118,6 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.f_eyeFadeStart"_h, fade_eye_start_);
     SSR_shader_.send_uniform("rd.f_eyeFadeEnd"_h, fade_eye_end_);
     SSR_shader_.send_uniform("rd.f_ditherAmount"_h, dither_amount_);
-
-
     SSR_shader_.send_uniform("rd.f_probe"_h, probe_);
 
     GFX::clear_color();
@@ -115,6 +128,9 @@ void SSRRenderer::render(Scene* pscene)
     l_buffer.unbind_as_source();
     ssr_buffer.unbind_as_target();
     SSR_shader_.unuse();
+
+    old_VP_ = VP;
+
 
     if(blur_enabled_)
     {

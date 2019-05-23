@@ -7,6 +7,7 @@ struct render_data
 
     mat4 m4_projection;
     mat4 m4_invView;
+    mat4 m4_reproj;
     float f_near;
     float f_minGlossiness;
     //float f_pixelThickness;

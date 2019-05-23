@@ -40,6 +40,8 @@ private:
 
     BufferModule blur_buffer_;
 
+    math::mat4 old_VP_;
+
     bool nonce_;
     bool blur_enabled_;
     int ray_steps_;

@@ -16,6 +16,7 @@ struct render_data
 
     mat4 m4_projection;
     mat4 m4_invView;
+    mat4 m4_reproj;
     float f_near;
     float f_minGlossiness;
     //float f_pixelThickness;
@@ -283,7 +284,10 @@ void main()
     bool intersect = ray_march(rayOrigin, rayDirection, jitter, hitPixel, hitPoint, iterationCount/*, texCoord.x > 0.5*/);
     float alpha = ssr_attenuation(intersect, iterationCount, reflectivity, hitPixel, hitPoint, rayOrigin, rayDirection);
 
-    hitPixel = clamp(hitPixel, 0.f, 1.f);
+    // Temporal reprojection
+    vec4 reproj_hitpx = rd.m4_reproj*vec4(hitPixel,0.f,1.f);
+    reproj_hitpx /= reproj_hitpx.w;
+    hitPixel = clamp(/*hitPixel*/reproj_hitpx.xy, 0.f, 1.f);
 
     out_SSR = (intersect ? vec4(texture(lastFrameTex, hitPixel).rgb, alpha) : vec4(0.f)) /* fresnel*/;
 }

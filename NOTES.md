@@ -8132,6 +8132,10 @@ bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 }
 ```
 
+**BEWARE** Une conséquence de l'utilisation de cette technique est que les réflexions disparaissent si la caméra se trouve à l'intérieur d'un objet de la scène : dans ce cas, la profondeur backface est toujours plus faible que la profondeur frontface, et le test d'intersection échoue systématiquement.
+
+
+
 * Sources :
 [1] http://www.lighthouse3d.com/tutorials/opengl-timer-query/
 [2] https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_timer_query.txt
