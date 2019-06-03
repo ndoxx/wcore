@@ -56,9 +56,9 @@ set(SRC_CORE
     ${CMAKE_SOURCE_DIR}/source/src/xml_parser.cpp)
 
 set(SRC_3D
-    ${CMAKE_SOURCE_DIR}/source/src/gfx_driver.cpp
-    ${CMAKE_SOURCE_DIR}/source/src/renderer_api.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/gfx_api.cpp
     ${CMAKE_SOURCE_DIR}/source/src/buffer.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/platform/opengl/ogl_renderer_api.cpp
     ${CMAKE_SOURCE_DIR}/source/src/platform/opengl/ogl_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/gpu_query_timer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/geometry_common.cpp

@@ -1,5 +1,5 @@
 #include "post_processing_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "math3d.h"
 #include "texture.h"
 #include "lights.h"
@@ -79,7 +79,7 @@ void PostProcessingRenderer::render(Scene* pscene)
 
 
     // Render textured quad to screen
-    GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
+    Gfx::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
     //GFX::bind_default_frame_buffer();
 
     // Bind relevant textures

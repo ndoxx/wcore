@@ -1,7 +1,7 @@
 #include <memory>
 
 #include "forward_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "scene.h"
 #include "math3d.h"
 #include "model.h"
@@ -33,14 +33,13 @@ void ForwardRenderer::render(Scene* pscene)
     mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
-    GFX::enable_depth_testing();
+    Gfx::set_depth_test_enabled(true);
 
     forward_stage_shader_.use();
     // Bind VAO, draw, unbind VAO
     l_buffer.bind_as_target();
     // Draw transparent geometry
-    GFX::enable_blending();
-    GFX::set_std_blending();
+    Gfx::set_std_blending();
 
     pscene->draw_models([&](const Model& model)
     {
@@ -66,13 +65,13 @@ void ForwardRenderer::render(Scene* pscene)
     wcore::ORDER::BACK_TO_FRONT,
     wcore::MODEL_CATEGORY::TRANSPARENT);
 
-    GFX::disable_blending();
+    Gfx::disable_blending();
     forward_stage_shader_.unuse();
 
     // Draw skybox
     if(pscene->has_skybox())
     {
-        glDepthFunc(GL_LEQUAL);
+        Gfx::set_depth_func(DepthFunc::LEqual);
         skybox_shader_.use();
         const SkyBox& skybox = pscene->get_skybox();
         // Bind skybox's cubemap
@@ -90,12 +89,12 @@ void ForwardRenderer::render(Scene* pscene)
         skybox.draw();
 
         skybox_shader_.unuse();
-        glDepthFunc(GL_LESS);
+        Gfx::set_depth_func(DepthFunc::Less);
     }
     l_buffer.unbind_as_target();
 
     // Restore state
-    GFX::disable_depth_testing();
+    Gfx::set_depth_test_enabled(false);
 }
 
 }

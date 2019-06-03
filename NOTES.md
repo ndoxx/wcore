@@ -8159,7 +8159,9 @@ J'ai essayé de réécrire la bloom pass pour éliminer la texture *brightTex*, 
 
 #[03-06-19]
 
-#Remove a git submodule
+## Git
+
+### Remove a git submodule
 To remove a submodule you need to:
 * Delete the relevant section from the .gitmodules file.
 * Stage the .gitmodules changes git add .gitmodules
@@ -8169,7 +8171,8 @@ To remove a submodule you need to:
 * Commit git commit -m "Removed submodule "
 * Delete the now untracked submodule files rm -rf path_to_submodule
 
-
+### Update all submodules to latest commit from their remote
+>> git submodule foreach git pull origin master
 
 
 

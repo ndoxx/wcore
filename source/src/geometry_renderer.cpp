@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "config.h"
 #include "geometry_renderer.h"
 #include "scene.h"
@@ -37,7 +37,7 @@ allow_parallax_mapping_(true)
     CONFIG.get("root.render.override.allow_normal_mapping"_h, allow_normal_mapping_);
     CONFIG.get("root.render.override.allow_parallax_mapping"_h, allow_parallax_mapping_);
 
-    GFX::set_clear_color(math::vec4(0.f,0.f,0.f,1.f));
+    Gfx::set_clear_color(0.f,0.f,0.f,1.f);
 }
 
 void GeometryRenderer::render(Scene* pscene)
@@ -50,13 +50,13 @@ void GeometryRenderer::render(Scene* pscene)
     mat4 PV = P*V;
     vec3 campos = pscene->get_camera().get_position();
 
-    GFX::disable_blending();
-    GFX::enable_depth_testing();
-    GFX::unlock_depth_buffer();
+    Gfx::disable_blending();
+    Gfx::set_depth_test_enabled(true);
+    Gfx::set_depth_lock(false);
 
     Shader* shader = &geometry_pass_shader_;
 
-    GFX::cull_back();
+    Gfx::set_cull_mode(CullMode::Back);
     shader->use();
     // Wireframe mix
     shader->send_uniform("rd.f_wireframe_mix"_h, wireframe_mix_);
@@ -65,7 +65,7 @@ void GeometryRenderer::render(Scene* pscene)
     // Draw to G-Buffer
     g_buffer.bind_as_target();
 
-    GFX::clear_color_depth(); // Suppressed valgrind false positive in valgrind.supp
+    Gfx::clear(CLEAR_COLOR_FLAG | CLEAR_DEPTH_FLAG); // Suppressed valgrind false positive in valgrind.supp
 
     pscene->draw_models([&](const Model& model)
     {
@@ -179,9 +179,9 @@ void GeometryRenderer::render(Scene* pscene)
     // EXP back face depth buffer ---------------------------------------------
     auto& bfd_buffer  = GMODULES::GET("backfaceDepthBuffer"_h);
     null_shader_.use();
-    GFX::cull_front();
+    Gfx::set_cull_mode(CullMode::Front);
     bfd_buffer.bind_as_target();
-    GFX::clear_depth();
+    Gfx::clear(CLEAR_DEPTH_FLAG);
 
     pscene->draw_models([&](const Model& model)
     {
@@ -210,13 +210,13 @@ void GeometryRenderer::render(Scene* pscene)
 
     bfd_buffer.unbind_as_target();
     null_shader_.unuse();
-    GFX::cull_back();
+    Gfx::set_cull_mode(CullMode::Back);
     // EXP back face depth buffer ---------------------------------------------
 
 
     // Lock depth buffer (read only)
-    GFX::lock_depth_buffer();
-    GFX::disable_depth_testing();
+    Gfx::set_depth_lock(true);
+    Gfx::set_depth_test_enabled(false);
 }
 
 }

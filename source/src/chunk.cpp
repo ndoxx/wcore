@@ -36,7 +36,7 @@ index_(std::hash<i32vec2>{}(coords)),
 render_batch_("opaque"_h),
 terrain_render_batch_("terrain"_h),
 blend_render_batch_("blend"_h),
-line_render_batch_("line"_h, GL_LINES),
+line_render_batch_("line"_h, DrawPrimitive::Lines),
 terrain_(nullptr)
 {
 

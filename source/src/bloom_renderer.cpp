@@ -1,5 +1,5 @@
 #include "bloom_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "texture.h"
 #include "mesh_factory.h"
 #include "logger.h"
@@ -92,7 +92,7 @@ void BloomRenderer::render(Scene* pscene)
     for(auto&& blur_stage: blur_stages_)
     {
         blur_stage->bind_as_target();
-        GFX::clear_color();
+        Gfx::clear(CLEAR_COLOR_FLAG);
         CGEOM.draw("quad"_h);
     }
 
@@ -100,14 +100,13 @@ void BloomRenderer::render(Scene* pscene)
     blur_pass_shader_.send_uniform("horizontal"_h, false);
 
     // Blend with previous blur level
-    GFX::enable_blending();
-    GFX::set_std_blending();
+    Gfx::set_std_blending();
 
     bloom_buffer.bind_as_target();
     for(int ii=0; ii<blur_stages_.size(); ++ii)
     {
         if(ii==0)
-            GFX::clear_color();
+            Gfx::clear(CLEAR_COLOR_FLAG);
 
         // Bind horizontal blur pass texture to texture unit 0
         blur_stages_[ii]->get_texture().bind(0, 0);
@@ -119,7 +118,7 @@ void BloomRenderer::render(Scene* pscene)
     }
     bloom_buffer.unbind_as_target();
 
-    GFX::disable_blending();
+    Gfx::disable_blending();
 
     blur_pass_shader_.unuse();
 }

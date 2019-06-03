@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include "frame_buffer.h"
+#include "gfx_api.h"
 #include "texture.h"
 #include "logger.h"
 #include "error.h"
@@ -8,7 +9,7 @@
 namespace wcore
 {
 
-unsigned int FrameBuffer::DEFAULT_FRAMEBUFFER = 0;
+//unsigned int FrameBuffer::DEFAULT_FRAMEBUFFER = 0;
 
 FrameBuffer::FrameBuffer(const Texture& texture, const std::vector<GLenum>& attachments):
 frame_buffer_(0),
@@ -127,7 +128,7 @@ height_(texture.get_height())
     }
 
     // Unbind frame buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
+    Gfx::bind_default_frame_buffer();
 }
 
 FrameBuffer::~FrameBuffer()
@@ -159,14 +160,14 @@ void FrameBuffer::bind_as_render_target() const
 
 void FrameBuffer::unbind() const
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
+    Gfx::bind_default_frame_buffer();
 }
 
 void FrameBuffer::with_render_target(std::function<void(void)> doFunc) const
 {
     bind_as_render_target();
     doFunc();
-    glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
+    Gfx::bind_default_frame_buffer();
 }
 
 void FrameBuffer::blit_depth(FrameBuffer& destination) const
@@ -190,7 +191,7 @@ void FrameBuffer::blit_depth_default_fb(uint32_t screenWidth, uint32_t screenHei
 {
     // write depth buffer to default framebuffer
     glBindFramebuffer(GL_READ_FRAMEBUFFER, frame_buffer_);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, Gfx::get_default_framebuffer());
     glBlitFramebuffer(0,            // src x0
                       0,            // src y0
                       width_,       // src x1

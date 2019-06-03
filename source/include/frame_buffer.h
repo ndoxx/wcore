@@ -20,8 +20,6 @@ private:
     int width_;
     int height_;
 
-    static unsigned int DEFAULT_FRAMEBUFFER;
-
 public:
     FrameBuffer(const Texture& texture, const std::vector<GLenum>& attachments);
     ~FrameBuffer();
@@ -34,8 +32,6 @@ public:
     void blit_depth(FrameBuffer& destination) const;
     void blit_depth_default_fb(uint32_t screenWidth, uint32_t screenHeight);
     void rebind_draw_buffers() const;
-
-    static void set_default_framebuffer(unsigned int index) { DEFAULT_FRAMEBUFFER = index; }
 };
 
 }

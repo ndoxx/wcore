@@ -29,7 +29,7 @@
 
 #ifdef __PROFILE__
     #include "moving_average.h"
-    #include "gfx_driver.h"
+    #include "gfx_api.h"
     #define PROFILING_MAX_SAMPLES 1000
 #endif
 
@@ -639,9 +639,9 @@ void RenderPipeline::render()
     // Reload shaders at start of frame
     if(HOTSWAP_SHADERS)
     {
-        GFX::finish();
+        Gfx::finish();
         Shader::dbg_hotswap();
-        GFX::finish();
+        Gfx::finish();
         HOTSWAP_SHADERS = false;
     }
 #endif

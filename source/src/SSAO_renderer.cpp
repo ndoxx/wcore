@@ -3,7 +3,7 @@
 #include <cassert>
 
 #include "SSAO_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "scene.h"
 #include "logger.h"
 #include "camera.h"
@@ -76,9 +76,9 @@ void SSAORenderer::render(Scene* pscene)
 
     // Bind textures
     g_buffer.bind_as_source(0,0);  // normal
-    GFX::bind_texture2D(1, noise_texture_); // random rotations
+    noise_texture_->bind(1,0); // random rotations
     g_buffer.bind_as_source(2,2);  // depth
-    //GFX::bind_texture2D(3, kernel_texture_); // random field (kernel)
+    //kernel_texture_->bind(3,0); // random field (kernel)
     //g_buffer.bind_as_source(3,1);  // albedo
     //LBUFFER.bind_as_source(3,0); // last frame color
 
@@ -89,7 +89,7 @@ void SSAORenderer::render(Scene* pscene)
 
     // Render SSAO texture
     ssao_buffer.bind_as_target();
-    GFX::clear_color();
+    Gfx::clear(CLEAR_COLOR_FLAG);
     // Send samples to shader
     /*for(uint32_t ii=0; ii<KERNEL_SIZE_; ++ii)
     {
@@ -127,7 +127,7 @@ void SSAORenderer::render(Scene* pscene)
                        blur_policy_,
                        [&]()
                        {
-                            GFX::clear_color();
+                            Gfx::clear(CLEAR_COLOR_FLAG);
                             CGEOM.draw("quad"_h);
                        });
     }
@@ -178,14 +178,21 @@ void SSAORenderer::generate_random_kernel()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);*/
 
-    // Push noise to a GL texture that tiles the screen (GL_REPEAT)
-    glGenTextures(1, &noise_texture_);
-    glBindTexture(GL_TEXTURE_2D, noise_texture_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, NOISE_SQRSIZE_, NOISE_SQRSIZE_, 0, GL_RGB, GL_FLOAT, &ssao_noise[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    // Push noise to a GL texture that tiles the screen
+    noise_texture_ = std::make_shared<Texture>
+    (
+        std::initializer_list<TextureUnitInfo>
+        {
+            TextureUnitInfo("noiseTex"_h,
+                            TextureFilter(TextureFilter::MIN_NEAREST | TextureFilter::MAG_NEAREST),
+                            GL_RGB16F,
+                            GL_RGB,
+                            reinterpret_cast<unsigned char*>(&ssao_noise[0]))
+        },
+        NOISE_SQRSIZE_,
+        NOISE_SQRSIZE_,
+        TextureWrap::MIRRORED_REPEAT
+    );
 }
 
 }

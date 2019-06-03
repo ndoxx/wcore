@@ -1,5 +1,5 @@
 #include "SSR_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "scene.h"
 #include "camera.h"
 #include "texture.h"
@@ -120,7 +120,7 @@ void SSRRenderer::render(Scene* pscene)
     SSR_shader_.send_uniform("rd.f_ditherAmount"_h, dither_amount_);
     SSR_shader_.send_uniform("rd.f_probe"_h, probe_);
 
-    GFX::clear_color();
+    Gfx::clear(CLEAR_COLOR_FLAG);
 
     CGEOM.draw("quad"_h);
 
@@ -159,7 +159,7 @@ void SSRRenderer::render(Scene* pscene)
         // Horizontal pass
         SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(maxBlurRadius/ssr_buffer.get_width(), 0.f));
 
-        GFX::clear_color();
+        Gfx::clear(CLEAR_COLOR_FLAG);
 
         CGEOM.draw("quad"_h);
         g_buffer.unbind_as_source();
@@ -186,13 +186,12 @@ void SSRRenderer::render(Scene* pscene)
         SSR_blur_shader_.send_uniform<int>("rd.i_samples"_h, nSamples);
         SSR_blur_shader_.send_uniform("rd.v2_texelOffsetScale"_h, vec2(0.f, maxBlurRadius/ssr_buffer.get_height()));
 
-        GFX::enable_blending();
-        GFX::set_std_blending();
+        Gfx::set_std_blending();
         CGEOM.draw("quad"_h);
         g_buffer.unbind_as_source();
         blur_buffer_.unbind_as_source();
         ssr_buffer.unbind_as_target();
-        GFX::disable_blending();
+        Gfx::disable_blending();
 
         SSR_blur_shader_.unuse();
     }

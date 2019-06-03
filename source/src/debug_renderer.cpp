@@ -1,7 +1,7 @@
 #include <cstdlib>
 
 #include "debug_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "mesh.hpp"
 #include "vertex_format.h"
 #include "bounding_boxes.h"
@@ -46,8 +46,7 @@ void DebugRenderer::render(Scene* pscene)
     mat4 PV = P*V;
 
     GMODULES::GET("gbuffer"_h).blit_depth_to_screen(GLB.WIN_W, GLB.WIN_H);
-    if(enable_depth_test_)
-        GFX::enable_depth_testing();
+    Gfx::set_depth_test_enabled(enable_depth_test_);
 
     line_shader_.use();
 
@@ -139,8 +138,7 @@ void DebugRenderer::render(Scene* pscene)
     if(show_static_octree_)
     {
         float far = pscene->get_camera().get_far();
-        GFX::enable_blending();
-        GFX::set_std_blending();
+        Gfx::set_std_blending();
         auto&& static_octree = pscene->get_static_octree();
         // For each bounding region that is visible
         static_octree.traverse_bounds_range(pscene->get_camera().get_frustum_box(),
@@ -156,7 +154,7 @@ void DebugRenderer::render(Scene* pscene)
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             CGEOM.draw("cube_line"_h);
         });
-        GFX::disable_blending();
+        Gfx::disable_blending();
     }
 
     // DRAW REQUESTS
@@ -210,7 +208,7 @@ void DebugRenderer::render(Scene* pscene)
     line_shader_.unuse();
 
     if(enable_depth_test_)
-        GFX::disable_depth_testing();
+        Gfx::set_depth_test_enabled(false);
 #endif
 }
 

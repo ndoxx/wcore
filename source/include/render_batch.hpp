@@ -1,34 +1,19 @@
 #ifndef RENDER_BATCH_HPP
 #define RENDER_BATCH_HPP
 
-#include <GL/glew.h>
 #include <ctti/type_id.hpp>
 
 #include "logger.h"
 #include "mesh.hpp"
 
 #include "buffer.h"
+#include "gfx_api.h"
 
 namespace wcore
 {
 
-static inline uint32_t dimensionality(GLenum primitive)
-{
-    switch(primitive)
-    {
-    case GL_QUADS:
-        return 4;
-    case GL_TRIANGLES:
-        return 3;
-    case GL_LINES:
-        return 2;
-    default:
-        return 0;
-    }
-}
-
 // REFACTOR
-// [ ] Make OpenGL agnostic
+// [X] Make OpenGL agnostic
 // [ ] Let meshes handle index buffers
 //      -> 1 submesh = 1 index buffer & 1 material
 
@@ -39,15 +24,15 @@ private:
     VertexBuffer* VBO_;
     IndexBuffer* IBO_;
     VertexArray* VAO_;
-    GLenum primitive_;
+    DrawPrimitive primitive_;
     hash_t category_;
 
     std::vector<VertexT> vertices_;
-    std::vector<GLuint>  indices_;
+    std::vector<uint32_t> indices_;
 
 public:
     explicit RenderBatch(hash_t category,
-                         GLenum primitive = GL_TRIANGLES):
+                         DrawPrimitive primitive = DrawPrimitive::Triangles):
     VBO_(nullptr),
     IBO_(nullptr),
     VAO_(nullptr),
@@ -60,8 +45,6 @@ public:
 
     ~RenderBatch()
     {
-        // RenderBatch objects are life-bound to their server-side counterparts
-        // When they die, the OpenGL object dies as well
         DLOGN("Destroying render batch cat(<n>" + HRESOLVE(category_) + "</n>)", "batch");
 
         // First unbind
@@ -144,8 +127,7 @@ public:
 
         VAO_->bind();
         IBO_->bind();
-        glDrawElements(primitive_, dimensionality(primitive_)*n_elements, GL_UNSIGNED_INT,
-                      (void*)(offset * sizeof(GLuint)));
+        Gfx::draw_indexed(primitive_, n_elements, offset);
         IBO_->unbind();
         //VAO_->unbind();
     }

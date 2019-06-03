@@ -4,8 +4,7 @@
 
 #include "wcore.h"
 
-#include "gfx_driver.h" // Won't compile if removed: ensures GLFW header included before GL
-#include "frame_buffer.h"
+#include "gfx_api.h" // Won't compile if removed: ensures GLFW header included before GL
 #include "thread_utils.h"
 #include "error.h"
 #include "config.h"
@@ -531,8 +530,7 @@ eimpl_(impl)
 
 void Engine::PipelineControl::SetDefaultFrameBuffer(unsigned int index)
 {
-    FrameBuffer::set_default_framebuffer(index);
-    GFX::set_default_framebuffer(index);
+    Gfx::set_default_framebuffer(index);
 }
 
 void Engine::PipelineControl::SetShadowMappingEnabled(bool value)

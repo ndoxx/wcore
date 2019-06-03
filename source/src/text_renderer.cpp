@@ -1,5 +1,5 @@
 #include "text_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "logger.h"
 #include "vertex_format.h"
 #include "mesh.hpp"
@@ -121,13 +121,12 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
 {
     x *= 2;
     y *= 2;
-    GFX::bind_default_frame_buffer();
-    GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
+    Gfx::bind_default_frame_buffer();
+    Gfx::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
     text_shader_.use();
     text_shader_.send_uniform("v3_textColor"_h, color);
 
-    GFX::enable_blending();
-    GFX::set_std_blending();
+    Gfx::set_std_blending();
     // Iterate through all characters
     std::string::const_iterator itc;
     for (itc = text.begin(); itc != text.end(); ++itc)
@@ -147,7 +146,7 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
         text_shader_.send_uniform("m4_projection"_h, projection);
 
 
-        GFX::bind_texture2D(0, ch.tex_ID);
+        Gfx::bind_texture2D(0, ch.tex_ID);
         CGEOM.draw("char_quad"_h);
 
         // Advance to next glyph
@@ -155,8 +154,7 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
     }
 
     text_shader_.unuse();
-    GFX::unbind_texture2D();
-    GFX::disable_blending();
+    Gfx::disable_blending();
 }
 
 void TextRenderer::render(Scene* pscene)

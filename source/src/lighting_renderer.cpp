@@ -1,7 +1,7 @@
 #include <algorithm>
 
 #include "lighting_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "config.h"
 #include "scene.h"
 #include "camera.h"
@@ -66,13 +66,12 @@ void LightingRenderer::render(Scene* pscene)
         g_buffer.bind_as_source();
         l_buffer.bind_as_target();
         //g_buffer.blit_depth(l_buffer); // [OPT] Find a workaround
-        GFX::lock_depth_buffer();
-        GFX::clear_color();
+        Gfx::set_depth_lock(true);
+        Gfx::clear(CLEAR_COLOR_FLAG);
 
-        GFX::enable_stencil();
-        GFX::set_depth_test_less();
-        GFX::set_light_blending();
-        GFX::set_stencil_op_light_volume();
+        Gfx::set_stencil_test_enabled(true);
+        Gfx::set_depth_func(DepthFunc::Less);
+        Gfx::set_stencil_operator(StencilOperator::LightVolume);
 
         pscene->traverse_lights([&](const Light& light, uint32_t chunk_index)
         {
@@ -83,11 +82,11 @@ void LightingRenderer::render(Scene* pscene)
             //bool inside = light.surrounds_camera(*pscene->get_camera());
 
         // -------- STENCIL PASS
-            GFX::lock_color_buffer(); // Do not write to color buffers
-            GFX::clear_stencil();
-            GFX::enable_depth_testing();
-            GFX::disable_face_culling();    // Disable face culling, we want to process all polygons
-            GFX::set_stencil_always_pass(); // Stencil test always succeeds, we just need stencil operation
+            Gfx::lock_color_buffer(); // Do not write to color buffers
+            Gfx::clear(CLEAR_STENCIL_FLAG);
+            Gfx::set_depth_test_enabled(true);
+            Gfx::set_cull_mode(CullMode::None); // Disable face culling, we want to process all polygons
+            Gfx::set_stencil_func(StencilFunc::Always); // Stencil test always succeeds, we just need stencil operation
 
             // Use null technique (void fragment shader)
             // Only stencil operation is important
@@ -100,11 +99,11 @@ void LightingRenderer::render(Scene* pscene)
             l_buffer.rebind_draw_buffers();
 
         // ---- LIGHT PASS
-            GFX::lock_stencil();
-            GFX::set_stencil_notequal(0, 0xFF);
-            GFX::disable_depth_testing();
-            GFX::enable_blending();
-            GFX::cull_front();
+            Gfx::set_stencil_lock(true);
+            Gfx::set_stencil_func(StencilFunc::NotEqual, 0, 0xFF);
+            Gfx::set_depth_test_enabled(false);
+            Gfx::set_light_blending();
+            Gfx::set_cull_mode(CullMode::Front);
 
             lpass_point_shader_.use();
             //lpass_point_shader_.send_uniform("rd.b_lighting_enabled"_h, lighting_enabled_);
@@ -137,15 +136,15 @@ void LightingRenderer::render(Scene* pscene)
             CGEOM.draw("sphere"_h);
             lpass_point_shader_.unuse();
 
-            GFX::disable_blending();
-            GFX::disable_face_culling();
-            GFX::unlock_stencil();
+            Gfx::disable_blending();
+            Gfx::set_cull_mode(CullMode::None);
+            Gfx::set_stencil_lock(false);
         },
         [&](const Light& light)
         {
             return light.is_in_frustum(pscene->get_camera());
         });
-        GFX::disable_stencil();
+        Gfx::set_stencil_test_enabled(false);
 
         // Render directional light shadow to shadow buffer
         g_buffer.unbind_as_source();
@@ -160,10 +159,10 @@ void LightingRenderer::render(Scene* pscene)
         l_buffer.bind_as_target();
 
         if(lighting_enabled_)
-            GFX::enable_blending();
+            Gfx::set_light_blending();
         else
-            GFX::disable_blending();
-        GFX::cull_back();
+            Gfx::disable_blending();
+        Gfx::set_cull_mode(CullMode::Back);
 
         math::mat4 Id;
         Id.init_identity();
@@ -224,8 +223,8 @@ void LightingRenderer::render(Scene* pscene)
         CGEOM.draw("quad"_h);
         lpass_dir_shader_.unuse();
 
-        GFX::disable_blending();
-        GFX::disable_face_culling();
+        Gfx::disable_blending();
+        Gfx::set_cull_mode(CullMode::None);
 
         //glDrawBuffer(GL_FRONT_AND_BACK);
     }

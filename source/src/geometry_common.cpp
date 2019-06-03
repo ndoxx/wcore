@@ -9,7 +9,7 @@ using namespace math;
 
 GeometryCommon::GeometryCommon():
 render_batch_3P_("3p"_h),
-render_batch_line_("line"_h, GL_LINES),
+render_batch_line_("line"_h, DrawPrimitive::Lines),
 render_batch_2P2U_("2p2u"_h)
 {
     add_mesh_3P("quad"_h, factory::make_quad_3P());

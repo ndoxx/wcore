@@ -1,5 +1,5 @@
 #include "gui_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "vertex_format.h"
 #include "material.h"
 #include "material_factory.h"
@@ -41,10 +41,9 @@ void GuiRenderer::set_cursor_hue(float hue)
 
 void GuiRenderer::render(Scene* pscene)
 {
-    GFX::bind_default_frame_buffer();
-    GFX::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
-    GFX::enable_blending();
-    GFX::set_std_blending();
+    Gfx::bind_default_frame_buffer();
+    Gfx::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
+    Gfx::set_std_blending();
 
     // Render cursor if needed
     if(cursor_props_.active && CONFIG.is("root.gui.cursor.custom"_h))
@@ -71,6 +70,8 @@ void GuiRenderer::render(Scene* pscene)
 
         cursor_shader_.unuse();
     }
+
+    Gfx::disable_blending();
 }
 
 } // namespace wcore

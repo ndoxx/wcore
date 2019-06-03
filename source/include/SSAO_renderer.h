@@ -1,6 +1,8 @@
 #ifndef SSAO_RENDERER_H
 #define SSAO_RENDERER_H
 
+#include <memory>
+
 #include "renderer.h"
 #include "shader.h"
 #include "ping_pong_buffer.h"
@@ -8,6 +10,7 @@
 namespace wcore
 {
 
+class Texture;
 class SSAORenderer : public Renderer
 {
 private:
@@ -18,7 +21,8 @@ private:
     std::vector<math::vec3> ssao_kernel_;
     math::vec2 noise_scale_;
 
-    unsigned int noise_texture_;
+    //unsigned int noise_texture_;
+    std::shared_ptr<Texture> noise_texture_;
 
     float SSAO_radius_;
     float SSAO_bias_;

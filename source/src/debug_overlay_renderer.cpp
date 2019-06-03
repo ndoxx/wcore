@@ -1,7 +1,7 @@
 #include <cassert>
 
 #include "debug_overlay_renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 #include "text_renderer.h"
 #include "texture.h"
 #include "math3d.h"
@@ -124,8 +124,8 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
             peek_shader_.send_uniform("v4_proj_params"_h, proj_params);
         }
 
-        GFX::bind_texture2D(0, props.texture_index);
-        GFX::viewport((ii+1)*gap + ii*vpw, gap, vpw, vph);
+        Gfx::bind_texture2D(0, props.texture_index);
+        Gfx::viewport((ii+1)*gap + ii*vpw, gap, vpw, vph);
 
         CGEOM.draw("quad"_h);
 
@@ -146,7 +146,7 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
 
     // Bind current texture as source and internal framebuffer as target
     render_target_.bind_as_target();
-    GFX::bind_texture2D(0, props.texture_index);
+    Gfx::bind_texture2D(0, props.texture_index);
 
     // Send uniforms to shader
     peek_shader_.use();
@@ -169,13 +169,13 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
     }
 
     // Draw
-    GFX::clear_color();
+    Gfx::clear(CLEAR_COLOR_FLAG);
 
     CGEOM.draw("quad"_h);
 
     peek_shader_.unuse();
     render_target_.unbind_as_target();
-    GFX::flush();
+    Gfx::flush();
 }
 
 void DebugOverlayRenderer::render(Scene* pscene)
@@ -287,7 +287,7 @@ void DebugOverlayRenderer::framebuffer_peek_widget(Scene* pscene)
     // * Save image if needed
     if(save_image && !raw_) // TMP only handle FB save for now
     {
-        GFX::finish();
+        Gfx::finish();
         std::string filename = props.sampler_name + "_" + std::to_string(props.texture_index) + ".png";
         if(save_fb_to_image(filename))
             DLOGN("[DebugOverlayRenderer] Saved engine texture to file:", "core");

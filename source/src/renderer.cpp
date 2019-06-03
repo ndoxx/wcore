@@ -1,5 +1,5 @@
 #include "renderer.h"
-#include "gfx_driver.h"
+#include "gfx_api.h"
 
 namespace wcore
 {
