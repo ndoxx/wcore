@@ -260,8 +260,6 @@ void main()
 
     vec4 fAlbRough = texture(albedoTex, texCoord);
     float fragRoughness = fAlbRough.a;
-    float reflectivity = fragMetallic*(1.f-fragRoughness);
-    reflectivity = (reflectivity - rd.f_minGlossiness) / (1.f - rd.f_minGlossiness);
     vec3 rayDirection = normalize(reflect(normalize(rayOrigin), fragNormal));
 
     vec2 hitPixel;
@@ -282,6 +280,9 @@ void main()
     // Temporal reprojection
     vec4 reproj_hitpx = rd.m4_reproj*vec4(hitPixel, 1.f, 1.f);
     hitPixel = clamp(reproj_hitpx.xy / reproj_hitpx.w, 0.f, 1.f);
+
+    float reflectivity = fragMetallic*(1.f-fragRoughness);
+    reflectivity = (reflectivity - rd.f_minGlossiness) / (1.f - rd.f_minGlossiness);
 
     float alpha = ssr_attenuation(intersect, iterationCount, reflectivity, hitPixel, hitPoint, rayOrigin, rayDirection);
 

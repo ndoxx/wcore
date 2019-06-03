@@ -24,6 +24,11 @@ static inline uint32_t dimensionality(GLenum primitive)
     }
 }
 
+// REFACTOR
+// [ ] Make OpenGL agnostic
+// [ ] Let meshes handle index buffers
+//      -> 1 submesh = 1 index buffer & 1 material
+
 template <typename VertexT>
 class RenderBatch
 {
@@ -91,8 +96,6 @@ public:
         //check_gl_error();
     }
 
-    inline GLuint get_vertex_buffer() const { return VBO_; }
-    inline GLuint get_index_buffer() const  { return IBO_; }
     inline uint32_t get_n_vertices() const  { return vertices_.size(); }
     inline uint32_t get_n_indices() const   { return indices_.size(); }
 

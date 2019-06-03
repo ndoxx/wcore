@@ -82,7 +82,7 @@ void LightingRenderer::render(Scene* pscene)
             // Is cam inside light volume?
             //bool inside = light.surrounds_camera(*pscene->get_camera());
 
-    // -------- STENCIL PASS
+        // -------- STENCIL PASS
             GFX::lock_color_buffer(); // Do not write to color buffers
             GFX::clear_stencil();
             GFX::enable_depth_testing();

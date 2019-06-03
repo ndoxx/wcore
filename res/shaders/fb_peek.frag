@@ -40,7 +40,8 @@ void main()
         }
 
         // Fast Reinhard tone mapping
-        sampleColor.rgb = b_toneMap ? sampleColor.rgb / (sampleColor.rgb + vec3(1.0)) : sampleColor.rgb;
+        //sampleColor.rgb = b_toneMap ? sampleColor.rgb / (sampleColor.rgb + vec3(1.0)) : sampleColor.rgb;
+        sampleColor = b_toneMap ? sampleColor / (sampleColor + vec4(1.0)) : sampleColor;
 
         // Color inversion
         sampleColor.rgb = b_invert ? 1.f - sampleColor.rgb : sampleColor.rgb;

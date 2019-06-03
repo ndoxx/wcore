@@ -28,6 +28,10 @@ void main()
     out_color.r = convolve_kernel_separable_r(kernel.f_weight, kernel.i_half_size,
                                               inputTex, texCoord,
                                               v2_texelSize, horizontal);
+    #elif defined VARIANT_RGBA
+    out_color = convolve_kernel_separable_rgba(kernel.f_weight, kernel.i_half_size,
+                                               inputTex, texCoord,
+                                               v2_texelSize, horizontal);
     #else
     out_color.rgb = convolve_kernel_separable(kernel.f_weight, kernel.i_half_size,
                                               inputTex, texCoord,

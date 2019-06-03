@@ -480,6 +480,13 @@ bool Shader::link()
             glDeleteShader(GeometryShaderID_);
         return false;
     }
+
+    // Detach shaders
+    glDetachShader(ProgramID_, VertexShaderID_);
+    if(GeometryShaderID_) glDetachShader(ProgramID_, GeometryShaderID_);
+    glDetachShader(ProgramID_, FragmentShaderID_);
+
+
     return true;
 }
 

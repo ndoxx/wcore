@@ -8135,13 +8135,27 @@ bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 **BEWARE** Une conséquence de l'utilisation de cette technique est que les réflexions disparaissent si la caméra se trouve à l'intérieur d'un objet de la scène : dans ce cas, la profondeur backface est toujours plus faible que la profondeur frontface, et le test d'intersection échoue systématiquement.
 
 
-
 * Sources :
 [1] http://www.lighthouse3d.com/tutorials/opengl-timer-query/
 [2] https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_timer_query.txt
 
 
+#[25-05-19]
 
+## [failed] Bloom pass optimization
+J'ai essayé de réécrire la bloom pass pour éliminer la texture *brightTex*, en condensant l'information du bright mask dans le canal alpha de *screenTex*, afin d'économiser un multiple render target dans la light pass. En pratique cela me force à implémenter les bloom buffers en RGBA16F ce qui s'avère plus lent (en tout cas sur ma config).
+
+#[27-05-19]
+
+## Multi-line string
+```cpp
+    std::string shader_src = R"(
+        #version 330 core
+
+        uniform float f_ma_couille;
+        // ...
+    )";
+```
 
 
 

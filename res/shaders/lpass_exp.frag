@@ -40,8 +40,8 @@ struct light
     in vec2 frag_ray;
 #endif
 
-layout(location = 0) out vec3 out_color;
-layout(location = 1) out vec3 out_bright_color;
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_bright_color;
 
 // G-Buffer samplers
 uniform sampler2D normalTex;
@@ -182,15 +182,16 @@ void main()
         total_light = point_contrib * attenuate(distance, lt.f_light_radius, 3.0f);
     #endif
 
-    out_color = total_light;
+    out_color.rgb = total_light;
 
     // "Bright pass"
-    float luminance = dot(out_color, W);
+    float luminance = dot(out_color.rgb, W);
     //float brightnessMask = float(luminance > rd.f_bright_threshold); // Step function
     //float brightnessMask = 1/(1+exp(-20*(luminance-rd.f_bright_threshold))); // Sigmoid logistic function
     //float brightnessMask = (1+tanh(30*(luminance-rd.f_bright_threshold)))/2; // Sigmoid hyperbolic tangent
     float brightnessMask = smoothstep(rd.f_bright_threshold-rd.f_bright_knee, rd.f_bright_threshold, luminance);
-    //out_bright_color = brightness_prefilter(out_color, rd.f_bright_threshold);
+    //out_bright_color = brightness_prefilter(out_color.rgb, rd.f_bright_threshold);
 
-    out_bright_color = brightnessMask*out_color;
+    out_bright_color = vec4(brightnessMask*out_color.rgb, brightnessMask);
+    out_color.a = brightnessMask;
 }
