@@ -2,9 +2,12 @@
 #define RENDER_BATCH_HPP
 
 #include <GL/glew.h>
+#include <ctti/type_id.hpp>
 
 #include "logger.h"
 #include "mesh.hpp"
+
+#include "buffer.h"
 
 namespace wcore
 {
@@ -33,9 +36,9 @@ template <typename VertexT>
 class RenderBatch
 {
 private:
-    GLuint VBO_;
-    GLuint IBO_;
-    GLuint VAO_;
+    VertexBuffer* VBO_;
+    IndexBuffer* IBO_;
+    VertexArray* VAO_;
     GLenum primitive_;
     hash_t category_;
 
@@ -45,31 +48,14 @@ private:
 public:
     explicit RenderBatch(hash_t category,
                          GLenum primitive = GL_TRIANGLES):
-    VBO_(0),
-    IBO_(0),
-    VAO_(0),
+    VBO_(nullptr),
+    IBO_(nullptr),
+    VAO_(nullptr),
     primitive_(primitive),
     category_(category)
     {
         DLOGN("New render batch:", "batch");
         DLOGI("Category: <n>" + HRESOLVE(category_) + "</n>", "batch");
-        glGenBuffers(1, &VBO_);
-
-        DLOGI("VBO created. id=" + std::to_string(VBO_), "batch");
-        glGenBuffers(1, &IBO_);
-
-        DLOGI("IBO created. id=" + std::to_string(IBO_), "batch");
-        DLOGI("dimensionality= " + std::to_string(dimensionality(primitive_)), "batch");
-
-        // Generate and init VAO
-        glGenVertexArrays(1, &VAO_);
-        glBindVertexArray(VAO_);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
-        VertexT::enable_vertex_attrib_array();
-        glBindVertexArray(0);
-
-        DLOGI("VAO created. id=" + std::to_string(VAO_), "batch");
     }
 
     ~RenderBatch()
@@ -79,21 +65,16 @@ public:
         DLOGN("Destroying render batch cat(<n>" + HRESOLVE(category_) + "</n>)", "batch");
 
         // First unbind
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        if(IBO_) IBO_->unbind();
+        if(VBO_) VBO_->unbind();
+        if(VAO_) VAO_->unbind();
 
         // Release VAO
-        glDeleteVertexArrays(1, &VAO_);
-        DLOGI("VAO destroyed. id=" + std::to_string(VAO_), "batch");
+        delete VAO_;
 
         // Then delete buffers
-        glDeleteBuffers(1, &IBO_);
-        DLOGI("IBO destroyed. id=" + std::to_string(IBO_), "batch");
-
-        glDeleteBuffers(1, &VBO_);
-        DLOGI("VBO destroyed. id=" + std::to_string(VBO_), "batch");
-        //check_gl_error();
+        delete IBO_;
+        delete VBO_;
     }
 
     inline uint32_t get_n_vertices() const  { return vertices_.size(); }
@@ -106,13 +87,13 @@ public:
         mesh.set_batch_category(category_);
 
         const std::vector<VertexT>& vertices = mesh.get_vertex_buffer();
-        const std::vector<GLuint>&  indices  = mesh.get_index_buffer();
+        const std::vector<uint32_t>& indices = mesh.get_index_buffer();
 
         // Add buffer offset to indices
-        std::vector<GLuint> transformed_indices;
+        std::vector<uint32_t> transformed_indices;
         transformed_indices.resize(indices.size());
         std::transform(indices.begin(), indices.end(), transformed_indices.begin(),
-                       [=](GLuint ind) -> GLuint { return ind+vert_offset; });
+                       [=](uint32_t ind) -> uint32_t { return ind+vert_offset; });
 
         vertices_.insert(vertices_.end(),vertices.begin(),vertices.end());
         indices_.insert(indices_.end(),transformed_indices.begin(),transformed_indices.end());
@@ -128,11 +109,9 @@ public:
         if(nvert==0 && nind==0)
             return;
 
-        GLenum draw_type = dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
-
 #ifdef __DEBUG__
-        size_t size_vertex_kb = (nvert * sizeof(VertexT)) / 1024;
-        size_t size_index_kb  = (nind  * sizeof(GLuint))  / 1024;
+        size_t size_vertex_kb = (nvert * sizeof(VertexT))  / 1024;
+        size_t size_index_kb  = (nind  * sizeof(uint32_t)) / 1024;
         DLOGN("Sending render batch cat(<n>" + HRESOLVE(category_) + "</n>)", "batch");
         DLOGI("#vertices: " + std::to_string(nvert) + "/"
                             + std::to_string(vertices_.size()) + " -> <v>"
@@ -142,42 +121,33 @@ public:
                             + std::to_string(size_index_kb) + "kB</v>", "batch");
 #endif
 
-        // Upload Vertex Data
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-        glBufferData(GL_ARRAY_BUFFER,
-                     nvert*sizeof(VertexT),
-                     vertices_.data(),
-                     draw_type);
+        VAO_ = VertexArray::create();
+        VAO_->bind();
 
-        // Upload Index Data
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     nind*sizeof(GLuint),
-                     indices_.data(),
-                     draw_type);
+        VBO_ = VertexBuffer::create(reinterpret_cast<float*>(vertices_.data()), nvert*sizeof(VertexT), dynamic);
+
+        VAO_->set_layout(ctti::type_id<VertexT>().hash());
+        VAO_->unbind();
+
+        IBO_ = IndexBuffer::create(indices_.data(), nind*sizeof(uint32_t), dynamic);
     }
 
     void stream(const Mesh<VertexT>& mesh, uint32_t offset=0)
     {
-        const std::vector<VertexT>& vertices = mesh.get_vertex_buffer();
-        const std::vector<GLuint>&  indices  = mesh.get_index_buffer();
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-        glBufferSubData(GL_ARRAY_BUFFER, (GLuint)offset, mesh.get_nv()*sizeof(VertexT), &vertices[0]);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (GLuint)offset, mesh.get_ni()*sizeof(GLuint), &indices[0]);
+        VBO_->stream(reinterpret_cast<float*>(mesh.get_vertex_buffer().data()), mesh.get_nv()*sizeof(VertexT), offset);
+        IBO_->stream(mesh.get_index_buffer().data(), mesh.get_ni()*sizeof(uint32_t), offset);
     }
 
     void draw(uint32_t n_elements, uint32_t offset) const
     {
         if(n_elements==0) return;
 
-        glBindVertexArray(VAO_);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO_);
+        VAO_->bind();
+        IBO_->bind();
         glDrawElements(primitive_, dimensionality(primitive_)*n_elements, GL_UNSIGNED_INT,
                       (void*)(offset * sizeof(GLuint)));
-        //glBindVertexArray(0);
+        IBO_->unbind();
+        //VAO_->unbind();
     }
 
     inline void draw(const BufferToken& buffer_token) const

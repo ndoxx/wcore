@@ -7,12 +7,12 @@
 namespace wcore
 {
 
-VertexBuffer* VertexBuffer::create(float* vertex_data, uint32_t size, bool dynamic)
+VertexBuffer* VertexBuffer::create(float* vertex_data, std::size_t size, bool dynamic)
 {
     switch(RendererAPI::get_api())
     {
         case GfxAPI::None:
-            DLOGF("VertexBuffer: not implemented for GfxAPI::None.", "buffer");
+            DLOGF("VertexBuffer: not implemented for GfxAPI::None.", "batch");
             return nullptr;
 
         case GfxAPI::OpenGL:
@@ -20,12 +20,12 @@ VertexBuffer* VertexBuffer::create(float* vertex_data, uint32_t size, bool dynam
     }
 }
 
-IndexBuffer* IndexBuffer::create(uint32_t* index_data, uint32_t size, bool dynamic)
+IndexBuffer* IndexBuffer::create(uint32_t* index_data, std::size_t size, bool dynamic)
 {
     switch(RendererAPI::get_api())
     {
         case GfxAPI::None:
-            DLOGF("IndexBuffer: not implemented for GfxAPI::None.", "buffer");
+            DLOGF("IndexBuffer: not implemented for GfxAPI::None.", "batch");
             return nullptr;
 
         case GfxAPI::OpenGL:
@@ -33,5 +33,17 @@ IndexBuffer* IndexBuffer::create(uint32_t* index_data, uint32_t size, bool dynam
     }
 }
 
+VertexArray* VertexArray::create()
+{
+    switch(RendererAPI::get_api())
+    {
+        case GfxAPI::None:
+            DLOGF("VertexArray: not implemented for GfxAPI::None.", "batch");
+            return nullptr;
+
+        case GfxAPI::OpenGL:
+            return new OGLVertexArray();
+    }
+}
 
 } // namespace wcore

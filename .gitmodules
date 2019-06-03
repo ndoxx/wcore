@@ -7,3 +7,6 @@
 [submodule "source/vendor/pybind11"]
 	path = source/vendor/pybind11
 	url = https://github.com/pybind/pybind11.git
+[submodule "source/vendor/ctti"]
+	path = source/vendor/ctti
+	url = https://github.com/Manu343726/ctti.git
