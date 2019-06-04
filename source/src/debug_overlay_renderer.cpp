@@ -123,8 +123,8 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
             peek_shader_.send_uniform("v4_proj_params"_h, proj_params);
         }
 
-        Gfx::bind_texture2D(0, props.texture_index);
-        Gfx::viewport((ii+1)*gap + ii*vpw, gap, vpw, vph);
+        Gfx::device->bind_texture2D(0, props.texture_index);
+        Gfx::device->viewport((ii+1)*gap + ii*vpw, gap, vpw, vph);
 
         CGEOM.draw("quad"_h);
 
@@ -145,7 +145,7 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
 
     // Bind current texture as source and internal framebuffer as target
     render_target_.bind_as_target();
-    Gfx::bind_texture2D(0, props.texture_index);
+    Gfx::device->bind_texture2D(0, props.texture_index);
 
     // Send uniforms to shader
     peek_shader_.use();
@@ -168,13 +168,13 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
     }
 
     // Draw
-    Gfx::clear(CLEAR_COLOR_FLAG);
+    Gfx::device->clear(CLEAR_COLOR_FLAG);
 
     CGEOM.draw("quad"_h);
 
     peek_shader_.unuse();
     render_target_.unbind_as_target();
-    Gfx::flush();
+    Gfx::device->flush();
 }
 
 void DebugOverlayRenderer::render(Scene* pscene)
@@ -195,7 +195,7 @@ bool DebugOverlayRenderer::save_fb_to_image(const std::string& filename)
     // Bind framebuffer, change alignment to 1 to avoid out of bounds writes,
     // read framebuffer to pixel array and unbind
     render_target_.bind_as_target();
-    Gfx::read_framebuffer_rgba(width, height, pixels);
+    Gfx::device->read_framebuffer_rgba(width, height, pixels);
     render_target_.unbind_as_target();
 
     // Save to PNG image
@@ -285,7 +285,7 @@ void DebugOverlayRenderer::framebuffer_peek_widget(Scene* pscene)
     // * Save image if needed
     if(save_image && !raw_) // TMP only handle FB save for now
     {
-        Gfx::finish();
+        Gfx::device->finish();
         std::string filename = props.sampler_name + "_" + std::to_string(props.texture_index) + ".png";
         if(save_fb_to_image(filename))
             DLOGN("[DebugOverlayRenderer] Saved engine texture to file:", "core");

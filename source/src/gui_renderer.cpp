@@ -41,9 +41,9 @@ void GuiRenderer::set_cursor_hue(float hue)
 
 void GuiRenderer::render(Scene* pscene)
 {
-    Gfx::bind_default_frame_buffer();
-    Gfx::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
-    Gfx::set_std_blending();
+    Gfx::device->bind_default_frame_buffer();
+    Gfx::device->viewport(0,0,GLB.WIN_W,GLB.WIN_H);
+    Gfx::device->set_std_blending();
 
     // Render cursor if needed
     if(cursor_props_.active && CONFIG.is("root.gui.cursor.custom"_h))
@@ -71,7 +71,7 @@ void GuiRenderer::render(Scene* pscene)
         cursor_shader_.unuse();
     }
 
-    Gfx::disable_blending();
+    Gfx::device->disable_blending();
 }
 
 } // namespace wcore

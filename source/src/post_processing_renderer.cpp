@@ -79,8 +79,8 @@ void PostProcessingRenderer::render(Scene* pscene)
 
 
     // Render textured quad to screen
-    Gfx::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
-    //GFX::bind_default_frame_buffer();
+    Gfx::device->viewport(0,0,GLB.WIN_W,GLB.WIN_H);
+    //Gfx::device->bind_default_frame_buffer();
 
     // Bind relevant textures
     l_buffer.bind_as_source(0,0);

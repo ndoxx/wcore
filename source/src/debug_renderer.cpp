@@ -46,7 +46,7 @@ void DebugRenderer::render(Scene* pscene)
     mat4 PV = P*V;
 
     GMODULES::GET("gbuffer"_h).blit_depth_to_screen(GLB.WIN_W, GLB.WIN_H);
-    Gfx::set_depth_test_enabled(enable_depth_test_);
+    Gfx::device->set_depth_test_enabled(enable_depth_test_);
 
     line_shader_.use();
 
@@ -138,7 +138,7 @@ void DebugRenderer::render(Scene* pscene)
     if(show_static_octree_)
     {
         float far = pscene->get_camera().get_far();
-        Gfx::set_std_blending();
+        Gfx::device->set_std_blending();
         auto&& static_octree = pscene->get_static_octree();
         // For each bounding region that is visible
         static_octree.traverse_bounds_range(pscene->get_camera().get_frustum_box(),
@@ -154,7 +154,7 @@ void DebugRenderer::render(Scene* pscene)
             line_shader_.send_uniform("tr.m4_ModelViewProjection"_h, MVP);
             CGEOM.draw("cube_line"_h);
         });
-        Gfx::disable_blending();
+        Gfx::device->disable_blending();
     }
 
     // DRAW REQUESTS
@@ -184,9 +184,9 @@ void DebugRenderer::render(Scene* pscene)
                 CGEOM.draw("sphere_line"_h);
             else if((*it).type == DebugDrawRequest::CROSS3)
             {
-                Gfx::set_line_width(2.5f);
+                Gfx::device->set_line_width(2.5f);
                 CGEOM.draw("cross"_h);
-                Gfx::set_line_width(1.f);
+                Gfx::device->set_line_width(1.f);
             }
             ++it;
         }
@@ -208,7 +208,7 @@ void DebugRenderer::render(Scene* pscene)
     line_shader_.unuse();
 
     if(enable_depth_test_)
-        Gfx::set_depth_test_enabled(false);
+        Gfx::device->set_depth_test_enabled(false);
 #endif
 }
 

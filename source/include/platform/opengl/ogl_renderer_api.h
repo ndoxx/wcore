@@ -45,7 +45,11 @@ public:
     virtual uint32_t get_error() override;
     virtual void assert_no_error() override;
 
-    // Style
+    // Byte-alignment
+    virtual void set_pack_alignment(uint32_t value) override;
+    virtual void set_unpack_alignment(uint32_t value) override;
+
+    // Raster state
     virtual void set_line_width(float value) override;
 
     // TMP

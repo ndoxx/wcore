@@ -33,13 +33,13 @@ void ForwardRenderer::render(Scene* pscene)
     mat4 P = pscene->get_camera().get_projection_matrix(); // Camera Projection matrix
     mat4 PV = P*V;
 
-    Gfx::set_depth_test_enabled(true);
+    Gfx::device->set_depth_test_enabled(true);
 
     forward_stage_shader_.use();
     // Bind VAO, draw, unbind VAO
     l_buffer.bind_as_target();
     // Draw transparent geometry
-    Gfx::set_std_blending();
+    Gfx::device->set_std_blending();
 
     pscene->draw_models([&](const Model& model)
     {
@@ -65,13 +65,13 @@ void ForwardRenderer::render(Scene* pscene)
     wcore::ORDER::BACK_TO_FRONT,
     wcore::MODEL_CATEGORY::TRANSPARENT);
 
-    Gfx::disable_blending();
+    Gfx::device->disable_blending();
     forward_stage_shader_.unuse();
 
     // Draw skybox
     if(pscene->has_skybox())
     {
-        Gfx::set_depth_func(DepthFunc::LEqual);
+        Gfx::device->set_depth_func(DepthFunc::LEqual);
         skybox_shader_.use();
         const SkyBox& skybox = pscene->get_skybox();
         // Bind skybox's cubemap
@@ -89,12 +89,12 @@ void ForwardRenderer::render(Scene* pscene)
         skybox.draw();
 
         skybox_shader_.unuse();
-        Gfx::set_depth_func(DepthFunc::Less);
+        Gfx::device->set_depth_func(DepthFunc::Less);
     }
     l_buffer.unbind_as_target();
 
     // Restore state
-    Gfx::set_depth_test_enabled(false);
+    Gfx::device->set_depth_test_enabled(false);
 }
 
 }

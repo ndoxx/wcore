@@ -46,7 +46,7 @@ static std::map<TextureIF, GLenum> DATA_TYPES =
     {TextureIF::DEPTH32F_STENCIL8, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
     {TextureIF::DEPTH24_STENCIL8,  GL_UNSIGNED_INT_24_8},
     {TextureIF::RGB8,              GL_BYTE},
-    {TextureIF::R8,                GL_BYTE},
+    {TextureIF::R8,                GL_UNSIGNED_BYTE},
 };
 
 static std::map<TextureIF, GLenum> INTERNAL_FORMATS =

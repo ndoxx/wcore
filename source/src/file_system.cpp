@@ -106,7 +106,7 @@ bool FileSystem::close_archive(hash_t key)
 std::shared_ptr<std::istream> FileSystem::get_file_as_stream(const fs::path& file_path)
 {
     // Get stream to file
-    std::shared_ptr<std::ifstream> ifs = std::make_shared<std::ifstream>(std::ifstream(file_path));
+    std::shared_ptr<std::ifstream> ifs = std::make_shared<std::ifstream>(file_path);
 
     // Sanity check
     if(!ifs->is_open())

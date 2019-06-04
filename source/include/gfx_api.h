@@ -2,6 +2,7 @@
 #define GFX_DRIVER_H
 
 #include <cstdint>
+#include <memory>
 
 namespace wcore
 {
@@ -50,6 +51,7 @@ enum ClearFlags
     CLEAR_STENCIL_FLAG = 4
 };
 
+// Following API is subject to future HEAVY changes
 class RenderDevice
 {
 public:
@@ -78,7 +80,7 @@ public:
 
     virtual void set_depth_func(DepthFunc value) = 0;
     virtual void set_depth_test_enabled(bool value) = 0;
-    virtual void set_stencil_func(StencilFunc value, uint16_t a, uint16_t b) = 0;
+    virtual void set_stencil_func(StencilFunc value, uint16_t a=0, uint16_t b=0) = 0;
     virtual void set_stencil_operator(StencilOperator value) = 0;
     virtual void set_stencil_test_enabled(bool value) = 0;
 
@@ -87,6 +89,10 @@ public:
 
     virtual uint32_t get_error() = 0;
     virtual void assert_no_error() = 0;
+
+    // Byte-alignment
+    virtual void set_pack_alignment(uint32_t value) = 0;
+    virtual void set_unpack_alignment(uint32_t value) = 0;
 
     // Style
     virtual void set_line_width(float value) = 0;
@@ -103,49 +109,10 @@ public:
     inline static GfxAPI get_api() { return api_; }
     static void set_api(GfxAPI api);
 
-    inline static void viewport(float xx, float yy, float width, float height) { device_->viewport(xx, yy, width, height); }
-
-    inline static uint32_t get_default_framebuffer() { return device_->get_default_framebuffer(); }
-    inline static void set_default_framebuffer(uint32_t index) { device_->set_default_framebuffer(index); }
-    inline static void bind_default_frame_buffer() { device_->bind_default_frame_buffer(); }
-
-    inline static void draw_indexed(DrawPrimitive primitive, uint32_t n_elements, uint32_t offset) { device_->draw_indexed(primitive, n_elements, offset); }
-
-    inline static void read_framebuffer_rgba(uint32_t width, uint32_t height, unsigned char* pixels) { device_->read_framebuffer_rgba(width, height, pixels); }
-
-    inline static void set_clear_color(float r, float g, float b, float a) { device_->set_clear_color(r,g,b,a); }
-    inline static void clear(int flags) { device_->clear(flags); }
-    inline static void lock_color_buffer() { device_->lock_color_buffer(); }
-    inline static void set_depth_lock(bool value) { device_->set_depth_lock(value); }
-    inline static void set_stencil_lock(bool value) { device_->set_stencil_lock(value); }
-    inline static void set_cull_mode(CullMode value) { device_->set_cull_mode(value); }
-
-    inline static void set_std_blending() { device_->set_std_blending(); }
-    inline static void set_light_blending() { device_->set_light_blending(); }
-    inline static void disable_blending() { device_->disable_blending(); }
-
-    inline static void set_depth_func(DepthFunc value) { device_->set_depth_func(value); }
-    inline static void set_depth_test_enabled(bool value) { device_->set_depth_test_enabled(value); }
-    inline static void set_stencil_func(StencilFunc value, uint16_t a=0, uint16_t b=0) { device_->set_stencil_func(value, a, b); }
-    inline static void set_stencil_operator(StencilOperator value) { device_->set_stencil_operator(value); }
-    inline static void set_stencil_test_enabled(bool value) { device_->set_stencil_test_enabled(value); }
-
-    inline static void finish() { device_->finish(); }
-    inline static void flush() { device_->flush(); }
-
-    inline static uint32_t get_error() { return device_->get_error(); }
-    inline static void assert_no_error() { device_->assert_no_error(); }
-
-    // Style
-    inline static void set_line_width(float value) {device_->set_line_width(value); }
-
-    // TMP
-    inline static void bind_texture2D(uint32_t unit, uint32_t tex_handle) { device_->bind_texture2D(unit, tex_handle); }
-    inline static void unbind_texture2D() { device_->unbind_texture2D(); }
+    static std::unique_ptr<RenderDevice> device;
 
 private:
     static GfxAPI api_;
-    static RenderDevice* device_;
 };
 
 

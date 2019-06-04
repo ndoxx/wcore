@@ -90,7 +90,7 @@ void BloomRenderer::render(Scene* pscene)
     for(auto&& blur_stage: blur_stages_)
     {
         blur_stage->bind_as_target();
-        Gfx::clear(CLEAR_COLOR_FLAG);
+        Gfx::device->clear(CLEAR_COLOR_FLAG);
         CGEOM.draw("quad"_h);
     }
 
@@ -98,13 +98,13 @@ void BloomRenderer::render(Scene* pscene)
     blur_pass_shader_.send_uniform("horizontal"_h, false);
 
     // Blend with previous blur level
-    Gfx::set_std_blending();
+    Gfx::device->set_std_blending();
 
     bloom_buffer.bind_as_target();
     for(int ii=0; ii<blur_stages_.size(); ++ii)
     {
         if(ii==0)
-            Gfx::clear(CLEAR_COLOR_FLAG);
+            Gfx::device->clear(CLEAR_COLOR_FLAG);
 
         // Bind horizontal blur pass texture to texture unit 0
         blur_stages_[ii]->get_texture().bind(0, 0);
@@ -116,7 +116,7 @@ void BloomRenderer::render(Scene* pscene)
     }
     bloom_buffer.unbind_as_target();
 
-    Gfx::disable_blending();
+    Gfx::device->disable_blending();
 
     blur_pass_shader_.unuse();
 }

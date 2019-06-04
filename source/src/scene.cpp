@@ -219,7 +219,7 @@ void Scene::draw_line_models(std::function<void(pLineModel)> func)
                              pmdl->get_mesh().get_buffer_offset());*/
             chunk->draw(pmdl->get_mesh().get_buffer_token());
         });
-        //GFX::unbind_vertex_array();
+        //Gfx::device->unbind_vertex_array();
     }
 }
 

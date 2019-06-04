@@ -126,7 +126,7 @@ public:
 
         VAO_->bind();
         IBO_->bind();
-        Gfx::draw_indexed(primitive_, n_elements, offset);
+        Gfx::device->draw_indexed(primitive_, n_elements, offset);
         IBO_->unbind();
         //VAO_->unbind();
     }

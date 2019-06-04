@@ -530,7 +530,7 @@ eimpl_(impl)
 
 void Engine::PipelineControl::SetDefaultFrameBuffer(unsigned int index)
 {
-    Gfx::set_default_framebuffer(index);
+    Gfx::device->set_default_framebuffer(index);
 }
 
 void Engine::PipelineControl::SetShadowMappingEnabled(bool value)

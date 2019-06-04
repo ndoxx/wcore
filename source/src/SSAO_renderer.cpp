@@ -72,7 +72,7 @@ void SSAORenderer::render(Scene* pscene)
     SSAO_shader_.use();
     SSAO_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/out_size_.x(),1.0f/out_size_.y()));
     // Render textured quad to screen
-    Gfx::viewport(0,0,out_size_.x(),out_size_.y());
+    Gfx::device->viewport(0,0,out_size_.x(),out_size_.y());
 
     // Bind textures
     g_buffer.bind_as_source(0,0);  // normal
@@ -89,7 +89,7 @@ void SSAORenderer::render(Scene* pscene)
 
     // Render SSAO texture
     ssao_buffer.bind_as_target();
-    Gfx::clear(CLEAR_COLOR_FLAG);
+    Gfx::device->clear(CLEAR_COLOR_FLAG);
     // Send samples to shader
     /*for(uint32_t ii=0; ii<KERNEL_SIZE_; ++ii)
     {
@@ -122,12 +122,12 @@ void SSAORenderer::render(Scene* pscene)
     // Blur pass on occlusion texture
     if(blur_policy_.n_pass_)
     {
-        //GFX::disable_face_culling();
+        //Gfx::device->disable_face_culling();
         ping_pong_.run(*static_cast<BufferModule*>(&ssao_buffer),
                        blur_policy_,
                        [&]()
                        {
-                            Gfx::clear(CLEAR_COLOR_FLAG);
+                            Gfx::device->clear(CLEAR_COLOR_FLAG);
                             CGEOM.draw("quad"_h);
                        });
     }

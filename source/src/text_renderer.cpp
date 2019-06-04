@@ -1,7 +1,9 @@
-#include <GL/glew.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #include "text_renderer.h"
 #include "gfx_api.h"
+#include "texture.h"
 #include "logger.h"
 #include "vertex_format.h"
 #include "mesh.hpp"
@@ -15,9 +17,40 @@ namespace wcore
 
 using namespace math;
 
-TextRenderer::TextRenderer():
-ft_(),
-text_shader_(ShaderResource("text.vert;text.frag"))
+struct Character
+{
+    uint32_t tex_ID;  // ID handle of the glyph texture
+    long advance;   // Offset to advance to next glyph
+    unsigned int size_w; // Size of glyph
+    unsigned int size_h;
+    int bearing_x; // Offset from baseline to left/top of glyph
+    int bearing_y;
+};
+
+struct LineInfo
+{
+    std::string text;
+    hash_t face;
+    float x;
+    float y;
+    float scale;
+    math::vec3 color;
+};
+
+struct TextRenderer::FontLibImpl
+{
+    FontLibImpl();
+    ~FontLibImpl();
+
+    FT_Library ft_;
+    std::unordered_map<hash_t, FT_Face> faces_;
+    std::unordered_map<hash_t, std::map<char, Character>> charsets_;
+    std::unordered_map<hash_t, std::vector<std::unique_ptr<Texture>>> textures_;
+    std::queue<LineInfo> line_queue_;
+};
+
+TextRenderer::FontLibImpl::FontLibImpl():
+ft_()
 {
     if (FT_Init_FreeType(&ft_))
     {
@@ -26,11 +59,25 @@ text_shader_(ShaderResource("text.vert;text.frag"))
     }
 }
 
-TextRenderer::~TextRenderer()
+TextRenderer::FontLibImpl::~FontLibImpl()
 {
     for(auto p : faces_)
         FT_Done_Face(p.second);
     FT_Done_FreeType(ft_);
+}
+
+
+
+TextRenderer::TextRenderer():
+pimpl_(new FontLibImpl()),
+text_shader_(ShaderResource("text.vert;text.frag"))
+{
+
+}
+
+TextRenderer::~TextRenderer()
+{
+
 }
 
 void TextRenderer::load_face(const char* fontname,
@@ -38,6 +85,7 @@ void TextRenderer::load_face(const char* fontname,
                              uint32_t width)
 {
     // Get stream to file and load ttf face to memory
+    hash_t hname(H_(fontname));
     std::string font_file(fontname);
     font_file += ".ttf";
 
@@ -50,7 +98,7 @@ void TextRenderer::load_face(const char* fontname,
     }
     std::vector<char> buffer((std::istreambuf_iterator<char>(*pstream)), std::istreambuf_iterator<char>());
     FT_Face face;
-    if(FT_New_Memory_Face(ft_, reinterpret_cast<FT_Byte*>(&buffer[0]), buffer.size(), 0, &face))
+    if(FT_New_Memory_Face(pimpl_->ft_, reinterpret_cast<FT_Byte*>(&buffer[0]), buffer.size(), 0, &face))
     {
         DLOGE("[TextRenderer] Failed to load font: <p>" + font_file + "</p>", "text");
         return;
@@ -59,7 +107,7 @@ void TextRenderer::load_face(const char* fontname,
     // Set face size
     FT_Set_Pixel_Sizes(face, width, height);
     // Disable byte-alignment restriction
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    Gfx::device->set_unpack_alignment(1);
 
     // Generate character glyphs
     std::map<char, Character> characters;
@@ -72,29 +120,25 @@ void TextRenderer::load_face(const char* fontname,
             continue;
         }
         // Generate texture
-        GLuint texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RED,
+        pimpl_->textures_[hname].push_back(std::make_unique<Texture>
+        (
+            std::initializer_list<TextureUnitInfo>
+            {
+                TextureUnitInfo("charTex"_h,
+                                TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR),
+                                TextureIF::R8,
+                                TextureF::RED,
+                                face->glyph->bitmap.buffer)
+            },
             face->glyph->bitmap.width,
             face->glyph->bitmap.rows,
-            0,
-            GL_RED,
-            GL_UNSIGNED_BYTE,
-            face->glyph->bitmap.buffer
-        );
-        // Set texture options
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // Now store character for later use
+            TextureWrap::CLAMP_TO_EDGE
+        ));
+        uint32_t index = pimpl_->textures_[hname].size()-1;
+
         Character character =
         {
-            texture,
+            index,
             face->glyph->advance.x,
             face->glyph->bitmap.width,
             face->glyph->bitmap.rows,
@@ -105,9 +149,8 @@ void TextRenderer::load_face(const char* fontname,
         characters.insert(std::pair<char, Character>(cc, character));
     }
 
-    hash_t hname(H_(fontname));
-    faces_.insert(std::make_pair(hname, face));
-    charsets_.insert(std::make_pair(hname, characters));
+    pimpl_->faces_.insert(std::make_pair(hname, face));
+    pimpl_->charsets_.insert(std::make_pair(hname, characters));
 
     set_face(hname);
 
@@ -116,24 +159,25 @@ void TextRenderer::load_face(const char* fontname,
     DLOGI("from file: <p>" + font_file + "</p>", "text");
 #endif
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4); // Restore byte-alignment state
+    // Restore byte-alignment state
+    Gfx::device->set_unpack_alignment(4);
 }
 
 void TextRenderer::render_line(const std::string& text, float x, float y, float scale, math::vec3 color)
 {
     x *= 2;
     y *= 2;
-    Gfx::bind_default_frame_buffer();
-    Gfx::viewport(0,0,GLB.WIN_W,GLB.WIN_H);
+    Gfx::device->bind_default_frame_buffer();
+    Gfx::device->viewport(0,0,GLB.WIN_W,GLB.WIN_H);
     text_shader_.use();
     text_shader_.send_uniform("v3_textColor"_h, color);
 
-    Gfx::set_std_blending();
+    Gfx::device->set_std_blending();
     // Iterate through all characters
     std::string::const_iterator itc;
     for (itc = text.begin(); itc != text.end(); ++itc)
     {
-        const Character& ch = charsets_[current_face_][char(*itc)];
+        const Character& ch = pimpl_->charsets_[current_face_][char(*itc)];
 
         float xpos = (x + ch.bearing_x * scale)/GLB.WIN_W -1.0f;
         float ypos = (y - (ch.size_h - ch.bearing_y) * scale)/GLB.WIN_H -1.0f;
@@ -148,7 +192,8 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
         text_shader_.send_uniform("m4_projection"_h, projection);
 
 
-        Gfx::bind_texture2D(0, ch.tex_ID);
+        //Gfx::device->bind_texture2D(0, ch.tex_ID);
+        pimpl_->textures_[current_face_][ch.tex_ID]->bind(0,0);
         CGEOM.draw("char_quad"_h);
 
         // Advance to next glyph
@@ -156,17 +201,27 @@ void TextRenderer::render_line(const std::string& text, float x, float y, float 
     }
 
     text_shader_.unuse();
-    Gfx::disable_blending();
+    Gfx::device->disable_blending();
+}
+
+void TextRenderer::schedule_for_drawing(const std::string& text,
+                                        hash_t face,
+                                        float x,
+                                        float y,
+                                        float scale,
+                                        math::vec3 color)
+{
+    pimpl_->line_queue_.push({text, face, x, y, scale, color});
 }
 
 void TextRenderer::render(Scene* pscene)
 {
-    while (!line_queue_.empty())
+    while (!pimpl_->line_queue_.empty())
     {
-        const LineInfo& line = line_queue_.front();
+        const LineInfo& line = pimpl_->line_queue_.front();
         set_face(line.face);
         render_line(line.text, line.x, line.y, line.scale, line.color);
-        line_queue_.pop();
+        pimpl_->line_queue_.pop();
     }
 }
 

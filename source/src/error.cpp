@@ -17,7 +17,7 @@ void fatal(const char* message) noexcept
 
 void show_driver_error(const char* line)
 {
-    auto error = Gfx::get_error();
+    auto error = Gfx::device->get_error();
 
     std::stringstream ss;
     ss << line << ": " << std::to_string(error);

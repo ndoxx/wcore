@@ -83,15 +83,15 @@ void ShadowMapRenderer::render(Scene* pscene)
         // Light matrix is light camera view-projection matrix
         light_matrix_ = pscene->get_light_camera().get_view_projection_matrix();
 
-        Gfx::disable_blending();
+        Gfx::device->disable_blending();
         sm_shader_.use();
         shadow_buffer.bind_as_target();
 #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-        Gfx::clear(CLEAR_COLOR_FLAG);
+        Gfx::device->clear(CLEAR_COLOR_FLAG);
 #else
-        Gfx::set_depth_test_enabled(true);
-        Gfx::set_depth_lock(false);
-        Gfx::clear(CLEAR_DEPTH_FLAG);
+        Gfx::device->set_depth_test_enabled(true);
+        Gfx::device->set_depth_lock(false);
+        Gfx::device->clear(CLEAR_DEPTH_FLAG);
 #endif
         //sm_shader_.send_uniform("lt.v3_lightPosition"_h, dir_light->get_position());
         sm_shader_.send_uniform("f_normalOffset"_h, normal_offset_);
@@ -101,15 +101,15 @@ void ShadowMapRenderer::render(Scene* pscene)
             switch(cull_face)
             {
                 case 1:
-                    Gfx::set_cull_mode(CullMode::Front);
+                    Gfx::device->set_cull_mode(CullMode::Front);
                     break;
 
                 case 2:
-                    Gfx::set_cull_mode(CullMode::Back);
+                    Gfx::device->set_cull_mode(CullMode::Back);
                     break;
 
                 default:
-                    Gfx::set_cull_mode(CullMode::None);
+                    Gfx::device->set_cull_mode(CullMode::None);
             }
             // Get model matrix and compute products
             math::mat4 M = const_cast<Model&>(model).get_model_matrix();
@@ -131,22 +131,22 @@ void ShadowMapRenderer::render(Scene* pscene)
     /*
 #ifdef __EXPERIMENTAL_VSM_BLUR__
         // Blur pass on shadow map
-        GFX::disable_face_culling();
+        Gfx::device->disable_face_culling();
         //shadow_buffer.generate_mipmaps(0, 0, 1);
         vertex_array_.bind();
         ping_pong_.run(*static_cast<BufferModule*>(shadow_buffer),
                        BlurPassPolicy(1, SHADOW_WIDTH/2, SHADOW_HEIGHT/2),
                        [&]()
                        {
-                            Gfx::clear(CLEAR_COLOR_FLAG);
+                            Gfx::device->clear(CLEAR_COLOR_FLAG);
                             CGEOM.draw("quad"_h);
                        });
 #endif //__EXPERIMENTAL_VSM_BLUR__
     */
         // Restore state
-        Gfx::set_depth_lock(true);
-        Gfx::set_depth_test_enabled(false);
-        Gfx::set_cull_mode(CullMode::None);
+        Gfx::device->set_depth_lock(true);
+        Gfx::device->set_depth_test_enabled(false);
+        Gfx::device->set_cull_mode(CullMode::None);
     }
 }
 

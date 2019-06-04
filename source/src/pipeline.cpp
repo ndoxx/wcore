@@ -630,9 +630,9 @@ void RenderPipeline::render()
     // Reload shaders at start of frame
     if(HOTSWAP_SHADERS)
     {
-        Gfx::finish();
+        Gfx::device->finish();
         Shader::dbg_hotswap();
-        Gfx::finish();
+        Gfx::device->finish();
         HOTSWAP_SHADERS = false;
     }
 #endif

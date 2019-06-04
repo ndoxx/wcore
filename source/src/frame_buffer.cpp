@@ -156,7 +156,7 @@ height_(texture.get_height())
     }
 
     // Unbind frame buffer
-    Gfx::bind_default_frame_buffer();
+    Gfx::device->bind_default_frame_buffer();
 }
 
 FrameBuffer::~FrameBuffer()
@@ -188,14 +188,14 @@ void FrameBuffer::bind_as_render_target() const
 
 void FrameBuffer::unbind() const
 {
-    Gfx::bind_default_frame_buffer();
+    Gfx::device->bind_default_frame_buffer();
 }
 
 void FrameBuffer::with_render_target(std::function<void(void)> doFunc) const
 {
     bind_as_render_target();
     doFunc();
-    Gfx::bind_default_frame_buffer();
+    Gfx::device->bind_default_frame_buffer();
 }
 
 void FrameBuffer::blit_depth(FrameBuffer& destination) const
@@ -219,7 +219,7 @@ void FrameBuffer::blit_depth_default_fb(uint32_t screenWidth, uint32_t screenHei
 {
     // write depth buffer to default framebuffer
     glBindFramebuffer(GL_READ_FRAMEBUFFER, frame_buffer_);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, Gfx::get_default_framebuffer());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, Gfx::device->get_default_framebuffer());
     glBlitFramebuffer(0,            // src x0
                       0,            // src y0
                       width_,       // src x1

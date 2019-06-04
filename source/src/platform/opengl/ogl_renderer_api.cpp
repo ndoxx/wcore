@@ -13,6 +13,11 @@ static std::map<DrawPrimitive, GLenum> OGLPrimitive =
     {DrawPrimitive::Quads, GL_QUADS}
 };
 
+inline bool is_power_of_2(int value)
+{
+    return bool((value) && ((value &(value - 1)) == 0));
+}
+
 OGLRenderDevice::OGLRenderDevice():
 default_framebuffer_(0)
 {
@@ -55,8 +60,9 @@ void OGLRenderDevice::draw_indexed(DrawPrimitive primitive, uint32_t n_elements,
 
 void OGLRenderDevice::read_framebuffer_rgba(uint32_t width, uint32_t height, unsigned char* pixels)
 {
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    set_pack_alignment(1);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pixels);
+    set_pack_alignment(4);
 }
 
 void OGLRenderDevice::set_clear_color(float r, float g, float b, float a)
@@ -206,6 +212,18 @@ uint32_t OGLRenderDevice::get_error()
 void OGLRenderDevice::assert_no_error()
 {
     assert(glGetError()==0);
+}
+
+void OGLRenderDevice::set_pack_alignment(uint32_t value)
+{
+    assert(is_power_of_2(value) && "OGLRenderDevice::set_pack_alignment: arg must be a power of 2.");
+    glPixelStorei(GL_PACK_ALIGNMENT, value);
+}
+
+void OGLRenderDevice::set_unpack_alignment(uint32_t value)
+{
+    assert(is_power_of_2(value) && "OGLRenderDevice::set_pack_alignment: arg must be a power of 2.");
+    glPixelStorei(GL_UNPACK_ALIGNMENT, value);
 }
 
 void OGLRenderDevice::set_line_width(float value)
