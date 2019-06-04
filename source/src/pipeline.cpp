@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "pipeline.h"
 
 #include "globals.h"
@@ -33,6 +34,9 @@
     #define PROFILING_MAX_SAMPLES 1000
 #endif
 
+// TODO:
+// [ ] Make OpenGL agnostic
+
 namespace wcore
 {
 
@@ -63,7 +67,7 @@ RenderPipeline::RenderPipeline()
             std::initializer_list<TextureUnitInfo>
             {
                 TextureUnitInfo("normalTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16_SNORM,     GL_RGBA),
-                TextureUnitInfo("albedoTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA,             GL_RGBA),
+                TextureUnitInfo("albedoTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA8,            GL_RGBA),
                 TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
             },
             GLB.WIN_W,
@@ -84,7 +88,7 @@ RenderPipeline::RenderPipeline()
             std::initializer_list<TextureUnitInfo>
             {
                 TextureUnitInfo("screenTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16F, GL_RGBA),
-                TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), GL_RGBA, GL_RGBA),
+                TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), GL_RGBA8, GL_RGBA),
                 //TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
                 GMODULES::GET("gbuffer"_h).get_texture().share_unit(2) // G-Buffer and L-Buffer share the same depth buffer
             },

@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <regex>
+#include <GL/glew.h>
 
 #include "shader.h"
 #include "lights.h"
@@ -180,6 +181,16 @@ void Shader::dbg_hotswap()
     }
 }
 #endif
+
+void Shader::use() const
+{
+    glUseProgram(ProgramID_);
+}
+
+void Shader::unuse() const
+{
+    glUseProgram(0);
+}
 
 bool Shader::reload()
 {

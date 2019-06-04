@@ -5,6 +5,7 @@
 
 
 #include "texture.h"
+#include "material_common.h"
 #include "pixel_buffer.h"
 #include "shader.h"
 #include "logger.h"
@@ -17,6 +18,7 @@
 namespace wcore
 {
 
+static const uint32_t SAMPLER_GROUP_SIZE = 3;
 static std::vector<std::map<TextureBlock, hash_t>> SAMPLER_NAMES =
 {
     // Sampler names for sampler group 1
@@ -34,8 +36,6 @@ static std::vector<std::map<TextureBlock, hash_t>> SAMPLER_NAMES =
     }
 };
 
-static const uint32_t SAMPLER_GROUP_SIZE = 3;
-
 static std::map<GLenum, GLenum> DATA_TYPES =
 {
     {GL_SRGB_ALPHA,        GL_FLOAT},
@@ -47,6 +47,41 @@ static std::map<GLenum, GLenum> DATA_TYPES =
     {GL_DEPTH24_STENCIL8,  GL_UNSIGNED_INT_24_8},
     {GL_RGB8,              GL_BYTE},
     {GL_R8,                GL_BYTE},
+};
+
+static std::map<TextureIF, GLenum> INTERNAL_FORMATS =
+{
+    {TextureIF::R8,                              GL_R8},
+    {TextureIF::RGB8,                            GL_RGB8},
+    {TextureIF::RGBA8,                           GL_RGBA8},
+    {TextureIF::RGB16F,                          GL_RGB16F},
+    {TextureIF::RGBA16F,                         GL_RGBA16F},
+    {TextureIF::SRGB_ALPHA,                      GL_SRGB_ALPHA},
+    {TextureIF::RG16_SNORM,                      GL_RG16_SNORM},
+    {TextureIF::RGB16_SNORM,                     GL_RGB16_SNORM},
+    {TextureIF::RGBA16_SNORM,                    GL_RGBA16_SNORM},
+    {TextureIF::COMPRESSED_RGB_S3TC_DXT1,        GL_COMPRESSED_RGB_S3TC_DXT1_EXT},
+    {TextureIF::COMPRESSED_RGBA_S3TC_DXT1,       GL_COMPRESSED_RGBA_S3TC_DXT1_EXT},
+    {TextureIF::COMPRESSED_RGBA_S3TC_DXT3,       GL_COMPRESSED_RGBA_S3TC_DXT3_EXT},
+    {TextureIF::COMPRESSED_RGBA_S3TC_DXT5,       GL_COMPRESSED_RGBA_S3TC_DXT5_EXT},
+    {TextureIF::COMPRESSED_SRGB_S3TC_DXT1,       GL_COMPRESSED_SRGB_S3TC_DXT1_EXT},
+    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT1, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT},
+    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT3, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT},
+    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT5, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT},
+    {TextureIF::DEPTH_COMPONENT16,               GL_DEPTH_COMPONENT16},
+    {TextureIF::DEPTH_COMPONENT24,               GL_DEPTH_COMPONENT24},
+    {TextureIF::DEPTH_COMPONENT32F,              GL_DEPTH_COMPONENT32F},
+    {TextureIF::DEPTH24_STENCIL8,                GL_DEPTH24_STENCIL8},
+    {TextureIF::DEPTH32F_STENCIL8,               GL_DEPTH32F_STENCIL8},
+};
+
+static std::map<TextureF, GLenum> FORMATS =
+{
+    {TextureF::RED,             GL_RED},
+    {TextureF::RGB,             GL_RGB},
+    {TextureF::RGBA,            GL_RGBA},
+    {TextureF::DEPTH_COMPONENT, GL_DEPTH_COMPONENT},
+    {TextureF::DEPTH_STENCIL,   GL_DEPTH_STENCIL},
 };
 
 static PngLoader PNG_LOADER;
@@ -144,6 +179,48 @@ static GLenum fix_internal_format(GLenum iformat, hash_t sampler_name)
         return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;//GL_RGBA;
 
     return iformat;
+}
+
+TextureParameters::TextureParameters():
+filter(TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR)),
+internal_format(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT),
+format(GL_RGBA),
+wrap(TextureWrap::REPEAT),
+lazy_mipmap(false)
+{
+
+}
+
+TextureDescriptor::TextureDescriptor():
+unit_flags(0),
+sampler_group(1),
+parameters(),
+resource_id(""_h),
+is_wat(false),
+owns_data(false),
+width(0),
+height(0),
+block0_data(nullptr),
+block1_data(nullptr),
+block2_data(nullptr)
+{
+
+}
+
+TextureDescriptor::~TextureDescriptor()
+{
+    release_data();
+}
+
+void TextureDescriptor::release_data()
+{
+    if(owns_data)
+    {
+        delete[] block0_data;
+        delete[] block1_data;
+        delete[] block2_data;
+        owns_data = false;
+    }
 }
 
 TextureUnitInfo::TextureUnitInfo(hash_t sampler_name,

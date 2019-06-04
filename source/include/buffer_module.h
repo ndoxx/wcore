@@ -22,7 +22,7 @@ protected:
 public:
     BufferModule(const char* out_tex_name,
                  std::unique_ptr<Texture> ptexture,
-                 std::vector<GLenum>&& attachments);
+                 std::vector<uint32_t>&& attachments);
 
     virtual ~BufferModule(){}
 
@@ -50,7 +50,7 @@ public:
 
     inline hash_t get_name() const { return name_; }
 
-    GLuint operator[](uint8_t index) const;
+    uint32_t operator[](uint8_t index) const;
 };
 
 inline void BufferModule::bind_as_target()

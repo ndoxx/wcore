@@ -6,7 +6,6 @@
 #include <set>
 #include <map>
 #include <algorithm>
-#include <GL/glew.h>
 
 #include "math3d.h"
 #include "wtypes.h"
@@ -45,11 +44,11 @@ public:
     ~Shader();
 
     // Activate program
-    inline void use() const        { glUseProgram(ProgramID_); }
+    void use() const;
     // Disable program
-    inline void unuse() const      { glUseProgram(0); }
+    void unuse() const;
     // Get OpenGL program ID
-    inline GLuint get_program_id() { return ProgramID_; }
+    inline uint32_t get_program_id() { return ProgramID_; }
     // Is this program a specified variant
     inline bool is_variant(hash_t variant);
 
@@ -84,9 +83,9 @@ public:
 
 private:
     // Compile a shader from file name, specifying shader type and setup defines if any
-    GLuint compile_shader(const std::string& shader_file,
-                          GLenum ShaderType,
-                          const std::vector<std::string>& flags);
+    uint32_t compile_shader(const std::string& shader_file,
+                            uint32_t ShaderType,
+                            const std::vector<std::string>& flags);
     // Replace an #include directive by actual code from the file it points to
     void parse_include(const std::string& line, std::string& shader_source);
     // Parse a #pragma directive
@@ -100,7 +99,7 @@ private:
     // Associate each active uniform to its uniform hname engine-side
     void setup_uniform_map();
     // Print the error report generated when shader compilation failed, populate a set of error line numbers
-    void shader_error_report(GLuint ShaderID, std::set<int>& errlines);
+    void shader_error_report(uint32_t ShaderID, std::set<int>& errlines);
     // Print the error report generated on program linking failure
     void program_error_report();
     // Print the list of active attributes and uniforms detected after a successful compilation/linking
@@ -110,12 +109,12 @@ private:
 
 private:
     ShaderResource resource_;
-    GLuint ProgramID_;
-    GLuint VertexShaderID_;
-    GLuint GeometryShaderID_;
-    GLuint FragmentShaderID_;
+    uint32_t ProgramID_;
+    uint32_t VertexShaderID_;
+    uint32_t GeometryShaderID_;
+    uint32_t FragmentShaderID_;
 
-    std::map<hash_t, GLint> uniform_locations_; // [uniform hname, location]
+    std::map<hash_t, int32_t> uniform_locations_; // [uniform hname, location]
 
     std::vector<hash_t> defines_; // list of all the defines specified
     static std::vector<std::string> global_defines_; // list of all the global defines

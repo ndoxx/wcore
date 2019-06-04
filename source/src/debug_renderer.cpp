@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <cstdlib>
 
 #include "debug_renderer.h"
@@ -19,6 +20,9 @@
 #ifndef __DISABLE_EDITOR__
 #include "editor.h"
 #endif
+
+// TODO:
+// [ ] Make OpenGL agnostic
 
 namespace wcore
 {
@@ -184,9 +188,9 @@ void DebugRenderer::render(Scene* pscene)
                 CGEOM.draw("sphere_line"_h);
             else if((*it).type == DebugDrawRequest::CROSS3)
             {
-                glLineWidth(2.5f);
+                Gfx::set_line_width(2.5f);
                 CGEOM.draw("cross"_h);
-                glLineWidth(1.0f);
+                Gfx::set_line_width(1.f);
             }
             ++it;
         }

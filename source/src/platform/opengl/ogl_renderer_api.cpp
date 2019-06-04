@@ -13,39 +13,39 @@ static std::map<DrawPrimitive, GLenum> OGLPrimitive =
     {DrawPrimitive::Quads, GL_QUADS}
 };
 
-OGLRendererAPI::OGLRendererAPI():
+OGLRenderDevice::OGLRenderDevice():
 default_framebuffer_(0)
 {
 
 }
 
-OGLRendererAPI::~OGLRendererAPI()
+OGLRenderDevice::~OGLRenderDevice()
 {
 
 }
 
-void OGLRendererAPI::viewport(float xx, float yy, float width, float height)
+void OGLRenderDevice::viewport(float xx, float yy, float width, float height)
 {
     glViewport(xx, yy, width, height);
 }
 
-uint32_t OGLRendererAPI::get_default_framebuffer()
+uint32_t OGLRenderDevice::get_default_framebuffer()
 {
     return default_framebuffer_;
 }
 
-void OGLRendererAPI::set_default_framebuffer(uint32_t index)
+void OGLRenderDevice::set_default_framebuffer(uint32_t index)
 {
     default_framebuffer_ = index;
 }
 
-void OGLRendererAPI::bind_default_frame_buffer()
+void OGLRenderDevice::bind_default_frame_buffer()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, default_framebuffer_);
 }
 
 
-void OGLRendererAPI::draw_indexed(DrawPrimitive primitive, uint32_t n_elements, uint32_t offset)
+void OGLRenderDevice::draw_indexed(DrawPrimitive primitive, uint32_t n_elements, uint32_t offset)
 {
     glDrawElements(OGLPrimitive[primitive],
                    uint32_t(primitive)*n_elements,
@@ -53,12 +53,12 @@ void OGLRendererAPI::draw_indexed(DrawPrimitive primitive, uint32_t n_elements, 
                    (void*)(offset * sizeof(GLuint)));
 }
 
-void OGLRendererAPI::set_clear_color(float r, float g, float b, float a)
+void OGLRenderDevice::set_clear_color(float r, float g, float b, float a)
 {
     glClearColor(r, g, b, a);
 }
 
-void OGLRendererAPI::clear(int flags)
+void OGLRenderDevice::clear(int flags)
 {
     GLenum clear_bits = 0;
     clear_bits |= (flags & CLEAR_COLOR_FLAG) ? GL_COLOR_BUFFER_BIT : 0;
@@ -67,22 +67,22 @@ void OGLRendererAPI::clear(int flags)
     glClear(clear_bits);
 }
 
-void OGLRendererAPI::lock_color_buffer()
+void OGLRenderDevice::lock_color_buffer()
 {
     glDrawBuffer(0);
 }
 
-void OGLRendererAPI::set_depth_lock(bool value)
+void OGLRenderDevice::set_depth_lock(bool value)
 {
     glDepthMask(!value);
 }
 
-void OGLRendererAPI::set_stencil_lock(bool value)
+void OGLRenderDevice::set_stencil_lock(bool value)
 {
     glStencilMask(!value);
 }
 
-void OGLRendererAPI::set_cull_mode(CullMode value)
+void OGLRenderDevice::set_cull_mode(CullMode value)
 {
     switch(value)
     {
@@ -100,26 +100,26 @@ void OGLRendererAPI::set_cull_mode(CullMode value)
     }
 }
 
-void OGLRendererAPI::set_std_blending()
+void OGLRenderDevice::set_std_blending()
 {
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void OGLRendererAPI::set_light_blending()
+void OGLRenderDevice::set_light_blending()
 {
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ONE, GL_ONE);
 }
 
-void OGLRendererAPI::disable_blending()
+void OGLRenderDevice::disable_blending()
 {
     glDisable(GL_BLEND);
 }
 
-void OGLRendererAPI::set_depth_func(DepthFunc value)
+void OGLRenderDevice::set_depth_func(DepthFunc value)
 {
     switch(value)
     {
@@ -133,7 +133,7 @@ void OGLRendererAPI::set_depth_func(DepthFunc value)
     }
 }
 
-void OGLRendererAPI::set_depth_test_enabled(bool value)
+void OGLRenderDevice::set_depth_test_enabled(bool value)
 {
     if(value)
         glEnable(GL_DEPTH_TEST);
@@ -141,7 +141,7 @@ void OGLRendererAPI::set_depth_test_enabled(bool value)
         glDisable(GL_DEPTH_TEST);
 }
 
-void OGLRendererAPI::set_stencil_func(StencilFunc value, uint16_t a, uint16_t b)
+void OGLRenderDevice::set_stencil_func(StencilFunc value, uint16_t a, uint16_t b)
 {
     switch(value)
     {
@@ -155,7 +155,7 @@ void OGLRendererAPI::set_stencil_func(StencilFunc value, uint16_t a, uint16_t b)
     }
 }
 
-void OGLRendererAPI::set_stencil_operator(StencilOperator value)
+void OGLRenderDevice::set_stencil_operator(StencilOperator value)
 {
     if(value == StencilOperator::LightVolume)
     {
@@ -174,7 +174,7 @@ void OGLRendererAPI::set_stencil_operator(StencilOperator value)
     }
 }
 
-void OGLRendererAPI::set_stencil_test_enabled(bool value)
+void OGLRenderDevice::set_stencil_test_enabled(bool value)
 {
     if(value)
         glEnable(GL_STENCIL_TEST);
@@ -182,34 +182,38 @@ void OGLRendererAPI::set_stencil_test_enabled(bool value)
         glDisable(GL_STENCIL_TEST);
 }
 
-void OGLRendererAPI::finish()
+void OGLRenderDevice::finish()
 {
     glFinish();
 }
 
-void OGLRendererAPI::flush()
+void OGLRenderDevice::flush()
 {
     glFlush();
 }
 
-uint32_t OGLRendererAPI::get_error()
+uint32_t OGLRenderDevice::get_error()
 {
     return glGetError();
 }
 
-void OGLRendererAPI::assert_no_error()
+void OGLRenderDevice::assert_no_error()
 {
     assert(glGetError()==0);
 }
 
+void OGLRenderDevice::set_line_width(float value)
+{
+    glLineWidth(value);
+}
 
-void OGLRendererAPI::bind_texture2D(uint32_t unit, uint32_t tex_handle)
+void OGLRenderDevice::bind_texture2D(uint32_t unit, uint32_t tex_handle)
 {
     glActiveTexture(GL_TEXTURE0+unit);
     glBindTexture(GL_TEXTURE_2D, tex_handle);
 }
 
-void OGLRendererAPI::unbind_texture2D()
+void OGLRenderDevice::unbind_texture2D()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
 }

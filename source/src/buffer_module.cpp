@@ -10,7 +10,7 @@ std::map<hash_t, std::unique_ptr<BufferModule>> GMODULES::modules_;
 
 BufferModule::BufferModule(const char* out_tex_name,
                            std::unique_ptr<Texture> ptexture,
-                           std::vector<GLenum>&& attachments):
+                           std::vector<uint32_t>&& attachments):
 out_texture_(std::move(ptexture)),
 frame_buffer_(*out_texture_, attachments),
 width_(out_texture_->get_width()),
@@ -54,7 +54,7 @@ void BufferModule::generate_mipmaps(uint32_t unit,
     out_texture_->generate_mipmaps(unit, base_level, max_level);
 }
 
-GLuint BufferModule::operator[](uint8_t index) const
+uint32_t BufferModule::operator[](uint8_t index) const
 {
     return (*out_texture_)[index];
 }

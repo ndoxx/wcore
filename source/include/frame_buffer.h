@@ -1,9 +1,11 @@
 #ifndef FRAME_BUFFER_H
 #define FRAME_BUFFER_H
 
-#include <GL/glew.h>
 #include <vector>
 #include <functional>
+
+// TODO:
+// [ ] Make OpenGL agnostic
 
 namespace wcore
 {
@@ -12,16 +14,16 @@ class Texture;
 class FrameBuffer
 {
 private:
-    GLuint  frame_buffer_;
-    GLuint  render_buffer_;
-    GLenum* draw_buffers_;
+    uint32_t frame_buffer_;
+    uint32_t render_buffer_;
+    uint32_t* draw_buffers_;
     std::vector<uint32_t> texture_indices_;
     int n_textures_;
     int width_;
     int height_;
 
 public:
-    FrameBuffer(const Texture& texture, const std::vector<GLenum>& attachments);
+    FrameBuffer(const Texture& texture, const std::vector<uint32_t>& attachments);
     ~FrameBuffer();
 
     inline uint32_t get_target_index(uint32_t position) { return texture_indices_[position]; }

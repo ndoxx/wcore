@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <cassert>
 
 #include "debug_overlay_renderer.h"
@@ -21,6 +22,9 @@
     #include "imgui/imgui.h"
     #include "gui_utils.h"
 #endif
+
+// TODO:
+// [ ] Make OpenGL agnostic
 
 namespace wcore
 {

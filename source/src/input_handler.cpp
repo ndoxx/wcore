@@ -1,5 +1,3 @@
-#include <GL/glew.h>
-
 #include "xml_utils.hpp"
 #include "input_handler.h"
 #include "logger.h"

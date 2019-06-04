@@ -225,8 +225,6 @@ void LightingRenderer::render(Scene* pscene)
 
         Gfx::disable_blending();
         Gfx::set_cull_mode(CullMode::None);
-
-        //glDrawBuffer(GL_FRONT_AND_BACK);
     }
 }
 

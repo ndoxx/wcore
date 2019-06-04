@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <cassert>
 
 #include "frame_buffer.h"

@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "SSR_renderer.h"
 #include "gfx_api.h"
 #include "scene.h"
@@ -6,6 +7,9 @@
 #include "globals.h"
 #include "logger.h"
 #include "geometry_common.h"
+
+// TODO:
+// [ ] Make OpenGL agnostic
 
 namespace wcore
 {

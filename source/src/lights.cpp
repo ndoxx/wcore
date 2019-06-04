@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include <numeric>
 
 #include "lights.h"

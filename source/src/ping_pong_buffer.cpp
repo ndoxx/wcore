@@ -1,5 +1,9 @@
+#include <GL/glew.h>
 #include "ping_pong_buffer.h"
-#include <iostream>
+
+// TODO:
+// [ ] Make OpenGL agnostic
+
 namespace wcore
 {
 

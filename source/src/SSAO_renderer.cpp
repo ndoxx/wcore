@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <random>
 #include <vector>
 #include <cassert>
@@ -11,6 +12,10 @@
 #include "globals.h"
 #include "texture.h"
 #include "geometry_common.h"
+
+// TODO:
+// [ ] Make OpenGL agnostic
+
 
 namespace wcore
 {
@@ -72,7 +77,7 @@ void SSAORenderer::render(Scene* pscene)
     SSAO_shader_.use();
     SSAO_shader_.send_uniform("rd.v2_texelSize"_h, vec2(1.0f/out_size_.x(),1.0f/out_size_.y()));
     // Render textured quad to screen
-    glViewport(0,0,out_size_.x(),out_size_.y());
+    Gfx::viewport(0,0,out_size_.x(),out_size_.y());
 
     // Bind textures
     g_buffer.bind_as_source(0,0);  // normal
@@ -173,10 +178,11 @@ void SSAORenderer::generate_random_kernel()
     /*glGenTextures(1, &kernel_texture_);
     glBindTexture(GL_TEXTURE_1D, kernel_texture_);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, KERNEL_SIZE_, 0, GL_RGB, GL_FLOAT, &ssao_kernel_[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);*/
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    //glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);*/
+
 
     // Push noise to a GL texture that tiles the screen
     noise_texture_ = std::make_shared<Texture>

@@ -8,9 +8,9 @@ namespace wcore
 {
 
 GfxAPI Gfx::api_ = GfxAPI::OpenGL;
-RendererAPI* Gfx::renderer_ = new OGLRendererAPI();
+RenderDevice* Gfx::device_ = new OGLRenderDevice();
 
-RendererAPI::~RendererAPI()
+RenderDevice::~RenderDevice()
 {
 
 }
@@ -19,9 +19,9 @@ void Gfx::set_api(GfxAPI api)
 {
     api_ = api;
 
-    delete renderer_;
+    delete device_;
     if(api_ == GfxAPI::OpenGL)
-        renderer_ = new OGLRendererAPI();
+        device_ = new OGLRenderDevice();
 }
 
 } // namespace wcore

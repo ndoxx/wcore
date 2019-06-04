@@ -1,6 +1,5 @@
 #include <thread>
 #include <sstream>
-#include <GL/glew.h>
 
 #include "engine_core.h"
 #include "glfwcontext.h"

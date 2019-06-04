@@ -6,11 +6,11 @@
 namespace wcore
 {
 
-class OGLRendererAPI: public RendererAPI
+class OGLRenderDevice: public RenderDevice
 {
 public:
-    OGLRendererAPI();
-    virtual ~OGLRendererAPI();
+    OGLRenderDevice();
+    virtual ~OGLRenderDevice();
 
     virtual void viewport(float xx, float yy, float width, float height) override;
 
@@ -42,6 +42,9 @@ public:
 
     virtual uint32_t get_error() override;
     virtual void assert_no_error() override;
+
+    // Style
+    virtual void set_line_width(float value) override;
 
     // TMP
     virtual void bind_texture2D(uint32_t unit, uint32_t tex_handle) override;

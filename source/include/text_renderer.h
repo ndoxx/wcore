@@ -19,7 +19,7 @@ namespace wcore
 
 struct Character
 {
-    GLuint tex_ID;  // ID handle of the glyph texture
+    uint32_t tex_ID;  // ID handle of the glyph texture
     long advance;   // Offset to advance to next glyph
     unsigned int size_w; // Size of glyph
     unsigned int size_h;

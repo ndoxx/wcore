@@ -50,10 +50,10 @@ enum ClearFlags
     CLEAR_STENCIL_FLAG = 4
 };
 
-class RendererAPI
+class RenderDevice
 {
 public:
-    virtual ~RendererAPI();
+    virtual ~RenderDevice();
 
     virtual void viewport(float xx, float yy, float width, float height) = 0;
 
@@ -86,6 +86,9 @@ public:
     virtual uint32_t get_error() = 0;
     virtual void assert_no_error() = 0;
 
+    // Style
+    virtual void set_line_width(float value) = 0;
+
     // TMP
     virtual void bind_texture2D(uint32_t unit, uint32_t tex_handle) = 0;
     virtual void unbind_texture2D() = 0;
@@ -98,43 +101,46 @@ public:
     inline static GfxAPI get_api() { return api_; }
     static void set_api(GfxAPI api);
 
-    inline static void viewport(float xx, float yy, float width, float height) { renderer_->viewport(xx, yy, width, height); }
+    inline static void viewport(float xx, float yy, float width, float height) { device_->viewport(xx, yy, width, height); }
 
-    inline static uint32_t get_default_framebuffer() { return renderer_->get_default_framebuffer(); }
-    inline static void set_default_framebuffer(uint32_t index) { renderer_->set_default_framebuffer(index); }
-    inline static void bind_default_frame_buffer() { renderer_->bind_default_frame_buffer(); }
+    inline static uint32_t get_default_framebuffer() { return device_->get_default_framebuffer(); }
+    inline static void set_default_framebuffer(uint32_t index) { device_->set_default_framebuffer(index); }
+    inline static void bind_default_frame_buffer() { device_->bind_default_frame_buffer(); }
 
-    inline static void draw_indexed(DrawPrimitive primitive, uint32_t n_elements, uint32_t offset) { renderer_->draw_indexed(primitive, n_elements, offset); }
-    inline static void set_clear_color(float r, float g, float b, float a) { renderer_->set_clear_color(r,g,b,a); }
-    inline static void clear(int flags) { renderer_->clear(flags); }
-    inline static void lock_color_buffer() { renderer_->lock_color_buffer(); }
-    inline static void set_depth_lock(bool value) { renderer_->set_depth_lock(value); }
-    inline static void set_stencil_lock(bool value) { renderer_->set_stencil_lock(value); }
-    inline static void set_cull_mode(CullMode value) { renderer_->set_cull_mode(value); }
+    inline static void draw_indexed(DrawPrimitive primitive, uint32_t n_elements, uint32_t offset) { device_->draw_indexed(primitive, n_elements, offset); }
+    inline static void set_clear_color(float r, float g, float b, float a) { device_->set_clear_color(r,g,b,a); }
+    inline static void clear(int flags) { device_->clear(flags); }
+    inline static void lock_color_buffer() { device_->lock_color_buffer(); }
+    inline static void set_depth_lock(bool value) { device_->set_depth_lock(value); }
+    inline static void set_stencil_lock(bool value) { device_->set_stencil_lock(value); }
+    inline static void set_cull_mode(CullMode value) { device_->set_cull_mode(value); }
 
-    inline static void set_std_blending() { renderer_->set_std_blending(); }
-    inline static void set_light_blending() { renderer_->set_light_blending(); }
-    inline static void disable_blending() { renderer_->disable_blending(); }
+    inline static void set_std_blending() { device_->set_std_blending(); }
+    inline static void set_light_blending() { device_->set_light_blending(); }
+    inline static void disable_blending() { device_->disable_blending(); }
 
-    inline static void set_depth_func(DepthFunc value) { renderer_->set_depth_func(value); }
-    inline static void set_depth_test_enabled(bool value) { renderer_->set_depth_test_enabled(value); }
-    inline static void set_stencil_func(StencilFunc value, uint16_t a=0, uint16_t b=0) { renderer_->set_stencil_func(value, a, b); }
-    inline static void set_stencil_operator(StencilOperator value) { renderer_->set_stencil_operator(value); }
-    inline static void set_stencil_test_enabled(bool value) { renderer_->set_stencil_test_enabled(value); }
+    inline static void set_depth_func(DepthFunc value) { device_->set_depth_func(value); }
+    inline static void set_depth_test_enabled(bool value) { device_->set_depth_test_enabled(value); }
+    inline static void set_stencil_func(StencilFunc value, uint16_t a=0, uint16_t b=0) { device_->set_stencil_func(value, a, b); }
+    inline static void set_stencil_operator(StencilOperator value) { device_->set_stencil_operator(value); }
+    inline static void set_stencil_test_enabled(bool value) { device_->set_stencil_test_enabled(value); }
 
-    inline static void finish() { renderer_->finish(); }
-    inline static void flush() { renderer_->flush(); }
+    inline static void finish() { device_->finish(); }
+    inline static void flush() { device_->flush(); }
 
-    inline static uint32_t get_error() { return renderer_->get_error(); }
-    inline static void assert_no_error() { renderer_->assert_no_error(); }
+    inline static uint32_t get_error() { return device_->get_error(); }
+    inline static void assert_no_error() { device_->assert_no_error(); }
+
+    // Style
+    inline static void set_line_width(float value) {device_->set_line_width(value); }
 
     // TMP
-    inline static void bind_texture2D(uint32_t unit, uint32_t tex_handle) { renderer_->bind_texture2D(unit, tex_handle); }
-    inline static void unbind_texture2D() { renderer_->unbind_texture2D(); }
+    inline static void bind_texture2D(uint32_t unit, uint32_t tex_handle) { device_->bind_texture2D(unit, tex_handle); }
+    inline static void unbind_texture2D() { device_->unbind_texture2D(); }
 
 private:
     static GfxAPI api_;
-    static RendererAPI* renderer_;
+    static RenderDevice* device_;
 };
 
 

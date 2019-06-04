@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "bloom_renderer.h"
 #include "gfx_api.h"
 #include "texture.h"
@@ -7,6 +8,9 @@
 #include "math3d.h"
 #include "globals.h"
 #include "geometry_common.h"
+
+// TODO:
+// [ ] Make OpenGL agnostic
 
 namespace wcore
 {
@@ -26,7 +30,7 @@ kernel_(9,1.8f)
             (
                 std::initializer_list<TextureUnitInfo>
                 {
-                    TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR), GL_RGBA, GL_RGBA),
+                    TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR), GL_RGBA8, GL_RGBA),
                 },
 #ifdef __OPTIM_BLOOM_USE_PP2__
                 math::pp2(GLB.WIN_W/pow(2,ii+1)),
@@ -48,7 +52,7 @@ kernel_(9,1.8f)
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("bloomTex"_h, TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR), GL_RGBA, GL_RGBA),
+                TextureUnitInfo("bloomTex"_h, TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR), GL_RGBA8, GL_RGBA),
             },
             GLB.WIN_W/2,
             GLB.WIN_H/2,

@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "gfx_api.h"
 #include "shadow_map_renderer.h"
 #include "config.h"
@@ -10,6 +11,9 @@
 #include "texture.h"
 #include "geometry_common.h"
 #include "buffer_module.h"
+
+// TODO:
+// [ ] Make OpenGL agnostic
 
 namespace wcore
 {

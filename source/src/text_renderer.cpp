@@ -1,3 +1,5 @@
+#include <GL/glew.h>
+
 #include "text_renderer.h"
 #include "gfx_api.h"
 #include "logger.h"
