@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include "SSR_renderer.h"
 #include "gfx_api.h"
 #include "scene.h"
@@ -7,9 +6,6 @@
 #include "globals.h"
 #include "logger.h"
 #include "geometry_common.h"
-
-// TODO:
-// [ ] Make OpenGL agnostic
 
 namespace wcore
 {
@@ -23,12 +19,11 @@ blur_buffer_("SSRBlurBuffer",
 std::make_unique<Texture>(
     std::initializer_list<TextureUnitInfo>
     {
-        TextureUnitInfo("SSRBlurTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA16F, GL_RGBA),
+        TextureUnitInfo("SSRBlurTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA16F, TextureF::RGBA),
     },
     GLB.WIN_W/2,
     GLB.WIN_H/2,
-    TextureWrap::CLAMP_TO_EDGE),
-{GL_COLOR_ATTACHMENT0}),
+    TextureWrap::CLAMP_TO_EDGE)),
 nonce_(true),
 blur_enabled_(false),
 ray_steps_(20),
@@ -38,7 +33,6 @@ fade_eye_start_(0.05f),
 fade_eye_end_(1.f),
 fade_screen_edge_(0.85f),
 min_glossiness_(0.01f),
-//pix_thickness_(0.0f),
 pix_stride_cuttoff_(30.f),
 pix_stride_(7.f),
 max_ray_distance_(25.f),

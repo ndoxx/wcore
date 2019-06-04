@@ -1,8 +1,4 @@
-#include <GL/glew.h>
 #include "ping_pong_buffer.h"
-
-// TODO:
-// [ ] Make OpenGL agnostic
 
 namespace wcore
 {
@@ -33,7 +29,7 @@ PingPongBuffer::PingPongBuffer(const ShaderResource& shader_res,
                                std::unique_ptr<Texture> texture):
 shader_(shader_res),
 texture_(std::move(texture)),
-fbo_(*texture_, std::vector<GLenum>{GL_COLOR_ATTACHMENT0})
+fbo_(*texture_)
 {
 
 }

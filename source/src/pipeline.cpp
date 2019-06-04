@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include "pipeline.h"
 
 #include "globals.h"
@@ -34,9 +33,6 @@
     #define PROFILING_MAX_SAMPLES 1000
 #endif
 
-// TODO:
-// [ ] Make OpenGL agnostic
-
 namespace wcore
 {
 
@@ -49,13 +45,12 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("backfaceDepthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+                TextureUnitInfo("backfaceDepthTex"_h,  TextureFilter::MIN_NEAREST, TextureIF::DEPTH24_STENCIL8, TextureF::DEPTH_STENCIL)
             },
             GLB.WIN_W,
             GLB.WIN_H,
             TextureWrap::CLAMP_TO_EDGE
-        ),
-        std::vector<GLenum>({GL_DEPTH_ATTACHMENT})
+        )
     ));
 
     // Buffers with facilities for Geometry pass
@@ -66,17 +61,14 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("normalTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16_SNORM,     GL_RGBA),
-                TextureUnitInfo("albedoTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA8,            GL_RGBA),
-                TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+                TextureUnitInfo("normalTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA16_SNORM,     TextureF::RGBA),
+                TextureUnitInfo("albedoTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA8,            TextureF::RGBA),
+                TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, TextureIF::DEPTH24_STENCIL8, TextureF::DEPTH_STENCIL)
             },
             GLB.WIN_W,
             GLB.WIN_H,
             TextureWrap::CLAMP_TO_EDGE
-        ),
-        std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
-                             GL_COLOR_ATTACHMENT1,
-                             GL_DEPTH_STENCIL_ATTACHMENT})
+        )
     ));
 
     // Buffer with facilities for Lighting pass
@@ -87,8 +79,8 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("screenTex"_h, TextureFilter::MIN_NEAREST, GL_RGBA16F, GL_RGBA),
-                TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), GL_RGBA8, GL_RGBA),
+                TextureUnitInfo("screenTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA16F, TextureF::RGBA),
+                TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), TextureIF::RGBA8, TextureF::RGBA),
                 //TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
                 GMODULES::GET("gbuffer"_h).get_texture().share_unit(2) // G-Buffer and L-Buffer share the same depth buffer
             },
@@ -96,10 +88,7 @@ RenderPipeline::RenderPipeline()
             GLB.WIN_H,
             TextureWrap::CLAMP_TO_EDGE,
             true
-        ),
-        std::vector<GLenum>({GL_COLOR_ATTACHMENT0,
-                             GL_COLOR_ATTACHMENT1,
-                             GL_DEPTH_STENCIL_ATTACHMENT})
+        )
     ));
 
     // Buffer for SSAO
@@ -110,13 +99,12 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("SSAOTex"_h, TextureFilter::MIN_LINEAR, GL_R8, GL_RED),
+                TextureUnitInfo("SSAOTex"_h, TextureFilter::MIN_LINEAR, TextureIF::R8, TextureF::RED),
             },
             GLB.WIN_W/2,
             GLB.WIN_H/2,
             TextureWrap::CLAMP_TO_EDGE
-        ),
-        std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
+        )
     ));
 
     // Buffer for SSR
@@ -127,13 +115,12 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("SSRTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR), GL_RGBA16F, GL_RGBA),
+                TextureUnitInfo("SSRTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR), TextureIF::RGBA16F, TextureF::RGBA),
             },
             GLB.WIN_W/2,
             GLB.WIN_H/2,
             TextureWrap::CLAMP_TO_EDGE
-        ),
-        std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
+        )
     ));
 
     // Common utility meshes

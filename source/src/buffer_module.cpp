@@ -9,10 +9,9 @@ std::map<hash_t, std::unique_ptr<BufferModule>> GMODULES::modules_;
 
 
 BufferModule::BufferModule(const char* out_tex_name,
-                           std::unique_ptr<Texture> ptexture,
-                           std::vector<uint32_t>&& attachments):
+                           std::unique_ptr<Texture> ptexture):
 out_texture_(std::move(ptexture)),
-frame_buffer_(*out_texture_, attachments),
+frame_buffer_(*out_texture_),
 width_(out_texture_->get_width()),
 height_(out_texture_->get_height()),
 name_(H_(out_tex_name))

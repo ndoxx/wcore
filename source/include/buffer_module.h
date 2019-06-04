@@ -21,8 +21,7 @@ protected:
 
 public:
     BufferModule(const char* out_tex_name,
-                 std::unique_ptr<Texture> ptexture,
-                 std::vector<uint32_t>&& attachments);
+                 std::unique_ptr<Texture> ptexture);
 
     virtual ~BufferModule(){}
 

@@ -13,7 +13,6 @@ namespace wcore
 {
 
 // REFACTOR
-// [X] Make OpenGL agnostic
 // [ ] Let meshes handle index buffers
 //      -> 1 submesh = 1 index buffer & 1 material
 

@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include <cstdlib>
 
 #include "debug_renderer.h"
@@ -20,9 +19,6 @@
 #ifndef __DISABLE_EDITOR__
 #include "editor.h"
 #endif
-
-// TODO:
-// [ ] Make OpenGL agnostic
 
 namespace wcore
 {

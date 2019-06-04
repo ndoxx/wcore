@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include <random>
 #include <vector>
 #include <cassert>
@@ -12,10 +11,6 @@
 #include "globals.h"
 #include "texture.h"
 #include "geometry_common.h"
-
-// TODO:
-// [ ] Make OpenGL agnostic
-
 
 namespace wcore
 {
@@ -37,7 +32,7 @@ ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VAR
             (
                 std::initializer_list<TextureUnitInfo>
                 {
-                    TextureUnitInfo("SSAOtmpTex"_h, TextureFilter::MIN_LINEAR, GL_R8, GL_RED),
+                    TextureUnitInfo("SSAOtmpTex"_h, TextureFilter::MIN_LINEAR, TextureIF::R8, TextureF::RED),
                 },
                 GLB.WIN_W/4,
                 GLB.WIN_H/4,
@@ -191,8 +186,8 @@ void SSAORenderer::generate_random_kernel()
         {
             TextureUnitInfo("noiseTex"_h,
                             TextureFilter(TextureFilter::MIN_NEAREST | TextureFilter::MAG_NEAREST),
-                            GL_RGB16F,
-                            GL_RGB,
+                            TextureIF::RGB16F,
+                            TextureF::RGB,
                             reinterpret_cast<unsigned char*>(&ssao_noise[0]))
         },
         NOISE_SQRSIZE_,

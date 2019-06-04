@@ -4,9 +4,6 @@
 #include <vector>
 #include <functional>
 
-// TODO:
-// [ ] Make OpenGL agnostic
-
 namespace wcore
 {
 
@@ -23,7 +20,7 @@ private:
     int height_;
 
 public:
-    FrameBuffer(const Texture& texture, const std::vector<uint32_t>& attachments);
+    FrameBuffer(const Texture& texture);
     ~FrameBuffer();
 
     inline uint32_t get_target_index(uint32_t position) { return texture_indices_[position]; }

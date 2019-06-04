@@ -53,6 +53,12 @@ void OGLRenderDevice::draw_indexed(DrawPrimitive primitive, uint32_t n_elements,
                    (void*)(offset * sizeof(GLuint)));
 }
 
+void OGLRenderDevice::read_framebuffer_rgba(uint32_t width, uint32_t height, unsigned char* pixels)
+{
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pixels);
+}
+
 void OGLRenderDevice::set_clear_color(float r, float g, float b, float a)
 {
     glClearColor(r, g, b, a);

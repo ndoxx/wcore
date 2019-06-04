@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include "gfx_api.h"
 #include "shadow_map_renderer.h"
 #include "config.h"
@@ -11,9 +10,6 @@
 #include "texture.h"
 #include "geometry_common.h"
 #include "buffer_module.h"
-
-// TODO:
-// [ ] Make OpenGL agnostic
 
 namespace wcore
 {
@@ -53,20 +49,15 @@ normal_offset_(-0.013f)
             std::initializer_list<TextureUnitInfo>
             {
             #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-                TextureUnitInfo("shadowTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA32F, GL_RGBA),
+                TextureUnitInfo("shadowTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA32F, TextureF::RGBA),
             #else
-                TextureUnitInfo("shadowTex"_h, TextureFilter(TextureFilter::MAG_NEAREST | TextureFilter::MIN_NEAREST), GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT),
+                TextureUnitInfo("shadowTex"_h, TextureFilter(TextureFilter::MAG_NEAREST | TextureFilter::MIN_NEAREST), TextureIF::DEPTH_COMPONENT24, TextureF::DEPTH_COMPONENT),
             #endif
             },
             SHADOW_WIDTH,
             SHADOW_HEIGHT,
             TextureWrap::CLAMP_TO_EDGE
-        ),
-        #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-        std::vector<GLenum>({GL_COLOR_ATTACHMENT0})
-        #else
-        std::vector<GLenum>({GL_DEPTH_ATTACHMENT})
-        #endif
+        )
     ));
 }
 

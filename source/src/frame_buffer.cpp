@@ -10,9 +10,7 @@
 namespace wcore
 {
 
-//unsigned int FrameBuffer::DEFAULT_FRAMEBUFFER = 0;
-
-FrameBuffer::FrameBuffer(const Texture& texture, const std::vector<GLenum>& attachments):
+FrameBuffer::FrameBuffer(const Texture& texture):
 frame_buffer_(0),
 render_buffer_(0),
 draw_buffers_(nullptr),
@@ -20,7 +18,7 @@ n_textures_(texture.get_num_units()),
 width_(texture.get_width()),
 height_(texture.get_height())
 {
-    assert(attachments.size() == n_textures_);
+    //assert(attachments.size() == n_textures_);
     assert(n_textures_ <= 32); // Assert to be sure no buffer overrun should occur
     draw_buffers_ = new GLenum[n_textures_];
 
@@ -41,7 +39,7 @@ height_(texture.get_height())
 
     bool hasDepth = false; // Do we have a depth attachment in the attachment array?
     // Check attachments
-    for(int ii = 0; ii < n_textures_; ++ii)
+    /*for(int ii = 0; ii < n_textures_; ++ii)
     {
         // No attachment, continue to next texture id
         if(attachments[ii] == GL_NONE) continue;
@@ -69,6 +67,35 @@ height_(texture.get_height())
 
         // Attach texture to frame buffer
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[ii], GL_TEXTURE_2D, texture[ii], 0);
+    }*/
+
+    int ncolor_attachments = 0;
+    for(int ii = 0; ii < n_textures_; ++ii)
+    {
+        GLenum attachment = 0;
+        bool is_depth = texture.is_depth(ii);
+        bool is_stencil = texture.is_stencil(ii);
+        if(is_depth && is_stencil)
+            attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+        else if(is_depth)
+            attachment = GL_DEPTH_ATTACHMENT;
+        else
+            attachment = GL_COLOR_ATTACHMENT0 + ncolor_attachments++;
+
+        // Generate FBO
+        if(frame_buffer_ == 0)
+        {
+            glGenFramebuffers(1, &frame_buffer_);
+            glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_);
+            DLOGI("Generated new FBO.", "fbo");
+        }
+
+        // Depth -> use texture
+        draw_buffers_[ii] = is_depth ? GL_NONE : attachment;
+        hasDepth |= is_depth;
+
+        // Attach texture to frame buffer
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture[ii], 0);
     }
 
     // Each attachment was GL_NONE

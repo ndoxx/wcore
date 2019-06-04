@@ -36,13 +36,15 @@ enum class TextureWrap: uint8_t
 };
 
 // Internal formats
-enum class TextureIF: uint8_t
+enum class TextureIF
 {
     R8,
     RGB8,
     RGBA8,
     RGB16F,
     RGBA16F,
+    RGB32F,
+    RGBA32F,
     SRGB_ALPHA,
     RG16_SNORM,
     RGB16_SNORM,
@@ -63,7 +65,7 @@ enum class TextureIF: uint8_t
 };
 
 // Formats
-enum class TextureF: uint8_t
+enum class TextureF
 {
     RED,
     RGB,
@@ -72,11 +74,19 @@ enum class TextureF: uint8_t
     DEPTH_STENCIL,
 };
 
+// Texture type for framebuffer attachment automation
+enum class UnitType: uint8_t
+{
+    COLOR = 0,
+    DEPTH = 1,
+    STENCIL = 2
+};
+
 struct TextureParameters
 {
     TextureFilter filter;
-    uint32_t internal_format;
-    uint32_t format;
+    TextureIF internal_format;
+    TextureF format;
     TextureWrap wrap;
     bool lazy_mipmap;
 
@@ -144,32 +154,24 @@ public:
 
     TextureUnitInfo(hash_t sampler_name,
                     TextureFilter filter,
-                    uint32_t internal_format,
-                    uint32_t format,
+                    TextureIF internal_format,
+                    TextureF format,
                     unsigned char* data = nullptr);
 
 protected:
-#ifdef __DEBUG__
     TextureUnitInfo(hash_t sampler_name,
                     uint32_t texture_id,
-                    bool is_depth);
-#else
-    TextureUnitInfo(hash_t sampler_name,
-                    uint32_t texture_id);
-#endif
-
+                    UnitType unit_type);
 protected:
     hash_t sampler_name_;
     TextureFilter filter_;
-    uint32_t internal_format_;
-    uint32_t format_;
+    TextureIF internal_format_;
+    TextureF format_;
     unsigned char* data_;
 
     bool is_shared_;
     uint32_t texture_id_;
-#ifdef __DEBUG__
-    bool is_depth_;
-#endif
+    UnitType unit_type_;
 };
 
 struct MaterialInfo;
@@ -224,10 +226,12 @@ public:
     // Get OpenGL texture index for given unit
     inline uint32_t operator[](uint32_t index) const     { return texture_ids_[index]; }
 
-#ifdef __DEBUG__
+
     // Check if texture at given index is a depth map
-    inline bool is_depth(uint32_t index) const           { return is_depth_[index]; }
-#endif
+    inline bool is_depth(uint32_t index) const           { return bool((uint8_t)unit_types_[index] & (uint8_t)UnitType::DEPTH); }
+    inline bool is_stencil(uint32_t index) const         { return bool((uint8_t)unit_types_[index] & (uint8_t)UnitType::STENCIL); }
+    inline bool is_depth_stencil(uint32_t index) const   { return is_depth(index) && is_stencil(index); }
+
 
 private:
     // Generic helper function to generate a texture unit inside this texture
@@ -246,9 +250,7 @@ private:
     std::vector<hash_t> uniform_sampler_names_;         // Sampler names used to bind each texture block to a shader
     std::map<TextureBlock, uint32_t> block_to_sampler_; // Associate texture blocks to sampler indices
 
-#ifdef __DEBUG__
-    std::vector<bool> is_depth_; // Retain information on whether texture units contain depth info or not
-#endif
+    std::vector<UnitType> unit_types_; // Retain information on whether texture units contain depth / stencil info or not
 };
 
 }

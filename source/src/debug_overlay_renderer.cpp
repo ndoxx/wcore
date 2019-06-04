@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include <cassert>
 
 #include "debug_overlay_renderer.h"
@@ -23,9 +22,6 @@
     #include "gui_utils.h"
 #endif
 
-// TODO:
-// [ ] Make OpenGL agnostic
-
 namespace wcore
 {
 
@@ -37,12 +33,11 @@ render_target_("debugOverlayBuffer",
 std::make_unique<Texture>(
     std::initializer_list<TextureUnitInfo>
     {
-        TextureUnitInfo("debugOverlayTex"_h, TextureFilter::MIN_LINEAR, GL_RGBA16F, GL_RGBA),
+        TextureUnitInfo("debugOverlayTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA16F, TextureF::RGBA),
     },
     GLB.WIN_W,
     GLB.WIN_H,
-    TextureWrap::CLAMP_TO_EDGE),
-{GL_COLOR_ATTACHMENT0}),
+    TextureWrap::CLAMP_TO_EDGE)),
 current_pane_(0),
 current_tex_(0),
 raw_(false),
@@ -200,8 +195,7 @@ bool DebugOverlayRenderer::save_fb_to_image(const std::string& filename)
     // Bind framebuffer, change alignment to 1 to avoid out of bounds writes,
     // read framebuffer to pixel array and unbind
     render_target_.bind_as_target();
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pixels);
+    Gfx::read_framebuffer_rgba(width, height, pixels);
     render_target_.unbind_as_target();
 
     // Save to PNG image

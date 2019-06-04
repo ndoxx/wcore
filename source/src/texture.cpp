@@ -36,17 +36,17 @@ static std::vector<std::map<TextureBlock, hash_t>> SAMPLER_NAMES =
     }
 };
 
-static std::map<GLenum, GLenum> DATA_TYPES =
+static std::map<TextureIF, GLenum> DATA_TYPES =
 {
-    {GL_SRGB_ALPHA,        GL_FLOAT},
-    {GL_RGB16F,            GL_FLOAT},
-    {GL_RGBA16F,           GL_FLOAT},
-    {GL_RG16_SNORM,        GL_UNSIGNED_BYTE},
-    {GL_RGB16_SNORM,       GL_UNSIGNED_BYTE},
-    {GL_DEPTH32F_STENCIL8, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
-    {GL_DEPTH24_STENCIL8,  GL_UNSIGNED_INT_24_8},
-    {GL_RGB8,              GL_BYTE},
-    {GL_R8,                GL_BYTE},
+    {TextureIF::SRGB_ALPHA,        GL_FLOAT},
+    {TextureIF::RGB16F,            GL_FLOAT},
+    {TextureIF::RGBA16F,           GL_FLOAT},
+    {TextureIF::RG16_SNORM,        GL_UNSIGNED_BYTE},
+    {TextureIF::RGB16_SNORM,       GL_UNSIGNED_BYTE},
+    {TextureIF::DEPTH32F_STENCIL8, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
+    {TextureIF::DEPTH24_STENCIL8,  GL_UNSIGNED_INT_24_8},
+    {TextureIF::RGB8,              GL_BYTE},
+    {TextureIF::R8,                GL_BYTE},
 };
 
 static std::map<TextureIF, GLenum> INTERNAL_FORMATS =
@@ -56,6 +56,8 @@ static std::map<TextureIF, GLenum> INTERNAL_FORMATS =
     {TextureIF::RGBA8,                           GL_RGBA8},
     {TextureIF::RGB16F,                          GL_RGB16F},
     {TextureIF::RGBA16F,                         GL_RGBA16F},
+    {TextureIF::RGB32F,                          GL_RGB32F},
+    {TextureIF::RGBA32F,                         GL_RGBA32F},
     {TextureIF::SRGB_ALPHA,                      GL_SRGB_ALPHA},
     {TextureIF::RG16_SNORM,                      GL_RG16_SNORM},
     {TextureIF::RGB16_SNORM,                     GL_RGB16_SNORM},
@@ -77,11 +79,11 @@ static std::map<TextureIF, GLenum> INTERNAL_FORMATS =
 
 static std::map<TextureF, GLenum> FORMATS =
 {
-    {TextureF::RED,             GL_RED},
-    {TextureF::RGB,             GL_RGB},
-    {TextureF::RGBA,            GL_RGBA},
-    {TextureF::DEPTH_COMPONENT, GL_DEPTH_COMPONENT},
-    {TextureF::DEPTH_STENCIL,   GL_DEPTH_STENCIL},
+    {TextureF::RED,               GL_RED},
+    {TextureF::RGB,               GL_RGB},
+    {TextureF::RGBA,              GL_RGBA},
+    {TextureF::DEPTH_COMPONENT,   GL_DEPTH_COMPONENT},
+    {TextureF::DEPTH_STENCIL,     GL_DEPTH_STENCIL},
 };
 
 static PngLoader PNG_LOADER;
@@ -161,7 +163,7 @@ static void handle_addressUV(TextureWrap wrap_param, GLenum target)
     }
 }
 
-static GLenum internal_format_to_data_type(GLenum iformat)
+static GLenum internal_format_to_data_type(TextureIF iformat)
 {
     auto it = DATA_TYPES.find(iformat);
     if(it!=DATA_TYPES.end())
@@ -169,22 +171,22 @@ static GLenum internal_format_to_data_type(GLenum iformat)
     return GL_UNSIGNED_BYTE;
 }
 
-static GLenum fix_internal_format(GLenum iformat, hash_t sampler_name)
+static TextureIF fix_internal_format(TextureIF iformat, hash_t sampler_name)
 {
     // Load Albedo / Diffuse textures as sRGB to avoid double gamma-correction.
     if(sampler_name == "mt.sg1.block0Tex"_h || sampler_name == "mt.sg2.block0Tex"_h)
-        return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+        return TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT1;
     // Do not use DXT1 compression on normal-depth texure (block1) because it will screw up the normals
     else if(sampler_name == "mt.sg1.block1Tex"_h || sampler_name == "mt.sg2.block1Tex"_h)
-        return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;//GL_RGBA;
+        return TextureIF::COMPRESSED_RGBA_S3TC_DXT3;//TextureIF::RGBA8;
 
     return iformat;
 }
 
 TextureParameters::TextureParameters():
 filter(TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR)),
-internal_format(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT),
-format(GL_RGBA),
+internal_format(TextureIF::COMPRESSED_RGBA_S3TC_DXT1),
+format(TextureF::RGBA),
 wrap(TextureWrap::REPEAT),
 lazy_mipmap(false)
 {
@@ -225,8 +227,8 @@ void TextureDescriptor::release_data()
 
 TextureUnitInfo::TextureUnitInfo(hash_t sampler_name,
                                  TextureFilter filter,
-                                 uint32_t internal_format,
-                                 uint32_t format,
+                                 TextureIF internal_format,
+                                 TextureF format,
                                  unsigned char* data):
 sampler_name_(sampler_name),
 filter_(filter),
@@ -237,21 +239,14 @@ is_shared_(false)
 {
 
 }
-#ifdef __DEBUG__
+
 TextureUnitInfo::TextureUnitInfo(hash_t sampler_name,
                                  uint32_t texture_id,
-                                 bool is_depth):
+                                 UnitType unit_type):
 sampler_name_(sampler_name),
 is_shared_(true),
 texture_id_(texture_id),
-is_depth_(is_depth)
-#else
-TextureUnitInfo::TextureUnitInfo(hash_t sampler_name,
-                                 uint32_t texture_id):
-sampler_name_(sampler_name),
-is_shared_(true),
-texture_id_(texture_id)
-#endif
+unit_type_(unit_type)
 {
 
 }
@@ -326,8 +321,8 @@ sampler_group_(1)
 
     generate_texture_unit(TextureUnitInfo(SAMPLER_NAMES[0][TextureBlock::BLOCK0],
                                           TextureFilter::MIN_LINEAR,
-                                          GL_RGB,
-                                          GL_RGB,
+                                          TextureIF::RGBA8,
+                                          TextureF::RGB,
                                           px_buf->get_data_pointer()),
                           TextureWrap::CLAMP_TO_EDGE, false);
 
@@ -422,22 +417,27 @@ void Texture::generate_texture_unit(const TextureUnitInfo& unit_info,
         handle_addressUV(wrap_param, GL_TEXTURE_2D);
         // Register sampler name
         uniform_sampler_names_.push_back(unit_info.sampler_name_);
-#ifdef __DEBUG__
-        // Check whether this unit has depth information
-        is_depth_.push_back((unit_info.format_ == GL_DEPTH_COMPONENT ||
-                             unit_info.format_ == GL_DEPTH_STENCIL));
-#endif
+
+        // Check whether this unit has depth / stencil information
+        UnitType unit_type = UnitType::COLOR;
+        if(unit_info.format_ == TextureF::DEPTH_COMPONENT)
+            unit_type = UnitType::DEPTH;
+        else if(unit_info.format_ == TextureF::DEPTH_STENCIL)
+            unit_type = UnitType((uint8_t)UnitType::DEPTH | (uint8_t)UnitType::STENCIL);
+
+        unit_types_.push_back(unit_type);
+
         // Get data type relative to internal format
         GLenum dataType = internal_format_to_data_type(unit_info.internal_format_);
 
         // Specify OpenGL texture
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     unit_info.internal_format_,
+                     INTERNAL_FORMATS[unit_info.internal_format_],
                      width_,
                      height_,
                      0,
-                     unit_info.format_,
+                     FORMATS[unit_info.format_],
                      dataType,
                      unit_info.data_);
 
@@ -454,9 +454,7 @@ void Texture::generate_texture_unit(const TextureUnitInfo& unit_info,
     {
         texture_ids_.push_back(unit_info.texture_id_);
         uniform_sampler_names_.push_back(unit_info.sampler_name_);
-#ifdef __DEBUG__
-        is_depth_.push_back(unit_info.is_depth_);
-#endif
+        unit_types_.push_back(unit_info.unit_type_);
     }
 
     ++n_units_;
@@ -465,12 +463,7 @@ void Texture::generate_texture_unit(const TextureUnitInfo& unit_info,
 TextureUnitInfo Texture::share_unit(uint32_t index)
 {
     assert(index<n_units_ && "Texture::share_unit() index out of bounds.");
-
-#ifdef __DEBUG__
-    return TextureUnitInfo(uniform_sampler_names_.at(index), texture_ids_.at(index), is_depth_.at(index));
-#else
-    return TextureUnitInfo(uniform_sampler_names_.at(index), texture_ids_.at(index));
-#endif
+    return TextureUnitInfo(uniform_sampler_names_.at(index), texture_ids_.at(index), unit_types_.at(index));
 }
 
 

@@ -20,6 +20,8 @@ public:
 
     virtual void draw_indexed(DrawPrimitive primitive, uint32_t n_elements, uint32_t offset) override;
 
+    virtual void read_framebuffer_rgba(uint32_t width, uint32_t height, unsigned char* pixels) override;
+
     virtual void set_clear_color(float r, float g, float b, float a) override;
     virtual void clear(int flags) override;
     virtual void lock_color_buffer() override;

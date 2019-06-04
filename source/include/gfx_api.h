@@ -63,6 +63,8 @@ public:
 
     virtual void draw_indexed(DrawPrimitive primitive, uint32_t n_elements, uint32_t offset) = 0;
 
+    virtual void read_framebuffer_rgba(uint32_t width, uint32_t height, unsigned char* pixels) = 0;
+
     virtual void set_clear_color(float r, float g, float b, float a) = 0;
     virtual void clear(int flags) = 0;
     virtual void lock_color_buffer() = 0;
@@ -108,6 +110,9 @@ public:
     inline static void bind_default_frame_buffer() { device_->bind_default_frame_buffer(); }
 
     inline static void draw_indexed(DrawPrimitive primitive, uint32_t n_elements, uint32_t offset) { device_->draw_indexed(primitive, n_elements, offset); }
+
+    inline static void read_framebuffer_rgba(uint32_t width, uint32_t height, unsigned char* pixels) { device_->read_framebuffer_rgba(width, height, pixels); }
+
     inline static void set_clear_color(float r, float g, float b, float a) { device_->set_clear_color(r,g,b,a); }
     inline static void clear(int flags) { device_->clear(flags); }
     inline static void lock_color_buffer() { device_->lock_color_buffer(); }
