@@ -64,16 +64,6 @@ enum class TextureIF
     DEPTH32F_STENCIL8,
 };
 
-// Formats
-enum class TextureF
-{
-    RED,
-    RGB,
-    RGBA,
-    DEPTH_COMPONENT,
-    DEPTH_STENCIL,
-};
-
 // Texture type for framebuffer attachment automation
 enum class UnitType: uint8_t
 {
@@ -86,7 +76,6 @@ struct TextureParameters
 {
     TextureFilter filter;
     TextureIF internal_format;
-    TextureF format;
     TextureWrap wrap;
     bool lazy_mipmap;
 
@@ -155,7 +144,6 @@ public:
     TextureUnitInfo(hash_t sampler_name,
                     TextureFilter filter,
                     TextureIF internal_format,
-                    TextureF format,
                     unsigned char* data = nullptr);
 
 protected:
@@ -166,7 +154,6 @@ protected:
     hash_t sampler_name_;
     TextureFilter filter_;
     TextureIF internal_format_;
-    TextureF format_;
     unsigned char* data_;
 
     bool is_shared_;

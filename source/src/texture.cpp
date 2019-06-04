@@ -36,54 +36,39 @@ static std::vector<std::map<TextureBlock, hash_t>> SAMPLER_NAMES =
     }
 };
 
-static std::map<TextureIF, GLenum> DATA_TYPES =
+struct FormatDescriptor
 {
-    {TextureIF::SRGB_ALPHA,        GL_FLOAT},
-    {TextureIF::RGB16F,            GL_FLOAT},
-    {TextureIF::RGBA16F,           GL_FLOAT},
-    {TextureIF::RG16_SNORM,        GL_UNSIGNED_BYTE},
-    {TextureIF::RGB16_SNORM,       GL_UNSIGNED_BYTE},
-    {TextureIF::DEPTH32F_STENCIL8, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
-    {TextureIF::DEPTH24_STENCIL8,  GL_UNSIGNED_INT_24_8},
-    {TextureIF::RGB8,              GL_BYTE},
-    {TextureIF::R8,                GL_UNSIGNED_BYTE},
+    GLenum internal_format;
+    GLenum format;
+    GLenum data_type;
 };
 
-static std::map<TextureIF, GLenum> INTERNAL_FORMATS =
+static std::map<TextureIF, FormatDescriptor> FORMAT_DESCRIPTOR =
 {
-    {TextureIF::R8,                              GL_R8},
-    {TextureIF::RGB8,                            GL_RGB8},
-    {TextureIF::RGBA8,                           GL_RGBA8},
-    {TextureIF::RGB16F,                          GL_RGB16F},
-    {TextureIF::RGBA16F,                         GL_RGBA16F},
-    {TextureIF::RGB32F,                          GL_RGB32F},
-    {TextureIF::RGBA32F,                         GL_RGBA32F},
-    {TextureIF::SRGB_ALPHA,                      GL_SRGB_ALPHA},
-    {TextureIF::RG16_SNORM,                      GL_RG16_SNORM},
-    {TextureIF::RGB16_SNORM,                     GL_RGB16_SNORM},
-    {TextureIF::RGBA16_SNORM,                    GL_RGBA16_SNORM},
-    {TextureIF::COMPRESSED_RGB_S3TC_DXT1,        GL_COMPRESSED_RGB_S3TC_DXT1_EXT},
-    {TextureIF::COMPRESSED_RGBA_S3TC_DXT1,       GL_COMPRESSED_RGBA_S3TC_DXT1_EXT},
-    {TextureIF::COMPRESSED_RGBA_S3TC_DXT3,       GL_COMPRESSED_RGBA_S3TC_DXT3_EXT},
-    {TextureIF::COMPRESSED_RGBA_S3TC_DXT5,       GL_COMPRESSED_RGBA_S3TC_DXT5_EXT},
-    {TextureIF::COMPRESSED_SRGB_S3TC_DXT1,       GL_COMPRESSED_SRGB_S3TC_DXT1_EXT},
-    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT1, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT},
-    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT3, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT},
-    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT5, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT},
-    {TextureIF::DEPTH_COMPONENT16,               GL_DEPTH_COMPONENT16},
-    {TextureIF::DEPTH_COMPONENT24,               GL_DEPTH_COMPONENT24},
-    {TextureIF::DEPTH_COMPONENT32F,              GL_DEPTH_COMPONENT32F},
-    {TextureIF::DEPTH24_STENCIL8,                GL_DEPTH24_STENCIL8},
-    {TextureIF::DEPTH32F_STENCIL8,               GL_DEPTH32F_STENCIL8},
-};
-
-static std::map<TextureF, GLenum> FORMATS =
-{
-    {TextureF::RED,               GL_RED},
-    {TextureF::RGB,               GL_RGB},
-    {TextureF::RGBA,              GL_RGBA},
-    {TextureF::DEPTH_COMPONENT,   GL_DEPTH_COMPONENT},
-    {TextureF::DEPTH_STENCIL,     GL_DEPTH_STENCIL},
+    {TextureIF::R8,                              {GL_R8,                                  GL_RED,             GL_UNSIGNED_BYTE}},
+    {TextureIF::RGB8,                            {GL_RGB8,                                GL_RGB,             GL_UNSIGNED_BYTE}},
+    {TextureIF::RGBA8,                           {GL_RGBA8,                               GL_RGBA,            GL_UNSIGNED_BYTE}},
+    {TextureIF::RGB16F,                          {GL_RGB16F,                              GL_RGB,             GL_HALF_FLOAT}},
+    {TextureIF::RGBA16F,                         {GL_RGBA16F,                             GL_RGBA,            GL_HALF_FLOAT}},
+    {TextureIF::RGB32F,                          {GL_RGB32F,                              GL_RGB,             GL_FLOAT}},
+    {TextureIF::RGBA32F,                         {GL_RGBA32F,                             GL_RGBA,            GL_FLOAT}},
+    {TextureIF::SRGB_ALPHA,                      {GL_SRGB_ALPHA,                          GL_RGBA,            GL_UNSIGNED_BYTE}},
+    {TextureIF::RG16_SNORM,                      {GL_RG16_SNORM,                          GL_RG,              GL_SHORT}},
+    {TextureIF::RGB16_SNORM,                     {GL_RGB16_SNORM,                         GL_RGB,             GL_SHORT}},
+    {TextureIF::RGBA16_SNORM,                    {GL_RGBA16_SNORM,                        GL_RGBA,            GL_SHORT}},
+    {TextureIF::COMPRESSED_RGB_S3TC_DXT1,        {GL_COMPRESSED_RGB_S3TC_DXT1_EXT,        GL_RGB,             GL_UNSIGNED_BYTE}},
+    {TextureIF::COMPRESSED_RGBA_S3TC_DXT1,       {GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,       GL_RGBA,            GL_UNSIGNED_BYTE}},
+    {TextureIF::COMPRESSED_RGBA_S3TC_DXT3,       {GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,       GL_RGBA,            GL_UNSIGNED_BYTE}},
+    {TextureIF::COMPRESSED_RGBA_S3TC_DXT5,       {GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,       GL_RGBA,            GL_UNSIGNED_BYTE}},
+    {TextureIF::COMPRESSED_SRGB_S3TC_DXT1,       {GL_COMPRESSED_SRGB_S3TC_DXT1_EXT,       GL_RGB,             GL_UNSIGNED_BYTE}},
+    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT1, {GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT, GL_RGBA,            GL_UNSIGNED_BYTE}},
+    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT3, {GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT, GL_RGBA,            GL_UNSIGNED_BYTE}},
+    {TextureIF::COMPRESSED_SRGB_ALPHA_S3TC_DXT5, {GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT, GL_RGBA,            GL_UNSIGNED_BYTE}},
+    {TextureIF::DEPTH_COMPONENT16,               {GL_DEPTH_COMPONENT16,                   GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT}},
+    {TextureIF::DEPTH_COMPONENT24,               {GL_DEPTH_COMPONENT24,                   GL_DEPTH_COMPONENT, GL_UNSIGNED_INT}},
+    {TextureIF::DEPTH_COMPONENT32F,              {GL_DEPTH_COMPONENT32F,                  GL_DEPTH_COMPONENT, GL_FLOAT}},
+    {TextureIF::DEPTH24_STENCIL8,                {GL_DEPTH24_STENCIL8,                    GL_DEPTH_STENCIL,   GL_UNSIGNED_INT_24_8}},
+    {TextureIF::DEPTH32F_STENCIL8,               {GL_DEPTH32F_STENCIL8,                   GL_DEPTH_STENCIL,   GL_FLOAT_32_UNSIGNED_INT_24_8_REV}},
 };
 
 static PngLoader PNG_LOADER;
@@ -163,14 +148,6 @@ static void handle_addressUV(TextureWrap wrap_param, GLenum target)
     }
 }
 
-static GLenum internal_format_to_data_type(TextureIF iformat)
-{
-    auto it = DATA_TYPES.find(iformat);
-    if(it!=DATA_TYPES.end())
-        return it->second;
-    return GL_UNSIGNED_BYTE;
-}
-
 static TextureIF fix_internal_format(TextureIF iformat, hash_t sampler_name)
 {
     // Load Albedo / Diffuse textures as sRGB to avoid double gamma-correction.
@@ -186,7 +163,6 @@ static TextureIF fix_internal_format(TextureIF iformat, hash_t sampler_name)
 TextureParameters::TextureParameters():
 filter(TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR)),
 internal_format(TextureIF::COMPRESSED_RGBA_S3TC_DXT1),
-format(TextureF::RGBA),
 wrap(TextureWrap::REPEAT),
 lazy_mipmap(false)
 {
@@ -228,12 +204,10 @@ void TextureDescriptor::release_data()
 TextureUnitInfo::TextureUnitInfo(hash_t sampler_name,
                                  TextureFilter filter,
                                  TextureIF internal_format,
-                                 TextureF format,
                                  unsigned char* data):
 sampler_name_(sampler_name),
 filter_(filter),
 internal_format_(internal_format),
-format_(format),
 data_(data),
 is_shared_(false)
 {
@@ -287,7 +261,6 @@ n_units_(0)
             generate_texture_unit(TextureUnitInfo(sampler_name,
                                                   descriptor.parameters.filter,
                                                   fix_internal_format(descriptor.parameters.internal_format, sampler_name),
-                                                  descriptor.parameters.format,
                                                   data_ptrs[ii]),
                                   descriptor.parameters.wrap, false);
         }
@@ -321,8 +294,7 @@ sampler_group_(1)
 
     generate_texture_unit(TextureUnitInfo(SAMPLER_NAMES[0][TextureBlock::BLOCK0],
                                           TextureFilter::MIN_LINEAR,
-                                          TextureIF::RGBA8,
-                                          TextureF::RGB,
+                                          TextureIF::RGB8,
                                           px_buf->get_data_pointer()),
                           TextureWrap::CLAMP_TO_EDGE, false);
 
@@ -418,27 +390,27 @@ void Texture::generate_texture_unit(const TextureUnitInfo& unit_info,
         // Register sampler name
         uniform_sampler_names_.push_back(unit_info.sampler_name_);
 
+        // Get format descriptor
+        const auto& format_descriptor = FORMAT_DESCRIPTOR[unit_info.internal_format_];
+
         // Check whether this unit has depth / stencil information
         UnitType unit_type = UnitType::COLOR;
-        if(unit_info.format_ == TextureF::DEPTH_COMPONENT)
+        if(format_descriptor.format == GL_DEPTH_COMPONENT)
             unit_type = UnitType::DEPTH;
-        else if(unit_info.format_ == TextureF::DEPTH_STENCIL)
+        else if(format_descriptor.format == GL_DEPTH_STENCIL)
             unit_type = UnitType((uint8_t)UnitType::DEPTH | (uint8_t)UnitType::STENCIL);
 
         unit_types_.push_back(unit_type);
 
-        // Get data type relative to internal format
-        GLenum dataType = internal_format_to_data_type(unit_info.internal_format_);
-
         // Specify OpenGL texture
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     INTERNAL_FORMATS[unit_info.internal_format_],
+                     format_descriptor.internal_format,
                      width_,
                      height_,
                      0,
-                     FORMATS[unit_info.format_],
-                     dataType,
+                     format_descriptor.format,
+                     format_descriptor.data_type,
                      unit_info.data_);
 
         // Handle mipmap if specified

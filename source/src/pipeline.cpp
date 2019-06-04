@@ -45,7 +45,7 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("backfaceDepthTex"_h,  TextureFilter::MIN_NEAREST, TextureIF::DEPTH24_STENCIL8, TextureF::DEPTH_STENCIL)
+                TextureUnitInfo("backfaceDepthTex"_h,  TextureFilter::MIN_NEAREST, TextureIF::DEPTH24_STENCIL8)
             },
             GLB.WIN_W,
             GLB.WIN_H,
@@ -61,9 +61,9 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("normalTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA16_SNORM,     TextureF::RGBA),
-                TextureUnitInfo("albedoTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA8,            TextureF::RGBA),
-                TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, TextureIF::DEPTH24_STENCIL8, TextureF::DEPTH_STENCIL)
+                TextureUnitInfo("normalTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA16_SNORM),
+                TextureUnitInfo("albedoTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA8),
+                TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, TextureIF::DEPTH24_STENCIL8)
             },
             GLB.WIN_W,
             GLB.WIN_H,
@@ -79,9 +79,9 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("screenTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA16F, TextureF::RGBA),
-                TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), TextureIF::RGBA8, TextureF::RGBA),
-                //TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL)
+                TextureUnitInfo("screenTex"_h, TextureFilter::MIN_NEAREST, TextureIF::RGBA16F),
+                TextureUnitInfo("brightTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR_MIPMAP_LINEAR), TextureIF::RGBA8),
+                //TextureUnitInfo("depthTex"_h,  TextureFilter::MIN_NEAREST, GL_DEPTH24_STENCIL8)
                 GMODULES::GET("gbuffer"_h).get_texture().share_unit(2) // G-Buffer and L-Buffer share the same depth buffer
             },
             GLB.WIN_W,
@@ -99,7 +99,7 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("SSAOTex"_h, TextureFilter::MIN_LINEAR, TextureIF::R8, TextureF::RED),
+                TextureUnitInfo("SSAOTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA8),
             },
             GLB.WIN_W/2,
             GLB.WIN_H/2,
@@ -115,7 +115,7 @@ RenderPipeline::RenderPipeline()
         (
             std::initializer_list<TextureUnitInfo>
             {
-                TextureUnitInfo("SSRTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR), TextureIF::RGBA16F, TextureF::RGBA),
+                TextureUnitInfo("SSRTex"_h, TextureFilter(TextureFilter::MAG_LINEAR | TextureFilter::MIN_LINEAR), TextureIF::RGBA16F),
             },
             GLB.WIN_W/2,
             GLB.WIN_H/2,

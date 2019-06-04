@@ -33,7 +33,7 @@ render_target_("debugOverlayBuffer",
 std::make_unique<Texture>(
     std::initializer_list<TextureUnitInfo>
     {
-        TextureUnitInfo("debugOverlayTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA16F, TextureF::RGBA),
+        TextureUnitInfo("debugOverlayTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA16F),
     },
     GLB.WIN_W,
     GLB.WIN_H,
@@ -123,6 +123,7 @@ void DebugOverlayRenderer::render_pane(uint32_t index, Scene* pscene)
             peek_shader_.send_uniform("v4_proj_params"_h, proj_params);
         }
 
+        // TODO: don't use bind_texture2D
         Gfx::device->bind_texture2D(0, props.texture_index);
         Gfx::device->viewport((ii+1)*gap + ii*vpw, gap, vpw, vph);
 
@@ -145,6 +146,7 @@ void DebugOverlayRenderer::render_internal(Scene* pscene)
 
     // Bind current texture as source and internal framebuffer as target
     render_target_.bind_as_target();
+    // TODO: don't use bind_texture2D
     Gfx::device->bind_texture2D(0, props.texture_index);
 
     // Send uniforms to shader

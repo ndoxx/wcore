@@ -32,7 +32,7 @@ ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VAR
             (
                 std::initializer_list<TextureUnitInfo>
                 {
-                    TextureUnitInfo("SSAOtmpTex"_h, TextureFilter::MIN_LINEAR, TextureIF::R8, TextureF::RED),
+                    TextureUnitInfo("SSAOtmpTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA8),
                 },
                 GLB.WIN_W/4,
                 GLB.WIN_H/4,
@@ -187,7 +187,6 @@ void SSAORenderer::generate_random_kernel()
             TextureUnitInfo("noiseTex"_h,
                             TextureFilter(TextureFilter::MIN_NEAREST | TextureFilter::MAG_NEAREST),
                             TextureIF::RGB16F,
-                            TextureF::RGB,
                             reinterpret_cast<unsigned char*>(&ssao_noise[0]))
         },
         NOISE_SQRSIZE_,

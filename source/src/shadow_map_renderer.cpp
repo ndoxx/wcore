@@ -49,9 +49,9 @@ normal_offset_(-0.013f)
             std::initializer_list<TextureUnitInfo>
             {
             #ifdef __EXPERIMENTAL_VARIANCE_SHADOW_MAPPING__
-                TextureUnitInfo("shadowTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA32F, TextureF::RGBA),
+                TextureUnitInfo("shadowTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA32F),
             #else
-                TextureUnitInfo("shadowTex"_h, TextureFilter(TextureFilter::MAG_NEAREST | TextureFilter::MIN_NEAREST), TextureIF::DEPTH_COMPONENT24, TextureF::DEPTH_COMPONENT),
+                TextureUnitInfo("shadowTex"_h, TextureFilter(TextureFilter::MAG_NEAREST | TextureFilter::MIN_NEAREST), TextureIF::DEPTH_COMPONENT24),
             #endif
             },
             SHADOW_WIDTH,

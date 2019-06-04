@@ -127,7 +127,6 @@ void TextRenderer::load_face(const char* fontname,
                 TextureUnitInfo("charTex"_h,
                                 TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR),
                                 TextureIF::R8,
-                                TextureF::RED,
                                 face->glyph->bitmap.buffer)
             },
             face->glyph->bitmap.width,

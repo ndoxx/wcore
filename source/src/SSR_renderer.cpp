@@ -19,7 +19,7 @@ blur_buffer_("SSRBlurBuffer",
 std::make_unique<Texture>(
     std::initializer_list<TextureUnitInfo>
     {
-        TextureUnitInfo("SSRBlurTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA16F, TextureF::RGBA),
+        TextureUnitInfo("SSRBlurTex"_h, TextureFilter::MIN_LINEAR, TextureIF::RGBA16F),
     },
     GLB.WIN_W/2,
     GLB.WIN_H/2,

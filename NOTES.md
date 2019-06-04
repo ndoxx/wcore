@@ -8175,7 +8175,9 @@ To remove a submodule you need to:
 >> git submodule foreach git pull origin master
 
 
+# BROKEN
 
+[ ] SSAO artifacts after texture format system refactor
 
 
 
