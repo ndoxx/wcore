@@ -25,7 +25,6 @@ private:
     fs::path self_path_;
     fs::path conf_path_;
 
-    Config (const Config&){}
     Config(): initialized_(false){}
    ~Config(){}
 

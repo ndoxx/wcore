@@ -210,6 +210,8 @@ Engine::Engine()
 {
     //thread::max_thread_priority();
 
+
+
     DLOG("<s>--- WCore: Loading config ---</s>", "core", Severity::LOW);
     // Parse main config file
     try

@@ -3,6 +3,9 @@
 
 #include <cstdint>
 #include <utility>
+#include <vector>
+
+#include "wtypes.h"
 
 namespace wcore
 {
@@ -37,6 +40,7 @@ public:
     static IndexBuffer* create(uint32_t* index_data, std::size_t size, bool dynamic=false);
 };
 
+class BufferLayout;
 class VertexArray
 {
 public:
@@ -46,7 +50,7 @@ public:
     virtual void bind() const = 0;
     virtual void unbind() const = 0;
 
-    virtual void set_layout(std::uint64_t vertex_format_hash) const = 0;
+    virtual void set_layout(const BufferLayout& layout) const = 0;
 
     static VertexArray* create();
 };

@@ -1,8 +1,6 @@
 #ifndef RENDER_BATCH_HPP
 #define RENDER_BATCH_HPP
 
-#include <ctti/type_id.hpp>
-
 #include "logger.h"
 #include "mesh.hpp"
 
@@ -108,7 +106,7 @@ public:
 
         VBO_ = VertexBuffer::create(reinterpret_cast<float*>(vertices_.data()), nvert*sizeof(VertexT), dynamic);
 
-        VAO_->set_layout(ctti::type_id<VertexT>().hash());
+        VAO_->set_layout(VertexT::Layout);
         VAO_->unbind();
 
         IBO_ = IndexBuffer::create(indices_.data(), nind*sizeof(uint32_t), dynamic);

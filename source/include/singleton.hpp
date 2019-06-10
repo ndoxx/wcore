@@ -2,22 +2,10 @@
 #define SINGLETON_HPP_INCLUDED
 
 #include <utility>
+#include <mutex>
 
 namespace wcore
 {
-
-template <class T> class Singleton
-{
-    public:
-        static T&   Instance();
-        static void Kill();
-        virtual ~Singleton(){};
-
-    protected:
-        static T*   instance_;
-    private:
-        T& operator= (const T&) {};
-};
 
 //usage :
 /*
@@ -33,13 +21,36 @@ private:
 };
 */
 
+template <class T> class Singleton
+{
+public:
+    static T& Instance();
+    static void Kill();
+
+    Singleton() = default;
+    virtual ~Singleton() = default;
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
+
+protected:
+    static T* instance_;
+
+private:
+    static std::once_flag init_instance_flag_;
+};
+
 template <class T> T* Singleton<T>::instance_ = nullptr;
+template <class T> std::once_flag Singleton<T>::init_instance_flag_;
 
 // Here's the meat
 template <class T> T& Singleton<T>::Instance()
 {
-    if(instance_ == nullptr)
+    // Ensure initialization is performed only once, even in a
+    // multithreaded context
+    std::call_once(init_instance_flag_, []()
+    {
         instance_ = new T();
+    });
     return *instance_;
 }
 
@@ -52,28 +63,35 @@ template <class T> void Singleton<T>::Kill()
 // Singleton with Non Default Initialization
 template <class T> class SingletonNDI
 {
-    public:
-        static T& Instance()
+public:
+    static T& Instance()
+    {
+        return *instance_;
+    }
+    template <typename... Args>
+    static void Init(Args&&... args)
+    {
+        std::call_once(init_instance_flag_, [&args...]() // may not perfect forward?
         {
-            return *instance_;
-        }
-        template <typename... Args>
-        static void Init(Args&&... args)
-        {
-            if(instance_ == nullptr)
-                instance_ = new T(std::forward<Args>(args)...);
-        }
+            instance_ = new T(std::forward<Args>(args)...);
+        });
+    }
 
-        static void Kill();
-        virtual ~SingletonNDI(){};
+    static void Kill();
+    virtual ~SingletonNDI(){};
 
-    protected:
-        static T* instance_;
-    private:
-        T& operator= (const T&) {};
+    SingletonNDI(const SingletonNDI&) = delete;
+    SingletonNDI& operator=(const SingletonNDI&) = delete;
+
+protected:
+    static T* instance_;
+
+private:
+    static std::once_flag init_instance_flag_;
 };
 
 template <class T> T* SingletonNDI<T>::instance_ = nullptr;
+template <class T> std::once_flag SingletonNDI<T>::init_instance_flag_;
 
 template <class T> void SingletonNDI<T>::Kill()
 {

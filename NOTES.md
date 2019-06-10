@@ -8175,20 +8175,94 @@ To remove a submodule you need to:
 >> git submodule foreach git pull origin master
 
 
-# BROKEN
+#[04-06-19]
+J'ai changé les formats internes des textures de rendu de la SSAO de GL_R8 vers GL_RGBA8, lors du refactor pour l'abstraction de l'API graphique. L'utilisation excessive des ressources GPU par la SSAO que je constatais près des surfaces a disparu. J'ai maintenant un temps de rendu sensiblement égal quelle que soit ma position sur la map. Noter que sur le matos de Jess je n'ai jamais constaté ce problème. Il était donné d'avance qu'il pourrait y avoir un côut important en performances lié à l'utilisation de tels formats sur certaines machines, on recommande en général d'utiliser systématiquement un format à 4 canaux (RGBA). En tout cas je ne m'attendais pas à ce genre de profil de ralentissement, très ressemblant à du GPU cache thrashing.
 
-[ ] SSAO artifacts after texture format system refactor
+SSAO mega plus rapide après avoir changé le format interne de GL_R8 à GL_RGBA8.
+
+#[10-06-19]
+Je prototype un renderer multi-threaded, nom de code WCore2 (manque d'imagination). C'est un projet distinct de celui-ci. Je merge si mes expérimentations sont concluantes.
+
+## Vertex Buffer Layout
+TheCherno a encore frappé, avec une chouette méthode pour abstraire les formats de vertex. Je me suis largement inspiré de son travail pour opérer un petit refactor de la fonction OGLVertexArray::set_layout(). Récemment j'étais déjà repassé sur cette fonctionnalité pour décider d'un layout dynamiquement en fonction du hash compile type (lib ctti) du type de vertex.
+
+Le header vertex_format.h définit plusieurs nouvelles entités qui permettent la description de n'importe quel format de vertex, de manière très expressive. Le type énuméré _ShaderDataType_ représente virtuellement tous les types de données que l'on peut passer à un shader, en particulier celui des attributs. La classe _BufferLayout_ représente un layout, et consiste en un conteneur de _BufferLayoutElement_. Chaque élément représente un attribut par son nom, son type de données, sa taille en bytes, son offset dans la structure de vertex, plus un booléen pour la normalisation.
+_BufferLayout_ est constructible depuis une initializer_list<BufferLayoutElement>, ce qui permet une forme très expressive d'initialisation :
+
+```cpp
+    BufferLayout Vertex3P3N3T2U::Layout =
+    {
+        {"a_position"_h, ShaderDataType::Vec3},
+        {"a_normal"_h,   ShaderDataType::Vec3},
+        {"a_tangent"_h,  ShaderDataType::Vec3},
+        {"a_texCoord"_h, ShaderDataType::Vec2}
+    };
+
+    BufferLayout VertexAnim::Layout =
+    {
+        {"a_position"_h, ShaderDataType::Vec3},
+        {"a_normal"_h,   ShaderDataType::Vec3},
+        {"a_tangent"_h,  ShaderDataType::Vec3},
+        {"a_texCoord"_h, ShaderDataType::Vec2},
+        {"a_weights"_h,  ShaderDataType::Vec4},
+        {"a_boneIDs"_h,  ShaderDataType::IVec4},
+    };
+```
+Les offsets/sizes/strides de chaque élément sont calculés automatiquement à la construction du layout.
+
+J'ai doté chaque structure de vertex d'un membre statique _BufferLayout_. Lors de l'initialisation d'un VAO il est alors aisé de faire :
+```cpp
+    VAO_ = VertexArray::create();
+    VAO_->bind();
+    VAO_->set_layout(VertexT::Layout);
+```
+Avec VertexT la structure de vertex.
+
+_BufferLayout_ est un type itérable. L'implémentation de set_layout pour OpenGL ressemble à ceci:
+```cpp
+void OGLVertexArray::set_layout(const BufferLayout& layout) const
+{
+    uint32_t index = 0;
+    for(const auto& element: layout)
+    {
+        glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index,
+                              element.get_component_count(),
+                              shader_data_type_to_ogl_base_type(element.type),
+                              element.normalized ? GL_TRUE : GL_FALSE,
+                              layout.get_stride(),
+                              (const void*)(uint64_t)element.offset);
+        ++index;
+    }
+}
+```
+Une simple boucle sur les éléments du layout, et une déduction des paramètres à fournir à l'API selon leur contenu. Elégant.
 
 
+# Elegant thread-safe singleton
 
+Meyer's Singleton:
+```cpp
+class Singleton
+{
+public:
+    static Singleton& Instance()
+    {
+        static Singleton S;
+        return S;
+    }
 
+private:
+    Singleton();
+    ~Singleton();
+};
+```
+Scott Meyers says:
 
+    "This approach is founded on C++'s guarantee that local static objects are initialized when the object's definition is first encountered during a call to that function." ... "As a bonus, if you never call a function emulating a non-local static object, you never incur the cost of constructing and destructing the object."
 
-
-
-
-
-
+-> thread-safe
+-> subject to Destruction Order Fiasco
 
 
 
@@ -8242,3 +8316,5 @@ TODO (Waterial):
 GLint swizzleMask[] = {GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA};
 glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
 ```
+
+

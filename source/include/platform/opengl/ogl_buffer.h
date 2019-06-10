@@ -45,7 +45,7 @@ public:
     virtual void bind() const override;
     virtual void unbind() const override;
 
-    virtual void set_layout(std::size_t vertex_format_hash) const override;
+    virtual void set_layout(const BufferLayout& layout) const override;
 
 private:
     uint32_t rd_handle_;

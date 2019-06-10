@@ -41,11 +41,11 @@ ping_pong_(ShaderResource("blurpass.vert;blurpass.frag", "VARIANT_COMPRESS_R;VAR
 out_size_(GLB.WIN_W/2,
           GLB.WIN_H/2),
 noise_scale_(out_size_/(float(NOISE_SQRSIZE_))),
-SSAO_radius_(0.20),
-SSAO_bias_(0.025),
-SSAO_vbias_(0.086),
-SSAO_intensity_(1.3),
-SSAO_scale_(0.375),
+SSAO_radius_(0.30),
+SSAO_bias_(0.175),
+SSAO_vbias_(0.05),
+SSAO_intensity_(1.1),
+SSAO_scale_(0.1),
 blur_policy_(1,
              GLB.WIN_W/2,
              GLB.WIN_H/2,
@@ -148,7 +148,7 @@ void SSAORenderer::generate_random_kernel()
         sample.normalize();
         sample *= rnd_f(rng);
 
-        // Accelerating lerp on scale to increase weight of occlusion near to the
+        // Accelerating lerp on scale to increase weight of occlusion near the
         // fragment we're testing for SSAO
         float scale = ii/float(KERNEL_SIZE_);
         scale   = lerp(0.1f, 1.0f, scale * scale);
@@ -185,13 +185,13 @@ void SSAORenderer::generate_random_kernel()
         std::initializer_list<TextureUnitInfo>
         {
             TextureUnitInfo("noiseTex"_h,
-                            TextureFilter(TextureFilter::MIN_NEAREST | TextureFilter::MAG_NEAREST),
+                            TextureFilter(TextureFilter::MIN_LINEAR | TextureFilter::MAG_LINEAR),
                             TextureIF::RGB16F,
                             reinterpret_cast<unsigned char*>(&ssao_noise[0]))
         },
         NOISE_SQRSIZE_,
         NOISE_SQRSIZE_,
-        TextureWrap::MIRRORED_REPEAT
+        TextureWrap::REPEAT
     );
 }
 

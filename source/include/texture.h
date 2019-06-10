@@ -41,6 +41,7 @@ enum class TextureIF
     R8,
     RGB8,
     RGBA8,
+    RG16F,
     RGB16F,
     RGBA16F,
     RGB32F,

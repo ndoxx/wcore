@@ -109,118 +109,39 @@ void OGLVertexArray::unbind() const
     glBindVertexArray(0);
 }
 
-void OGLVertexArray::set_layout(std::uint64_t vertex_format_hash) const
+static GLenum shader_data_type_to_ogl_base_type(ShaderDataType type)
 {
-    switch(vertex_format_hash)
+    switch(type)
     {
-        case ctti::type_id<Vertex3P3N2U4C>().hash():
-        {
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N2U4C), nullptr);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N2U4C), (const GLvoid*)(3*sizeof(float)));
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N2U4C), (const GLvoid*)(6*sizeof(float)));
-            glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N2U4C), (const GLvoid*)(8*sizeof(float)));
+        case ShaderDataType::Float: return GL_FLOAT;
+        case ShaderDataType::Vec2:  return GL_FLOAT;
+        case ShaderDataType::Vec3:  return GL_FLOAT;
+        case ShaderDataType::Vec4:  return GL_FLOAT;
+        case ShaderDataType::Mat3:  return GL_FLOAT;
+        case ShaderDataType::Mat4:  return GL_FLOAT;
+        case ShaderDataType::Int:   return GL_INT;
+        case ShaderDataType::IVec2: return GL_INT;
+        case ShaderDataType::IVec3: return GL_INT;
+        case ShaderDataType::IVec4: return GL_INT;
+    }
 
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
-            glEnableVertexAttribArray(3);
-        }
-        break;
+    DLOGF("Unknown ShaderDataType", "batch");
+    return 0;
+};
 
-        case ctti::type_id<Vertex3P3N3T2U>().hash():
-        {
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N3T2U), nullptr);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N3T2U), (const GLvoid*)(3*sizeof(float)));
-            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N3T2U), (const GLvoid*)(6*sizeof(float)));
-            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N3T2U), (const GLvoid*)(9*sizeof(float)));
-
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
-            glEnableVertexAttribArray(3);
-        }
-        break;
-
-        case ctti::type_id<VertexAnim>().hash():
-        {
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), nullptr);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), (const GLvoid*)(3*sizeof(float)));
-            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), (const GLvoid*)(6*sizeof(float)));
-            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), (const GLvoid*)(9*sizeof(float)));
-            glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(VertexAnim), (const GLvoid*)(11*sizeof(float)));
-            glVertexAttribIPointer(5, 4, GL_UNSIGNED_BYTE,  sizeof(VertexAnim), (const GLvoid*)(15*sizeof(float)));
-
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
-            glEnableVertexAttribArray(3);
-            glEnableVertexAttribArray(4);
-            glEnableVertexAttribArray(5);
-        }
-        break;
-
-        case ctti::type_id<Vertex3P3N2U>().hash():
-        {
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N2U), nullptr);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N2U), (const GLvoid*)(3*sizeof(float)));
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N2U), (const GLvoid*)(6*sizeof(float)));
-
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
-        }
-        break;
-
-        case ctti::type_id<Vertex3P3N>().hash():
-        {
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N), nullptr);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3N), (const GLvoid*)(3*sizeof(float)));
-
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-        }
-        break;
-
-        case ctti::type_id<Vertex3P2U>().hash():
-        {
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P2U), nullptr);
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex3P2U), (const GLvoid*)(3*sizeof(float)));
-
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-        }
-        break;
-
-        case ctti::type_id<Vertex3P>().hash():
-        {
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P), nullptr);
-
-            glEnableVertexAttribArray(0);
-        }
-        break;
-
-        case ctti::type_id<Vertex3P3C>().hash():
-        {
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3C), nullptr);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3P3C), (const GLvoid*)(3*sizeof(float)));
-
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-        }
-        break;
-
-        case ctti::type_id<Vertex2P2U>().hash():
-        {
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2P2U), nullptr);
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2P2U), (const GLvoid*)(2*sizeof(float)));
-
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-        }
-        break;
-
-        default:
-            DLOGF("OpenGL VAO: cannot set layout for unknown vertex format.", "batch");
+void OGLVertexArray::set_layout(const BufferLayout& layout) const
+{
+    uint32_t index = 0;
+    for(const auto& element: layout)
+    {
+        glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index,
+                              element.get_component_count(),
+                              shader_data_type_to_ogl_base_type(element.type),
+                              element.normalized ? GL_TRUE : GL_FALSE,
+                              layout.get_stride(),
+                              (const void*)(uint64_t)element.offset);
+        ++index;
     }
 }
 

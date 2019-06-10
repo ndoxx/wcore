@@ -58,6 +58,7 @@ set(SRC_CORE
 set(SRC_3D
     ${CMAKE_SOURCE_DIR}/source/src/gfx_api.cpp
     ${CMAKE_SOURCE_DIR}/source/src/buffer.cpp
+    ${CMAKE_SOURCE_DIR}/source/src/vertex_format.cpp
     ${CMAKE_SOURCE_DIR}/source/src/platform/opengl/ogl_renderer_api.cpp
     ${CMAKE_SOURCE_DIR}/source/src/platform/opengl/ogl_buffer.cpp
     ${CMAKE_SOURCE_DIR}/source/src/gpu_query_timer.cpp

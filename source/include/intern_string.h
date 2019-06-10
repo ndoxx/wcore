@@ -24,7 +24,6 @@ public:
     void add_intern_string(const std::string& str);
 
 private:
-    InternStringLocator (const InternStringLocator&){};
     InternStringLocator();
    ~InternStringLocator();
 
