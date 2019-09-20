@@ -341,7 +341,7 @@ int main(int argc, char const *argv[])
     // * Generate maze
     MazeData maze(15,15);
     MazeRecursiveBacktracker generator;
-    generator.make_maze(maze,82);
+    generator.make_maze(maze,42);
     // Make room for tree in the middle
     maze.make_hole(6,8,6,8);
     std::cout << maze << std::endl << std::endl;

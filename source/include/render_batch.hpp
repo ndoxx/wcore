@@ -10,10 +10,6 @@
 namespace wcore
 {
 
-// REFACTOR
-// [ ] Let meshes handle index buffers
-//      -> 1 submesh = 1 index buffer & 1 material
-
 template <typename VertexT>
 class RenderBatch
 {

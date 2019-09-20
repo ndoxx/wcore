@@ -1,9 +1,40 @@
 #[GLOBAL]
 Pour convertir ces notes en pdf :
+```
 >> pandoc --latex-engine=xelatex NOTES.md -s -o notes.pdf
+```
+Avec une belle mise en page :
+```
+>> pandoc --latex-engine=xelatex --listings -H listings_setup.tex --toc -V geometry:"left=2cm, top=2cm, right=2cm, bottom=2cm" -V fontsize=10pt NOTES.md -o notes.pdf
+```
+
+Et le contenu de listings_setup.tex :
+```tex
+\usepackage{xcolor}
+
+\lstset{
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\footnotesize,
+    stepnumber=2,
+    numbersep=5pt,
+    backgroundcolor=\color{black!10},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=true,
+    breakautoindent=true,
+    linewidth=\textwidth
+}
+```
 
 XeTeX est utilisé car il gère nativement l'Unicode. On obtient le package comme suit :
+```
 >> sudo apt-get install texlive-xetex
+```
 
 
 #[24-06-18]
@@ -34,8 +65,12 @@ init_rotation_euler(Ry, 0, TORADIANS(45.0), 0);
 
 
 WTF bruh?!
-Computations are correct, sources: wiki, matlab code for quat2rotm and
-http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/
+Computations are correct,
+
+##Sources: 
+    [1] wiki, matlab code for quat2rotm
+    [2] http://www.euclideanspace.com/maths/geometry/rotations/conversions/
+    quaternionToMatrix/
 
 My code gives good rotation matrices from quats compared to what matlab outputs
 for the same quats.
@@ -220,7 +255,11 @@ J'ai unitTest et amélioré les classes suivantes de WEngine dans l'idée de les
 [x] L'objectif pour l'instant est de construire une app simple pouvant afficher un modèle cubique.
 
 ##[DEPS] LINUX OPENGL WINDOW
->> sudo apt-get install cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev libglew-dev libglfw3-dev
+```
+>> sudo apt-get install cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev 
+libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev 
+libxi-dev libglew-dev libglfw3-dev
+```
 
 ###[LINKING]
 On doit linker avec **-lm -lGL -lglfw -lGLEW**
@@ -288,7 +327,9 @@ J'ai aussi testé la transition ortho->persp et inverse en me servant de cette s
 #[02-07-18]
 
 ##[BUG][fixed] CATCH2 segfault
+```
 >>../bin/test_engine_3d
+```
 
 crash comme un enculé. Bug de catch2 ? Dès qu'on inclue la source shader.cpp l'appli de test segfault. C'est une belle merde.
 
@@ -362,28 +403,40 @@ Mais pas g++7 qui lui va gueuler à juste titre que aaa n'est pas déclarée.
 #[03-07-18]
 #[boost::gil][deprec]
 Charger des png... Je compte utiliser boost::gil plutôt que libpng. Boost gil obtensible comme suit:
+```
 >> git clone https://github.com/boostorg/gil.git
+```
 
 Il y a une **dep** avec libtiff:
+```
 >> sudo apt-get install libtiff5-dev
+```
 
 Là, j'essaye de compiler, avec make, ça compile mais ça ne link pas une appli test à cause de libtiff (peut-être qu'il attend une version différente), du coup make n'aboutit pas, et par flemme j'ai juste copié les headers en pensant que ça serait suffisant (comme souvent avec boost):
+```
 >> sudo cp -R include/boost/* /usr/include/boost/
+```
 
 veiller à avoir une version à jour de cmake (dl depuis https://cmake.org/download/) et décompresser puis
+```
 >> ./configure
 >> make
 >> sudo make install
+```
 
 boost doit bien entendu être à jour aussi. dl depuis https://www.boost.org/
+```
 >> tar -jxvf boost_1_67_0.tar.bz2
 >> cd boost_1_67_0/
 >> ./bootstrap.sh
 >> ./b2
+```
 
 là ça compile tout le bordel (environ 15min). Pour installer, j'ai backup ma vieille version de boost au cas où, puis copié le dossier boost:
+```
 >> sudo mv /usr/include/boost/ /usr/include/boost_old
 >> sudo cp -R ./boost /usr/include/boost
+```
 
 Pour se servir de la lib, c'est full include:
 ```cpp
@@ -394,7 +447,9 @@ Pour se servir de la lib, c'est full include:
 
 -> libpng
 Et là tout fonctionne nickel. Penser à link avec libpng:
+```
 >> g++ ...... -lpng
+```
 
 Je suis ce très bon tuto pour l'implémentation du loader:
 http://www.piko3d.net/tutorials/libpng-tutorial-loading-png-files-from-streams/
@@ -1000,7 +1055,9 @@ J'ai bien fait de persister, ce bug de merde m'aurait suivi quoi que je fasse.
 Lumière ponctuelle opérationnelle. J'ai une scène avec 3 cubes animés, un terrain, une lumière directionnelle et 3 lumières ponctuelles qui suivent des courbes de Bézier.
 
 ##[DEBUG] Memory leaks
+```
 >> valgrind --leak-check=full -v ../bin/wcore
+```
 
     ==17785== HEAP SUMMARY:
     ==17785==     in use at exit: 477,800 bytes in 2,973 blocks
@@ -1169,8 +1226,9 @@ Table des coeffs pour les scalaires K0, K1 et K2 d'une _PointLight_ en fonction 
         325        1.0       0.014      0.0007
         600        1.0       0.007      0.0002
         3250       1.0       0.0014     0.000007
-sources : https://learnopengl.com/Lighting/Light-casters
-          http://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
+##Sources :
+    [1] https://learnopengl.com/Lighting/Light-casters
+    [2] http://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
 
 ##[TODO] Suite du programme
 
@@ -1198,9 +1256,11 @@ On pourrait donc initialiser une texture bright pass avec une résolution valant
 
 L'utilisation de mipmaps pourrait (?) automatiser l'étape de downscaling.
 
-sources : http://kalogirou.net/2006/05/20/how-to-do-good-bloom-for-hdr-rendering/
-          https://software.intel.com/en-us/articles/compute-shader-hdr-and-bloom
-          http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+##Sources :
+    [1] http://kalogirou.net/2006/05/20/how-to-do-good-bloom-for-hdr-rendering/
+    [2] https://software.intel.com/en-us/articles/compute-shader-hdr-and-bloom
+    [3] http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with
+    -linear-sampling/
 
 
 ##[Zik]
@@ -1223,7 +1283,8 @@ T0, T1, T2 et T3 sont passées au shader de post-processing qui réalise le blen
 Comme mentionné hier dans [Defered Shading], il m'a semblé essentiel de regrouper les fonctionnalités de _ScreenBuffer_ et _GBuffer_ derrière une classe de base _ProcessingStage_. La fonction draw() est virtuelle avec une implémentation de base.
 
 ###[Bright Pass] sorta...
-La classe _ScreenBuffer_ initialise maintenant une deuxième texture unit (sampler "brightTex") en GL_LINEAR_MIPMAP_LINEAR avec l'option (nouvelle) lazy_mipmap = true dans le constructeur de _Texture_ (ce qui veut dire que les mipmaps ne sont pas générées lors de la construction de la _Texture_).
+La classe _ScreenBuffer_ initialise maintenant une deuxième texture unit (sampler "brightTex") en 
+GL_LINEAR_MIPMAP_LINEAR avec l'option (nouvelle) lazy_mipmap = true dans le constructeur de _Texture_ (ce qui veut dire que les mipmaps ne sont pas générées lors de la construction de la _Texture_).
 Dans ScreenBuffer::draw() juste après avoir rendu le quad texturé ce qui a produit la bright map, les mipmaps de la bright map sont générés.
 
 Donc plutôt que d'implémenter une bright pass en rendant le quad à nouveau, je me sers du *multiple render target trick* pour générer la bright map dès la lighting pass, et le rescaling de la bright map en textures de tailles sous-multiples pour l'étage blur est géré automatiquement par le mécanisme des mipmaps. Nice!
@@ -1257,7 +1318,9 @@ Pourquoi ai-je seulement fait ça ?!
 
 ##[Command Line Galore]
 Obtenir la résolution de l'écran :
+```
 >> xdpyinfo | grep dimensions
+```
 
 
 ##[TODO] Suite du programme
@@ -1294,17 +1357,20 @@ Long terme :
     [ ] Ecrire un renderer pour cette structure de données.
     [ ] Ecrire des classes pour (dé)sérialiser cette structure (level loading).
 
-sources utiles :
-thème général :
-* https://gamedevelopment.tutsplus.com/articles/make-your-life-easier-build-a-level-editor--gamedev-356
-BSP chez Valve :
-* https://developer.valvesoftware.com/wiki/Source_BSP_File_Format
-* https://developer.valvesoftware.com/wiki/Brush
-* http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
-C++ Python wrapping:
-http://intermediate-and-advanced-software-carpentry.readthedocs.io/en/latest/c++-wrapping.html
-https://www.boost.org/doc/libs/1_49_0/libs/python/doc/tutorial/doc/html/python/exposing.html
-http://cppyy.readthedocs.io/en/latest/
+##Sources :
+    thème général :
+    [1] https://gamedevelopment.tutsplus.com/articles/
+    make-your-life-easier-build-a-level-editor--gamedev-356
+    BSP chez Valve :
+    [2] https://developer.valvesoftware.com/wiki/Source_BSP_File_Format
+    [3] https://developer.valvesoftware.com/wiki/Brush
+    [4] http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
+    C++ Python wrapping:
+    [5] http://intermediate-and-advanced-software-carpentry.readthedocs.io
+    /en/latest/c++-wrapping.html
+    [6] https://www.boost.org/doc/libs/1_49_0/libs/python/doc/tutorial/doc
+    /html/python/exposing.html
+    [7] http://cppyy.readthedocs.io/en/latest/
 
 #[16-07-18]
 J'ai codé des contrôles pour bouger la caméra (forward/backward, strafe left/right, move up/down, rotate yaw/pitch).
@@ -1403,9 +1469,10 @@ Avantages de l'algo :
 * Test *tous* les pixels de l'écran, donc même ceux issus de blending ou d'autres fragment shaders (alors que MSAA ne peut pas les "voir" nativement).
 * Fucking rapide.
 
-sources:
-* https://blog.codinghorror.com/fast-approximate-anti-aliasing-fxaa/
-* http://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf
+###Sources:
+    [1] https://blog.codinghorror.com/fast-approximate-anti-aliasing-fxaa/
+    [2] http://developer.download.nvidia.com/assets/gamedev/files/sdk/11/
+    FXAA_WhitePaper.pdf
 
 J'ai un peu commenté le code et fait quelques optimisation en me basant sur le WhitePaper de Nvidia. Je fais un test local de luminance pour discriminer rapidement les pixels non aliasés et retourner rapidement lorsque c'est le cas. Je fais le test de luminance sur les canaux R et G seulement.
 
@@ -1550,7 +1617,9 @@ http://cpetry.github.io/NormalMap-Online/
         * Point : omnidirectional map -> cube map (=6 textures par lumière ponctuelle) *OU BIEN*
             -> *Dual Paraboloid Shadow Mapping* où on n'utilise que 2 textures par lumière en mappant 2 hémisphères autour de la source.
             source : Shadow Mapping for Hemispherical and Omnidirectional Light Sources (Stefan Brabec et al. 2002)
-            https://pdfs.semanticscholar.org/eb42/f9330b6cdb1a0b12595a33c2674e0fdaea12.pdf
+            
+            https://pdfs.semanticscholar.org/eb42
+            /f9330b6cdb1a0b12595a33c2674e0fdaea12.pdf
 
 ##[GBuffer] Optimisation : compression des normales
 L'article Inferred Lighting: Fast dynamic lighting and shadows for opaque and translucent objects (Kircher et al.)
@@ -1563,7 +1632,9 @@ Donne une transformation hyper conne à effectuer sur les normales avant stockag
 J'ai tout simplement écrit les fonctions compress_normal() resp. decompress_normal() dans gpass.frag resp. lpass.frag, et je viens de gagner un byte par pixel dans le G-Buffer.
 
 Cet thèse : Real-time Lighting Effects using Deferred Shading (Michal Ferko, 2012)
-http://www.sccg.sk/ferko/dpMichalFerko2012.pdf
+
+    http://www.sccg.sk/ferko/dpMichalFerko2012.pdf
+
 Explique également que les half-floats c'est pas suffisant en terme de précision pour des normales. Il vaut mieux utiliser les formats internes en *SNORM* d'OpenGL (16 bits unsigned). J'ai changé le format de normalTex en *GL_RG16_SNORM*.
 
 A priori le format SNORM est aussi intéressant pour stocker du bruit (Perlin, Simplex)...
@@ -1586,7 +1657,9 @@ http://www.adriancourreges.com/blog/2015/11/02/gta-v-graphics-study/
 
 ##[Command Line Galore]
 Compter les lignes de code en récursif depuis le dossier courant :
->>      find . -name '*.cpp' | xargs wc -l
+```
+>> find . -name '*.cpp' | xargs wc -l
+```
 
 
 ##[Quotes] de porc
@@ -1642,9 +1715,9 @@ Ceci fait, la passe de géométrie se charge de déplacer les coordonnées de te
 
 La fonction parallax_map() du shader gpass.frag calcule les nouvelles coordonnées de texture itérativement. L'algo est adaptatif et estime linéairement le paramètre de marche du rayon en fonction de l'angle de vue. Une étape d'interpolation entre les coordonnées de texture avant et après intersection donne une estimation finale relativement fiable (*parallax occlusion mapping*).
 
-sources:
-http://sunandblackcat.com/tipFullView.php?topicid=28
-https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+###Sources:
+    [1] http://sunandblackcat.com/tipFullView.php?topicid=28
+    [2] https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 
 
 ###[HACK]
@@ -1745,7 +1818,7 @@ Je veux pouvoir sérialiser / désérialiser facilement certains objets, dont la
 Plutôt que de faire du ad hoc, comme je vais devoir sérialiser tout un tas de trucs à l'avenir, je me suis penché sur une solution plus générique : *Flatbuffers* qui est un outil open-source de génération automatique de classes de sérialisation, multi-langages milti-OS. L'alternative principale est *Google Protocol Buffers*.
 
 Pour compiler le compilateur *flatc* qui permet de transformer un *schema file* en classe de sérialisation, j'ai fait ceci :
-
+```
 >> git clone https://github.com/google/flatbuffers.git
 >> cd flatbuffers/
 >> mkdir build;cd build
@@ -1753,6 +1826,7 @@ Pour compiler le compilateur *flatc* qui permet de transformer un *schema file* 
 >> make
 >> sudo make install
 >> sudo cp ./flat* /usr/bin/
+```
 
 Le makefile génère les exécutables *flatc*, *flathash*, *flatsamplebinary*, *flatsampletext* et *flattests*. Le make install n'installe que les headers, donc il faut copier manuellement les binaires quelque part dans le PATH.
 
@@ -1897,14 +1971,14 @@ Trois **GROS** avantages de cette approche, et c'est là que ça me fait chier d
 * On peut utiliser une seule shadow map (quand on en sera là) pour toutes les lumières non directionnelles qui projettent des ombres.
 * On peut cull les light volumes comme n'importe quelle géométrie (j'ai implémenté un algo de collision sphère/frustum, en passant).
 
-sources:
-* https://kayru.org/articles/deferred-stencil/
-* http://ogldev.atspace.co.uk/www/tutorial35/tutorial35.html
-* http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html
-* http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html
-* https://dqlin.xyz/tech/2018/01/02/stencil/
-* https://learnopengl.com/Advanced-Lighting/Deferred-Shading
-* http://jahej.com/alt/2011_08_08_stencil-buffer-optimisation-for-deferred-lights.html
+###Sources:
+    [1] https://kayru.org/articles/deferred-stencil/
+    [2] http://ogldev.atspace.co.uk/www/tutorial35/tutorial35.html
+    [3] http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html
+    [4] http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html
+    [5] https://dqlin.xyz/tech/2018/01/02/stencil/
+    [6] https://learnopengl.com/Advanced-Lighting/Deferred-Shading
+    [7] http://jahej.com/alt/2011_08_08_stencil-buffer-optimisation-for-deferred-lights.html
 
 
 ##[Hue Shift] Juste au cas où
@@ -1975,26 +2049,37 @@ Le rendu de light volumes est donc fonctionnel, cependant il doit être optimis�
 J'utilise *valgrind/callgrind* et un utilitaire sympa nommé *gprof2dot* pour transformer le callgrind.out.x en dot file via graphviz, après quoi je peux le convertir en image vectorielle svg grâce à *dot*.
 
 Installer gprof2dot :
+```
 >> sudo -H pip install gprof2dot
+```
 
 Lancer le jeu en mode profiling (depui le dossier build) :
+```
 >> valgrind --tool=callgrind ../bin/wcore
+```
 
 Produire le svg en une passe :
+```
 >> gprof2dot --format=callgrind ./callgrind.out.[xxxxx] | dot -Tsvg -o callgrind.svg
+```
 
 Remplacer le [xxxxx] par les vrais chiffres en fin de fichier (je suppose que c'est le PID du process qui est utilisé).
 Appeler gprof2dot avec l'option -s (strip) pour virer les arguments template des noms de fonction.
 
 Pour avoir une granularité suffisante lors du profiling tout en restant proche du build release, on compile wcore avec les options suivantes :
+```
 >> -O2 -g -fno-omit-frame-pointer -fno-inline-functions -fno-optimize-sibling-calls
+```
 
 Donc on active le build type "RelWithDebInfo" que j'ai configuré à ces fins, dans le CMakeLists.txt avec :
 
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 En pratique j'utilise la ligne suivante pour obtenir le SVG :
->> gprof2dot --format=callgrind -s --skew=0.1 ./callgrind.out.29964 | dot -Tsvg -o callgrind.svg
+```
+>> gprof2dot --format=callgrind -s --skew=0.1 ./callgrind.out.29964 
+| dot -Tsvg -o callgrind.svg
+```
 
 Le paramètre --skew permet d'augmenter le contraste de couleurs pour les faibles intensités quand il est <1.
 
@@ -3196,15 +3281,22 @@ _SSAORenderer_ renferme du code vestigial d'une tentative précédente, notammen
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 ```
 
-Sources :
-* [Mendez] https://www.gamedev.net/articles/programming/graphics/a-simple-and-practical-approach-to-ssao-r2753
-* [Chapman] http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
-* [LOgl] https://learnopengl.com/Advanced-Lighting/SSAO
-* [LOgl2] https://learnopengl.com/code_viewer_gh.php?code=src/5.advanced_lighting/9.ssao/9.ssao.fs
-* [Meteor] https://electronicmeteor.wordpress.com/2011/12/26/applying-ssao-to-scenes/
-* [Codeflow] http://codeflow.org/entries/2011/oct/25/webgl-screenspace-ambient-occlusion/
-* [Pyalot] https://github.com/pyalot/WebGL-City-SSAO/blob/master/ssao/gd.shader
-* [Mentalray] http://mentalraytips.blogspot.com/2008/11/joy-of-little-ambience.html
+##Sources :
+    [Mendez] https://www.gamedev.net/articles/programming/graphics/
+    a-simple-and-practical-approach-to-ssao-r2753
+    [Chapman] http://john-chapman-graphics.blogspot.com/2013/01/ssao
+    -tutorial.html
+    [LOgl] https://learnopengl.com/Advanced-Lighting/SSAO
+    [LOgl2] https://learnopengl.com/
+    code_viewer_gh.php?code=src/5.advanced_lighting/9.ssao/9.ssao.fs
+    [Meteor] https://electronicmeteor.wordpress.com/2011/12/26/applying
+    -ssao-to-scenes/
+    [Codeflow] http://codeflow.org/entries/2011/oct/25/webgl-screenspace
+    -ambient-occlusion/
+    [Pyalot] https://github.com/pyalot/WebGL-City-SSAO/blob/master
+    /ssao/gd.shader
+    [Mentalray] http://mentalraytips.blogspot.com/2008/11/joy-of
+    -little-ambience.html
 
 ### En pratique
 C'est lent.
@@ -3230,10 +3322,14 @@ Les paramètres material-dependant sont écrits dans le GBuffer lors de la passe
 * per-light
     -> fLTScale      scale of light transport inside object
 
-Sources :
-* [GDC2011] https://colinbarrebrisebois.com/2011/03/07/gdc-2011-approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look/
-* [Zucconi1] https://www.alanzucconi.com/2018/09/02/shader-showcase-saturday-8/
-* [Zucconi2] https://www.alanzucconi.com/2017/08/30/fast-subsurface-scattering-1/
+###Sources :
+    [GDC2011] https://colinbarrebrisebois.com/2011/03/07/gdc-2011
+    -approximating-translucency-for-a-fast-cheap-and-convincing
+    -subsurface-scattering-look/
+    [Zucconi1] https://www.alanzucconi.com/2018/09/02/shader
+    -showcase-saturday-8/
+    [Zucconi2] https://www.alanzucconi.com/2017/08/30/fast-subsurface
+    -scattering-1/
 
 
 #[07/08-09-18] Doc à écrire / Features
@@ -4088,33 +4184,43 @@ On ne peut pas mettre (en tout cas dans la même fenêtre) deux ImGui::Checkbox(
 ##[Apitrace] Magie noire
 J'ai dl et compilé le programme Apitrace, qui permet de tracer de nombreuses API graphiques :
 
+```
 >> apitrace trace --api [gl|egl|d3d7|d3d8|d3d9|dxgi] /path/to/application [args...]
+```
 
 Donc pour moi :
+```
 >> apitrace trace --api gl ../bin/wcore
+```
 
 Là, un gros fichier (attention ça se remplit très vite) est généré et tous les calls OpenGl sont loggés.
 
 On peut faire un dump texte avec :
+```
 >> apitrace dump wcore.trace
+```
 
 Sinon, et c'est là qu'on voit que je suis assez peu subtilement attiré par toutes les choses qui brillent, on peut faire :
+```
 >> apitrace replay wcore.trace
+```
 
 Et le programme va effectivement jouer un __replay graphique__ de ce qui a été loggé !
 
 Par ailleurs, le programme qapitrace (version GUI) permet une exploration détaillée de tous les calls, rangés frame par frame. On peut notamment observer les textures, les framebuffers, les shaders (source et assembleur)... Du très très lourd !
+```
 >> qapitrace wcore.trace
+```
 
 On peut d'ailleurs profiler le programme depuis qapitrace. Et en le faisant, je me suis rendu compte que mon blit framebuffer de la light pass prend un temps GPU DINGUE (autant qu'un draw call, voire plus). Il __faut__ que je trouve un autre moyen.
 
 Il existe un fork nommé frameretrace [3] dont j'ai vu une demo en conf qui pousse le délire encore plus loin : les shaders capturés par la trace sont modifiables, les uniforms également, et un histogramme des temps de chaque call (avec filtrage possible) permet de trouver rapidement quelles sont les frames les plus longues à rendre, et pour quelles raisons elles le sont (une modification des shaders affecte les temps des frames qui sont recalculés). On peut également faire du diffing pour identifier graphiquement l'impact d'un draw call.
 Je n'ai pas réussi à m'en servir à ce jour : la compilation fonctionne, mais le programme demande en dynamique des composants QT vieux comme la pierre que mon install ne semble pourtant pas pouvoir fournir...
 
-* sources:
-[1] https://www.khronos.org/opengl/wiki/Debug_Output
-[2] https://www.khronos.org/opengl/wiki/Debugging_Tools
-[3] https://github.com/janesma/apitrace/wiki/frameretrace-branch
+##Sources:
+    [1] https://www.khronos.org/opengl/wiki/Debug_Output
+    [2] https://www.khronos.org/opengl/wiki/Debugging_Tools
+    [3] https://github.com/janesma/apitrace/wiki/frameretrace-branch
 
 #[29-10-18] Opti-zonions
 ##[Améliorations]
@@ -4169,8 +4275,8 @@ Le program est leak free, à part la fuite de 72bytes de x11 causée par glfw 3.
 Résultat, environ 40% de calls OpenGL en moins selon apitrace.
 
 
-* sources:
-[1] https://github.com/glfw/glfw/pull/662
+##Sources:
+    [1] https://github.com/glfw/glfw/pull/662
 
 #[30-10-18]
 ##[Bug] HeightmapGenerator fail in target RelWithDebInfo
@@ -4196,9 +4302,11 @@ voir [1] et [2].
 * L'éditeur est désactivable en définissant __DISABLE_EDITOR__.
 
 
-* sources :
-[1] https://gamedev.stackexchange.com/questions/37813/variables-in-static-library-are-never-initialized-why
-[2] https://stackoverflow.com/questions/12602513/c-executing-functions-when-a-static-library-is-loaded/18678224#18678224
+##Sources :
+    [1] https://gamedev.stackexchange.com/
+    questions/37813/variables-in-static-library-are-never-initialized-why
+    [2] https://stackoverflow.com/questions/12602513/c-executing-functions
+    -when-a-static-library-is-loaded/18678224#18678224
 
 
 #[02-11-18] C++ Black Magic
@@ -4338,10 +4446,10 @@ int main(int argc, char const *argv[])
     return 0;
 }
 ```
->> struct 'B' has 'age_of_the_captain(float, const Foo&)': true
+-> struct 'B' has 'age_of_the_captain(float, const Foo&)': true
 
 La détection fonctionne sur des méthodes héritées. Un cas particulier intéressant est celui des déclarations ambigues du type A et B définissent toutes les deux une fonction ambiguous() et C: A,B (C hérite de A ET B) se retrouve avec un symbole ambigu dont l'appel provoque l'erreur de compilation suivante :
->> error: member 'ambiguous' found in multiple base classes of different types
+-> error: member 'ambiguous' found in multiple base classes of different types
 
 Eh bien, à la détection, has_ambiguous_v<C, bool> vaut false ! Exactement comme si on vérifiait la capacité du code "C c; c.ambiguous()" à compiler.
 
@@ -4419,13 +4527,15 @@ int main(int argc, char const *argv[])
     return 0;
 }
 ```
->> ../bin/sandbox/detector_idiom
+```
+../bin/sandbox/detector_idiom
 Component 'a' has no update(float) function and will not be updated.
 Updating component 'b': t_= 0.1
 Component 'a' has no update(float) function and will not be updated.
 Updating component 'b': t_= 0.2
 Component 'a' has no update(float) function and will not be updated.
 Updating component 'b': t_= 0.3
+```
 
 ### Tag dispatching
 Une autre possibilité plus simple est d'utiliser l'alias detector::value_t (qui évalue à std::true_type ou std::false_type) accessible via has_update<Component, float>() pour faire du tag dispatching (voir [6]) :
@@ -4471,13 +4581,14 @@ int main(int argc, char const *argv[])
 La sortie est rigoureusement la même.
 
 
-* sources :
-[1] https://blog.tartanllama.xyz/detection-idiom/
-[2] https://en.cppreference.com/w/cpp/experimental/is_detected
-[3] https://en.cppreference.com/w/cpp/experimental/nonesuch
-[4] https://en.wikibooks.org/wiki/More_C++_Idioms/Member_Detector
-[5] https://www.youtube.com/watch?v=W3ViIBnTTKA
-[6] https://www.boost.org/community/generic_programming.html#tag_dispatching
+###Sources :
+    [1] https://blog.tartanllama.xyz/detection-idiom/
+    [2] https://en.cppreference.com/w/cpp/experimental/is_detected
+    [3] https://en.cppreference.com/w/cpp/experimental/nonesuch
+    [4] https://en.wikibooks.org/wiki/More_C++_Idioms/Member_Detector
+    [5] https://www.youtube.com/watch?v=W3ViIBnTTKA
+    [6] https://www.boost.org/community
+    /generic_programming.html#tag_dispatching
 
 #[04-11-18]
 
@@ -4540,8 +4651,9 @@ Je dois déjà optimiser un max la reconstruction (en foutant un max de calculs 
 
 Cette reconstruction, certes sous-optimale, en plus de libérer 4 * 4 * 1920 * 1080 octets (31.6 Mo) de VRAM accélère déjà le rendu de 764µs en moyenne (soit 8.5%) selon mes tests. Donc il est vraiment capital que j'en vienne complètement à bout.
 
-* sources :
-[1] http://bassser.tumblr.com/post/11626074256/reconstructing-position-from-depth-buffer
+###Sources :
+    [1] http://bassser.tumblr.com/post/11626074256
+    /reconstructing-position-from-depth-buffer
 
 
 #[05-11-18]
@@ -4588,28 +4700,42 @@ J'ai initialisé un git. La procédure est la suivante :
 1) Créer un compte github et un repository (https://github.com/ndoxx/wcore)
 
 2) Cloner le git dans un dossier temporaire
+```
 >> cd tmp
 >> git clone https://github.com/ndoxx/wcore
+```
 
 3) Copier le .git dans le dossier wcore (ainsi que le README etc.)
+```
 >> cp tmp/.git WCore/
+```
 
 4) Créer un fichier .gitignore à la racine du projet et le remplir des dossiers et fichiers qu'on ne veut pas uploader.
 
 5) Ajouter les sources
+```
 >> git add *
+```
 
 6) Vérifier le statut de ce qui va être commit
+```
 >> git status
+```
 
 7) Commit
+```
 >> git commit -m "first commit"
+```
 
 8) (Optionnel) Conserver le mot de passe (à faire seulement la première fois) :
+```
 >> git config credential.helper store
+```
 
 9) Push
+```
 >> git push origin master
+```
 
 Si l'étape 8 est effectuée, git ne demandera l'authentification que la première fois.
 
@@ -4673,8 +4799,9 @@ un peu plus haut qui se trouve optimisée à la compilation. En particulier, la 
 
 La texture bruit tessèle l'écran, et le noiseScale est l'échelle de tesselation. Plus il est grand, et plus on va chercher des texels loins les uns des autres. Le problème semble lié à l'accès texture random (voir [1]) qui diminie la cohérence spatiale et augmente les cache misses (si on ne sample que des texels voisins on maximise le cache use). Le problème peut être circonscrit en diminuant le rayon de la SSAO. En effet, je reviens à des temps honnêtes pour un rayon de 0.25 (plus bas et on a du banding).
 
-* sources:
-[1] https://stackoverflow.com/questions/38953632/slow-texture-fetch-in-fragment-shader-using-vulkan
+##Sources:
+    [1] https://stackoverflow.com/
+    questions/38953632/slow-texture-fetch-in-fragment-shader-using-vulkan
 
 #[15-11-18] Better terrain
 Le système de terrain sera amené à être complexifié par la suite (Delaunay triangulation + curvature based importance sampling, progressive mesh si nécessaire). Pour ça, je pense qu'il vaut mieux porter la génération de terrain dans une passe offline séparée, comme ça, les terrains feront partie intégrante de la content pipeline (possibilité de modifier sous blender...).
@@ -4697,6 +4824,7 @@ Je vais implémenter un système de canaux de communication pour le logger, ce q
 Chaque instruction DLOGx pourra préciser un canal en argument et l'affichage console sera modulé en fonction des canaux actifs. L'UI du logger sera étendue pour proposer des cases à cocher pour chaque canal. Le système _Config_ établira quels sont les canaux actifs au lancement. Chaque canal sera référencé par un hash string.
 De plus, j'imagine y joindre un système de verbosité (une valeur à 4 niveaux pour chaque canal) ce qui permettra de grouper des comportements tels que __DEBUG_TEXTURE__ et __DEBUG_TEXTURE_VERBOSE__ sous un même canal. Du coup, peut être que des sliders colleraient mieux dans l'UI...
 
+```
        severity          critical    warning     low    detail
     verobsity level
            0                X
@@ -4718,6 +4846,7 @@ De plus, j'imagine y joindre un système de verbosité (une valeur à 4 niveaux 
 [x] __DEBUG_SPLINES__
 [x] __DEBUG_BUFFERS__
 [x] __DEBUG_CHUNKS__
+```
 
 #[26-11-18] L'important c'est de coder
 ## Better logger cont'd
@@ -4806,8 +4935,10 @@ Comme le chemin retourné comprend le nom de fichier de l'exécutable, le dossie
 ## START_LEVEL
 Une nouvelle variable globale GLB.START_LEVEL est initialisée via la fonction d'argument parsing de 'rd_test' (argument.h/cpp maintenant dans le dossier host), ce qui permet de choisir le niveau à charger depuis la ligne de commande :
 
+```
 >> ../bin/wcore -l crystal
 >> ../bin/wcore -l tree
+```
 
 Le nom des fichier de niveau suit la syntaxe
 
@@ -4935,16 +5066,20 @@ Le 3ème argument de wcore::Init est un pointeur sur fonction vers un parser per
 Je n'ai pas encore ressenti le besoin de déclarer mon main() dans la lib (**entry point**).
 
 Les CMakeLists.txt ont dû être modifiés en profondeur pour définir une nouvelle cible en shared lib (target wcore) et une application "sandbox" qui link avec libwcore. *"sandbox" est basiquement l'ancienne application nommée "wcore", et "wcore" est maintenant le nom de la lib dynamique*. Donc maintenant on doit faire :
+```
 >> cd build
 >> cmake ..
 >> make wcore
 >> make sandbox
+```
 
 make wcore va générer libwcore.so (et .so.1 et .so.1.0.1) dans le dossier lib.
 
 La seule petite galère a été de faire fonctionner ça avec freetype qui n'avait pas été compilée en Position Independent Code (-fPIC). Il a fallu recompiler freetype avec cette option :
+```
 >> ./configure CXXFLAGS=-fPIC CFLAGS=-fPIC LDFLAGS=-fPIC CPPFLAGS=-fPIC
 >> make
+```
 
 *Freetype est gérée à la va-vite par le projet : les includes ont été copiés dans vendor/freetype depuis /usr/local/include/freetype et la libfreetype.a dans le dossier lib*
 
@@ -4962,7 +5097,8 @@ Un simple programme refusera de compiler :
 
     In file included from /home/ndx/practice/pybind11/embedded_cpp17/main.cpp:1:
     In file included from /home/ndx/practice/pybind11/embedded_cpp17/pybind11/include/pybind11/embed.h:12:
-    /home/ndx/practice/pybind11/embedded_cpp17/pybind11/include/pybind11/pybind11.h:1000:9: error:
+    /home/ndx/practice/pybind11/embedded_cpp17/pybind11/include
+    /pybind11/pybind11.h:1000:9: error:
           no matching function for call to 'operator delete'
             ::operator delete(p, s, std::align_val_t(a));
 
@@ -5059,16 +5195,17 @@ affiche le path mis à jour avec succès :
 Et les scripts localisés dans le dossier scripts sont bien dans le path.
 
 
-* sources :
-[1] https://github.com/pybind/pybind11/issues/1604
-[2] http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0035r4.html
-[3] https://github.com/pybind/pybind11/issues/948
-[4] https://en.cppreference.com/w/cpp/feature_test
+###Sources :
+    [1] https://github.com/pybind/pybind11/issues/1604
+    [2] http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0035r4.html
+    [3] https://github.com/pybind/pybind11/issues/948
+    [4] https://en.cppreference.com/w/cpp/feature_test
 
 #[01-12-18]
 ##ECS API
 Je me retourne les méninges à essayer d'imaginer une API pour l'ECS. Le souci est que je repose énormément sur des templates, ce qui m'oblige à exposer une partie de la business logic dans l'interface. Je vais essayer de lister ce qui mérite d'être exposé (noté X), et ce qu'on est alors forcé d'exposer en l'état à cause d'une dépendance de l'interface (noté F), ça m'aidera à y voir plus clair.
 
+```
                               E    Raison
 * wcomponent.h
     class WComponent          X    Pour qu'un composant user puisse en hériter.
@@ -5087,6 +5224,7 @@ Je me retourne les méninges à essayer d'imaginer une API pour l'ECS. Le souci 
         add_component<T>()    X    Pour pouvoir intéragir avec les composants
         get_component<T>()    X    d'une entité, en connaissance des types.
         has_component<T>()    X    --
+```
 
 Que les factories soient exposées, passe encore. L'ensemble de component_detail.h j'ai déjà un peu plus mal au cul. Mais _Transformation_ c'est un autre genre d'emmerdes. Basiquement, si on expose cette classe, alors on doit exposer toutes les classes de maths. Et si la situation se reproduit avec un autre composant qui hérite d'une classe de WCore ça va être l'explosion de caca.
     -> On peut imaginer une relation de composition entre _WCTransform_ et _Transformation_. Un wrapper et du PImpl, emballez c'est pesé.
@@ -5113,11 +5251,15 @@ Et la suite c'est de la putain de magie noire. Le script va de ce que j'ai compr
 
 De plus, Cotire génère pour chaque target une target unity build avec la même sortie et les mêmes paramètres que la target de base, mais qui compile méga plus vite. Pour construire depuis un build unity il suffit de lancer :
 
+```
 >> make target_name_unity
+```
 
 exemples :
+```
 >> make wcore_unity
 >> make sandbox_unity
+```
 
 Le build est monolithique (un seul fichier cpp sera compilé, le fichier unity). On ne peut plus suivre la progression et le compilo mouline longtemps sans rien afficher ce qui est déconcertant, mais la compilation est beaucoup plus rapide.
 
@@ -5187,7 +5329,8 @@ Une politique d'update est une classe qui définit une fonction update avec cett
 ```cpp
     void update(Shader& shader, bool pass_direction);
 ```
-La classe _BlurPassPolicy_ permet de contrôler un shader *blurpass* (y-compris sa variante __VARIANT_COMPRESS_R__ utilisé par la SSAO).
+La classe _BlurPassPolicy_ permet de contrôler un shader *blurpass* (y-compris sa variante
+__VARIANT_COMPRESS_R__ utilisé par la SSAO).
 
 Cette classe est utilisée dans la branche expérimentale de Variance Shadow Mapping pour remplacer l'implémentation ad-hoc précédente.
 
@@ -5235,9 +5378,12 @@ On garde ça sous le coude au cas où.
 ## Toolchain
 Une toolchain alternative utilisant clang 6 (au lieu de 7) peut être utilisée par CMake via :
 
+```
 >> cmake -DCLANG6=1 ..
+```
 
-Les instructions relatives aux paths sont regroupées dans les fichiers toolchain_clang6.cmake et toolchain_clang7.cmake. Ces fichiers sont simplement inclus (c'est sûrement très mal) via
+Les instructions relatives aux paths sont regroupées dans les fichiers 
+toolchain_clang6.cmake et toolchain_clang7.cmake. Ces fichiers sont simplement inclus (c'est sûrement très mal) via
 
 ```cmake
 if(DEFINED CLANG6)
@@ -5299,7 +5445,8 @@ Il s'ensuit que la taille du noyau Gaussien et le sigma sont aisément configura
 
 * TODO :
     - UBO
-voir : https://github.com/TReed0803/QtOpenGL/blob/master/resources/shaders/ubo/GlobalBuffer.ubo
+voir : https://github.com/TReed0803/QtOpenGL/blob/master/resources
+              /shaders/ubo/GlobalBuffer.ubo
     [x] Unproject click
 
 #[19-12-18]
@@ -5332,7 +5479,7 @@ Je dois mettre au point le mécanisme de sélection au curseur de l'éditeur. Il
     var = 12;
     std::cout << std::get<S>(var).i << '\n';
 ```
->> 12
+-> 12
 
 On pourrait imaginer le dispatching suivant pour les valeurs de retour :
 
@@ -5514,9 +5661,11 @@ _RayCaster_ parcourt maintenant la scène (fonction ray_scene_query()) à chaque
     -> C'est fait aussi, voir plus loin.
 
 
-* sources :
-[1] https://www.siggraph.org//education/materials/HyperGraph/raytrace/rtinter3.htm
-[2] http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-custom-ray-obb-function/
+##Sources :
+    [1] https://www.siggraph.org//education/materials/HyperGraph
+    /raytrace/rtinter3.htm
+    [2] http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/
+    picking-with-custom-ray-obb-function/
 
 
 #[23-12-18]
@@ -5663,13 +5812,15 @@ On obtient une belle courbe caractéristique du mouvement freiné d'un objet dan
 Mon premier test plus simple consistait à lacher l'objet verticalement initialement au repos, et a bien vérifier que j'obtenais une vitesse verticale vy=-9.81 au bout d'une seconde (60 pas d'intégration à dt=1/60), ce qui était le cas.
 
 
-* sources :
-[1] Rigid body dynamics using Euler's equations, Runge-Kutta and quaternions. Indrek Mandre feb. 26, 2008
-http://www.mare.ee/indrek/varphi/vardyn.pdf
-[2] Geometric Integration of Quaternions. Michael S. Andrle
-, John L. Crassidis. University at Buffalo, State University of New York, Amherst, NY, 14260-4400
-http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
-[3] http://stahlke.org/dan/gnuplot-iostream/
+##Sources :
+    [1] Rigid body dynamics using Euler's equations, Runge-Kutta and 
+    quaternions. Indrek Mandre feb. 26, 2008
+    http://www.mare.ee/indrek/varphi/vardyn.pdf
+    [2] Geometric Integration of Quaternions. Michael S. Andrle, 
+    John L. Crassidis. University at Buffalo, State University of New York, 
+    Amherst, NY, 14260-4400
+    http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
+    [3] http://stahlke.org/dan/gnuplot-iostream/
 
 
 #[29-12-18]
@@ -5752,8 +5903,8 @@ Voici du code qui en l'état me confirme que je fais les choses de manière coh�
     std::cout << v4 << " -> " << m2*v4 << std::endl;
     std::cout << v5 << " -> " << m2*v5 << std::endl;
 ```
-
->> q1: rot +90 around y axis
+```
+   q1: rot +90 around y axis
    (1, 0, 0) -> (0, 0, -1)
    (0, 0, 1) -> (1, 0, 0)
    (0, 0, -1) -> (-1, 0, 0)
@@ -5777,6 +5928,7 @@ Voici du code qui en l'état me confirme que je fais les choses de manière coh�
    (1, 0, 0) -> (-4.37114e-08, 1, 0)
    (0, 1, 0) -> (-1, -4.37114e-08, 0)
    (0, -1, 0) -> (1, 4.37114e-08, 0)
+```
 
 * TODO:
 [ ] Noter que l'initialisation des quats par angles de Tait-Bryan suppose des arguments en degrés, tandis que la même initialisation pour les matrices les suppose en radians. Il faudra corriger cette inconsistence.
@@ -5784,10 +5936,11 @@ Voici du code qui en l'état me confirme que je fais les choses de manière coh�
 * J'essaye de prototyper l'intégration de l'orientation d'un solide. J'utilise une méthode d'Euler semi-implicite taillée pour prendre en compte le couple gyroscopique (effet de précession, bien souvent omis par les gamedevs pour des raisons de stabilité numérique) (voir [2]). Le calcul de la vitesse angulaire se fait en coordonnées locales (comme ça le tenseur d'inertie est constant), un "vecteur résiduel" et un Jacobien sont calculés et utilisés dans un pas de Newton-Raphson pour mettre à jour la vitesse angulaire. La nouvelle orientation (quaternion) est calculée depuis la vitesse angulaire (voir [3]).
 Pour l'instant, je calcule le moment cinétique (L = I * omega) à chaque pas d'intégration, et je constate qu'il n'est pas constant alors que je n'applique aucun couple sur le système, donc j'ai nécessairement un souci qq part.
 
-* Sources :
-[1] http://www.cs.cmu.edu/afs/cs.cmu.edu/user/spiff/www/moedit99/expmap.pdf
-[2] https://www.gdcvault.com/play/1022196/Physics-for-Game-Programmers-Numerical
-[3] https://fgiesen.wordpress.com/2012/08/24/quaternion-differentiation/
+## Sources :
+    [1] http://www.cs.cmu.edu/afs/cs.cmu.edu/user/spiff/www/moedit99/expmap.pdf
+    [2] https://www.gdcvault.com/play/1022196/Physics-for-Game-Programmers
+    -Numerical
+    [3] https://fgiesen.wordpress.com/2012/08/24/quaternion-differentiation/
 
 
 #[30-12-18] Intern strings & H_ macro
@@ -5876,8 +6029,9 @@ La structure actuelle s'appelle un Point Octree, et reste intéressante à conse
         -> On feed une liste d'objets à rajouter dans l'octree
         -> On insère la liste en une seule fois, plutôt que d'avoir à effectuer une reconstruction partielle/totale de l'octree à chaque insertion.
 
-* sources :
-[1] https://www.gamedev.net/articles/programming/general-and-gameplay-programming/introduction-to-octrees-r3529/
+##Sources :
+    [1] https://www.gamedev.net/articles/programming/general-and-gameplay
+    -programming/introduction-to-octrees-r3529/
 
 
 #[05-01-19]
@@ -6025,8 +6179,9 @@ void OCTREE_NODE::traverse_range(const RangeT& query_range,
 ```
 RangeT peut être n'importe quel objet volumétrique tant qu'il définit une fonction intersects() avec un objet _BoundingRegion_ ET avec la primitive. Cet objet peut être un bête _BoundingRegion_ ce qui permet de visiter uniquement les objets contenus dans cette région cubique, mais ce qui est super sexy c'est que RangeT peut être un objet _FrustumBox_, ce qui permet de faire un visibility traversal grâce au frustum de la caméra !
 
-* Sources :
-[1] https://github.com/Nition/UnityOctree/blob/master/Scripts/PointOctreeNode.cs
+###Sources :
+    [1] https://github.com/Nition/UnityOctree/blob/master/Scripts
+    /PointOctreeNode.cs
 
 #[06-01-19] Binary decision trees FUCK YEAH
 J'ai posé toutes les maths pour l'extension de l'octree. Mon approche a été de raisonner systématiquement dans le cas 2D avec un quadtree, d'intuiter des formules reliant ce que je dois calculer à des opérations binaires sur les indices des octants (en tirant partie du fait qu'ils sont construits via un arbre de décision binaire), puis d'étendre ces formules au cas 3D.
@@ -6268,10 +6423,11 @@ log-quaternion lerp        Y                Y                 N
    -> [3] recommande une nlerp (lerp + normalize) en toutes circonstances, c'était mon premier réflexe ici mais ça n'empêchait pas la cam d'effectuer un tour complet d'elle-même quand l'assiette changeait de signe. Et c'est ça qui m'a motivé à chercher une autre solution. En réalité, ce problème vient d'ailleurs. S^3 est un revêtement double de SO(3) (à une rotation R de SO(3) correspondent les quaternions q ET -q), donc indépendamment de l'interpolation, il existe toujours 2 chemins de rotations entre un quat q1 et un quat q2 : un chemin court et un chemin long. Le chemin long produit un "tour complet". Pour forcer l'utilisation du chemin court, il faut inverser le signe d'un des 2 quats si le produit scalaire q1.q2 est négatif. math::slerp() de quaternion.h fait ça, ce qui rend la méthode robuste aux changements de signe de l'assiette. Mais en réalité, je pourrais tout aussi bien implémenter une nlerp qui réalise le même test (ce serait d'ailleurs plus rapide). Oh, well...
 
 
-* sources :
-[1] https://en.wikipedia.org/wiki/Slerp
-[2] http://run.usc.edu/cs520-s15/assign2/p245-shoemake.pdf
-[3] http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
+##Sources :
+    [1] https://en.wikipedia.org/wiki/Slerp
+    [2] http://run.usc.edu/cs520-s15/assign2/p245-shoemake.pdf
+    [3] http://number-none.com/product/Understanding%20Slerp
+    ,%20Then%20Not%20Using%20It/
 
 
 #[23-01-19]
@@ -6310,7 +6466,9 @@ constexpr hash_t operator "" _h(const char* internstr, size_t)
 ```cpp
     std::cout << "hello" << " " << "hello"_h << " " << H_("hello") << std::endl;
 ```
->> hello 11831194018420276491 11831194018420276491
+```
+    hello 11831194018420276491 11831194018420276491
+```
 
 L'utilitaire internstr a été modifié pour reconnaître le literal.
 
@@ -6392,11 +6550,13 @@ Appli test pour me forcer à dev un peu l'API. Un labyrinthe est généré par u
 ## Erosion
 L'érosion est réparée. L'étape de stitching a été modifiée pour recaler aussi la hauteur des bords. L'érosion par gouttelettes a été modifiée pour éroder le moins possible les bords de chunks, ce qui permet d'éviter de gros artéfacts de raccord. L'érosion est diminuée radialement et linéairement sur toute une bordure intérieure à chaque chunk.
 
-* sources :
-[1] https://www.youtube.com/watch?v=M8Bd7uHH4Yg
-[2] https://katyscode.wordpress.com/2012/10/05/cutting-your-teeth-on-fmod-part-1-build-environment-initialization-and-playing-sounds/
-[3] http://www.sengpielaudio.com/calculator-air.htm
-[4] http://www.sengpielaudio.com/AirdampingFormula.htm
+##Sources :
+    [1] https://www.youtube.com/watch?v=M8Bd7uHH4Yg
+    [2] https://katyscode.wordpress.com/2012/10/
+    05/cutting-your-teeth-on-fmod-part-1-build-environment
+    -initialization-and-playing-sounds/
+    [3] http://www.sengpielaudio.com/calculator-air.htm
+    [4] http://www.sengpielaudio.com/AirdampingFormula.htm
 
 
 #[12-02-19]
@@ -6428,7 +6588,9 @@ Il s'avère que c'était la ligne suivante :
 ```
 Que j'avais ajoutée pour une raison non encore élucidée (comme je n'ai rien documenté à ce sujet). Eh bien zipios dépend explicitement de l'ABI c++11, comme le montre la commande :
 
+```
 >> nm -C --defined-only -g ../lib/libzipios.a > libzipios_entries.txt
+```
 
 Cette commande liste tous les symboles exportés par la lib (avec les options spécialement pour du code C++). En particulier, on y trouve :
 
@@ -6584,8 +6746,8 @@ void main()
 [X] Le mesh de la skybox est sous-optimal, chaque vertex est répété 4 fois, je ne tire pas partie de l'IBO.
 
 
-* sources :
-[1] https://learnopengl.com/Advanced-OpenGL/Cubemaps
+###Sources :
+    [1] https://learnopengl.com/Advanced-OpenGL/Cubemaps
 
 #[25-02-19]
 
@@ -6599,7 +6761,9 @@ Voici un com assez sagace d'un type en réponse à TheCherno qui vient de produi
 
 ## Batch image conversion
 
-    >> mogrify -format png ./*.jpg
+```
+>> mogrify -format png ./*.jpg
+```
 Convertit tous les .jpg du dossier courant en .png.
 
 
@@ -6755,7 +6919,8 @@ Noter que les indices fournis par le modèle source doivent être remappés via 
 Le mécanisme de sélection de Qt est assez complexe car il doit englober des représentations et des cas d'utilisation très différents. En gros, il y a une séparation entre la notion d'indice courant et de sélection. Cette séparation est ténue dans le cas d'une QListView qui n'autorise pas de sélection multiple.
 Mon modèle source est custom. J'utilise ma classe _TexListModel_ héritée de QStringListModel. Elle définit une fonction append() et un opérateur de stream qui se chargent d'ajouter une entrée dans la QStringList sous-jacente. append() retourne un indice source de type QModelIndex correspondant à la position de la donnée nouvellement insérée dans le modèle source. Un QModelIndex est non scalaire car une QListView peut gérer des entrées à plusieurs colonnes. On utilise ses membres row() et column() pour récupérer la ligne et la colonne. La ligne suivante extraite de EditorModel::delete_current_texture() supprime une ligne entière du modèle source depuis l'indice courant :
 ```cpp
-    texlist_model_->removeRow(texlist_sort_proxy_model_->mapToSource(tex_list->currentIndex()).row());
+    texlist_model_->removeRow(texlist_sort_proxy_model_
+        ->mapToSource(tex_list->currentIndex()).row());
 
 ```
 
@@ -6959,7 +7124,9 @@ bool MainWindow::eventFilter(QObject* object, QEvent* event)
 ## Batch convert images
 J'avais besoin d'inverser les couleurs d'un ensemble d'icones noires, j'ai utilisé la ligne suivante pour lancer une opération batch :
 
-    >> for file in *.png; do convert $file -channel RGB -negate w_$file; done
+```
+>> for file in *.png; do convert $file -channel RGB -negate w_$file; done
+```
 
 #[09-03-19]
 
@@ -7056,23 +7223,28 @@ Procédure merdique actuelle pour build depuis zéro :
     find_package() de CMake va appeler qmake pour explorer l'arborescence de Qt.
 
 __NE PAS FAIRE__
+```
 >> sudo apt-get install qt5-default
+```
     -> Ca va simplement péter l'install de Qt
 
 Cloner mon git et compiler :
->> git clone https://gitchub.com/ndoxx/wcore.git
+```
+>> git clone https://github.com/ndoxx/wcore.git
 >> cd wcore
 >> git submodule init
 >> git submodule update
+```
     - Copier à la main le dossier des headers "freetype" dans vendor
 
+```
 >> mkdir build; cd build
 >> cmake [-DCLANG6=1] ..
 >> make wcore
 >> make sandbox
 >> make maze
 >> make materialeditor
-
+```
     [ ] Simplifier ce bordel
 
 J'avais un gros problème pour build materialeditor chez Jess. Qt ne détectait pas le standard c++17. Au départ ça a déclenché un bug avec cotire : "c++17 enabled in PCH but currently disabled". Désactiver cotire permettait alors de comprendre le problème sous-jacent : plein de messages d'erreurs s'affichaient pour me prévenir que certains éléments de syntaxes faisaient partie du draft c++17.
@@ -7343,9 +7515,11 @@ Le moteur doit aussi pouvoir :
     [X] Se passer complètement de terrain dans ses chunks.
         -> Pour déclarer un terrain patch vide, il faut ajouter l'attribut void="true" dans le node *TerrainPatch*.
 
-* Sources :
-    [1] https://forum.qt.io/topic/48816/qopenglcontext-s-defaultframebufferobject-always-returns-0-in-a-qopenglwidget-subclass
-    [2] https://www.glfw.org/docs/latest/group__input.html#ga01d37b6c40133676b9cea60ca1d7c0cc
+###Sources :
+    [1] https://forum.qt.io/topic/48816/qopenglcontext-s
+    -defaultframebufferobject-always-returns-0-in-a-qopenglwidget-subclass
+    [2] https://www.glfw.org/docs/latest
+    /group__input.html#ga01d37b6c40133676b9cea60ca1d7c0cc
 
 
 #[17-03-19]
@@ -7353,8 +7527,9 @@ Le moteur doit aussi pouvoir :
 ## Valgrind
 
 Pour tracker l'origine d'une "uninitialized value" :
+```
 >> valgrind --track-origins=yes ../bin/sandbox -l mv
-
+```
     ==6595== Conditional jump or move depends on uninitialised value(s)
     ==6595==    at 0x81B7496: ??? (in /usr/lib/nvidia-410/libnvidia-glcore.so.410.104)
     [...]
@@ -7370,15 +7545,22 @@ Cette erreur se produit dans le _GeometryRenderer_ au premier appel à glClear()
     obj:/usr/lib/nvidia-410/libnvidia-glcore.so.410.104
 }
 ```
+```
 >> valgrind --suppressions=../valgrind.supp ../bin/sandbox -l mv
+```
 
 Qt est aussi du genre à générer beaucoup de faux positifs, faudra que je me bricole un fichier de suppression à l'occasion.
 
 Pour générer une suppression facilement (voir [1]), créer une application minimale et lancer :
->> valgrind --leak-check=full --show-reachable=yes --error-limit=no --gen-suppressions=all --log-file=minimalraw.log ./minimal
+```
+>> valgrind --leak-check=full --show-reachable=yes --error-limit=no 
+--gen-suppressions=all --log-file=minimalraw.log ./minimal
+```
 
 Ca va générer un gros log qui contient toutes les sorties de valgrind, et chaque erreur est accomapgnée d'une suppression. Alors le gawk script tools/parse_valgrind_suppressions.sh permet d'extraire les suppressions et de les sortir dans un fichier de suppression :
+```
 >> cat ./minimalraw.log | ./parse_valgrind_suppressions.sh > minimal.supp
+```
 
 ## const-correctness
 Petit bout de code assez marrant (voir [2]) :
@@ -7403,7 +7585,7 @@ int main()
     An object changed its own value from within a const-qualified member function! Everything is const-correct!
 
 
-* Sources :
+##Sources :
     [1] https://wiki.wxwidgets.org/Valgrind_Suppression_File_Howto
     [2] https://akrzemi1.wordpress.com/2014/06/02/ref-qualifiers/
 
@@ -7445,7 +7627,7 @@ Les vecteurs right, up et forward sont les colonnes de la matrice modèle et don
 Noter que forward pointe vers les z négatifs car j'utilise un repère indirect (lefty) à la OpenGL pour les matrices de vue. En revanche dans le repère monde c'est un repère direct qui est utilisé, le calcul de la frustum box doit changer le signe du vecteur forward renvoyé par la caméra pour produire des vertices dans le repère monde. A terme je vais probablement me foutre en direct partout. Voir [3] pour les détails. [1] et [2] m'ont servi à re-re-revérifier le calcul de mes matrices de projection via math::init_orthographic(), math::init_perspective() et math::init_frustum().
 
 
-* Sources :
+##Sources :
     [1] http://www.manpagez.com/man/3/glOrtho/
     [2] http://www.manpagez.com/man/3/glFrustum/
     [3] https://www.3dgep.com/understanding-the-view-matrix/
@@ -7554,17 +7736,22 @@ Ma SSR est franchement pas dégueu pour du half-res et tourne assez rapidement (
 * L'artéfact ne dépend pas de la résolution du framebuffer, ni d'ailleurs d'aucun paramètre actionnable du shader.
 
 
-Sources :
-[1] http://imanolfotia.com/blog/update/2017/03/11/ScreenSpaceReflections.html
-[2] https://gitlab.com/congard/algine/blob/master/src/resources/shaders/fragment_screenspace_shader.glsl
-[3] http://casual-effects.blogspot.com/2014/08/screen-space-ray-tracing.html
-[4] http://www.kode80.com/blog/2015/03/11/screen-space-reflections-in-unity-5/
-[5] https://github.com/kode80/kode80SSR/blob/master/Assets/Resources/Shaders/SSR.shader
-[6] https://github.com/pissang/claygl-advanced-renderer/blob/master/src/SSR.glsl
-[7] http://roar11.com/2015/07/screen-space-glossy-reflections/
-[8] http://bitsquid.blogspot.com/2017/06/reprojecting-reflections_22.html
-[9] https://bartwronski.com/2014/01/25/the-future-of-screenspace-reflections/
-[10] https://thomasdeliot.wixsite.com/blog/single-post/2018/04/26/Small-project-OpenGL-engine-and-PBR-deferred-pipeline-with-SSRSSAO
+###Sources :
+    [1] http://imanolfotia.com/blog/update/2017/03/11/ScreenSpaceReflections.html
+    [2] https://gitlab.com/congard/algine/blob/master/src/resources/shaders/
+    fragment_screenspace_shader.glsl
+    [3] http://casual-effects.blogspot.com/2014/08/screen-space-ray-tracing.html
+    [4] http://www.kode80.com/blog/2015/03/11/screen-space-reflections-in-unity-5/
+    [5] https://github.com/kode80/kode80SSR/blob/master/Assets/Resources
+    /Shaders/SSR.shader
+    [6] https://github.com/pissang/claygl-advanced-renderer/blob/master
+    /src/SSR.glsl
+    [7] http://roar11.com/2015/07/screen-space-glossy-reflections/
+    [8] http://bitsquid.blogspot.com/2017/06/reprojecting-reflections_22.html
+    [9] https://bartwronski.com/2014/01/25/the-future-of-screenspace-reflections/
+    [10] https://thomasdeliot.wixsite.com/blog/
+    single-post/2018/04/26/Small-project-OpenGL-engine-and-PBR-deferred-pipeline
+    -with-SSRSSAO
 
 
 ## Framebuffer Peek enfin utile
@@ -7644,7 +7831,11 @@ Il me suffit de compter le nombre de lignes avant et après parsing dans la fonc
         }
     }
 ```
-Je me sers du pattern /\d+\((\d+)\)\s:\s/ pour matcher les numéros de ligne dans un texte qui ressemble à ça :
+Je me sers du pattern 
+```
+    /\d+\((\d+)\)\s:\s/
+```
+pour matcher les numéros de ligne dans un texte qui ressemble à ça :
 
     0(376) : error C1503: undefined variable "jj"
     0(376) : error C0000: syntax error, unexpected ')', expecting ',' or ';' at token ")"
@@ -7686,13 +7877,17 @@ Comme il est particulièrement irritant que la fenêtre de l'appli se cache derr
 glfwSetWindowAttrib(window_, GLFW_FLOATING, GLFW_TRUE);
 ```
 Seul problème : cette fonction était introduite en version 3.3, j'avais la 3.1.2... J'ai donc build la dernière version depuis la source (hyper simple) :
+```
 >> git clone https://github.com/glfw/glfw.git
 >> cd glfw
 >> nano CMakeLists.txt
+```
     Pour activer le build de la shared lib et désactiver tout le reste
+```
 >> mkdir build;cd build
 >> cmake ..
 >> make
+```
 
 Puis j'ai copié les .so dans WCore/lib et les includes dans WCore/source/vendor/GLFW. Maintenant je link avec cette version, tout se passe bien.
 
@@ -7824,27 +8019,38 @@ Je m'étonnais du fait que mes modèles importés comportaient exactement autant
 Il m'a fallu creuser dans une doc assez mal branlée avant de découvrir les bons flags de post-processing à activer lors de l'import pour pallier ce problème (voir [2] pour une liste complète des flags). Dans assimp_utils.h je déclare les flags utilisés par mes deux importers :
 
 * Convert n-gons to triangles
-    -> *aiProcess_Triangulate*
+    * *aiProcess_Triangulate*
+
 * Detect degenerate faces, next flag will ensure they are removed and not simply collapsed
-    -> *aiProcess_FindDegenerates*
+    * *aiProcess_FindDegenerates*
+
 * Split meshes with different primitive types into submeshes. With previous flag, will remove degenerates.
-    -> *aiProcess_SortByPType*
+    * *aiProcess_SortByPType*
+
 * Remove/fix zeroed normals / uvs
-    -> *aiProcess_FindInvalidData*
+    * *aiProcess_FindInvalidData*
+
 * Reduce the number of input meshes
-    -> *aiProcess_OptimizeMeshes*
+    * *aiProcess_OptimizeMeshes*
+
 * Reorder triangles so as to minimize average post-transform vertex cache miss ratio
-    -> *aiProcess_ImproveCacheLocality*
+    * *aiProcess_ImproveCacheLocality*
+
 * Validates indices, bones and animations
-    -> *aiProcess_ValidateDataStructure*
+    * *aiProcess_ValidateDataStructure*
+
 * Remove parts of input data structure, such as vertex color, to allow for efficient vertex joining
-    -> *aiProcess_RemoveComponent*
+    * *aiProcess_RemoveComponent*
+
 * Allow vertices to be shared by several faces
-    -> *aiProcess_JoinIdenticalVertices*
+    * *aiProcess_JoinIdenticalVertices*
+
 * Generate smoothed normals if normals aren't present in input data
-    -> *aiProcess_GenSmoothNormals*
+    * *aiProcess_GenSmoothNormals*
+
 * Generate tangents and bi-tangents
-    -> *aiProcess_CalcTangentSpace*
+    * *aiProcess_CalcTangentSpace*
+
 * Flip UVs vertically and adjust bi-tangents
     -> *aiProcess_FlipUVs*
 
@@ -7864,10 +8070,10 @@ Le flag *aiProcess_ImproveCacheLocality* est intéressant, il permet de limiter 
 
 
 
-* sources :
-[1] https://opengl.developpez.com/tutoriels/ogldev-tutoriel/22-assimp/
-[2] http://sir-kimmi.de/assimp/lib_html/postprocess_8h.html
-[3] https://gfx.cs.princeton.edu/pubs/Sander_2007_%3ETR/tipsy.pdf
+###Sources :
+    [1] https://opengl.developpez.com/tutoriels/ogldev-tutoriel/22-assimp/
+    [2] http://sir-kimmi.de/assimp/lib_html/postprocess_8h.html
+    [3] https://gfx.cs.princeton.edu/pubs/Sander_2007_%3ETR/tipsy.pdf
 
 
 #[07-05-19]
@@ -7933,9 +8139,9 @@ Pour référence, voici les typedefs d'OpenGL (voir aussi [2]) :
     typedef double    GLclampd; /* double precision float in [0,1] */
 ```
 
-* Sources :
-[1] https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=823610
-[2] https://www.khronos.org/opengl/wiki/OpenGL_Type
+###Sources :
+    [1] https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=823610
+    [2] https://www.khronos.org/opengl/wiki/OpenGL_Type
 
 ## WatFiles
 Sur le modèle de _WeshLoader_ j'ai conçu _WatLoader_, capable d'écrire et de lire des matériaux au format Wat. Ce format commence par un header de 128 octets qui contient un ensemble de paramètres pour le modèle et la taille des textures s'il y en a. Le header comporte à l'instar de _WeshHeader_ un magic number (0x4C544157 = ASCII(WATL)) et un numéro de version. Après le header on trouve des données uniformes (albédo, métallicité, rugosité et alpha). Puis les texture blocks (optionnels).
@@ -7998,9 +8204,10 @@ Yep. Les miens sont déjà templatés :)
 [1] propose un système pour manager automatiquement des render batches. Chez-moi, cette tâche incombe au chunk system.
 
 
-* Sources :
-[1] https://www.gamedev.net/articles/programming/graphics/opengl-batch-rendering-r3900/
-[2] https://gamedev.stackexchange.com/questions/65847/batching-elements
+##Sources :
+    [1] https://www.gamedev.net/articles/programming/graphics/opengl-batch
+    -rendering-r3900/
+    [2] https://gamedev.stackexchange.com/questions/65847/batching-elements
 
 
 #[20-05-19]
@@ -8135,9 +8342,9 @@ bool ray_intersects_depth_buffer(float rayZNear, float rayZFar, vec2 hitPixel)
 **BEWARE** Une conséquence de l'utilisation de cette technique est que les réflexions disparaissent si la caméra se trouve à l'intérieur d'un objet de la scène : dans ce cas, la profondeur backface est toujours plus faible que la profondeur frontface, et le test d'intersection échoue systématiquement.
 
 
-* Sources :
-[1] http://www.lighthouse3d.com/tutorials/opengl-timer-query/
-[2] https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_timer_query.txt
+##Sources :
+    [1] http://www.lighthouse3d.com/tutorials/opengl-timer-query/
+    [2] https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_timer_query.txt
 
 
 #[25-05-19]
@@ -8172,7 +8379,9 @@ To remove a submodule you need to:
 * Delete the now untracked submodule files rm -rf path_to_submodule
 
 ### Update all submodules to latest commit from their remote
+```
 >> git submodule foreach git pull origin master
+```
 
 
 #[04-06-19]
@@ -8181,10 +8390,10 @@ J'ai changé les formats internes des textures de rendu de la SSAO de GL_R8 vers
 SSAO mega plus rapide après avoir changé le format interne de GL_R8 à GL_RGBA8.
 
 #[10-06-19]
-Je prototype un renderer multi-threaded, nom de code WCore2 (manque d'imagination). C'est un projet distinct de celui-ci. Je merge si mes expérimentations sont concluantes.
+Je prototype un renderer multi-threaded, nom de code WCore2 (manque d'imagination). C'est un projet distinct de celui-ci, avec une prise de notes séparée. Je merge si mes expérimentations sont concluantes.
 
 ## Vertex Buffer Layout
-TheCherno a encore frappé, avec une chouette méthode pour abstraire les formats de vertex. Je me suis largement inspiré de son travail pour opérer un petit refactor de la fonction OGLVertexArray::set_layout(). Récemment j'étais déjà repassé sur cette fonctionnalité pour décider d'un layout dynamiquement en fonction du hash compile type (lib ctti) du type de vertex.
+TheCherno a encore frappé, avec une chouette méthode pour abstraire les formats de vertex. Je me suis largement inspiré de son travail pour opérer un petit refactor de la fonction OGLVertexArray::set_layout(). Récemment j'étais déjà repassé sur cette fonctionnalité pour décider d'un layout dynamiquement en fonction du hash compile type (lib ctti) du type de vertex, l'implémentation était peu satisfaisante (spaghetti).
 
 Le header vertex_format.h définit plusieurs nouvelles entités qui permettent la description de n'importe quel format de vertex, de manière très expressive. Le type énuméré _ShaderDataType_ représente virtuellement tous les types de données que l'on peut passer à un shader, en particulier celui des attributs. La classe _BufferLayout_ représente un layout, et consiste en un conteneur de _BufferLayoutElement_. Chaque élément représente un attribut par son nom, son type de données, sa taille en bytes, son offset dans la structure de vertex, plus un booléen pour la normalisation.
 _BufferLayout_ est constructible depuis une initializer_list<BufferLayoutElement>, ce qui permet une forme très expressive d'initialisation :
@@ -8237,6 +8446,8 @@ void OGLVertexArray::set_layout(const BufferLayout& layout) const
 }
 ```
 Une simple boucle sur les éléments du layout, et une déduction des paramètres à fournir à l'API selon leur contenu. Elégant.
+
+A noter que sous DirectX, le vertex buffer layout est lié au shader (pas de VAO sous DX), l'implémentation devrait changer de place un peu plus tard.
 
 
 # Elegant thread-safe singleton
@@ -8296,11 +8507,13 @@ TODO (Waterial):
         -> GLEW ne permet pas de détecter l'extension correctement, ne supporte pas vraiment les contextes core profile, et de plus nécessite glewExperimental pour ne pas segfault lamentablement lors d'un glGenVertexArrays(). __Passer sous GLAD__ (penser à linker avec libdl sous nux (-ldl)).
         https://github.com/Dav1dde/glad
         https://glad.dav1d.de/
-        https://github.com/LibreVR/Revive/commit/86926af6908f7a99c443559a961b38b3ce33c74d
+        https://github.com/LibreVR/Revive/commit
+        /86926af6908f7a99c443559a961b38b3ce33c74d
 
     [ ] Perform texture compression offline.
         - Use glCompressedTexImage2D()
-        https://opengl.developpez.com/tutoriels/opengl-tutorial/5-un-cube-texture/#LVII
+        https://opengl.developpez.com/tutoriels/opengl-tutorial
+        /5-un-cube-texture/#LVII
 
     [ ] Bien penser à updater les bounding boxes pour les objets qui bougent.
 
